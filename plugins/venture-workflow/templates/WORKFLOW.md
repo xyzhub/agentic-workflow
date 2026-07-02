@@ -27,8 +27,8 @@ gate is a logged deviation, not a shortcut.
 | Stage | Produces | Exit gate |
 |---|---|---|
 | **V0 Idea & validation** | `docs/product/idea.md`: problem, who pays, why now, riskiest assumption, kill criteria, cheapest test of the assumption — informed by the `researcher` agent (evidence for AND against) | **Human go/no-go.** No code before this exists — an unvalidated idea is cheapest to kill in prose |
-| **V1 Definition** | PRD + MVP scope (what's deliberately OUT), user journeys with acceptance criteria, data-model sketch, stack decision with rationale | Stop-the-line: no implementation without acceptance criteria. **Human approves scope** |
-| **V2 Foundation** | Deployable skeleton: repo + CI gates (test/typecheck), deploy pipeline + health/ready checks, validated env with a **fail-closed production guard**, auth decision wired, error-monitoring hook, seed/reset path, README quickstart | "Hello world" **deployed and live-verified**; CI green. Security and DX are laid here — retrofitting costs 10× |
+| **V1 Definition** | PRD + MVP scope (what's deliberately OUT), user journeys with acceptance criteria, data-model sketch, stack decision with rationale; brand/UX directions from the `designer` agent for the owner to choose | Stop-the-line: no implementation without acceptance criteria. **Human approves scope** (and the brand direction) |
+| **V2 Foundation** | Deployable skeleton: repo + CI gates (test/typecheck), deploy pipeline + health/ready checks, validated env with a **fail-closed production guard**, auth decision wired, error-monitoring hook, seed/reset path, README quickstart, chosen design system as tokens | "Hello world" **deployed and live-verified**; CI green. Security and DX are laid here — retrofitting costs 10× |
 | **V3 Build (MVP)** | The product, feature by feature, via the execution machinery (§1–§5). Every checkpoint applies the pillar lenses | All MVP acceptance criteria met; behavioral/eval suite exists for AI-driven products |
 | **V4 Hardening** | Four explicit audits (§0.2): security review, UX pass, DX pass, efficiency pass — plus ops readiness (backups, monitoring, runbook, guard coverage) | Reviewer-verified production-readiness checklist; findings fixed or accepted in writing |
 | **V5 Launch** | Production deploy, first-user onboarding, **live end-to-end verification on the deployed instance**, monitoring confirmed receiving events, rollback tested | First real user/business served. **Human owns the launch decision** |
@@ -207,6 +207,11 @@ assumption with cited evidence for AND against, drafting `docs/product/idea.md`.
 Like the reviewer, its value is independence — it hunts disconfirming evidence
 rather than selling the idea. It informs the human's go/no-go; it never decides.
 
+**Designer** (`designer`) works at V1–V2 and for redesigns: it surfaces several
+distinct brand/UX directions for the owner to choose from, then organizes the
+chosen one into a design-token system the `frontend` agent implements. It
+proposes and organizes; the owner picks; frontend builds.
+
 ### 6.1 Documentation of record (Chronicler)
 
 Three artifacts kept current so the project's story survives any single session:
@@ -244,15 +249,47 @@ finish line, not "PR open".
 
 ## 9. How this maps to the plugin
 
-- Agents ship with the plugin: `researcher` (V0 validation), `reviewer`,
-  `chronicler`, and the specialist implementers `backend`, `frontend`, `security`.
+- Agents ship with the plugin: `researcher` (V0 validation), `designer`
+  (V1–V2 brand/UX), `reviewer`, `chronicler`, and the specialist implementers
+  `backend`, `frontend`, `security`.
 - Guardrail hooks (§3) install automatically.
 - Commands: `/workflow-init` (bootstrap a project into this workflow),
-  `/start-work`, `/check-workflow`, `/pre-pr`, `/end-work`, `/quick-fix`, `/retro`.
+  `/autonomous` (drive an idea to launch-ready, §11), `/start-work`,
+  `/check-workflow`, `/pre-pr`, `/end-work`, `/quick-fix`, `/retro`.
 - The `venture-workflow` skill points every session at the project's
   `docs/AGENT-SESSIONS.md` (or this master if none exists yet).
 - Templates for the status page, `idea.md`, and this protocol live under the
   plugin's `templates/`.
+
+## 11. Autonomous mode
+
+`/autonomous "<idea>"` drives the whole lifecycle (V0→V5) with the bare-minimum
+human input — validation, definition, design choice, foundation, build,
+hardening, and launch-prep — pausing only at the gates a human must own. It's the
+same workflow, orchestrated end-to-end instead of session-by-session.
+
+**The only upfront ask is a flight plan** (`docs/product/flight-plan.md`): the
+idea, a budget ceiling, risk tolerance, a brand preference (or "you choose"), the
+deploy target, and how often to check in. That is the standing authorization;
+anything outside it returns to the human.
+
+**What runs autonomously**: the reviewer-verified stage gates. The `researcher`
+validates (and can auto-stop on kill criteria); the `designer` picks a direction
+if pre-authorized; `backend`/`frontend`/`security` build with a `reviewer`
+checkpoint per phase (one corrective retry, then surface); the `chronicler` keeps
+the status page live as the owner's window; a `decision-log.md` records every
+autonomous choice and how to reverse it.
+
+**The safety boundary is never crossed autonomously** — even here, these need an
+explicit human confirmation each time (pre-authorization lets you *prepare*, not
+*fire*): merging the default branch, deploying to production / going live,
+spending beyond the flight-plan ceiling, publishing outward or messaging on the
+owner's behalf, and destructive/irreversible actions. These are **batched**: at
+the launch boundary the human gets ONE consolidated "ready to launch" summary to
+confirm, not a stream of interruptions.
+
+Autonomous mode is therefore *autonomous up to the reversible boundary*, with the
+irreducible human decisions collapsed to the fewest, best-informed touchpoints.
 
 ## 10. Project profile (filled by `/workflow-init`)
 
