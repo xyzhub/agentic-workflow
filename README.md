@@ -22,7 +22,7 @@ Then in any project: `/workflow-init`.
 .claude-plugin/marketplace.json      # the marketplace manifest
 plugins/venture-workflow/            # the plugin
   .claude-plugin/plugin.json         # plugin manifest
-  agents/    reviewer.md, chronicler.md
+  agents/    reviewer.md, chronicler.md, backend.md, frontend.md, security.md
   commands/  workflow-init, start-work, check-workflow, pre-pr, end-work, quick-fix, retro
   hooks/     hooks.json               # guardrails
   skills/    venture-workflow/        # the entry-point skill

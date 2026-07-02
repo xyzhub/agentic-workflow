@@ -13,9 +13,11 @@ a permanent record of the journey.
 - **Execution machinery** — three altitudes (task / session / effort), a session
   lifecycle, and the `.plans/` effort trio with independent checkpoint reviews.
 - **Four pillar gates** checked at every checkpoint and audited before launch.
-- **Two agents**: `reviewer` (fresh-context, five pillar lenses + QA +
-  architecture) and `chronicler` (keeps CHANGELOG, a posterity JOURNEY, and the
-  live owner status page).
+- **Agents**: `reviewer` (fresh-context, five pillar lenses + QA + architecture),
+  `chronicler` (keeps CHANGELOG, a posterity JOURNEY, and the live owner status
+  page), and specialist implementers `backend`, `frontend`, `security` for
+  domain-focused or parallel work — each carries its pillar bias and hands off to
+  independent review.
 - **Guardrail hooks**: blocks pushes to the default branch, reminds on commit
   format and gates, nudges doc updates on high-impact files.
 - **Commands**: `/workflow-init`, `/start-work`, `/check-workflow`, `/pre-pr`,

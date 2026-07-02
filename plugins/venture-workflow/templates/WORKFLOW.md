@@ -187,10 +187,19 @@ them to author and drive the trio; otherwise follow this section by hand.
 
 | Role | Who | Duty |
 |---|---|---|
-| **Implementer** | The main session agent (or a per-brief subagent in orchestrated efforts) | Route, build, verify, document, hand off |
+| **Implementer** | The main session agent, or a **specialist implementer** subagent (`backend`, `frontend`, `security`) — used for a domain slice or to run slices in parallel in an effort | Route, build to convention, verify, document, hand off |
 | **Reviewer** | The `reviewer` agent — always a fresh context | Checkpoint reviews; pre-merge review of risky changes; five pillar lenses + QA + architecture in one pass |
 | **Chronicler** | The `chronicler` agent | Keeps the record (§6.1); documents, never touches product code |
 | **HITL** | The human owner (§10) | Answers open questions, merges the default branch, owns deploys and anything irreversible |
+
+**Specialist implementers** carry their domain's pillar bias — `backend`
+(data integrity, idempotency, migrations, efficiency), `frontend` (the UX pillar,
+real-client verification), `security` (fail-closed hardening, least privilege).
+They compose with, and never replace, independent review: a specialist BUILDS,
+the fresh-context `reviewer` VERIFIES. No specialist self-approves, merges, or
+pushes the default branch. Reach for them when a session has a clear single-domain
+slice, or when an effort has parallel slices that can run at once; a plain session
+on the main agent is fine for small or cross-cutting work.
 
 ### 6.1 Documentation of record (Chronicler)
 
@@ -229,7 +238,8 @@ finish line, not "PR open".
 
 ## 9. How this maps to the plugin
 
-- Agents `reviewer` and `chronicler` ship with the plugin.
+- Agents ship with the plugin: `reviewer`, `chronicler`, and the specialist
+  implementers `backend`, `frontend`, `security`.
 - Guardrail hooks (§3) install automatically.
 - Commands: `/workflow-init` (bootstrap a project into this workflow),
   `/start-work`, `/check-workflow`, `/pre-pr`, `/end-work`, `/quick-fix`, `/retro`.
