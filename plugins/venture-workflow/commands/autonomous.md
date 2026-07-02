@@ -39,16 +39,19 @@ owner can watch live.
   choose the smallest scope that delivers the core value. Spawn `designer` for
   brand/UX directions; if brand = "you choose", pick one with rationale and
   record it; otherwise present the options and pause once.
-- **V2 Foundation** — `/workflow-init`, then scaffold the deployable skeleton
-  (CI gates, health checks, fail-closed config guard, env validation, seed).
+- **V2 Foundation** — `/workflow-init`, then scaffold the deployable skeleton;
+  spawn `devops` to lay the CI + deploy pipeline (gates, health checks, scoped
+  permissions, SHA-pinned actions) alongside the fail-closed config guard, env
+  validation, and seed.
 - **V3 Build** — implement the MVP via `backend` / `frontend` specialists (in
   parallel where slices are independent), honoring the chosen design system.
   Run a `reviewer` checkpoint at each phase; auto-apply one corrective pass on
   REQUEST CHANGES, then surface if it still fails (one-corrective-retry).
 - **V4 Harden** — run the four pillar audits (`security` implements hardening;
   `reviewer` verifies; UX/DX/efficiency passes). Fix or record findings.
-- **V5 Launch prep** — everything up to the button: deploy config, runbook,
-  monitoring wired, rollback tested against a staging/preview where possible.
+- **V5 Launch prep** — `devops` stages everything up to the button (deploy
+  config, `/release` version cut, runbook, monitoring wired, rollback tested
+  against a staging/preview where possible).
 
 ## 2. The safety boundary (never crossed autonomously)
 

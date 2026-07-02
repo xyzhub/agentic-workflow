@@ -18,15 +18,15 @@ a permanent record of the journey.
   organizes the chosen one into a token system), `reviewer` (fresh-context, five
   pillar lenses + QA + architecture), `chronicler` (keeps CHANGELOG, a posterity
   JOURNEY, and the live owner status page), and specialist implementers `backend`,
-  `frontend`, `security` — each carries its pillar bias and hands off to
-  independent review.
+  `frontend`, `security`, `devops` (CI/CD, GitHub workflows, deploy, releases) —
+  each carries its pillar bias and hands off to independent review.
 - **Autonomous mode**: `/autonomous "<idea>"` drives the whole lifecycle
   (validate → define → design → build → harden → launch-prep) from a one-line
   idea and a short flight plan, pausing only at the gates a human must own.
 - **Guardrail hooks**: blocks pushes to the default branch, reminds on commit
   format and gates, nudges doc updates on high-impact files.
-- **Commands**: `/workflow-init`, `/autonomous`, `/start-work`, `/check-workflow`,
-  `/pre-pr`, `/end-work`, `/quick-fix`, `/retro`.
+- **Commands**: `/workflow-init`, `/autonomous`, `/release`, `/start-work`,
+  `/check-workflow`, `/pre-pr`, `/end-work`, `/quick-fix`, `/retro`.
 - **A skill** that points every session at the project's protocol.
 
 ## Install

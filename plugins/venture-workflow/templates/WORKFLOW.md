@@ -28,10 +28,10 @@ gate is a logged deviation, not a shortcut.
 |---|---|---|
 | **V0 Idea & validation** | `docs/product/idea.md`: problem, who pays, why now, riskiest assumption, kill criteria, cheapest test of the assumption — informed by the `researcher` agent (evidence for AND against) | **Human go/no-go.** No code before this exists — an unvalidated idea is cheapest to kill in prose |
 | **V1 Definition** | PRD + MVP scope (what's deliberately OUT), user journeys with acceptance criteria, data-model sketch, stack decision with rationale; brand/UX directions from the `designer` agent for the owner to choose | Stop-the-line: no implementation without acceptance criteria. **Human approves scope** (and the brand direction) |
-| **V2 Foundation** | Deployable skeleton: repo + CI gates (test/typecheck), deploy pipeline + health/ready checks, validated env with a **fail-closed production guard**, auth decision wired, error-monitoring hook, seed/reset path, README quickstart, chosen design system as tokens | "Hello world" **deployed and live-verified**; CI green. Security and DX are laid here — retrofitting costs 10× |
+| **V2 Foundation** | Deployable skeleton (`devops` lays CI + deploy): repo + CI gates (test/typecheck), deploy pipeline + health/ready checks, validated env with a **fail-closed production guard**, auth decision wired, error-monitoring hook, seed/reset path, README quickstart, chosen design system as tokens | "Hello world" **deployed and live-verified**; CI green. Security and DX are laid here — retrofitting costs 10× |
 | **V3 Build (MVP)** | The product, feature by feature, via the execution machinery (§1–§5). Every checkpoint applies the pillar lenses | All MVP acceptance criteria met; behavioral/eval suite exists for AI-driven products |
 | **V4 Hardening** | Four explicit audits (§0.2): security review, UX pass, DX pass, efficiency pass — plus ops readiness (backups, monitoring, runbook, guard coverage) | Reviewer-verified production-readiness checklist; findings fixed or accepted in writing |
-| **V5 Launch** | Production deploy, first-user onboarding, **live end-to-end verification on the deployed instance**, monitoring confirmed receiving events, rollback tested | First real user/business served. **Human owns the launch decision** |
+| **V5 Launch** | Production deploy (`devops` prepares, `/release` cuts the version), first-user onboarding, **live end-to-end verification on the deployed instance**, monitoring confirmed receiving events, rollback tested | First real user/business served. **Human owns the launch decision** |
 | **V6 Operate & evolve** | Feedback → ranked feature ideas → user-reviewed → growth efforts (phased trio with locked decisions); ops review of errors/costs; retros that amend THIS document | Continuous — each growth effort re-cycles V3–V5 gates |
 
 A stage may be revisited (a pivot reopens V0/V1; a big growth effort re-runs V4
@@ -194,7 +194,8 @@ them to author and drive the trio; otherwise follow this section by hand.
 
 **Specialist implementers** carry their domain's pillar bias — `backend`
 (data integrity, idempotency, migrations, efficiency), `frontend` (the UX pillar,
-real-client verification), `security` (fail-closed hardening, least privilege).
+real-client verification), `security` (fail-closed hardening, least privilege),
+`devops` (CI/CD pipelines, deploy config, releases, rollback).
 They compose with, and never replace, independent review: a specialist BUILDS,
 the fresh-context `reviewer` VERIFIES. No specialist self-approves, merges, or
 pushes the default branch. Reach for them when a session has a clear single-domain
@@ -211,6 +212,12 @@ rather than selling the idea. It informs the human's go/no-go; it never decides.
 distinct brand/UX directions for the owner to choose from, then organizes the
 chosen one into a design-token system the `frontend` agent implements. It
 proposes and organizes; the owner picks; frontend builds.
+
+**DevOps** (`devops`) owns the delivery pipeline as a first-class artifact —
+CI/CD, GitHub Actions workflows, deploy config, environments, releases, rollback.
+It lays the pipeline at V2 and prepares the launch at V5, co-owning CI security
+posture with `security`. It prepares deploys/releases; the human fires the
+irreversible ones (see §11).
 
 ### 6.1 Documentation of record (Chronicler)
 
@@ -251,11 +258,11 @@ finish line, not "PR open".
 
 - Agents ship with the plugin: `researcher` (V0 validation), `designer`
   (V1–V2 brand/UX), `reviewer`, `chronicler`, and the specialist implementers
-  `backend`, `frontend`, `security`.
+  `backend`, `frontend`, `security`, `devops` (CI/CD, deploy, releases).
 - Guardrail hooks (§3) install automatically.
 - Commands: `/workflow-init` (bootstrap a project into this workflow),
-  `/autonomous` (drive an idea to launch-ready, §11), `/start-work`,
-  `/check-workflow`, `/pre-pr`, `/end-work`, `/quick-fix`, `/retro`.
+  `/autonomous` (drive an idea to launch-ready, §11), `/release` (cut a version),
+  `/start-work`, `/check-workflow`, `/pre-pr`, `/end-work`, `/quick-fix`, `/retro`.
 - The `venture-workflow` skill points every session at the project's
   `docs/AGENT-SESSIONS.md` (or this master if none exists yet).
 - Templates for the status page, `idea.md`, and this protocol live under the
@@ -275,10 +282,11 @@ anything outside it returns to the human.
 
 **What runs autonomously**: the reviewer-verified stage gates. The `researcher`
 validates (and can auto-stop on kill criteria); the `designer` picks a direction
-if pre-authorized; `backend`/`frontend`/`security` build with a `reviewer`
-checkpoint per phase (one corrective retry, then surface); the `chronicler` keeps
-the status page live as the owner's window; a `decision-log.md` records every
-autonomous choice and how to reverse it.
+if pre-authorized; `devops` lays the pipeline (V2) and stages the release (V5);
+`backend`/`frontend`/`security` build with a `reviewer` checkpoint per phase
+(one corrective retry, then surface); the `chronicler` keeps the status page live
+as the owner's window; a `decision-log.md` records every autonomous choice and
+how to reverse it.
 
 **The safety boundary is never crossed autonomously** — even here, these need an
 explicit human confirmation each time (pre-authorization lets you *prepare*, not
