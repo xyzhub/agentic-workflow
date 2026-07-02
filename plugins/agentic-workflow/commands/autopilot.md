@@ -1,11 +1,11 @@
 ---
-description: Autonomous mode — drive an idea through the full venture lifecycle (V0→V5) with the bare-minimum human input, pausing only at genuinely irreversible or spending gates.
+description: Autopilot mode — drive an idea through the full venture lifecycle (V0→V5) with the bare-minimum human input, pausing only at genuinely irreversible or spending gates.
 argument-hint: "<one-line idea>"
 allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, WebSearch, WebFetch]
 ---
 
 Take the idea in `$ARGUMENTS` and drive it toward a launched product with as
-little human intervention as safely possible (Venture Workflow §11). You
+little human intervention as safely possible (Agentic Workflow §11). You
 orchestrate the agents and stages; you do NOT skip the safety boundary.
 
 ## 0. Get the flight plan (the only upfront ask)
@@ -39,7 +39,7 @@ owner can watch live.
   choose the smallest scope that delivers the core value. Spawn `designer` for
   brand/UX directions; if brand = "you choose", pick one with rationale and
   record it; otherwise present the options and pause once.
-- **V2 Foundation** — `/workflow-init`, then scaffold the deployable skeleton;
+- **V2 Foundation** — `/init-workflow`, then scaffold the deployable skeleton;
   spawn `devops` to lay the CI + deploy pipeline (gates, health checks, scoped
   permissions, SHA-pinned actions) alongside the fail-closed config guard, env
   validation, and seed.
@@ -57,7 +57,7 @@ owner can watch live.
 
 ## 2. The safety boundary (never crossed autonomously)
 
-These require an explicit human confirmation every time, even in autonomous mode
+These require an explicit human confirmation every time, even in autopilot mode
 — pre-authorization in the flight plan lets you *prepare* them, not *fire* them:
 
 - **Merging the default branch** — you open PRs; the human (HITL) merges.

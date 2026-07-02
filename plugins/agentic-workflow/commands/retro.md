@@ -3,7 +3,7 @@ description: Retrospective on a session or mission — turn lessons into workflo
 allowed-tools: [Read, Write, Edit, Bash, Grep, Glob]
 ---
 
-Run a retrospective (Venture Workflow §8). The goal is not a feelings check — it
+Run a retrospective (Agentic Workflow §8). The goal is not a feelings check — it
 is to convert what was learned into concrete changes to the workflow, the docs,
 or memory.
 
@@ -18,7 +18,7 @@ or memory.
 
 ## Turn each lesson into an action
 
-- A durable rule → edit `docs/AGENT-SESSIONS.md` (a pillar rule, a gotcha, a gate)
+- A durable rule → edit `docs/WORKFLOW.md` (a pillar rule, a gotcha, a gate)
   via PR like any other change.
 - A stale doc → fix it now (stale-doc rule).
 - A project-specific fact → the conventions file or repo docs.

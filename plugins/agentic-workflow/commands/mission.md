@@ -4,7 +4,7 @@ argument-hint: "<mission name or goal>" [plan | run | continue]
 allowed-tools: [Read, Write, Edit, Bash, Grep, Glob]
 ---
 
-Drive a mission (Venture Workflow §5). `$ARGUMENTS` is the mission name/goal and an
+Drive a mission (Agentic Workflow §5). `$ARGUMENTS` is the mission name/goal and an
 optional mode: `plan` (author the trio and stop), `run` (plan if needed, then
 execute), or `continue` (resume from the ledger). Default: `run`.
 

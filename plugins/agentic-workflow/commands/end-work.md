@@ -3,7 +3,7 @@ description: Close a work session cleanly — verify, commit, update the record,
 allowed-tools: [Read, Write, Edit, Bash, Grep, Glob]
 ---
 
-Complete the current work session (Venture Workflow §4 "Close"). Run before a
+Complete the current work session (Agentic Workflow §4 "Close"). Run before a
 context switch or session end.
 
 ## 1. Status

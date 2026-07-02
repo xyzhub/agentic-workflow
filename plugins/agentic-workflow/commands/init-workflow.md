@@ -1,10 +1,10 @@
 ---
-description: Bootstrap this project into the Venture Workflow — detect the stack, write docs/AGENT-SESSIONS.md with a filled project profile, and seed the record artifacts.
+description: Bootstrap this project into the Agentic Workflow — detect the stack, write docs/WORKFLOW.md with a filled project profile, and seed the record artifacts.
 argument-hint: [stage e.g. V0|V2|V6]
 allowed-tools: [Read, Write, Edit, Bash, Grep, Glob]
 ---
 
-Bootstrap the current repository into the Venture Workflow. Idempotent — if an
+Bootstrap the current repository into the Agentic Workflow. Idempotent — if an
 artifact already exists, update rather than overwrite, and confirm before
 replacing anything non-trivial.
 
@@ -30,10 +30,10 @@ infer):
   CI → V2; shipping features → V3; deployed with real users → V5/V6). Use the
   `$ARGUMENTS` value if the user passed one.
 
-## 2. Write docs/AGENT-SESSIONS.md
+## 2. Write docs/WORKFLOW.md
 
 Copy the bundled master from `${CLAUDE_PLUGIN_ROOT}/templates/WORKFLOW.md` into
-`docs/AGENT-SESSIONS.md`, then **replace §10 (Project profile)** with the concrete
+`docs/WORKFLOW.md`, then **replace §10 (Project profile)** with the concrete
 values from step 1. Drop the "this is the bundled master" banner at the top. This
 project-local copy now wins over the bundled one.
 
@@ -57,7 +57,7 @@ project-local copy now wins over the bundled one.
 ## 4. Point the project's memory at the workflow
 
 If `AGENTS.md` or `CLAUDE.md` exists, add a short pointer near the top:
-"This project runs the Venture Workflow — see docs/AGENT-SESSIONS.md." Don't
+"This project runs the Agentic Workflow — see docs/WORKFLOW.md." Don't
 duplicate the protocol into it.
 
 ## 5. Report

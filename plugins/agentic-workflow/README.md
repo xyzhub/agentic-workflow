@@ -1,4 +1,4 @@
-# Venture Workflow
+# Agentic Workflow
 
 An agentic operating protocol that carries any project from a **raw idea to a
 launched, viable product** — with **UX, DX, Security, and Efficiency enforced as
@@ -22,12 +22,12 @@ a permanent record of the journey.
   posterity JOURNEY, and the live owner status page), and specialist implementers
   `backend`, `frontend`, `security`, `devops` (CI/CD, GitHub workflows, deploy,
   releases) — each carries its pillar bias and hands off to independent review.
-- **Autonomous mode**: `/autonomous "<idea>"` drives the whole lifecycle
+- **Autopilot mode**: `/autopilot "<idea>"` drives the whole lifecycle
   (validate → define → design → build → harden → launch-prep) from a one-line
   idea and a short flight plan, pausing only at the gates a human must own.
 - **Guardrail hooks**: blocks pushes to the default branch, reminds on commit
   format and gates, nudges doc updates on high-impact files.
-- **Commands**: `/workflow-init`, `/autonomous`, `/mission`, `/release`,
+- **Commands**: `/init-workflow`, `/autopilot`, `/mission`, `/release`,
   `/start-work`, `/check-workflow`, `/pre-pr`, `/end-work`, `/quick-fix`, `/retro`.
 - **A skill** that points every session at the project's protocol.
 
@@ -35,31 +35,31 @@ a permanent record of the journey.
 
 ```
 /plugin marketplace add xyzhub/agentic-workflow      # or your fork's repo
-/plugin install venture-workflow@venture-workflow-market
+/plugin install agentic-workflow@xyz
 ```
 
 Then, in any project:
 
 ```
-/workflow-init
+/init-workflow
 ```
 
 It detects your stack (gates, deploy, default branch), writes
-`docs/AGENT-SESSIONS.md` with a filled project profile, seeds the record
+`docs/WORKFLOW.md` with a filled project profile, seeds the record
 artifacts (CHANGELOG, JOURNEY, the status page), and — for a brand-new idea —
 scaffolds `docs/product/idea.md` to validate before you build.
 
 ## Try it locally first
 
 ```
-claude --plugin-dir ./plugins/venture-workflow
+claude --plugin-dir ./plugins/agentic-workflow
 ```
 
 ## How it stays project-agnostic
 
 The bundled protocol (`templates/WORKFLOW.md`) carries a **Project Profile (§10)**
-placeholder — gates, deploy, HITL, high-impact files. `/workflow-init` fills it
-per project, producing a local `docs/AGENT-SESSIONS.md` that wins over the
+placeholder — gates, deploy, HITL, high-impact files. `/init-workflow` fills it
+per project, producing a local `docs/WORKFLOW.md` that wins over the
 bundled master. Nothing about any one project's stack is baked into the plugin.
 
 ## The mission loop

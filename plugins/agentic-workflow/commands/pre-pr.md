@@ -3,7 +3,7 @@ description: Run the project's validation gates before opening a PR, then push a
 allowed-tools: [Read, Bash, Grep, Glob]
 ---
 
-Prepare a Pull Request. Use the gates from `docs/AGENT-SESSIONS.md` §10 (project
+Prepare a Pull Request. Use the gates from `docs/WORKFLOW.md` §10 (project
 profile); if that file is absent, infer them from the repo's CI/package scripts.
 Report ✅ PASS / ⚠️ WARNING / ❌ BLOCKER for each step.
 

@@ -4,7 +4,7 @@ argument-hint: [version e.g. v1.2.0 | major|minor|patch]
 allowed-tools: [Read, Write, Edit, Bash, Grep, Glob]
 ---
 
-Prepare a release (Venture Workflow §7, V5). `$ARGUMENTS` is an explicit version
+Prepare a release (Agentic Workflow §7, V5). `$ARGUMENTS` is an explicit version
 (`v1.2.0`) or a bump level (`major`/`minor`/`patch`). If omitted, propose one from
 the unreleased changes. This command PREPARES the release; the human owns the
 production deploy and the merge.

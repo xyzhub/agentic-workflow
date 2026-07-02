@@ -30,7 +30,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "INPUT=$(cat); FILEPATH=$(printf '%s' \"$INPUT\" | jq -r '.tool_input.file_path // \"\"' 2>/dev/null || printf '%s' \"$INPUT\"); case \"$FILEPATH\" in *CLAUDE.md*|*AGENTS.md*|*docs/AGENT-SESSIONS.md*|*docs/architecture*|*docs/data-model*|*schema.prisma*|*schema.sql*) echo '📚 High-impact file changed — update related docs in the same PR (stale-doc rule).';; esac; exit 0",
+            "command": "INPUT=$(cat); FILEPATH=$(printf '%s' \"$INPUT\" | jq -r '.tool_input.file_path // \"\"' 2>/dev/null || printf '%s' \"$INPUT\"); case \"$FILEPATH\" in *CLAUDE.md*|*AGENTS.md*|*docs/WORKFLOW.md*|*docs/architecture*|*docs/data-model*|*schema.prisma*|*schema.sql*) echo '📚 High-impact file changed — update related docs in the same PR (stale-doc rule).';; esac; exit 0",
             "description": "Docs reminder when high-impact files change"
           }
         ]

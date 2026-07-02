@@ -1,5 +1,5 @@
 {
-  "name": "venture-workflow-market",
+  "name": "xyz",
   "description": "An agentic workflow that carries any project from a raw idea to a launched, viable product — with UX, DX, Security, and Efficiency enforced as gates.",
   "version": "1.0",
   "owner": {
@@ -7,8 +7,8 @@
   },
   "plugins": [
     {
-      "name": "venture-workflow",
-      "source": "./plugins/venture-workflow",
+      "name": "agentic-workflow",
+      "source": "./plugins/agentic-workflow",
       "description": "Idea → viable product: venture lifecycle (V0–V6), session/mission machinery, four pillar gates, independent reviewer + chronicler agents, guardrail hooks, and a live owner status page.",
       "category": "workflow",
       "keywords": ["workflow", "agentic", "lifecycle", "review", "quality-gates", "changelog"]

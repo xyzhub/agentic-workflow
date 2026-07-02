@@ -1,9 +1,9 @@
 # The Workflow — one agentic protocol from idea to viable product
 
-> **This is the bundled master protocol** shipped by the Venture Workflow plugin.
-> When a project has its own `docs/AGENT-SESSIONS.md` (written by `/workflow-init`),
+> **This is the bundled master protocol** shipped by the Agentic Workflow plugin.
+> When a project has its own `docs/WORKFLOW.md` (written by `/init-workflow`),
 > THAT copy wins — it carries the project profile (§10) and any local amendments.
-> This master is the fallback and the thing `/workflow-init` copies from.
+> This master is the fallback and the thing `/init-workflow` copies from.
 
 One workflow that can take any project from a raw idea to a working, viable
 product — and keep evolving it. Two halves:
@@ -269,18 +269,18 @@ finish line, not "PR open".
   and the specialist implementers `backend`, `frontend`, `security`, `devops`
   (CI/CD, deploy, releases).
 - Guardrail hooks (§3) install automatically.
-- Commands: `/workflow-init` (bootstrap a project into this workflow),
-  `/autonomous` (drive an idea to launch-ready, §11), `/mission` (plan + drive a
+- Commands: `/init-workflow` (bootstrap a project into this workflow),
+  `/autopilot` (drive an idea to launch-ready, §11), `/mission` (plan + drive a
   multi-session mission), `/release` (cut a version), `/start-work`,
   `/check-workflow`, `/pre-pr`, `/end-work`, `/quick-fix`, `/retro`.
-- The `venture-workflow` skill points every session at the project's
-  `docs/AGENT-SESSIONS.md` (or this master if none exists yet).
+- The `protocol` skill points every session at the project's
+  `docs/WORKFLOW.md` (or this master if none exists yet).
 - Templates for the status page, `idea.md`, and this protocol live under the
   plugin's `templates/`.
 
-## 11. Autonomous mode
+## 11. Autopilot mode
 
-`/autonomous "<idea>"` drives the whole lifecycle (V0→V5) with the bare-minimum
+`/autopilot "<idea>"` drives the whole lifecycle (V0→V5) with the bare-minimum
 human input — validation, definition, design choice, foundation, build,
 hardening, and launch-prep — pausing only at the gates a human must own. It's the
 same workflow, orchestrated end-to-end instead of session-by-session.
@@ -306,13 +306,13 @@ owner's behalf, and destructive/irreversible actions. These are **batched**: at
 the launch boundary the human gets ONE consolidated "ready to launch" summary to
 confirm, not a stream of interruptions.
 
-Autonomous mode is therefore *autonomous up to the reversible boundary*, with the
+Autopilot mode is therefore *autonomous up to the reversible boundary*, with the
 irreducible human decisions collapsed to the fewest, best-informed touchpoints.
 
-## 10. Project profile (filled by `/workflow-init`)
+## 10. Project profile (filled by `/init-workflow`)
 
-Until `/workflow-init` runs, these are unknown — discover them from the repo or
-ask the human. A project's own `docs/AGENT-SESSIONS.md` replaces this block with
+Until `/init-workflow` runs, these are unknown — discover them from the repo or
+ask the human. A project's own `docs/WORKFLOW.md` replaces this block with
 concrete values.
 
 | Key | Value |

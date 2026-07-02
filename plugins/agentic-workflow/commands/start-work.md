@@ -4,7 +4,7 @@ argument-hint: [issue-number-or-description]
 allowed-tools: [Read, Write, Edit, Bash, Grep, Glob]
 ---
 
-Open a new work session (Venture Workflow §4 "Open"). `$ARGUMENTS` is an optional
+Open a new work session (Agentic Workflow §4 "Open"). `$ARGUMENTS` is an optional
 issue number or short description.
 
 ## 1. Route the work (§1)
@@ -26,7 +26,7 @@ git checkout -b <type>/<short-description>    # feat/…, fix/…  — never the
 
 ## 3. Load context
 
-- Read the project's conventions file and `docs/AGENT-SESSIONS.md`.
+- Read the project's conventions file and `docs/WORKFLOW.md`.
 - If continuing a mission, read `.plans/<mission>.state.md` → `Next up:` → that
   brief, and follow it (including its read budget).
 - If the work maps to a tracked issue, read it and confirm acceptance criteria

@@ -1,7 +1,7 @@
-# Venture Workflow — Claude Code plugin marketplace
+# Agentic Workflow — Claude Code plugin marketplace
 
 This repo is a [Claude Code plugin marketplace](https://code.claude.com/docs/en/plugin-marketplaces)
-hosting one plugin: **[venture-workflow](./plugins/venture-workflow)** — an
+hosting one plugin: **[agentic-workflow](./plugins/agentic-workflow)** — an
 agentic operating protocol that takes any project from a raw idea to a launched,
 viable product, with UX, DX, Security, and Efficiency enforced as gates.
 
@@ -9,28 +9,28 @@ viable product, with UX, DX, Security, and Efficiency enforced as gates.
 
 ```
 /plugin marketplace add xyzhub/agentic-workflow
-/plugin install venture-workflow@venture-workflow-market
+/plugin install agentic-workflow@xyz
 ```
 
 (Replace `xyzhub/agentic-workflow` with wherever you host this repo.)
 
-Then in any project: `/workflow-init`.
+Then in any project: `/init-workflow`.
 
 ## What's here
 
 ```
 .claude-plugin/marketplace.json      # the marketplace manifest
-plugins/venture-workflow/            # the plugin
+plugins/agentic-workflow/            # the plugin
   .claude-plugin/plugin.json         # plugin manifest
   agents/    researcher.md, designer.md, planner.md, reviewer.md, chronicler.md, backend.md, frontend.md, security.md, devops.md
-  commands/  workflow-init, autonomous, mission, release, start-work, check-workflow, pre-pr, end-work, quick-fix, retro
+  commands/  init-workflow, autopilot, mission, release, start-work, check-workflow, pre-pr, end-work, quick-fix, retro
   hooks/     hooks.json               # guardrails
-  skills/    venture-workflow/        # the entry-point skill
+  skills/    agentic-workflow/        # the entry-point skill
   templates/ WORKFLOW.md, overview.html, idea.md
   README.md
 ```
 
-See the [plugin README](./plugins/venture-workflow/README.md) for the full
+See the [plugin README](./plugins/agentic-workflow/README.md) for the full
 description.
 
 ## License
