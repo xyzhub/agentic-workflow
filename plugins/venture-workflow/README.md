@@ -25,7 +25,7 @@ a permanent record of the journey.
 ## Install
 
 ```
-/plugin marketplace add baker/venture-workflow-plugin      # or your fork's repo
+/plugin marketplace add xyzhub/agentic-workflow      # or your fork's repo
 /plugin install venture-workflow@venture-workflow-market
 ```
 

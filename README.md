@@ -8,11 +8,11 @@ viable product, with UX, DX, Security, and Efficiency enforced as gates.
 ## Install
 
 ```
-/plugin marketplace add baker/venture-workflow-plugin
+/plugin marketplace add xyzhub/agentic-workflow
 /plugin install venture-workflow@venture-workflow-market
 ```
 
-(Replace `baker/venture-workflow-plugin` with wherever you host this repo.)
+(Replace `xyzhub/agentic-workflow` with wherever you host this repo.)
 
 Then in any project: `/workflow-init`.
 
