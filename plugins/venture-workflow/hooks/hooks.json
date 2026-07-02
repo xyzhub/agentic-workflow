@@ -1,0 +1,52 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "BRANCH=$(git branch --show-current 2>/dev/null); DEF=$(git symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null | sed 's|^origin/||'); DEF=${DEF:-main}; if [ -n \"$BRANCH\" ] && [ \"$BRANCH\" = \"$DEF\" ]; then echo \"⚠️ On $DEF — create a feature branch before changes (git checkout -b feat/<desc>).\"; fi",
+            "description": "Remind to use a feature branch when on the default branch"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "INPUT=$(cat); CMD=$(printf '%s' \"$INPUT\" | jq -r '.tool_input.command // \"\"' 2>/dev/null || printf '%s' \"$INPUT\"); DEF=$(git symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null | sed 's|^origin/||'); DEF=${DEF:-main}; case \"$CMD\" in *'git commit'*) echo '📝 Commit format: type(scope): description — end with a Co-Authored-By trailer.';; esac; case \"$CMD\" in *'git push'*) BRANCH=$(git branch --show-current 2>/dev/null); if [ \"$BRANCH\" = \"$DEF\" ]; then echo \"❌ BLOCKED: never push while checked out on $DEF — work on a feature branch.\" >&2; exit 2; fi; if git status --porcelain --untracked-files=no 2>/dev/null | grep -q .; then echo '⚠️ Tracked files have uncommitted modifications — confirm they belong to a later commit before pushing.'; fi;; esac; case \"$CMD\" in *'gh pr create'*) echo '📋 Run the project gates before the PR (test + typecheck/lint; build if release-bound).';; esac; exit 0",
+            "description": "git/gh guardrails: block push on the default branch; commit-format + pre-PR reminders; dirty-tracked-tree warning"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "INPUT=$(cat); FILEPATH=$(printf '%s' \"$INPUT\" | jq -r '.tool_input.file_path // \"\"' 2>/dev/null || printf '%s' \"$INPUT\"); case \"$FILEPATH\" in *CLAUDE.md*|*AGENTS.md*|*docs/AGENT-SESSIONS.md*|*docs/architecture*|*docs/data-model*|*schema.prisma*|*schema.sql*) echo '📚 High-impact file changed — update related docs in the same PR (stale-doc rule).';; esac; exit 0",
+            "description": "Docs reminder when high-impact files change"
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "git status --porcelain --untracked-files=no 2>/dev/null | grep -q . && echo '⚠️ Session ending with uncommitted tracked changes.' || true",
+            "description": "Warn about uncommitted tracked work at session end"
+          }
+        ]
+      }
+    ]
+  }
+}
