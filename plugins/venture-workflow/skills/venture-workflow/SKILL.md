@@ -26,7 +26,7 @@ Efficiency enforced as gates.
    *project* needs next; the altitudes (task / session / mission) say how to do the
    *piece in front of you*. Bigger-than-one-sitting work becomes a mission trio
    under `.plans/` — author and drive it with the bundled `/mission` command
-   (which spawns the `planner` agent); no external skill needed.
+   (which spawns the `planner` agent).
 2. **Treat the four pillars as gates**, checked at every checkpoint by the
    `reviewer` agent (fresh context) and audited before launch. Never let the UI
    claim what the backend can't confirm; fail closed on missing security config;

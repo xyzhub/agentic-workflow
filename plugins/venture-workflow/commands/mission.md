@@ -1,5 +1,5 @@
 ---
-description: Plan and drive a multi-session mission end to end — authors the .plans/ trio (via the planner agent) if needed, then runs it phase by phase with independent checkpoint reviews. Self-contained; no external mission skill required.
+description: Plan and drive a multi-session mission end to end — authors the .plans/ trio (via the planner agent) if needed, then runs it phase by phase with independent checkpoint reviews.
 argument-hint: "<mission name or goal>" [plan | run | continue]
 allowed-tools: [Read, Write, Edit, Bash, Grep, Glob]
 ---

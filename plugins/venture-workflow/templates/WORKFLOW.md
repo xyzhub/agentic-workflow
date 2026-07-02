@@ -181,10 +181,9 @@ and returns APPROVE / REQUEST CHANGES with concrete findings. Review fixes land 
 their own ledger entries (`S<n>-fix`).
 
 The trio is authored by the `planner` agent and driven by the bundled `/mission`
-command (plan · run · continue) — no external skill required. The `planner`
-explores once and pre-resolves every brief's targets; `/mission` orchestrates
-execution phase by phase, spawning specialist implementers per brief and the
-`reviewer` at each checkpoint.
+command (plan · run · continue). The `planner` explores once and pre-resolves
+every brief's targets; `/mission` orchestrates execution phase by phase, spawning
+specialist implementers per brief and the `reviewer` at each checkpoint.
 
 ## 6. Roles
 

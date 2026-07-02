@@ -62,12 +62,11 @@ placeholder — gates, deploy, HITL, high-impact files. `/workflow-init` fills i
 per project, producing a local `docs/AGENT-SESSIONS.md` that wins over the
 bundled master. Nothing about any one project's stack is baked into the plugin.
 
-## Self-contained mission loop
+## The mission loop
 
 Multi-session missions are fully handled in-plugin: the `planner` agent authors
 the `.plans/` trio (exploring once so execution sessions never do), and the
 `/mission` command drives it phase by phase with independent checkpoint reviews.
-No external `effort-plan`/`effort-run` skill is required.
 
 ## License
 
