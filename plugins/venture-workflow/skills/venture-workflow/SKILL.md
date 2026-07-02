@@ -25,7 +25,8 @@ Efficiency enforced as gates.
    definition → foundation → build → hardening → launch → operate) say what the
    *project* needs next; the altitudes (task / session / effort) say how to do the
    *piece in front of you*. Bigger-than-one-sitting work becomes an effort trio
-   under `.plans/` (use the `effort-plan`/`effort-run` skills if installed).
+   under `.plans/` — author and drive it with the bundled `/effort` command
+   (which spawns the `planner` agent); no external skill needed.
 2. **Treat the four pillars as gates**, checked at every checkpoint by the
    `reviewer` agent (fresh context) and audited before launch. Never let the UI
    claim what the backend can't confirm; fail closed on missing security config;

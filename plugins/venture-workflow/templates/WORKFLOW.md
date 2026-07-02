@@ -180,8 +180,11 @@ checks claimed deviations against the actual diff, restores datastore state (§1
 and returns APPROVE / REQUEST CHANGES with concrete findings. Review fixes land as
 their own ledger entries (`S<n>-fix`).
 
-If the `effort-run`/`effort-continue`/`effort-plan` skills are installed, use
-them to author and drive the trio; otherwise follow this section by hand.
+The trio is authored by the `planner` agent and driven by the bundled `/effort`
+command (plan · run · continue) — no external skill required. The `planner`
+explores once and pre-resolves every brief's targets; `/effort` orchestrates
+execution phase by phase, spawning specialist implementers per brief and the
+`reviewer` at each checkpoint.
 
 ## 6. Roles
 
@@ -207,6 +210,12 @@ problem, sizes the market, maps competitors, and pressure-tests the riskiest
 assumption with cited evidence for AND against, drafting `docs/product/idea.md`.
 Like the reviewer, its value is independence — it hunts disconfirming evidence
 rather than selling the idea. It informs the human's go/no-go; it never decides.
+
+**Planner** (`planner`) decomposes an already-decided effort into the `.plans/`
+trio, doing the expensive exploration once so execution sessions never do. It
+pre-resolves every brief's targets and sizes them to the context budget; it does
+tactical decomposition, not strategic scope (main session + HITL own that). Driven
+by `/effort`.
 
 **Designer** (`designer`) works at V1–V2 and for redesigns: it surfaces several
 distinct brand/UX directions for the owner to choose from, then organizes the
@@ -257,12 +266,14 @@ finish line, not "PR open".
 ## 9. How this maps to the plugin
 
 - Agents ship with the plugin: `researcher` (V0 validation), `designer`
-  (V1–V2 brand/UX), `reviewer`, `chronicler`, and the specialist implementers
-  `backend`, `frontend`, `security`, `devops` (CI/CD, deploy, releases).
+  (V1–V2 brand/UX), `planner` (effort decomposition), `reviewer`, `chronicler`,
+  and the specialist implementers `backend`, `frontend`, `security`, `devops`
+  (CI/CD, deploy, releases).
 - Guardrail hooks (§3) install automatically.
 - Commands: `/workflow-init` (bootstrap a project into this workflow),
-  `/autonomous` (drive an idea to launch-ready, §11), `/release` (cut a version),
-  `/start-work`, `/check-workflow`, `/pre-pr`, `/end-work`, `/quick-fix`, `/retro`.
+  `/autonomous` (drive an idea to launch-ready, §11), `/effort` (plan + drive a
+  multi-session effort), `/release` (cut a version), `/start-work`,
+  `/check-workflow`, `/pre-pr`, `/end-work`, `/quick-fix`, `/retro`.
 - The `venture-workflow` skill points every session at the project's
   `docs/AGENT-SESSIONS.md` (or this master if none exists yet).
 - Templates for the status page, `idea.md`, and this protocol live under the

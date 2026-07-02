@@ -43,10 +43,12 @@ owner can watch live.
   spawn `devops` to lay the CI + deploy pipeline (gates, health checks, scoped
   permissions, SHA-pinned actions) alongside the fail-closed config guard, env
   validation, and seed.
-- **V3 Build** — implement the MVP via `backend` / `frontend` specialists (in
-  parallel where slices are independent), honoring the chosen design system.
-  Run a `reviewer` checkpoint at each phase; auto-apply one corrective pass on
-  REQUEST CHANGES, then surface if it still fails (one-corrective-retry).
+- **V3 Build** — for anything beyond a single sitting, run `/effort` (the
+  `planner` decomposes it into a phased trio; you drive it). Implement via
+  `backend` / `frontend` / `devops` specialists in parallel where slices are
+  independent, honoring the chosen design system. Run a `reviewer` checkpoint at
+  each phase; auto-apply one corrective pass on REQUEST CHANGES, then surface if
+  it still fails (one-corrective-retry).
 - **V4 Harden** — run the four pillar audits (`security` implements hardening;
   `reviewer` verifies; UX/DX/efficiency passes). Fix or record findings.
 - **V5 Launch prep** — `devops` stages everything up to the button (deploy

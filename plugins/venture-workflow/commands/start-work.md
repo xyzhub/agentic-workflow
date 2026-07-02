@@ -12,9 +12,9 @@ issue number or short description.
 Name the venture stage, then pick the altitude:
 - **Task** — typo/config/one-file fix with an obvious test → branch, fix, PR.
 - **Session** — one sitting of focused work → this lifecycle.
-- **Effort** — can't pre-resolve all targets in one pass → author a plan trio
-  under `.plans/` (use the `effort-plan` skill if installed) instead of starting
-  to code.
+- **Effort** — can't pre-resolve all targets in one pass → run `/effort
+  "<goal>"` (it spawns the `planner` to author the trio, then drives it) instead
+  of starting to code.
 
 ## 2. Branch
 
