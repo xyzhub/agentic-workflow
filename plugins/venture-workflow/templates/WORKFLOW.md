@@ -26,7 +26,7 @@ gate is a logged deviation, not a shortcut.
 
 | Stage | Produces | Exit gate |
 |---|---|---|
-| **V0 Idea & validation** | `docs/product/idea.md`: problem, who pays, why now, riskiest assumption, kill criteria, cheapest test of the assumption | **Human go/no-go.** No code before this exists — an unvalidated idea is cheapest to kill in prose |
+| **V0 Idea & validation** | `docs/product/idea.md`: problem, who pays, why now, riskiest assumption, kill criteria, cheapest test of the assumption — informed by the `researcher` agent (evidence for AND against) | **Human go/no-go.** No code before this exists — an unvalidated idea is cheapest to kill in prose |
 | **V1 Definition** | PRD + MVP scope (what's deliberately OUT), user journeys with acceptance criteria, data-model sketch, stack decision with rationale | Stop-the-line: no implementation without acceptance criteria. **Human approves scope** |
 | **V2 Foundation** | Deployable skeleton: repo + CI gates (test/typecheck), deploy pipeline + health/ready checks, validated env with a **fail-closed production guard**, auth decision wired, error-monitoring hook, seed/reset path, README quickstart | "Hello world" **deployed and live-verified**; CI green. Security and DX are laid here — retrofitting costs 10× |
 | **V3 Build (MVP)** | The product, feature by feature, via the execution machinery (§1–§5). Every checkpoint applies the pillar lenses | All MVP acceptance criteria met; behavioral/eval suite exists for AI-driven products |
@@ -201,6 +201,12 @@ pushes the default branch. Reach for them when a session has a clear single-doma
 slice, or when an effort has parallel slices that can run at once; a plain session
 on the main agent is fine for small or cross-cutting work.
 
+**Researcher** (`researcher`) works upstream of code, in V0: it validates the
+problem, sizes the market, maps competitors, and pressure-tests the riskiest
+assumption with cited evidence for AND against, drafting `docs/product/idea.md`.
+Like the reviewer, its value is independence — it hunts disconfirming evidence
+rather than selling the idea. It informs the human's go/no-go; it never decides.
+
 ### 6.1 Documentation of record (Chronicler)
 
 Three artifacts kept current so the project's story survives any single session:
@@ -238,8 +244,8 @@ finish line, not "PR open".
 
 ## 9. How this maps to the plugin
 
-- Agents ship with the plugin: `reviewer`, `chronicler`, and the specialist
-  implementers `backend`, `frontend`, `security`.
+- Agents ship with the plugin: `researcher` (V0 validation), `reviewer`,
+  `chronicler`, and the specialist implementers `backend`, `frontend`, `security`.
 - Guardrail hooks (§3) install automatically.
 - Commands: `/workflow-init` (bootstrap a project into this workflow),
   `/start-work`, `/check-workflow`, `/pre-pr`, `/end-work`, `/quick-fix`, `/retro`.

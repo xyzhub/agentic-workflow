@@ -49,8 +49,10 @@ project-local copy now wins over the bundled one.
   timeline; then publish it via the Artifact tool and record the returned URL in
   the file's `artifact-url` comment.
 - If stage is **V0**, also seed `docs/product/idea.md` from
-  `${CLAUDE_PLUGIN_ROOT}/templates/idea.md` and walk the human through the
-  validation questions before any code.
+  `${CLAUDE_PLUGIN_ROOT}/templates/idea.md`, and offer to spawn the `researcher`
+  agent to validate the problem, size the market, map competitors, and
+  pressure-test the riskiest assumption (evidence for AND against) before the
+  human's go/no-go. No product code until that gate passes.
 
 ## 4. Point the project's memory at the workflow
 
