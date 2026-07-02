@@ -1,10 +1,10 @@
 ---
-description: Plan and drive a multi-session effort end to end — authors the .plans/ trio (via the planner agent) if needed, then runs it phase by phase with independent checkpoint reviews. Self-contained; no external effort skill required.
-argument-hint: "<effort name or goal>" [plan | run | continue]
+description: Plan and drive a multi-session mission end to end — authors the .plans/ trio (via the planner agent) if needed, then runs it phase by phase with independent checkpoint reviews. Self-contained; no external mission skill required.
+argument-hint: "<mission name or goal>" [plan | run | continue]
 allowed-tools: [Read, Write, Edit, Bash, Grep, Glob]
 ---
 
-Drive an effort (Venture Workflow §5). `$ARGUMENTS` is the effort name/goal and an
+Drive a mission (Venture Workflow §5). `$ARGUMENTS` is the mission name/goal and an
 optional mode: `plan` (author the trio and stop), `run` (plan if needed, then
 execute), or `continue` (resume from the ledger). Default: `run`.
 
@@ -14,14 +14,14 @@ building.
 
 ## 1. Plan (if no trio exists)
 
-If `.plans/<effort>.{md,sessions.md,state.md}` don't exist, spawn the **planner**
+If `.plans/<mission>.{md,sessions.md,state.md}` don't exist, spawn the **planner**
 agent with the goal. It explores once and writes the trio. Then surface the
 master plan's **open questions** to the human and get decisions before executing —
 record them as dated locked decisions. In `plan` mode, stop here.
 
 ## 2. Run — phase by phase
 
-Read `.plans/<effort>.state.md` → `Next up:`. For each pending brief:
+Read `.plans/<mission>.state.md` → `Next up:`. For each pending brief:
 
 1. Route it to the right agent from the brief (`backend`/`frontend`/`security`/
    `devops`, or the main session for cross-cutting work). Spawn it with the brief;

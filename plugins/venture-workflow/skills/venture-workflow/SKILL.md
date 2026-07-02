@@ -1,6 +1,6 @@
 ---
 name: venture-workflow
-description: The project's agentic operating protocol — how to route, build, review, ship, and document work from idea to viable product. Use at the start of ANY substantive work session, when routing a new request (fix vs. feature vs. effort), when unsure how this project wants work done, or when the user mentions the workflow, the lifecycle, a checkpoint, a session, or an effort. Establishes the venture stages and the four quality-pillar gates (UX, DX, Security, Efficiency).
+description: The project's agentic operating protocol — how to route, build, review, ship, and document work from idea to viable product. Use at the start of ANY substantive work session, when routing a new request (fix vs. feature vs. mission), when unsure how this project wants work done, or when the user mentions the workflow, the lifecycle, a checkpoint, a session, or a mission. Establishes the venture stages and the four quality-pillar gates (UX, DX, Security, Efficiency).
 ---
 
 # Venture Workflow — operating protocol
@@ -23,9 +23,9 @@ Efficiency enforced as gates.
 
 1. **Name the stage, then route the work.** Venture stages V0–V6 (idea →
    definition → foundation → build → hardening → launch → operate) say what the
-   *project* needs next; the altitudes (task / session / effort) say how to do the
-   *piece in front of you*. Bigger-than-one-sitting work becomes an effort trio
-   under `.plans/` — author and drive it with the bundled `/effort` command
+   *project* needs next; the altitudes (task / session / mission) say how to do the
+   *piece in front of you*. Bigger-than-one-sitting work becomes a mission trio
+   under `.plans/` — author and drive it with the bundled `/mission` command
    (which spawns the `planner` agent); no external skill needed.
 2. **Treat the four pillars as gates**, checked at every checkpoint by the
    `reviewer` agent (fresh context) and audited before launch. Never let the UI
@@ -42,5 +42,5 @@ and nudge docs updates on high-impact files. The human owner is the only
 merge/deploy authority — never merge the default branch yourself.
 
 For anything not covered here, the full protocol (altitudes, session lifecycle,
-effort checkpoints, roles, definition of done) is in the project's
+mission checkpoints, roles, definition of done) is in the project's
 `docs/AGENT-SESSIONS.md` or the bundled `templates/WORKFLOW.md`.

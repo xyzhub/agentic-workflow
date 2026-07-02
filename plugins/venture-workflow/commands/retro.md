@@ -1,5 +1,5 @@
 ---
-description: Retrospective on a session or effort — turn lessons into workflow/doc improvements.
+description: Retrospective on a session or mission — turn lessons into workflow/doc improvements.
 allowed-tools: [Read, Write, Edit, Bash, Grep, Glob]
 ---
 

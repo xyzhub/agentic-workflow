@@ -1,6 +1,6 @@
 ---
 name: frontend
-description: Specialist implementer for user-facing work — components, layouts, state, styling, client data flow, accessibility. Use for a UI slice of a session or as a per-brief subagent in an effort, especially when it can run in parallel with backend work. Owns the UX pillar. Builds and verifies; it does NOT review its own work (the independent reviewer does that).
+description: Specialist implementer for user-facing work — components, layouts, state, styling, client data flow, accessibility. Use for a UI slice of a session or as a per-brief subagent in a mission, especially when it can run in parallel with backend work. Owns the UX pillar. Builds and verifies; it does NOT review its own work (the independent reviewer does that).
 tools: Read, Write, Edit, Bash, Grep, Glob
 ---
 

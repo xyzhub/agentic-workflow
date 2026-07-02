@@ -12,7 +12,7 @@ product — and keep evolving it. Two halves:
   an exit gate and the four quality pillars (§0.2: UX, DX, Security, Efficiency)
   enforced as gates, not aspirations.
 - **The execution machinery (§1–§8)** — how any individual piece of work gets
-  done: altitudes, session lifecycle, effort trio, checkpoints, roles.
+  done: altitudes, session lifecycle, mission trio, checkpoints, roles.
 
 Authority order: explicit user instruction > this document > tool defaults.
 The human owner (**HITL** — see §10) is the only merge/deploy authority for the
@@ -32,9 +32,9 @@ gate is a logged deviation, not a shortcut.
 | **V3 Build (MVP)** | The product, feature by feature, via the execution machinery (§1–§5). Every checkpoint applies the pillar lenses | All MVP acceptance criteria met; behavioral/eval suite exists for AI-driven products |
 | **V4 Hardening** | Four explicit audits (§0.2): security review, UX pass, DX pass, efficiency pass — plus ops readiness (backups, monitoring, runbook, guard coverage) | Reviewer-verified production-readiness checklist; findings fixed or accepted in writing |
 | **V5 Launch** | Production deploy (`devops` prepares, `/release` cuts the version), first-user onboarding, **live end-to-end verification on the deployed instance**, monitoring confirmed receiving events, rollback tested | First real user/business served. **Human owns the launch decision** |
-| **V6 Operate & evolve** | Feedback → ranked feature ideas → user-reviewed → growth efforts (phased trio with locked decisions); ops review of errors/costs; retros that amend THIS document | Continuous — each growth effort re-cycles V3–V5 gates |
+| **V6 Operate & evolve** | Feedback → ranked feature ideas → user-reviewed → growth missions (phased trio with locked decisions); ops review of errors/costs; retros that amend THIS document | Continuous — each growth mission re-cycles V3–V5 gates |
 
-A stage may be revisited (a pivot reopens V0/V1; a big growth effort re-runs V4
+A stage may be revisited (a pivot reopens V0/V1; a big growth mission re-runs V4
 before its launch). The stages sequence the *product*; the altitudes (§1)
 sequence the *work inside a stage*.
 
@@ -92,16 +92,16 @@ and speed wins at V0–V2 prototyping — say which mode you're in.
 |---|---|---|---|
 | **Task** | Typo-class fix, config tweak, single-file bug with an obvious test | Branch → fix → verify → PR | Minutes |
 | **Session** | One sitting of focused work: a feature slice, a bug hunt, a refactor | Session lifecycle (§4) | One branch, one PR |
-| **Effort** | Too big for one sitting: multi-feature, migration, audit | Plan trio + phases + checkpoints (§5) | `.plans/` ledger, reviewer gates |
+| **Mission** | Too big for one sitting: multi-feature, migration, audit | Plan trio + phases + checkpoints (§5) | `.plans/` ledger, reviewer gates |
 
-Name the stage (§0), then route. When unsure between Session and Effort: if you
-cannot pre-resolve all file targets in one exploration pass, it's an Effort.
+Name the stage (§0), then route. When unsure between Session and Mission: if you
+cannot pre-resolve all file targets in one exploration pass, it's an Mission.
 Escalating mid-flight is fine (log it); silently sprawling is not.
 
 ## 2. Principles
 
 1. **The ledger outlives the transcript.** Durable state lives in files
-   (`.plans/<effort>.state.md` for efforts; PRs/issues for sessions), never only
+   (`.plans/<mission>.state.md` for missions; PRs/issues for sessions), never only
    in chat. Any fresh agent must resume from files alone.
 2. **Ingest conclusions, not corpora.** Delegate high-volume reading to subagents
    that return distilled results. Budget ≤30% of the context window per session
@@ -139,7 +139,7 @@ mistakes; they never replace judgment.
 ## 4. Session lifecycle (the default altitude)
 
 **Open** — route the work (§1); create/checkout the branch (never the default
-branch); if part of an effort, read the ledger → `Next up:` → that brief.
+branch); if part of a mission, read the ledger → `Next up:` → that brief.
 
 **Work** — smallest change meeting the acceptance criteria; follow repo
 conventions (the project's conventions file is the engineering source of truth);
@@ -147,8 +147,8 @@ tests accompany behavior changes; deviations from a brief are allowed but MUST b
 logged in the ledger.
 
 **Close** — gates green (§10); live verification if there's a runtime surface
-(§2.5); commit (`type(scope): description` — for effort sessions
-`<effort>(S<n>): summary`); push the branch; PR with summary + test plan;
+(§2.5); commit (`type(scope): description` — for mission sessions
+`<mission>(S<n>): summary`); push the branch; PR with summary + test plan;
 **update the record** (§6.1 — spawn the `chronicler` agent, then republish the
 owner status page); **never merge the default branch yourself** — HITL merges
 (merging often auto-deploys).
@@ -158,15 +158,15 @@ state, verify, write the handoff, end. A clean half-session beats a degraded ful
 one. Finished early (<15%)? Pull the next same-phase brief (checkpoints always
 end a session).
 
-## 5. Effort lifecycle (multi-session work)
+## 5. Mission lifecycle (multi-session work)
 
 The plan trio, written by a dedicated planning session:
 
 | File | Job |
 |---|---|
-| `.plans/<effort>.md` | Master plan: numbered tasks with acceptance criteria, **locked decisions (dated)**, risks, open questions each with a recommendation |
-| `.plans/<effort>.sessions.md` | One brief per session: pre-resolved reads (file → measured line count → anchors), do/verify steps, read budget; phases with named branches |
-| `.plans/<effort>.state.md` | Ledger: checklist, deviations log, handoff log (≤10 lines each, newest first), `Next up:` |
+| `.plans/<mission>.md` | Master plan: numbered tasks with acceptance criteria, **locked decisions (dated)**, risks, open questions each with a recommendation |
+| `.plans/<mission>.sessions.md` | One brief per session: pre-resolved reads (file → measured line count → anchors), do/verify steps, read budget; phases with named branches |
+| `.plans/<mission>.state.md` | Ledger: checklist, deviations log, handoff log (≤10 lines each, newest first), `Next up:` |
 
 Rules: briefs pre-resolve targets so execution sessions never explore; one branch
 per phase (merged at checkpoint with HITL go-ahead); migrations and
@@ -180,9 +180,9 @@ checks claimed deviations against the actual diff, restores datastore state (§1
 and returns APPROVE / REQUEST CHANGES with concrete findings. Review fixes land as
 their own ledger entries (`S<n>-fix`).
 
-The trio is authored by the `planner` agent and driven by the bundled `/effort`
+The trio is authored by the `planner` agent and driven by the bundled `/mission`
 command (plan · run · continue) — no external skill required. The `planner`
-explores once and pre-resolves every brief's targets; `/effort` orchestrates
+explores once and pre-resolves every brief's targets; `/mission` orchestrates
 execution phase by phase, spawning specialist implementers per brief and the
 `reviewer` at each checkpoint.
 
@@ -190,7 +190,7 @@ execution phase by phase, spawning specialist implementers per brief and the
 
 | Role | Who | Duty |
 |---|---|---|
-| **Implementer** | The main session agent, or a **specialist implementer** subagent (`backend`, `frontend`, `security`) — used for a domain slice or to run slices in parallel in an effort | Route, build to convention, verify, document, hand off |
+| **Implementer** | The main session agent, or a **specialist implementer** subagent (`backend`, `frontend`, `security`) — used for a domain slice or to run slices in parallel in a mission | Route, build to convention, verify, document, hand off |
 | **Reviewer** | The `reviewer` agent — always a fresh context | Checkpoint reviews; pre-merge review of risky changes; five pillar lenses + QA + architecture in one pass |
 | **Chronicler** | The `chronicler` agent | Keeps the record (§6.1); documents, never touches product code |
 | **HITL** | The human owner (§10) | Answers open questions, merges the default branch, owns deploys and anything irreversible |
@@ -202,7 +202,7 @@ real-client verification), `security` (fail-closed hardening, least privilege),
 They compose with, and never replace, independent review: a specialist BUILDS,
 the fresh-context `reviewer` VERIFIES. No specialist self-approves, merges, or
 pushes the default branch. Reach for them when a session has a clear single-domain
-slice, or when an effort has parallel slices that can run at once; a plain session
+slice, or when a mission has parallel slices that can run at once; a plain session
 on the main agent is fine for small or cross-cutting work.
 
 **Researcher** (`researcher`) works upstream of code, in V0: it validates the
@@ -211,11 +211,11 @@ assumption with cited evidence for AND against, drafting `docs/product/idea.md`.
 Like the reviewer, its value is independence — it hunts disconfirming evidence
 rather than selling the idea. It informs the human's go/no-go; it never decides.
 
-**Planner** (`planner`) decomposes an already-decided effort into the `.plans/`
+**Planner** (`planner`) decomposes an already-decided mission into the `.plans/`
 trio, doing the expensive exploration once so execution sessions never do. It
 pre-resolves every brief's targets and sizes them to the context budget; it does
 tactical decomposition, not strategic scope (main session + HITL own that). Driven
-by `/effort`.
+by `/mission`.
 
 **Designer** (`designer`) works at V1–V2 and for redesigns: it surfaces several
 distinct brand/UX directions for the owner to choose from, then organizes the
@@ -254,7 +254,7 @@ finish line, not "PR open".
 
 ## 8. Evolution: the loop that improves the loop
 
-- **Retro** after significant efforts: what to keep/change lands as edits to THIS
+- **Retro** after significant missions: what to keep/change lands as edits to THIS
   document or the guardrails — via PR like any other change.
 - **Lessons become memory or docs**: project-derivable facts → repo docs;
   agent-behavioral lessons → auto-memory. Never both.
@@ -266,13 +266,13 @@ finish line, not "PR open".
 ## 9. How this maps to the plugin
 
 - Agents ship with the plugin: `researcher` (V0 validation), `designer`
-  (V1–V2 brand/UX), `planner` (effort decomposition), `reviewer`, `chronicler`,
+  (V1–V2 brand/UX), `planner` (mission decomposition), `reviewer`, `chronicler`,
   and the specialist implementers `backend`, `frontend`, `security`, `devops`
   (CI/CD, deploy, releases).
 - Guardrail hooks (§3) install automatically.
 - Commands: `/workflow-init` (bootstrap a project into this workflow),
-  `/autonomous` (drive an idea to launch-ready, §11), `/effort` (plan + drive a
-  multi-session effort), `/release` (cut a version), `/start-work`,
+  `/autonomous` (drive an idea to launch-ready, §11), `/mission` (plan + drive a
+  multi-session mission), `/release` (cut a version), `/start-work`,
   `/check-workflow`, `/pre-pr`, `/end-work`, `/quick-fix`, `/retro`.
 - The `venture-workflow` skill points every session at the project's
   `docs/AGENT-SESSIONS.md` (or this master if none exists yet).

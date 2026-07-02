@@ -25,8 +25,8 @@ git add -A
 git commit -m "type(scope): description"   # end with the Co-Authored-By trailer
 ```
 
-For an effort session use `<effort>(S<n>): summary` and update the ledger
-(`.plans/<effort>.state.md`): tick the checkbox, write the handoff entry (≤10
+For a mission session use `<mission>(S<n>): summary` and update the ledger
+(`.plans/<mission>.state.md`): tick the checkbox, write the handoff entry (≤10
 lines, newest first), set `Next up:`.
 
 ## 3. Update the record (§6.1)

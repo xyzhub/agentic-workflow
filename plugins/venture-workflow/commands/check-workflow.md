@@ -15,7 +15,7 @@ Quick workflow health check. Report a traffic-light status at the end.
    how far behind the default branch.
 4. **Gates** — optionally run the project test/typecheck gates for a green/red
    signal (skip if unchanged since last run).
-5. **Effort ledger** — if `.plans/*.state.md` exists, report `Next up:` and any
+5. **Mission ledger** — if `.plans/*.state.md` exists, report `Next up:` and any
    blocked items.
 6. **Stage** — name the current venture stage (V0–V6) and the next gate.
 

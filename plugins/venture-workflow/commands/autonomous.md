@@ -43,7 +43,7 @@ owner can watch live.
   spawn `devops` to lay the CI + deploy pipeline (gates, health checks, scoped
   permissions, SHA-pinned actions) alongside the fail-closed config guard, env
   validation, and seed.
-- **V3 Build** — for anything beyond a single sitting, run `/effort` (the
+- **V3 Build** — for anything beyond a single sitting, run `/mission` (the
   `planner` decomposes it into a phased trio; you drive it). Implement via
   `backend` / `frontend` / `devops` specialists in parallel where slices are
   independent, honoring the chosen design system. Run a `reviewer` checkpoint at

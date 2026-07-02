@@ -65,7 +65,7 @@ duplicate the protocol into it.
 Summarize: detected stage, the filled profile (gates, deploy, HITL), the files
 created/updated, the status-page URL, and the recommended next action for the
 current stage (e.g. at V0: fill idea.md and get a go/no-go; at V3: `/start-work`;
-at V6: plan a growth effort).
+at V6: plan a growth mission).
 
 Do NOT commit — leave the changes staged-and-visible for the human to review,
 per the workflow's HITL rule.

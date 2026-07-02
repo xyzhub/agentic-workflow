@@ -12,7 +12,7 @@ issue number or short description.
 Name the venture stage, then pick the altitude:
 - **Task** — typo/config/one-file fix with an obvious test → branch, fix, PR.
 - **Session** — one sitting of focused work → this lifecycle.
-- **Effort** — can't pre-resolve all targets in one pass → run `/effort
+- **Mission** — can't pre-resolve all targets in one pass → run `/mission
   "<goal>"` (it spawns the `planner` to author the trio, then drives it) instead
   of starting to code.
 
@@ -27,7 +27,7 @@ git checkout -b <type>/<short-description>    # feat/…, fix/…  — never the
 ## 3. Load context
 
 - Read the project's conventions file and `docs/AGENT-SESSIONS.md`.
-- If continuing an effort, read `.plans/<effort>.state.md` → `Next up:` → that
+- If continuing a mission, read `.plans/<mission>.state.md` → `Next up:` → that
   brief, and follow it (including its read budget).
 - If the work maps to a tracked issue, read it and confirm acceptance criteria
   exist (stop-the-line: no implementation without them).

@@ -50,7 +50,7 @@ regions between the `<!-- data:X -->` / `<!-- /data:X -->` comments:
 
 - `data:meta` — last-updated stamp, current stage badge
 - `data:stages` — the V0–V6 rail (each stage: done/current/next + one-line status)
-- `data:now` — active effort, next session, owner action items
+- `data:now` — active mission, next session, owner action items
 - `data:timeline` — newest-first session/PR/incident entries (keep ≤20; older
   ones live in JOURNEY.md)
 - `data:pillars` — UX/DX/Security/Efficiency last-audit status

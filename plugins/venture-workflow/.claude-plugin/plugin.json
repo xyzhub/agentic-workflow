@@ -1,8 +1,8 @@
 {
   "name": "venture-workflow",
   "displayName": "Venture Workflow",
-  "version": "1.5.0",
-  "description": "An agentic workflow from idea to viable product: venture lifecycle with UX/DX/Security/Efficiency gates, session & effort machinery, independent review, a chronicler that keeps the record, and a live owner status page.",
+  "version": "1.5.1",
+  "description": "An agentic workflow from idea to viable product: venture lifecycle with UX/DX/Security/Efficiency gates, session & mission machinery, independent review, a chronicler that keeps the record, and a live owner status page.",
   "author": {
     "name": "Baker"
   },

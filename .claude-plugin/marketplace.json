@@ -9,7 +9,7 @@
     {
       "name": "venture-workflow",
       "source": "./plugins/venture-workflow",
-      "description": "Idea → viable product: venture lifecycle (V0–V6), session/effort machinery, four pillar gates, independent reviewer + chronicler agents, guardrail hooks, and a live owner status page.",
+      "description": "Idea → viable product: venture lifecycle (V0–V6), session/mission machinery, four pillar gates, independent reviewer + chronicler agents, guardrail hooks, and a live owner status page.",
       "category": "workflow",
       "keywords": ["workflow", "agentic", "lifecycle", "review", "quality-gates", "changelog"]
     }

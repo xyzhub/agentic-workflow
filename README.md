@@ -23,7 +23,7 @@ Then in any project: `/workflow-init`.
 plugins/venture-workflow/            # the plugin
   .claude-plugin/plugin.json         # plugin manifest
   agents/    researcher.md, designer.md, planner.md, reviewer.md, chronicler.md, backend.md, frontend.md, security.md, devops.md
-  commands/  workflow-init, autonomous, effort, release, start-work, check-workflow, pre-pr, end-work, quick-fix, retro
+  commands/  workflow-init, autonomous, mission, release, start-work, check-workflow, pre-pr, end-work, quick-fix, retro
   hooks/     hooks.json               # guardrails
   skills/    venture-workflow/        # the entry-point skill
   templates/ WORKFLOW.md, overview.html, idea.md
