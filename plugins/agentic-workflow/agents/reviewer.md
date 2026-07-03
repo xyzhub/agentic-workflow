@@ -62,6 +62,17 @@ state changes, additive-only migrations unless explicitly approved, and any
 ## Output
 
 - **APPROVE** or **REQUEST CHANGES**
+- **Scorecard** — one line per lens: `lens: score/3 — justification`, scored
+  0–3 (0 broken · 1 significant findings · 2 minor findings · 3 clean).
+  - **Depth ladder**: at routine checkpoints, score only the lenses whose
+    surface the diff touched; mark the rest `n/a — surface untouched`. The
+    scorecard is structured output of judgments you already made — never a
+    reason for an extra pass. Full seven-lens scoring is mandatory only for
+    V4 audits and launch-readiness reviews.
+  - **Coupling rule**: any lens at 0–1 with a high-severity finding forces
+    REQUEST CHANGES. Scores are diagnostic — they can never soften a concrete
+    finding; the binary verdict remains the gate signal.
+  - Scorecards feed the status page's pillar-health panel via the `chronicler`.
 - Findings ranked by severity, each with file:line and a concrete failure
   scenario (style nits only if they violate documented conventions)
 - Gate results, manual items performed, datastore end-state

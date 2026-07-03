@@ -53,8 +53,11 @@ owner can watch live.
   independent, honoring the chosen design system. Run a `reviewer` checkpoint at
   each phase; auto-apply one corrective pass on REQUEST CHANGES, then surface if
   it still fails (one-corrective-retry).
-- **V4 Harden** — run the four pillar audits (`security` implements hardening;
-  `reviewer` verifies; UX/DX/efficiency passes). Fix or record findings.
+- **V4 Harden** — run the four pillar audits as an **adversarial multi-vote**
+  (§5): 2–3 fresh lens-partitioned `reviewer` instances in parallel, conservative
+  merge (any REQUEST CHANGES blocks; findings unioned). `security` implements
+  hardening; fix or record findings. The pre-launch review at V5 repeats the
+  multi-vote with a full seven-lens scorecard.
 - **V5 Launch prep** — `devops` stages everything up to the button (deploy
   config, `/release` version cut, runbook, monitoring wired, rollback tested
   against a staging/preview where possible). In parallel, spawn `marketing` to

@@ -30,8 +30,8 @@ gate is a logged deviation, not a shortcut.
 | **V1 Definition** | PRD + MVP scope (what's deliberately OUT), user journeys with acceptance criteria, data-model sketch, stack decision with rationale; brand/UX directions from the `designer` agent for the owner to choose | Stop-the-line: no implementation without acceptance criteria. **Human approves scope** (and the brand direction) |
 | **V2 Foundation** | Deployable skeleton (`devops` lays CI + deploy): repo + CI gates (test/typecheck), deploy pipeline + health/ready checks, validated env with a **fail-closed production guard**, auth decision wired, error-monitoring hook, seed/reset path, README quickstart, chosen design system as tokens | "Hello world" **deployed and live-verified**; CI green. Security and DX are laid here — retrofitting costs 10× |
 | **V3 Build (MVP)** | The product, feature by feature, via the execution machinery (§1–§5). Every checkpoint applies the pillar lenses | All MVP acceptance criteria met; behavioral/eval suite exists for AI-driven products |
-| **V4 Hardening** | Four explicit audits (§0.2): security review, UX pass, DX pass, efficiency pass — plus ops readiness (backups, monitoring, runbook, guard coverage) | Reviewer-verified production-readiness checklist; findings fixed or accepted in writing |
-| **V5 Launch** | Production deploy (`devops` prepares, `/release` cuts the version), first-user onboarding, **live end-to-end verification on the deployed instance**, monitoring confirmed receiving events, rollback tested; launch assets from the `marketing` agent (`docs/product/launch-plan.md`) — positioning, landing copy, announcements, channel plan — **the human publishes** | First real user/business served. **Human owns the launch decision** |
+| **V4 Hardening** | Four explicit audits (§0.2): security review, UX pass, DX pass, efficiency pass — plus ops readiness (backups, monitoring, runbook, guard coverage). Audits run as an **adversarial multi-vote** (§5): lens-partitioned parallel reviewers, conservative merge | Reviewer-verified production-readiness checklist (full seven-lens scorecard); findings fixed or accepted in writing |
+| **V5 Launch** | Production deploy (`devops` prepares, `/release` cuts the version), first-user onboarding, **live end-to-end verification on the deployed instance**, monitoring confirmed receiving events, rollback tested; launch assets from the `marketing` agent (`docs/product/launch-plan.md`) — positioning, landing copy, announcements, channel plan — **the human publishes** | Pre-launch **multi-vote review** (§5) green; first real user/business served. **Human owns the launch decision** |
 | **V6 Operate & evolve** | Growth is *users and features*: funnel/channel review against the launch metrics (`marketing`) beside feedback → ranked feature ideas → user-reviewed → growth missions (phased trio with locked decisions); ops review of errors/costs; retros that amend THIS document | Continuous — each growth mission re-cycles V3–V5 gates |
 
 A stage may be revisited (a pivot reopens V0/V1; a big growth mission re-runs V4
@@ -186,8 +186,18 @@ to the human.
 **Checkpoints** end every phase: the independent `reviewer` agent (fresh context)
 re-runs all gates, diff-reviews `base..head`, performs deferred manual/live items,
 checks claimed deviations against the actual diff, restores datastore state (§10),
-and returns APPROVE / REQUEST CHANGES with concrete findings. Review fixes land as
-their own ledger entries (`S<n>-fix`).
+and returns APPROVE / REQUEST CHANGES with concrete findings plus a **scorecard**
+(per-lens 0–3; at routine checkpoints only the lenses the diff touched — the
+binary verdict stays the gate signal, scores are diagnostics for the pillar-health
+panel). Review fixes land as their own ledger entries (`S<n>-fix`).
+
+**Adversarial multi-vote — high-stakes gates only.** At exactly two lifecycle
+points — the V4 audit and the pre-launch (V5) review — the orchestrator spawns
+2–3 fresh `reviewer` instances, lens-partitioned (security + efficiency /
+UX + DX / QA + architecture), instead of one. Merge conservatively: any
+REQUEST CHANGES blocks; findings are unioned; the same finding from two
+reviewers raises its confidence. Routine checkpoints stay single-reviewer —
+this is where review cost is spent deliberately, not everywhere.
 
 The trio is authored by the `planner` agent and driven by the bundled `/mission`
 command (plan · run · continue). The `planner` explores once and pre-resolves

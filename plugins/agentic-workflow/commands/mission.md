@@ -41,7 +41,8 @@ Read `.plans/<mission>.state.md` → `Next up:`. For each pending brief:
 
 Spawn the **reviewer** agent (fresh context): it re-runs all gates, diff-reviews
 `<base>..<head>`, performs deferred manual/live items, and returns APPROVE or
-REQUEST CHANGES.
+REQUEST CHANGES plus a scorecard (per-lens 0–3, diff-touched lenses only at
+routine checkpoints — see §5). Include the scorecard in the ledger handoff entry.
 
 - **APPROVE** → apply the gate policy. `human-merge` (default): pause for the
   **human to merge** the phase branch (never merge the default branch yourself;
