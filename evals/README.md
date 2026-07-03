@@ -36,6 +36,7 @@ prints its path.
 | `init-workflow-bootstrap` | `/init-workflow` leaving §10 placeholders instead of detected gates |
 | `reviewer-checkpoint` | the reviewer trusting handoff claims / missing planted flaws / no scorecard |
 | `mission-plan` | `/mission plan` producing briefs that still require exploration |
+| `business-model` | the business agent inventing numbers, deciding instead of proposing, or dishonest economics |
 
 ## Anatomy of a scenario
 

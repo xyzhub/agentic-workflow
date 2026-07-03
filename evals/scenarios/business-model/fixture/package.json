@@ -1,0 +1,8 @@
+{
+  "name": "linkbox",
+  "version": "0.1.0",
+  "description": "CLI-first link saver with AI auto-tagging and git sync",
+  "scripts": {
+    "test": "node --test"
+  }
+}
