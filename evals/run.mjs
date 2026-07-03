@@ -114,6 +114,13 @@ for (const name of scenarios) {
   const final = events.find((e) => e.type === 'result') ?? {};
   const resultText = final.result ?? '';
   const cost = final.total_cost_usd ?? 0;
+  const u = final.usage ?? {};
+  const tokens = {
+    input: u.input_tokens ?? 0,
+    output: u.output_tokens ?? 0,
+    cacheWrite: u.cache_creation_input_tokens ?? 0,
+    cacheRead: u.cache_read_input_tokens ?? 0,
+  };
 
   // 1) Deterministic checks (cheap, authoritative).
   let failures = [];
@@ -144,8 +151,9 @@ for (const name of scenarios) {
   const passed = !failures.length && !judgeError && (score === null || score >= passBar);
   summary.push({ name, passed, failures, score, judgeError, cost });
   writeFileSync(path.join(resultsDir, `${name}.json`), JSON.stringify(
-    { name, passed, failures, score, passBar, criteria, judgeError, cost, dir, transcript: condense(events) }, null, 2));
-  console.log(`  ${passed ? '✅ pass' : '❌ FAIL'}${score !== null ? ` — judge ${(score * 100).toFixed(0)}%` : ''} — $${cost.toFixed(2)}`);
+    { name, passed, failures, score, passBar, criteria, judgeError, cost, tokens, dir, transcript: condense(events) }, null, 2));
+  const tokSummary = `${((tokens.input + tokens.cacheWrite + tokens.cacheRead) / 1000).toFixed(0)}k in (${(tokens.cacheRead / 1000).toFixed(0)}k cached) / ${(tokens.output / 1000).toFixed(1)}k out`;
+  console.log(`  ${passed ? '✅ pass' : '❌ FAIL'}${score !== null ? ` — judge ${(score * 100).toFixed(0)}%` : ''} — $${cost.toFixed(2)} — ${tokSummary}`);
   for (const f of failures) console.log(`    ✗ ${f}`);
   if (judgeError) console.log(`    ✗ judge error: ${judgeError}`);
   if (passed) rmSync(work, { recursive: true, force: true });
