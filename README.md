@@ -22,11 +22,11 @@ Then in any project: `/init-workflow`.
 .claude-plugin/marketplace.json      # the marketplace manifest
 plugins/agentic-workflow/            # the plugin
   .claude-plugin/plugin.json         # plugin manifest
-  agents/    researcher.md, designer.md, planner.md, reviewer.md, chronicler.md, backend.md, frontend.md, security.md, devops.md
+  agents/    researcher.md, designer.md, planner.md, marketing.md, reviewer.md, chronicler.md, backend.md, frontend.md, security.md, devops.md
   commands/  init-workflow, autopilot, mission, release, start-work, check-workflow, pre-pr, end-work, quick-fix, retro
   hooks/     hooks.json               # guardrails
   skills/    protocol/                # the entry-point skill
-  templates/ WORKFLOW.md, overview.html, idea.md, flight-plan.md, decision-log.md
+  templates/ WORKFLOW.md, overview.html, idea.md, flight-plan.md, decision-log.md, launch-plan.md
   README.md
 ```
 

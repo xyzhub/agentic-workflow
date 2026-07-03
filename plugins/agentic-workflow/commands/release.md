@@ -52,3 +52,7 @@ Update the status page (via the `chronicler`) with the release milestone. Report
 the version, the changelog delta, the tag created, and the exact commands the
 human should run to publish/deploy — plus what will happen when they do (this is
 the launch-boundary confirmation).
+
+When the release IS the V5 launch (first production release), include the
+`marketing` launch assets in the handoff: point at `docs/product/launch-plan.md`
+and list the channel-plan rows awaiting the human's publish.

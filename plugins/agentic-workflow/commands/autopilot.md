@@ -57,12 +57,17 @@ owner can watch live.
   `reviewer` verifies; UX/DX/efficiency passes). Fix or record findings.
 - **V5 Launch prep** — `devops` stages everything up to the button (deploy
   config, `/release` version cut, runbook, monitoring wired, rollback tested
-  against a staging/preview where possible).
+  against a staging/preview where possible). In parallel, spawn `marketing` to
+  draft the launch assets (`docs/product/launch-plan.md` — positioning, landing
+  copy, per-channel announcements in the flight plan's voice, channel plan);
+  publish-ready assets are part of the consolidated launch confirmation, and
+  publishing them is the human's.
 - **V6 Operate (handoff)** — autopilot does not run operations. Alongside the
   consolidated launch confirmation, deliver a **V6 operating brief**: the
-  feedback channels to watch, a ranked growth-mission backlog (each runnable via
-  `/mission`), and the retro cadence (`/retro`). Then autopilot ends; V6 is the
-  owner's continuous loop.
+  feedback channels to watch, the launch metrics and channel plan to review
+  (from `marketing`'s launch plan), a ranked growth-mission backlog (each
+  runnable via `/mission`), and the retro cadence (`/retro`). Then autopilot
+  ends; V6 is the owner's continuous loop.
 
 ## 2. The safety boundary (never crossed autonomously)
 

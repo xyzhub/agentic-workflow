@@ -17,11 +17,13 @@ a permanent record of the journey.
 - **Agents**: `researcher` (V0 idea validation — cited evidence for and against),
   `designer` (V1–V2 brand/UX — surfaces distinct directions to choose from, then
   organizes the chosen one into a token system), `planner` (decomposes a mission
-  into the `.plans/` trio, pre-resolving every brief), `reviewer` (fresh-context,
-  five pillar lenses + QA + architecture), `chronicler` (keeps CHANGELOG, a
-  posterity JOURNEY, and the live owner status page), and specialist implementers
-  `backend`, `frontend`, `security`, `devops` (CI/CD, GitHub workflows, deploy,
-  releases) — each carries its pillar bias and hands off to independent review.
+  into the `.plans/` trio, pre-resolving every brief), `marketing` (V5–V6
+  go-to-market — positioning, landing copy, announcements, channel plan; the
+  human publishes), `reviewer` (fresh-context, five pillar lenses + QA +
+  architecture), `chronicler` (keeps CHANGELOG, a posterity JOURNEY, and the
+  live owner status page), and specialist implementers `backend`, `frontend`,
+  `security`, `devops` (CI/CD, GitHub workflows, deploy, releases) — each
+  carries its pillar bias and hands off to independent review.
 - **Autopilot mode**: `/autopilot "<idea>"` drives the whole lifecycle
   (validate → define → design → build → harden → launch-prep) from a one-line
   idea and a short flight plan, pausing only at the gates a human must own.

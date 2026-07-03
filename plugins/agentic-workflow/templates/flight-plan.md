@@ -27,8 +27,8 @@ keeps `human-merge` per phase._
 
 ## Channels & voice
 _Where the owner talks to users (site, social, mailing list, communities) and in
-what register — launch assets get drafted in this voice at V5. Leave blank to
-decide at V5._
+what register — the `marketing` agent drafts the V5 launch assets in this voice.
+Leave blank to decide at V5._
 
 ---
 _Standing authorization: within these bounds autopilot proceeds without asking.
