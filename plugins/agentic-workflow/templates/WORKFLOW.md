@@ -320,6 +320,7 @@ concrete values.
 | **Build** | _(e.g. `npm run build`)_ |
 | **Datastore seed/reset** | _(e.g. `npm run seed`)_ |
 | **Deploy + live-verify** | _(how it ships and how you confirm on the deployed instance)_ |
+| **Eval suite** (behavioral, if any) | _(e.g. `node evals/run.mjs` — run before releases; see `/release`)_ |
 | **High-impact files** (docs-reminder targets) | _(conventions file, schema, architecture docs…)_ |
 | **Issue tracker** | _(e.g. GitHub Issues via `gh`)_ |
 

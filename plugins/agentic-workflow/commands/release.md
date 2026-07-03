@@ -13,6 +13,9 @@ production deploy and the merge.
 
 - On the default branch, clean tree, up to date (or on the release branch the
   project uses). Gates green (project test + typecheck/lint; build).
+- If the project profile (§10) defines an **eval suite**, run it and report the
+  scores alongside the gates — a release with failing evals needs the human's
+  explicit accept.
 - Confirm `CHANGELOG.md` has an `## [Unreleased]` section with the changes since
   the last tag. If thin, spawn the `chronicler` to reconcile it against
   `git log <last-tag>..HEAD` and merged PRs.

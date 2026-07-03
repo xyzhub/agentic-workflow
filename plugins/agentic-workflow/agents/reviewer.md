@@ -62,8 +62,10 @@ state changes, additive-only migrations unless explicitly approved, and any
 ## Output
 
 - **APPROVE** or **REQUEST CHANGES**
-- **Scorecard** — one line per lens: `lens: score/3 — justification`, scored
-  0–3 (0 broken · 1 significant findings · 2 minor findings · 3 clean).
+- **Scorecard** — REQUIRED in every review, directly under the verdict: one
+  line per lens, `lens: score/3 — justification`, scored 0–3 (0 broken ·
+  1 significant findings · 2 minor findings · 3 clean). A review without a
+  scorecard is incomplete.
   - **Depth ladder**: at routine checkpoints, score only the lenses whose
     surface the diff touched; mark the rest `n/a — surface untouched`. The
     scorecard is structured output of judgments you already made — never a

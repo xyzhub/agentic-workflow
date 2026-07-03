@@ -20,6 +20,9 @@ Then in any project: `/init-workflow`.
 
 ```
 .claude-plugin/marketplace.json      # the marketplace manifest
+.github/workflows/lint.yml           # tier-1 lint on every push/PR
+tools/lint.mjs                       # tier-1 deterministic lint
+evals/                               # tier-2 scenario evals (see evals/README.md)
 plugins/agentic-workflow/            # the plugin
   .claude-plugin/plugin.json         # plugin manifest
   agents/    researcher.md, designer.md, planner.md, marketing.md, reviewer.md, chronicler.md, backend.md, frontend.md, security.md, devops.md
@@ -36,13 +39,16 @@ description.
 ## Development — running the checks
 
 ```
-node tools/lint.mjs
+node tools/lint.mjs      # tier 1: free, deterministic — CI runs it on every push
+node evals/run.mjs       # tier 2: LLM-judged scenario evals — run before releases
 ```
 
-Zero-dependency deterministic lint (Node ≥ 18), also run by CI on every push:
-validates the manifests, agent/command frontmatter, cross-references between
-agents/commands/docs, template references, WORKFLOW.md § integrity, and hook
-command syntax.
+Tier 1 (zero-dependency, Node ≥ 18) validates the manifests, agent/command
+frontmatter, cross-references between agents/commands/docs, template
+references, WORKFLOW.md § integrity, and hook command syntax. Tier 2 runs the
+plugin's prompts through headless `claude -p` against fixture repos and judges
+the transcripts — see [evals/README.md](./evals/README.md); it costs real
+tokens, so it gates releases, not pushes.
 
 ## License
 

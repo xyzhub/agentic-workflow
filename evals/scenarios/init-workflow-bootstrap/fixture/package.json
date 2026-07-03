@@ -1,0 +1,10 @@
+{
+  "name": "linkbox",
+  "version": "0.2.0",
+  "description": "Save and tag links from the terminal",
+  "scripts": {
+    "test": "node --test",
+    "lint": "node tools/check-style.js",
+    "start": "node src/server.js"
+  }
+}

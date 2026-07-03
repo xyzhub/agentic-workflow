@@ -1,0 +1,9 @@
+{
+  "name": "notesvc",
+  "version": "0.1.0",
+  "description": "Tiny notes service",
+  "scripts": {
+    "test": "node --test",
+    "start": "node src/server.js"
+  }
+}

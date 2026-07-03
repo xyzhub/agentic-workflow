@@ -10,8 +10,10 @@ replacing anything non-trivial.
 
 ## 1. Detect the project profile
 
-Inspect the repo and determine each value (ask the human only for what you can't
-infer):
+Inspect the repo and determine each value. **Never block the bootstrap on an
+unknown**: fill what you can't infer as `TBD — confirm` and continue — the
+human reviews everything before committing (step 5) and can correct any row
+then. Ask questions only when a human is actually present to answer them.
 
 - **Default branch** — `git symbolic-ref --short refs/remotes/origin/HEAD` or the
   current branch.
@@ -25,7 +27,8 @@ infer):
 - **High-impact files** — the conventions file (CLAUDE.md/AGENTS.md), schema,
   architecture docs.
 - **Issue tracker** — GitHub Issues (`gh`), Linear, none.
-- **HITL** — the human owner's name (ask if unknown).
+- **HITL** — the human owner's name (from git config/repo ownership if
+  plausible; otherwise `TBD — confirm`).
 - **Current stage** — infer V0–V6 from repo maturity (no code → V0; skeleton +
   CI → V2; shipping features → V3; deployed with real users → V5/V6). Use the
   `$ARGUMENTS` value if the user passed one.
