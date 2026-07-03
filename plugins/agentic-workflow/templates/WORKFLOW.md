@@ -385,3 +385,9 @@ confirm, not a stream of interruptions.
 
 Autopilot mode is therefore *autonomous up to the reversible boundary*, with the
 irreducible human decisions collapsed to the fewest, best-informed touchpoints.
+
+Autopilot is also **crash-safe and context-disciplined** like every other part
+of the machinery (§2): its durable state is files (flight plan, decision log,
+stage artifacts, status page), it ends cleanly at a stage boundary when its
+context fills, and `/autopilot continue` re-derives the current stage from
+those files and resumes — locked decisions stay decided.

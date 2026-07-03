@@ -1,12 +1,30 @@
 ---
 description: Autopilot mode — drive an idea through the full venture lifecycle (V0→V5, then a V6 handoff) with the bare-minimum human input, pausing only at genuinely irreversible or spending gates.
-argument-hint: "<one-line idea>"
+argument-hint: "<one-line idea>" | continue
 allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, WebSearch, WebFetch]
 ---
 
 Take the idea in `$ARGUMENTS` and drive it toward a launched product with as
 little human intervention as safely possible (Agentic Workflow §11). You
 orchestrate the agents and stages; you do NOT skip the safety boundary.
+
+**You are an orchestrator — protect your context.** Ingest agent reports and
+stage artifacts, never corpora: spawn agents for all reading and building, and
+let `/mission` carry V3 (its ledger, not your transcript, holds the detail).
+Your durable state lives in files — the flight plan, `decision-log.md`, the
+stage artifacts, the status page — never only in this conversation.
+
+**Context discipline**: when your context is filling (roughly past two-thirds),
+finish the CURRENT stage cleanly — decision log current, status page
+republished, stage artifact written — then end, telling the human to relaunch
+with `/autopilot continue`. A clean stage boundary beats a degraded launch.
+
+**`continue` mode**: re-derive where the venture stands from files alone — the
+flight plan (standing authorization), `decision-log.md` (choices already made:
+do not re-decide them), the stage artifacts present (idea.md → PRD →
+skeleton/CI → `.plans/` ledger → audits → launch prep), and `/check-workflow`.
+Resume at the first stage whose exit gate isn't met. Losing the transcript
+must never lose the venture.
 
 ## 0. Get the flight plan (the only upfront ask)
 
