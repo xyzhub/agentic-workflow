@@ -25,13 +25,24 @@ plugins/agentic-workflow/            # the plugin
   agents/    researcher.md, designer.md, planner.md, reviewer.md, chronicler.md, backend.md, frontend.md, security.md, devops.md
   commands/  init-workflow, autopilot, mission, release, start-work, check-workflow, pre-pr, end-work, quick-fix, retro
   hooks/     hooks.json               # guardrails
-  skills/    agentic-workflow/        # the entry-point skill
-  templates/ WORKFLOW.md, overview.html, idea.md
+  skills/    protocol/                # the entry-point skill
+  templates/ WORKFLOW.md, overview.html, idea.md, flight-plan.md, decision-log.md
   README.md
 ```
 
 See the [plugin README](./plugins/agentic-workflow/README.md) for the full
 description.
+
+## Development — running the checks
+
+```
+node tools/lint.mjs
+```
+
+Zero-dependency deterministic lint (Node ≥ 18), also run by CI on every push:
+validates the manifests, agent/command frontmatter, cross-references between
+agents/commands/docs, template references, WORKFLOW.md § integrity, and hook
+command syntax.
 
 ## License
 

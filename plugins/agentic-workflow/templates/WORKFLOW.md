@@ -82,7 +82,7 @@ and speed wins at V0–V2 prototyping — say which mode you're in.
 - Perf budgets on hot paths; no N+1s on list endpoints; caching only with an
   invalidation story.
 - Cost awareness for AI products: model tiering (cheap router → strong executor),
-  token/context budgets (§2.2), per-feature spend visibility.
+  token/context budgets (§2, principle 2), per-feature spend visibility.
 - Agent efficiency: route to the smallest altitude that fits (§1); reuse
   existing engines before building new ones.
 
@@ -147,7 +147,7 @@ tests accompany behavior changes; deviations from a brief are allowed but MUST b
 logged in the ledger.
 
 **Close** — gates green (§10); live verification if there's a runtime surface
-(§2.5); commit (`type(scope): description` — for mission sessions
+(§2, principle 5); commit (`type(scope): description` — for mission sessions
 `<mission>(S<n>): summary`); push the branch; PR with summary + test plan;
 **update the record** (§6.1 — spawn the `chronicler` agent, then republish the
 owner status page); **never merge the default branch yourself** — HITL merges
