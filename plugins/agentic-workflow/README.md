@@ -16,8 +16,10 @@ a permanent record of the journey.
 - **Four pillar gates** checked at every checkpoint and audited before launch.
 - **Agents**: `researcher` (V0 idea validation — cited evidence for and against),
   `designer` (V1–V2 brand/UX — surfaces distinct directions to choose from, then
-  organizes the chosen one into a token system), `planner` (decomposes a mission
-  into the `.plans/` trio, pre-resolving every brief), `marketing` (V5–V6
+  organizes the chosen one into a token system), `business` (V1/V5/V6 — business
+  model, pricing strategy, executive summary and business documents under
+  `docs/product/business/`; proposes, the human decides), `planner` (decomposes
+  a mission into the `.plans/` trio, pre-resolving every brief), `marketing` (V5–V6
   go-to-market — one file per deliverable under `docs/product/launch/`:
   positioning, landing copy, per-channel announcements, channel plan,
   post-launch content plan; the human publishes), `reviewer` (fresh-context, five pillar lenses + QA +

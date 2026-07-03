@@ -27,11 +27,11 @@ gate is a logged deviation, not a shortcut.
 | Stage | Produces | Exit gate |
 |---|---|---|
 | **V0 Idea & validation** | `docs/product/idea.md`: problem, who pays, why now, riskiest assumption, kill criteria, cheapest test of the assumption — informed by the `researcher` agent (evidence for AND against) | **Human go/no-go.** No code before this exists — an unvalidated idea is cheapest to kill in prose |
-| **V1 Definition** | PRD + MVP scope (what's deliberately OUT), user journeys with acceptance criteria, data-model sketch, stack decision with rationale; brand/UX directions from the `designer` agent for the owner to choose | Stop-the-line: no implementation without acceptance criteria. **Human approves scope** (and the brand direction) |
+| **V1 Definition** | PRD + MVP scope (what's deliberately OUT), user journeys with acceptance criteria, data-model sketch, stack decision with rationale; brand/UX directions from the `designer` agent for the owner to choose; business model + pricing proposal from the `business` agent (`docs/product/business/`) — the model shapes scope and the data model | Stop-the-line: no implementation without acceptance criteria. **Human approves scope** (with the business model and the brand direction) |
 | **V2 Foundation** | Deployable skeleton (`devops` lays CI + deploy): repo + CI gates (test/typecheck), deploy pipeline + health/ready checks, validated env with a **fail-closed production guard**, auth decision wired, error-monitoring hook, seed/reset path, README quickstart, chosen design system as tokens | "Hello world" **deployed and live-verified**; CI green. Security and DX are laid here — retrofitting costs 10× |
 | **V3 Build (MVP)** | The product, feature by feature, via the execution machinery (§1–§5). Every checkpoint applies the pillar lenses | All MVP acceptance criteria met; behavioral/eval suite exists for AI-driven products |
 | **V4 Hardening** | Four explicit audits (§0.2): security review, UX pass, DX pass, efficiency pass — plus ops readiness (backups, monitoring, runbook, guard coverage). Audits run as an **adversarial multi-vote** (§5): lens-partitioned parallel reviewers, conservative merge | Reviewer-verified production-readiness checklist (full seven-lens scorecard); findings fixed or accepted in writing |
-| **V5 Launch** | Production deploy (`devops` prepares, `/release` cuts the version), first-user onboarding, **live end-to-end verification on the deployed instance**, monitoring confirmed receiving events, rollback tested; launch assets from the `marketing` agent under `docs/product/launch/` (one file per deliverable: positioning, landing copy, per-channel announcements, post-launch content plan, indexed by `launch-plan.md` with the channel plan) — **the human publishes** | Pre-launch **multi-vote review** (§5) green; first real user/business served. **Human owns the launch decision** |
+| **V5 Launch** | Production deploy (`devops` prepares, `/release` cuts the version), first-user onboarding, **live end-to-end verification on the deployed instance**, monitoring confirmed receiving events, rollback tested; launch assets from the `marketing` agent under `docs/product/launch/` (one file per deliverable: positioning, landing copy, per-channel announcements, post-launch content plan, indexed by `launch-plan.md` with the channel plan) — **the human publishes**; pricing finalized against measured costs and the executive summary refreshed (`business`) | Pre-launch **multi-vote review** (§5) green; first real user/business served. **Human owns the launch decision** |
 | **V6 Operate & evolve** | Growth is *users and features*: funnel/channel review against the launch metrics (`marketing`) beside feedback → ranked feature ideas → user-reviewed → growth missions (phased trio with locked decisions); ops review of errors/costs; retros that amend THIS document | Continuous — each growth mission re-cycles V3–V5 gates |
 
 A stage may be revisited (a pivot reopens V0/V1; a big growth mission re-runs V4
@@ -250,6 +250,15 @@ experiments as growth-mission candidates. Its copy is product-truthful (claims
 trace to evidence or shipped behavior). It drafts; the **human publishes** —
 outward publishing sits on the safety boundary (§11).
 
+**Business** (`business`) owns the venture's viability math and business
+documents (`docs/product/business/`): the business model (value metric, revenue
+model, cost to serve, unit economics), the pricing strategy, and a one-page
+executive summary refreshed at every stage transition. It proposes at V1
+(model + pricing hypothesis with the PRD), finalizes against measured costs at
+V4–V5, and proposes pricing experiments at V6. It proposes with evidence from
+the V0 research; the **human decides** model and prices — and it never spends
+or charges (§11 safety boundary).
+
 **DevOps** (`devops`) owns the delivery pipeline as a first-class artifact —
 CI/CD, GitHub Actions workflows, deploy config, environments, releases, rollback.
 It lays the pipeline at V2 and prepares the launch at V5, co-owning CI security
@@ -294,9 +303,10 @@ finish line, not "PR open".
 ## 9. How this maps to the plugin
 
 - Agents ship with the plugin: `researcher` (V0 validation), `designer`
-  (V1–V2 brand/UX), `planner` (mission decomposition), `marketing` (V5–V6
-  go-to-market), `reviewer`, `chronicler`, and the specialist implementers
-  `backend`, `frontend`, `security`, `devops` (CI/CD, deploy, releases).
+  (V1–V2 brand/UX), `business` (V1/V5/V6 model, pricing, business documents),
+  `planner` (mission decomposition), `marketing` (V5–V6 go-to-market),
+  `reviewer`, `chronicler`, and the specialist implementers `backend`,
+  `frontend`, `security`, `devops` (CI/CD, deploy, releases).
 - Guardrail hooks (§3) install automatically.
 - Commands: `/init-workflow` (bootstrap a project into this workflow),
   `/autopilot` (drive an idea to launch-ready, §11), `/mission` (plan + drive a
@@ -307,7 +317,8 @@ finish line, not "PR open".
 - Templates for the status page, `idea.md`, `flight-plan.md`, `decision-log.md`,
   the launch asset set (`launch-plan.md`, `launch-positioning.md`,
   `launch-landing-page.md`, `launch-announcement.md`, `launch-content-plan.md`),
-  and this protocol live under the plugin's `templates/`.
+  the business set (`business-executive-summary.md`, `business-model.md`,
+  `business-pricing.md`), and this protocol live under the plugin's `templates/`.
 
 ## 10. Project profile (filled by `/init-workflow`)
 
@@ -348,8 +359,9 @@ branch) and the human merges once, at the consolidated launch confirmation.
 
 **What runs autonomously**: the reviewer-verified stage gates. The `researcher`
 validates (and can auto-stop on kill criteria); the `designer` picks a direction
-if pre-authorized; `devops` lays the pipeline (V2) and stages the release (V5);
-`marketing` drafts the launch assets (V5) for the human to publish;
+if pre-authorized; the `business` agent proposes model and pricing (V1) for the
+human to approve with scope; `devops` lays the pipeline (V2) and stages the
+release (V5); `marketing` drafts the launch assets (V5) for the human to publish;
 `backend`/`frontend`/`security` build with a `reviewer` checkpoint per phase
 (one corrective retry, then surface); the `chronicler` keeps the status page live
 as the owner's window; a `decision-log.md` records every autonomous choice and

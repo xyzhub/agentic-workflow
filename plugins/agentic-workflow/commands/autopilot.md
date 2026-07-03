@@ -41,7 +41,10 @@ owner can watch live.
 - **V1 Define** — write the PRD + MVP scope with an explicit "NOT in v1" list;
   choose the smallest scope that delivers the core value. Spawn `designer` for
   brand/UX directions; if brand = "you choose", pick one with rationale and
-  record it; otherwise present the options and pause once.
+  record it; otherwise present the options and pause once. Spawn `business` to
+  propose the model + pricing hypothesis (`docs/product/business/`) — fold the
+  proposal into the same single V1 pause (scope + brand + model together);
+  never set live prices autonomously.
 - **V2 Foundation** — `/init-workflow`, then scaffold the deployable skeleton;
   spawn `devops` to lay the CI + deploy pipeline (gates, health checks, scoped
   permissions, SHA-pinned actions) alongside the fail-closed config guard, env
@@ -64,8 +67,10 @@ owner can watch live.
   draft the launch assets under `docs/product/launch/` — one file per
   deliverable (positioning, landing copy, per-channel announcements in the
   flight plan's voice, post-launch content plan), indexed by `launch-plan.md`
-  with the channel plan; publish-ready assets are part of the consolidated
-  launch confirmation, and publishing them is the human's.
+  with the channel plan; and `business` to finalize pricing against measured
+  costs and refresh the executive summary. Publish-ready assets and the final
+  pricing are part of the consolidated launch confirmation — publishing and
+  live prices are the human's.
 - **V6 Operate (handoff)** — autopilot does not run operations. Alongside the
   consolidated launch confirmation, deliver a **V6 operating brief**: the
   feedback channels to watch, the launch metrics and channel plan to review
