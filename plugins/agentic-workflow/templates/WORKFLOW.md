@@ -169,10 +169,19 @@ The plan trio, written by a dedicated planning session:
 | `.plans/<mission>.state.md` | Ledger: checklist, deviations log, handoff log (≤10 lines each, newest first), `Next up:` |
 
 Rules: briefs pre-resolve targets so execution sessions never explore; one branch
-per phase (merged at checkpoint with HITL go-ahead); migrations and
+per phase, merged at checkpoint per the **gate policy** below; migrations and
 CI/deploy-touching changes get extra checkpoint scrutiny; **one-corrective-retry**
 — a failing session/agent is retried once with a corrective note, then escalated
 to the human.
+
+**Gate policy** (chosen at mission start; default `human-merge`):
+- `human-merge` — on APPROVE, pause for HITL to merge each phase branch.
+- `batch` — on APPROVE, the orchestrator merges the phase branch into a
+  long-lived `mission/<name>-integration` branch — **never the default branch**,
+  so the push-block guardrail (§3) and the merge authority (§11 safety boundary)
+  stay intact — and HITL merges the integration branch once, at the batched
+  end-of-mission (or launch) confirmation. Used by `/autopilot` when the flight
+  plan says "only stop at hard gates".
 
 **Checkpoints** end every phase: the independent `reviewer` agent (fresh context)
 re-runs all gates, diff-reviews `base..head`, performs deferred manual/live items,
@@ -275,20 +284,44 @@ finish line, not "PR open".
   `/check-workflow`, `/pre-pr`, `/end-work`, `/quick-fix`, `/retro`.
 - The `protocol` skill points every session at the project's
   `docs/WORKFLOW.md` (or this master if none exists yet).
-- Templates for the status page, `idea.md`, and this protocol live under the
-  plugin's `templates/`.
+- Templates for the status page, `idea.md`, `flight-plan.md`, `decision-log.md`,
+  and this protocol live under the plugin's `templates/`.
+
+## 10. Project profile (filled by `/init-workflow`)
+
+Until `/init-workflow` runs, these are unknown — discover them from the repo or
+ask the human. A project's own `docs/WORKFLOW.md` replaces this block with
+concrete values.
+
+| Key | Value |
+|---|---|
+| **HITL (merge/deploy authority)** | _(the human owner's name)_ |
+| **Default branch** | _(e.g. main)_ |
+| **Test gate** | _(e.g. `npm test`)_ |
+| **Typecheck/lint gate** | _(e.g. `npm run typecheck`)_ |
+| **Build** | _(e.g. `npm run build`)_ |
+| **Datastore seed/reset** | _(e.g. `npm run seed`)_ |
+| **Deploy + live-verify** | _(how it ships and how you confirm on the deployed instance)_ |
+| **High-impact files** (docs-reminder targets) | _(conventions file, schema, architecture docs…)_ |
+| **Issue tracker** | _(e.g. GitHub Issues via `gh`)_ |
 
 ## 11. Autopilot mode
 
-`/autopilot "<idea>"` drives the whole lifecycle (V0→V5) with the bare-minimum
-human input — validation, definition, design choice, foundation, build,
-hardening, and launch-prep — pausing only at the gates a human must own. It's the
-same workflow, orchestrated end-to-end instead of session-by-session.
+`/autopilot "<idea>"` drives the whole lifecycle (V0→V5, then a V6 handoff) with
+the bare-minimum human input — validation, definition, design choice, foundation,
+build, hardening, and launch-prep — pausing only at the gates a human must own.
+It's the same workflow, orchestrated end-to-end instead of session-by-session.
+Autopilot does not run V6 operations; at the launch gate it hands the owner a V6
+operating brief (feedback channels, ranked growth backlog, retro cadence) and ends.
 
-**The only upfront ask is a flight plan** (`docs/product/flight-plan.md`): the
-idea, a budget ceiling, risk tolerance, a brand preference (or "you choose"), the
-deploy target, and how often to check in. That is the standing authorization;
-anything outside it returns to the human.
+**The only upfront ask is a flight plan** (`docs/product/flight-plan.md`, from the
+bundled template): the idea, a budget ceiling, risk tolerance, a brand preference
+(or "you choose"), the deploy target, and how often to check in. That is the
+standing authorization; anything outside it returns to the human. The check-in
+level also selects the mission **gate policy** (§5): "check in each stage" keeps
+the default `human-merge` at every phase; "only hard gates" authorizes `batch` —
+phases merge autonomously into a mission integration branch (never the default
+branch) and the human merges once, at the consolidated launch confirmation.
 
 **What runs autonomously**: the reviewer-verified stage gates. The `researcher`
 validates (and can auto-stop on kill criteria); the `designer` picks a direction
@@ -308,21 +341,3 @@ confirm, not a stream of interruptions.
 
 Autopilot mode is therefore *autonomous up to the reversible boundary*, with the
 irreducible human decisions collapsed to the fewest, best-informed touchpoints.
-
-## 10. Project profile (filled by `/init-workflow`)
-
-Until `/init-workflow` runs, these are unknown — discover them from the repo or
-ask the human. A project's own `docs/WORKFLOW.md` replaces this block with
-concrete values.
-
-| Key | Value |
-|---|---|
-| **HITL (merge/deploy authority)** | _(the human owner's name)_ |
-| **Default branch** | _(e.g. main)_ |
-| **Test gate** | _(e.g. `npm test`)_ |
-| **Typecheck/lint gate** | _(e.g. `npm run typecheck`)_ |
-| **Build** | _(e.g. `npm run build`)_ |
-| **Datastore seed/reset** | _(e.g. `npm run seed`)_ |
-| **Deploy + live-verify** | _(how it ships and how you confirm on the deployed instance)_ |
-| **High-impact files** (docs-reminder targets) | _(conventions file, schema, architecture docs…)_ |
-| **Issue tracker** | _(e.g. GitHub Issues via `gh`)_ |

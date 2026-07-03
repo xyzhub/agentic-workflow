@@ -1,12 +1,14 @@
 ---
 description: Plan and drive a multi-session mission end to end — authors the .plans/ trio (via the planner agent) if needed, then runs it phase by phase with independent checkpoint reviews.
-argument-hint: "<mission name or goal>" [plan | run | continue]
+argument-hint: "<mission name or goal>" [plan | run | continue] [gate: human-merge | batch]
 allowed-tools: [Read, Write, Edit, Bash, Grep, Glob]
 ---
 
-Drive a mission (Agentic Workflow §5). `$ARGUMENTS` is the mission name/goal and an
+Drive a mission (Agentic Workflow §5). `$ARGUMENTS` is the mission name/goal, an
 optional mode: `plan` (author the trio and stop), `run` (plan if needed, then
-execute), or `continue` (resume from the ledger). Default: `run`.
+execute), or `continue` (resume from the ledger), and an optional **gate policy**:
+`human-merge` (default) or `batch` (§5 — used by `/autopilot` under a "only hard
+gates" flight plan). Record the gate policy in the ledger at mission start.
 
 You are the **orchestrator**. Read only the ledger, briefs, and agent reports —
 never source files yourself (the 30% rule). Spawn agents to do the reading and
@@ -41,8 +43,12 @@ Spawn the **reviewer** agent (fresh context): it re-runs all gates, diff-reviews
 `<base>..<head>`, performs deferred manual/live items, and returns APPROVE or
 REQUEST CHANGES.
 
-- **APPROVE** → pause for the **human to merge** the phase branch (never merge the
-  default branch yourself; merging often deploys). Then continue to the next phase.
+- **APPROVE** → apply the gate policy. `human-merge` (default): pause for the
+  **human to merge** the phase branch (never merge the default branch yourself;
+  merging often deploys), then continue. `batch`: merge the phase branch into the
+  long-lived `mission/<name>-integration` branch yourself — **never the default
+  branch** — log the merge in the ledger, and continue; the human merges the
+  integration branch once, at the batched end-of-mission confirmation.
 - **REQUEST CHANGES** → one corrective session (`S<n>-fix`), then re-review; if it
   still fails, surface to the human.
 

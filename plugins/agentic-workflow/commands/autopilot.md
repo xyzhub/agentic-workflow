@@ -1,5 +1,5 @@
 ---
-description: Autopilot mode — drive an idea through the full venture lifecycle (V0→V5) with the bare-minimum human input, pausing only at genuinely irreversible or spending gates.
+description: Autopilot mode — drive an idea through the full venture lifecycle (V0→V5, then a V6 handoff) with the bare-minimum human input, pausing only at genuinely irreversible or spending gates.
 argument-hint: "<one-line idea>"
 allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, WebSearch, WebFetch]
 ---
@@ -20,10 +20,13 @@ accept "you decide" for any:
 - **Brand** — a preference, or "you choose" (the `designer` surfaces options).
 - **Deploy target** — where it should ship, and whether credentials exist yet.
 - **Check-in level** — "only stop at hard gates" (default) vs. "check in each
-  stage".
+  stage". This also selects the `/mission` gate policy: hard-gates-only
+  authorizes `batch` (phases merge into a mission integration branch, one human
+  merge at the end); check-in-each-stage keeps `human-merge` per phase.
 
-Record this as `docs/product/flight-plan.md`. It is your standing authorization;
-anything outside it comes back to the human.
+Record this as `docs/product/flight-plan.md`, from the bundled template
+(`${CLAUDE_PLUGIN_ROOT}/templates/flight-plan.md`). It is your standing
+authorization; anything outside it comes back to the human.
 
 ## 1. Drive the lifecycle
 
@@ -43,8 +46,9 @@ owner can watch live.
   spawn `devops` to lay the CI + deploy pipeline (gates, health checks, scoped
   permissions, SHA-pinned actions) alongside the fail-closed config guard, env
   validation, and seed.
-- **V3 Build** — for anything beyond a single sitting, run `/mission` (the
-  `planner` decomposes it into a phased trio; you drive it). Implement via
+- **V3 Build** — for anything beyond a single sitting, run `/mission` with the
+  gate policy from the flight plan's check-in level (the `planner` decomposes it
+  into a phased trio; you drive it). Implement via
   `backend` / `frontend` / `devops` specialists in parallel where slices are
   independent, honoring the chosen design system. Run a `reviewer` checkpoint at
   each phase; auto-apply one corrective pass on REQUEST CHANGES, then surface if
@@ -54,6 +58,11 @@ owner can watch live.
 - **V5 Launch prep** — `devops` stages everything up to the button (deploy
   config, `/release` version cut, runbook, monitoring wired, rollback tested
   against a staging/preview where possible).
+- **V6 Operate (handoff)** — autopilot does not run operations. Alongside the
+  consolidated launch confirmation, deliver a **V6 operating brief**: the
+  feedback channels to watch, a ranked growth-mission backlog (each runnable via
+  `/mission`), and the retro cadence (`/retro`). Then autopilot ends; V6 is the
+  owner's continuous loop.
 
 ## 2. The safety boundary (never crossed autonomously)
 
@@ -75,8 +84,10 @@ for a single confirmation, rather than nagging along the way.
 
 - The **status page** (`docs/product/overview.html`) is their window — republish
   after each stage via the Artifact tool.
-- Keep a `docs/product/decision-log.md`: each autonomous decision, the options,
-  why you chose, and how to reverse it. This is how a hands-off owner audits you.
+- Keep a `docs/product/decision-log.md` (from the bundled template,
+  `${CLAUDE_PLUGIN_ROOT}/templates/decision-log.md`): each autonomous decision,
+  the options, why you chose, and how to reverse it. This is how a hands-off
+  owner audits you.
 - Use a push notification for the moments that need them (a kill-stop, the one
   brand choice, the launch confirmation) — not routine progress.
 
