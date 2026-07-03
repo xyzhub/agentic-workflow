@@ -1,6 +1,6 @@
 ---
-description: Adopt the Agentic Workflow in an existing project with one command — bootstrap the profile and records, convert existing plans into the trio, and produce a stage-gap adaptation report with recommended next actions.
-argument-hint: [stage e.g. V3|V6]
+description: Adopt the Agentic Workflow in an existing project with one command — bootstrap the profile and records, convert existing plans into the trio, and produce a stage-gap adaptation report with recommended next actions. Optional fill mode drafts the missing document deliverables.
+argument-hint: [stage e.g. V3|V6] [fill]
 allowed-tools: [Read, Write, Edit, Bash, Grep, Glob]
 ---
 
@@ -44,13 +44,34 @@ basics every stage inherits, checking mechanically where possible:
   pillar audits' artifacts, monitoring, rollback story, launch assets
   (`docs/product/launch/`), business docs (`docs/product/business/`).
 
-## 4. The adaptation report (the only output that matters)
+## 4. Fill mode (opt-in: `/adopt fill`)
+
+Without `fill`, deliverable gaps are only reported (step 5). With it, after
+the audit, spawn the doc agents for the **document deliverables** the audit
+found missing — in parallel where independent, and only those the detected
+stage actually claims:
+
+- No `docs/product/idea.md` → `researcher` reconstructs it retroactively from
+  the README, code, and any product docs as evidence — marked "retroactive:
+  evidence gathered post-build" so nobody mistakes it for pre-build validation.
+- No `docs/product/business/` → `business` proposes model, pricing, and the
+  executive summary from what exists; every decision marked pending human.
+- Stage V4+ and no `docs/product/launch/` → `marketing` drafts the launch
+  assets (voice will be a best guess if no flight plan exists — flag it).
+
+Fill mode drafts **documents only**. Engineering gaps (missing CI gates, no
+env guard, no tests) are never auto-filled — those are real code changes that
+go through missions/sessions with review, and the report says which.
+
+## 5. The adaptation report (the only output that matters)
 
 One consolidated report: detected stage and profile; what was created vs
 already present; converted/resumable plans; then the gap table —
 green/yellow/red per item, each red/yellow row carrying the ONE recommended
 next action (`/mission "adopt-hardening"`, "spawn `business` for model +
-pricing", `/quick-fix` for small ones). Rank by risk, not by category.
+pricing", `/quick-fix` for small ones). Rank by risk, not by category. In
+fill mode, drafted deliverables appear as "drafted — review in this order,
+decisions pending" rather than gaps.
 
 Do NOT commit — leave everything staged for the human to review (HITL rule),
 with the report as the review guide. Recommend the single best next command

@@ -33,7 +33,8 @@ a permanent record of the journey.
 - **Guardrail hooks**: blocks pushes to the default branch, reminds on commit
   format and gates, nudges doc updates on high-impact files.
 - **Commands**: `/init-workflow`, `/adopt` (one-command adoption of an existing
-  project — bootstrap, convert existing plans, stage-gap report), `/autopilot`,
+  project — bootstrap, convert existing plans, stage-gap report; `/adopt fill`
+  also drafts the missing document deliverables), `/autopilot`,
   `/mission`, `/release`, `/start-work`, `/check-workflow`, `/pre-pr`,
   `/end-work`, `/quick-fix`, `/retro`.
 - **A skill** that points every session at the project's protocol.
