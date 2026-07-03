@@ -314,9 +314,11 @@ finish line, not "PR open".
   `frontend`, `security`, `devops` (CI/CD, deploy, releases).
 - Guardrail hooks (§3) install automatically.
 - Commands: `/init-workflow` (bootstrap a project into this workflow),
-  `/autopilot` (drive an idea to launch-ready, §11), `/mission` (plan + drive a
-  multi-session mission), `/release` (cut a version), `/start-work`,
-  `/check-workflow`, `/pre-pr`, `/end-work`, `/quick-fix`, `/retro`.
+  `/adopt` (one-command adoption for an existing project: bootstrap + convert
+  existing plans + stage-gap report), `/autopilot` (drive an idea to
+  launch-ready, §11), `/mission` (plan + drive a multi-session mission),
+  `/release` (cut a version), `/start-work`, `/check-workflow`, `/pre-pr`,
+  `/end-work`, `/quick-fix`, `/retro`.
 - The `protocol` skill points every session at the project's
   `docs/WORKFLOW.md` (or this master if none exists yet).
 - Templates for the status page, `idea.md`, `flight-plan.md`, `decision-log.md`,

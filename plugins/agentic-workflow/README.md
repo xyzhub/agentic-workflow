@@ -32,8 +32,10 @@ a permanent record of the journey.
   idea and a short flight plan, pausing only at the gates a human must own.
 - **Guardrail hooks**: blocks pushes to the default branch, reminds on commit
   format and gates, nudges doc updates on high-impact files.
-- **Commands**: `/init-workflow`, `/autopilot`, `/mission`, `/release`,
-  `/start-work`, `/check-workflow`, `/pre-pr`, `/end-work`, `/quick-fix`, `/retro`.
+- **Commands**: `/init-workflow`, `/adopt` (one-command adoption of an existing
+  project — bootstrap, convert existing plans, stage-gap report), `/autopilot`,
+  `/mission`, `/release`, `/start-work`, `/check-workflow`, `/pre-pr`,
+  `/end-work`, `/quick-fix`, `/retro`.
 - **A skill** that points every session at the project's protocol.
 
 ## Install
@@ -43,16 +45,20 @@ a permanent record of the journey.
 /plugin install agentic-workflow@xyz
 ```
 
-Then, in any project:
+Then, in an existing project:
 
 ```
-/init-workflow
+/adopt
 ```
 
-It detects your stack (gates, deploy, default branch), writes
-`docs/WORKFLOW.md` with a filled project profile, seeds the record
-artifacts (CHANGELOG, JOURNEY, the status page), and — for a brand-new idea —
-scaffolds `docs/product/idea.md` to validate before you build.
+It bootstraps the profile and records, folds in whatever process artifacts the
+project already has (existing plans convert into the mission trio, decisions
+locked), audits the repo against its stage's gates, and hands you one
+adaptation report ranked by risk. For a fresh start, `/init-workflow` does the
+bootstrap alone: it detects your stack (gates, deploy, default branch), writes
+`docs/WORKFLOW.md` with a filled project profile, seeds the record artifacts
+(CHANGELOG, JOURNEY, the status page), and — for a brand-new idea — scaffolds
+`docs/product/idea.md` to validate before you build.
 
 ## Try it locally first
 
