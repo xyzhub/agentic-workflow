@@ -61,10 +61,11 @@ owner can watch live.
 - **V5 Launch prep** — `devops` stages everything up to the button (deploy
   config, `/release` version cut, runbook, monitoring wired, rollback tested
   against a staging/preview where possible). In parallel, spawn `marketing` to
-  draft the launch assets (`docs/product/launch-plan.md` — positioning, landing
-  copy, per-channel announcements in the flight plan's voice, channel plan);
-  publish-ready assets are part of the consolidated launch confirmation, and
-  publishing them is the human's.
+  draft the launch assets under `docs/product/launch/` — one file per
+  deliverable (positioning, landing copy, per-channel announcements in the
+  flight plan's voice, post-launch content plan), indexed by `launch-plan.md`
+  with the channel plan; publish-ready assets are part of the consolidated
+  launch confirmation, and publishing them is the human's.
 - **V6 Operate (handoff)** — autopilot does not run operations. Alongside the
   consolidated launch confirmation, deliver a **V6 operating brief**: the
   feedback channels to watch, the launch metrics and channel plan to review

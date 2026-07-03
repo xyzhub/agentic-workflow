@@ -29,7 +29,7 @@ plugins/agentic-workflow/            # the plugin
   commands/  init-workflow, autopilot, mission, release, start-work, check-workflow, pre-pr, end-work, quick-fix, retro
   hooks/     hooks.json               # guardrails
   skills/    protocol/                # the entry-point skill
-  templates/ WORKFLOW.md, overview.html, idea.md, flight-plan.md, decision-log.md, launch-plan.md
+  templates/ WORKFLOW.md, overview.html, idea.md, flight-plan.md, decision-log.md, launch-*.md (plan, positioning, landing-page, announcement, content-plan)
   README.md
 ```
 

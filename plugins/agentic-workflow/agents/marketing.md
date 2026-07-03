@@ -30,25 +30,29 @@ the research found. Position against real alternatives (from the V0 competitor
 table), name the differentiator the evidence supports, and prefer one sharp
 message per audience over a wall of features.
 
-## Deliverable
+## Deliverables — one file per asset
 
-Draft `docs/product/launch-plan.md` (from the plugin's `launch-plan.md`
-template):
+Everything lands under `docs/product/launch/`, one file per deliverable, each
+from its plugin template (`launch-*.md` under the plugin's `templates/`):
 
-1. **Positioning statement** — for whom, what problem, unlike what alternative,
-   why this instead.
-2. **ICP** — the concrete first audience (from the research, not aspiration).
-3. **Messaging pillars** — the 2–3 claims everything else derives from.
-4. **Landing-page outline + copy** — hero, proof, primary action; handed to
-   `frontend` to build.
-5. **Announcement drafts** — one per channel from the flight plan, each in the
-   owner's voice and ready to paste.
-6. **Channel plan** — channel | asset | owner | when; realistic for a team of
-   one unless told otherwise.
-7. **Launch metrics** — the few numbers that would say the launch worked, and
-   where they'll be read.
+```
+docs/product/launch/
+  launch-plan.md              # INDEX: deliverables table, channel plan
+                              # (channel | asset | owner | when), launch metrics
+  positioning.md              # positioning statement, ICP, messaging pillars
+  landing-page.md             # outline + copy — handed to frontend to build
+  announcements/<channel>.md  # one per flight-plan channel, ready to paste
+  content-plan.md             # post-launch content cadence (V5 → V6 bridge)
+```
 
-At V6: review the funnel against those metrics, propose channel experiments as
+Write `positioning.md` first — every other asset derives from it. Name
+announcement files for their channel (`x.md`, `linkedin.md`, `mailing-list.md`).
+The channel plan and launch metrics live in the index, and every channel-plan
+row must point at a real file. Keep the plan realistic for a team of one unless
+told otherwise.
+
+At V6: review the funnel against the launch metrics, keep `content-plan.md`
+current (each `/release` is a content trigger), propose channel experiments as
 ranked candidates for growth missions, and iterate messaging from real user
 language in feedback.
 

@@ -31,7 +31,7 @@ gate is a logged deviation, not a shortcut.
 | **V2 Foundation** | Deployable skeleton (`devops` lays CI + deploy): repo + CI gates (test/typecheck), deploy pipeline + health/ready checks, validated env with a **fail-closed production guard**, auth decision wired, error-monitoring hook, seed/reset path, README quickstart, chosen design system as tokens | "Hello world" **deployed and live-verified**; CI green. Security and DX are laid here — retrofitting costs 10× |
 | **V3 Build (MVP)** | The product, feature by feature, via the execution machinery (§1–§5). Every checkpoint applies the pillar lenses | All MVP acceptance criteria met; behavioral/eval suite exists for AI-driven products |
 | **V4 Hardening** | Four explicit audits (§0.2): security review, UX pass, DX pass, efficiency pass — plus ops readiness (backups, monitoring, runbook, guard coverage). Audits run as an **adversarial multi-vote** (§5): lens-partitioned parallel reviewers, conservative merge | Reviewer-verified production-readiness checklist (full seven-lens scorecard); findings fixed or accepted in writing |
-| **V5 Launch** | Production deploy (`devops` prepares, `/release` cuts the version), first-user onboarding, **live end-to-end verification on the deployed instance**, monitoring confirmed receiving events, rollback tested; launch assets from the `marketing` agent (`docs/product/launch-plan.md`) — positioning, landing copy, announcements, channel plan — **the human publishes** | Pre-launch **multi-vote review** (§5) green; first real user/business served. **Human owns the launch decision** |
+| **V5 Launch** | Production deploy (`devops` prepares, `/release` cuts the version), first-user onboarding, **live end-to-end verification on the deployed instance**, monitoring confirmed receiving events, rollback tested; launch assets from the `marketing` agent under `docs/product/launch/` (one file per deliverable: positioning, landing copy, per-channel announcements, post-launch content plan, indexed by `launch-plan.md` with the channel plan) — **the human publishes** | Pre-launch **multi-vote review** (§5) green; first real user/business served. **Human owns the launch decision** |
 | **V6 Operate & evolve** | Growth is *users and features*: funnel/channel review against the launch metrics (`marketing`) beside feedback → ranked feature ideas → user-reviewed → growth missions (phased trio with locked decisions); ops review of errors/costs; retros that amend THIS document | Continuous — each growth mission re-cycles V3–V5 gates |
 
 A stage may be revisited (a pivot reopens V0/V1; a big growth mission re-runs V4
@@ -241,12 +241,14 @@ chosen one into a design-token system the `frontend` agent implements. It
 proposes and organizes; the owner picks; frontend builds.
 
 **Marketing** (`marketing`) works at V5–V6: it turns the V0 evidence and the PRD
-into launch assets — positioning, landing copy, per-channel announcement drafts
-in the owner's voice, a channel plan, launch metrics (`launch-plan.md`) — and at
-V6 reviews the funnel and proposes channel experiments as growth-mission
-candidates. Its copy is product-truthful (claims trace to evidence or shipped
-behavior). It drafts; the **human publishes** — outward publishing sits on the
-safety boundary (§11).
+into launch assets under `docs/product/launch/`, one file per deliverable —
+positioning (statement, ICP, pillars), landing-page copy, per-channel
+announcement drafts in the owner's voice, a post-launch content plan, and a
+`launch-plan.md` index carrying the channel plan and launch metrics. At V6 it
+reviews the funnel, keeps the content plan current, and proposes channel
+experiments as growth-mission candidates. Its copy is product-truthful (claims
+trace to evidence or shipped behavior). It drafts; the **human publishes** —
+outward publishing sits on the safety boundary (§11).
 
 **DevOps** (`devops`) owns the delivery pipeline as a first-class artifact —
 CI/CD, GitHub Actions workflows, deploy config, environments, releases, rollback.
@@ -303,7 +305,9 @@ finish line, not "PR open".
 - The `protocol` skill points every session at the project's
   `docs/WORKFLOW.md` (or this master if none exists yet).
 - Templates for the status page, `idea.md`, `flight-plan.md`, `decision-log.md`,
-  `launch-plan.md`, and this protocol live under the plugin's `templates/`.
+  the launch asset set (`launch-plan.md`, `launch-positioning.md`,
+  `launch-landing-page.md`, `launch-announcement.md`, `launch-content-plan.md`),
+  and this protocol live under the plugin's `templates/`.
 
 ## 10. Project profile (filled by `/init-workflow`)
 

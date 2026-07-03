@@ -57,5 +57,6 @@ human should run to publish/deploy — plus what will happen when they do (this 
 the launch-boundary confirmation).
 
 When the release IS the V5 launch (first production release), include the
-`marketing` launch assets in the handoff: point at `docs/product/launch-plan.md`
-and list the channel-plan rows awaiting the human's publish.
+`marketing` launch assets in the handoff: point at
+`docs/product/launch/launch-plan.md` and list the channel-plan rows awaiting
+the human's publish.

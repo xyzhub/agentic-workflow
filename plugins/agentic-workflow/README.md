@@ -18,8 +18,9 @@ a permanent record of the journey.
   `designer` (V1–V2 brand/UX — surfaces distinct directions to choose from, then
   organizes the chosen one into a token system), `planner` (decomposes a mission
   into the `.plans/` trio, pre-resolving every brief), `marketing` (V5–V6
-  go-to-market — positioning, landing copy, announcements, channel plan; the
-  human publishes), `reviewer` (fresh-context, five pillar lenses + QA +
+  go-to-market — one file per deliverable under `docs/product/launch/`:
+  positioning, landing copy, per-channel announcements, channel plan,
+  post-launch content plan; the human publishes), `reviewer` (fresh-context, five pillar lenses + QA +
   architecture), `chronicler` (keeps CHANGELOG, a posterity JOURNEY, and the
   live owner status page), and specialist implementers `backend`, `frontend`,
   `security`, `devops` (CI/CD, GitHub workflows, deploy, releases) — each
