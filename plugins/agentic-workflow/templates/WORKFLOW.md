@@ -200,9 +200,14 @@ reviewers raises its confidence. Routine checkpoints stay single-reviewer —
 this is where review cost is spent deliberately, not everywhere.
 
 The trio is authored by the `planner` agent and driven by the bundled `/mission`
-command (plan · run · continue). The `planner` explores once and pre-resolves
-every brief's targets; `/mission` orchestrates execution phase by phase, spawning
-specialist implementers per brief and the `reviewer` at each checkpoint.
+command (plan · run · continue · replan). The `planner` explores once and
+pre-resolves every brief's targets; `/mission` orchestrates execution phase by
+phase, spawning specialist implementers per brief and the `reviewer` at each
+checkpoint. The planner can also **convert an existing plan document** into the
+trio (its decisions arrive locked, not re-litigated), and **replan** re-evaluates
+a trio against current reality — ledger reconciled with git, pending briefs
+re-resolved, invalidated locked decisions surfaced to the human rather than
+silently changed.
 
 ## 6. Roles
 

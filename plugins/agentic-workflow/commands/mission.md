@@ -1,12 +1,13 @@
 ---
 description: Plan and drive a multi-session mission end to end — authors the .plans/ trio (via the planner agent) if needed, then runs it phase by phase with independent checkpoint reviews.
-argument-hint: "<mission name or goal>" [plan | run | continue] [gate: human-merge | batch]
+argument-hint: "<mission name or goal>" [plan | run | continue | replan] [gate: human-merge | batch]
 allowed-tools: [Read, Write, Edit, Bash, Grep, Glob]
 ---
 
 Drive a mission (Agentic Workflow §5). `$ARGUMENTS` is the mission name/goal, an
 optional mode: `plan` (author the trio and stop), `run` (plan if needed, then
-execute), or `continue` (resume from the ledger), and an optional **gate policy**:
+execute), `continue` (resume from the ledger), or `replan` (re-evaluate an
+existing trio against current reality), and an optional **gate policy**:
 `human-merge` (default) or `batch` (§5 — used by `/autopilot` under a "only hard
 gates" flight plan). Record the gate policy in the ledger at mission start.
 
@@ -17,9 +18,21 @@ building.
 ## 1. Plan (if no trio exists)
 
 If `.plans/<mission>.{md,sessions.md,state.md}` don't exist, spawn the **planner**
-agent with the goal. It explores once and writes the trio. Then surface the
-master plan's **open questions** to the human and get decisions before executing —
-record them as dated locked decisions. In `plan` mode, stop here.
+agent with the goal. It explores once and writes the trio. **Converting an
+existing plan**: if the goal names a plan document (a PLAN.md, migration doc,
+ticket export), pass it to the planner as source material — its decisions become
+locked decisions, not things to re-litigate. Then surface the master plan's
+**open questions** to the human and get decisions before executing — record them
+as dated locked decisions. In `plan` mode, stop here.
+
+**`replan` mode** — re-evaluate an existing trio instead of executing: spawn the
+planner in re-evaluation mode. It reconciles the ledger against git reality,
+re-resolves only the pending briefs (completed work is history), keeps locked
+decisions locked (invalidated ones come back as open questions, unlocking is the
+human's call), and appends a dated `Replan` entry to the master plan. Surface
+the resulting open questions to the human, then stop — resuming is an explicit
+`continue`. Use after a long pause, after significant unplanned changes landed,
+or when `/check-workflow` shows ledger drift.
 
 ## 2. Run — phase by phase
 

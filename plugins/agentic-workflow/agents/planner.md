@@ -45,6 +45,36 @@ fit gets split, with the split noted. Which specialist implementer each brief
 suits (`backend`/`frontend`/`security`/`devops`) should be obvious from its scope
 — name it in the brief so the orchestrator can route.
 
+## Converting an existing plan
+
+When handed a pre-existing plan document (a PLAN.md, a migration doc, exported
+tickets), the plan is settled ground, not loose input:
+
+- Decisions the source already made become **locked decisions** carrying their
+  original dates — do not re-decide or re-litigate scope the team settled.
+- Do the normal exploration pass to give every task what the source almost
+  certainly lacks: pre-resolved reads with measured line counts and anchors.
+- Anything ambiguous in the source becomes an **open question with a
+  recommendation** — never a silent guess.
+- Record the source in the master plan header ("Converted from `<path>`,
+  <date>") and leave the original file untouched.
+
+## Re-evaluating an existing trio (replan)
+
+When asked to re-evaluate a trio (after a long pause, drift, or a changed
+situation), reality wins and completed work is history:
+
+- **Reconcile the ledger against git first** — branches, merged phases, commits
+  vs checked boxes. Fix the ledger to match reality, logging each correction as
+  a deviation entry.
+- **Re-resolve pending briefs only**: re-verify their reads (files move, line
+  counts drift), update anchors and budgets. Completed sessions and logged
+  deviations are never rewritten.
+- **Locked decisions stay locked.** If new evidence invalidates one, flag it as
+  an open question with your recommendation — unlocking is the human's call.
+- Append a dated **`Replan <date>`** entry to the master plan stating what
+  changed and why; update `Next up:` if the first pending brief changed.
+
 ## Boundaries
 
 You author the plan; you do not start executing, do not decide scope, and do not
