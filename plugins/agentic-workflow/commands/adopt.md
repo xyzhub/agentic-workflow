@@ -1,7 +1,7 @@
 ---
 description: Adopt the Agentic Workflow in an existing project with one command — bootstrap the profile and records, convert existing plans into the trio, and produce a stage-gap adaptation report with recommended next actions. Optional fill mode drafts the missing document deliverables.
 argument-hint: [stage e.g. V3|V6] [fill]
-allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, Task]
+allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, Task, Artifact]
 ---
 
 One-command onboarding for an EXISTING project (for a brand-new idea, use

@@ -1,7 +1,7 @@
 ---
 description: Plan and drive a multi-session mission end to end — authors the .plans/ trio (via the planner agent) if needed, then runs it phase by phase with independent checkpoint reviews.
 argument-hint: "<mission name or goal>" [plan | run | continue | replan] [gate: human-merge | batch]
-allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, Task]
+allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, Task, Artifact, AskUserQuestion]
 ---
 
 Drive a mission (Agentic Workflow §5). `$ARGUMENTS` is the mission name/goal, an
@@ -22,8 +22,10 @@ agent with the goal. It explores once and writes the trio. **Converting an
 existing plan**: if the goal names a plan document (a PLAN.md, migration doc,
 ticket export), pass it to the planner as source material — its decisions become
 locked decisions, not things to re-litigate. Then surface the master plan's
-**open questions** to the human and get decisions before executing — record them
-as dated locked decisions. In `plan` mode, stop here.
+**open questions** to the human and get decisions before executing — route the
+technical ones through the `architect` for an options memo first, so the human
+picks between digested options; ask via AskUserQuestion where available; record
+answers as dated locked decisions. In `plan` mode, stop here.
 
 **`replan` mode** — re-evaluate an existing trio instead of executing: spawn the
 planner in re-evaluation mode. It reconciles the ledger against git reality,
@@ -71,8 +73,9 @@ routine checkpoints — see §5). Include the scorecard in the ledger handoff en
 
 ## 4. Record & resume
 
-After each brief/checkpoint, spawn the **chronicler** to update the record and
-republish the status page. The ledger is ground truth: `continue` mode simply
+After each brief/checkpoint, spawn the **chronicler** to update the record,
+then republish the status page via the Artifact tool (subagents cannot
+publish). The ledger is ground truth: `continue` mode simply
 re-reads `Next up:` and proceeds, losing nothing across interruptions.
 
 ## Output

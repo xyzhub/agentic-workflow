@@ -16,6 +16,7 @@ const KNOWN_TOOLS = new Set([
   'Read', 'Write', 'Edit', 'MultiEdit', 'Bash', 'Grep', 'Glob',
   'WebSearch', 'WebFetch', 'Task', 'TodoWrite', 'NotebookEdit',
   'AskUserQuestion', 'SlashCommand', 'KillShell', 'BashOutput', 'Skill',
+  'Artifact',
 ]);
 // Slash commands that are Claude Code built-ins, not shipped by this plugin.
 const EXTERNAL_COMMANDS = new Set(['plugin']);
@@ -110,10 +111,16 @@ function checkCommands() {
     // otherwise headless runs (claude -p, evals, autopilot) are denied at the
     // permission layer. "it spawns" (describing another command) doesn't count.
     const text = read(file);
-    const m = text.replace(/^---\n[\s\S]*?\n---/, (s) => ' '.repeat(s.length))
-      .match(/(?<!\bit )\bspawn(?:s|ing|ed)?\b/i);
-    if (m && !(fm['allowed-tools'] && toolList(fm['allowed-tools']).includes('Task')))
+    const body = text.replace(/^---\n[\s\S]*?\n---/, (s) => ' '.repeat(s.length));
+    const allowed = fm['allowed-tools'] ? toolList(fm['allowed-tools']) : [];
+    const m = body.match(/(?<!\bit )\bspawn(?:s|ing|ed)?\b/i);
+    if (m && !allowed.includes('Task'))
       fail(file, lineOf(text, m.index), 'instructs agent spawning but allowed-tools lacks "Task"');
+    // Same class of bug for artifact publishing: a command that instructs
+    // "via the Artifact tool" must be allowed to call it.
+    const a = body.match(/\bArtifact tool\b/);
+    if (a && !allowed.includes('Artifact'))
+      fail(file, lineOf(text, a.index), 'instructs artifact publishing but allowed-tools lacks "Artifact"');
   }
 }
 

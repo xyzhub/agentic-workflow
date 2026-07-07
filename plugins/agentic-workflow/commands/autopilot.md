@@ -1,7 +1,7 @@
 ---
 description: Autopilot mode — drive an idea through the full venture lifecycle (V0→V5, then a V6 handoff) with the bare-minimum human input, pausing only at genuinely irreversible or spending gates.
 argument-hint: "<one-line idea or goal for an existing project>" | continue
-allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, WebSearch, WebFetch, Task, SlashCommand]
+allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, WebSearch, WebFetch, Task, SlashCommand, Artifact, AskUserQuestion]
 ---
 
 Take the idea (or, for an existing project, the goal) in `$ARGUMENTS` and drive
@@ -31,8 +31,8 @@ must never lose the venture.
 
 ## 0. Get the flight plan (the only upfront ask)
 
-Before starting, collect the **bare minimum** from the human — ask all at once,
-accept "you decide" for any:
+Before starting, collect the **bare minimum** from the human — ask all at once
+(via AskUserQuestion where available), accept "you decide" for any:
 
 - **Idea** — the one-liner (already in `$ARGUMENTS`; expand if thin).
 - **Guardrails** — budget ceiling for any paid services; risk tolerance
@@ -41,9 +41,8 @@ accept "you decide" for any:
 - **Brand** — a preference, or "you choose" (the `designer` surfaces options).
 - **Deploy target** — where it should ship, and whether credentials exist yet.
 - **Check-in level** — "only stop at hard gates" (default) vs. "check in each
-  stage". This also selects the `/mission` gate policy: hard-gates-only
-  authorizes `batch` (phases merge into a mission integration branch, one human
-  merge at the end); check-in-each-stage keeps `human-merge` per phase.
+  stage". This also selects the `/mission` gate policy (§5): hard-gates-only
+  authorizes `batch`; check-in-each-stage keeps `human-merge` per phase.
 
 Record this as `docs/product/flight-plan.md`, from the bundled template
 (`${CLAUDE_PLUGIN_ROOT}/templates/flight-plan.md`). It is your standing
@@ -78,11 +77,14 @@ owner can watch live.
   continue. If it's genuinely borderline, that's a human gate — surface it.
 - **V1 Define** — write the PRD + MVP scope with an explicit "NOT in v1" list;
   choose the smallest scope that delivers the core value. Spawn `designer` for
-  brand/UX directions; if brand = "you choose", pick one with rationale and
-  record it; otherwise present the options and pause once. Spawn `business` to
-  propose the model + pricing hypothesis (`docs/product/business/`) — fold the
-  proposal into the same single V1 pause (scope + brand + model together);
-  never set live prices autonomously.
+  brand/UX directions and the user journeys/IA; spawn `architect` for the
+  stack decision and data-model sketch as option memos; if brand = "you
+  choose", pick one with rationale and record it; otherwise present the
+  options and pause once. Spawn `business` to propose the model + pricing
+  hypothesis (`docs/product/business/`). Fold everything into the same single
+  V1 pause (scope + brand + model together) — run `/counsel` on it first so
+  the human decides with the case against in hand; never set live prices
+  autonomously.
 - **V2 Foundation** — `/init-workflow`, then scaffold the deployable skeleton;
   spawn `devops` to lay the CI + deploy pipeline (gates, health checks, scoped
   permissions, SHA-pinned actions) alongside the fail-closed config guard, env
@@ -112,9 +114,11 @@ owner can watch live.
 - **V6 Operate (handoff)** — autopilot does not run operations. Alongside the
   consolidated launch confirmation, deliver a **V6 operating brief**: the
   feedback channels to watch, the launch metrics and channel plan to review
-  (from `marketing`'s launch plan), a ranked growth-mission backlog (each
-  runnable via `/mission`), and the retro cadence (`/retro`). Then autopilot
-  ends; V6 is the owner's continuous loop.
+  (from `marketing`'s launch plan, baselined by the `analyst`), a ranked
+  growth-mission backlog (each runnable via `/mission`), the `/operate` loop
+  to run weekly (errors, funnel, costs, economics in one pass — the `ops` and
+  `analyst` agents do the reading), and the retro cadence (`/retro`). Then
+  autopilot ends; V6 is the owner's continuous loop.
 
 ## 2. The safety boundary (never crossed autonomously)
 
@@ -132,8 +136,9 @@ These require an explicit human confirmation every time, even in autopilot mode
   on the owner's behalf.
 - **Destructive or irreversible actions** on data or infrastructure.
 
-Batch these: when you reach the launch boundary, present ONE consolidated
-"ready to launch" summary (what will happen, what it costs, what's irreversible)
+Batch these: when you reach the launch boundary, run `/counsel` on the launch
+decision, then present ONE consolidated "ready to launch" summary (what will
+happen, what it costs, what's irreversible — with the counsel brief attached)
 for a single confirmation, rather than nagging along the way.
 
 ## 3. Keep the human oriented without blocking

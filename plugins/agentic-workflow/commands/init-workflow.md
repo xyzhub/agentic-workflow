@@ -1,7 +1,7 @@
 ---
 description: Bootstrap this project into the Agentic Workflow — detect the stack, write docs/WORKFLOW.md with a filled project profile, and seed the record artifacts.
 argument-hint: [stage e.g. V0|V2|V6]
-allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, Task]
+allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, Task, Artifact]
 ---
 
 Bootstrap the current repository into the Agentic Workflow. Idempotent — if an

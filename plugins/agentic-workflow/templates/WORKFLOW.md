@@ -32,12 +32,12 @@ gate is a logged deviation, not a shortcut.
 | Stage | Produces | Exit gate |
 |---|---|---|
 | **V0 Idea & validation** | `docs/product/idea.md`: problem, who pays, why now, riskiest assumption, kill criteria, cheapest test of the assumption — informed by the `researcher` agent (evidence for AND against) | **Human go/no-go.** No code before this exists — an unvalidated idea is cheapest to kill in prose |
-| **V1 Definition** | PRD + MVP scope (what's deliberately OUT), user journeys with acceptance criteria, data-model sketch, stack decision with rationale; brand/UX directions from the `designer` agent for the owner to choose; business model + pricing proposal from the `business` agent (`docs/product/business/`) — the model shapes scope and the data model | Stop-the-line: no implementation without acceptance criteria. **Human approves scope** (with the business model and the brand direction) |
+| **V1 Definition** | PRD + MVP scope (what's deliberately OUT); user journeys with acceptance criteria and brand/UX directions from the `designer` agent (it owns journeys and IA as well as brand) for the owner to choose; data-model sketch + stack decision as option memos from the `architect` agent (`docs/product/decisions/`); business model + pricing proposal from the `business` agent (`docs/product/business/`) — the model shapes scope and the data model | Stop-the-line: no implementation without acceptance criteria. **Human approves scope** (with the business model and the brand direction; `/counsel` convenes the advisor red-team on the approval first) |
 | **V2 Foundation** | Deployable skeleton (`devops` lays CI + deploy): repo + CI gates (test/typecheck), deploy pipeline + health/ready checks, validated env with a **fail-closed production guard**, auth decision wired, error-monitoring hook, seed/reset path, README quickstart, chosen design system as tokens | "Hello world" **deployed and live-verified**; CI green. Security and DX are laid here — retrofitting costs 10× |
 | **V3 Build (MVP)** | The product, feature by feature, via the execution machinery (§1–§5). Every checkpoint applies the pillar lenses | All MVP acceptance criteria met; behavioral/eval suite exists for AI-driven products |
-| **V4 Hardening** | Four explicit audits (§0.2): security review, UX pass, DX pass, efficiency pass — plus ops readiness (backups, monitoring, runbook, guard coverage). Audits run as an **adversarial multi-vote** (§5): lens-partitioned parallel reviewers, conservative merge | Reviewer-verified production-readiness checklist (full six-lens scorecard); findings fixed or accepted in writing |
+| **V4 Hardening** | Four explicit audits (§0.2): security review, UX pass (incl. the `designer`'s heuristic usability evaluation), DX pass, efficiency pass — plus ops readiness (backups, monitoring, runbook, guard coverage). Audits run as an **adversarial multi-vote** (§5): lens-partitioned parallel reviewers, conservative merge — standalone via `/audit` at any stage | Reviewer-verified production-readiness checklist (full six-lens scorecard); findings fixed or accepted in writing |
 | **V5 Launch** | Production deploy (`devops` prepares, `/release` cuts the version), first-user onboarding, **live end-to-end verification on the deployed instance**, monitoring confirmed receiving events, rollback tested; launch assets from the `marketing` agent under `docs/product/launch/` (one file per deliverable: positioning, landing copy, per-channel announcements, post-launch content plan, indexed by `launch-plan.md` with the channel plan) — **the human publishes**; pricing finalized against measured costs and the executive summary refreshed (`business`) | Pre-launch **multi-vote review** (§5) green; first real user/business served. **Human owns the launch decision** |
-| **V6 Operate & evolve** | Growth is *users and features*: funnel/channel review against the launch metrics (`marketing`) beside feedback → ranked feature ideas → user-reviewed → growth missions (phased trio with locked decisions); ops review of errors/costs; retros that amend THIS document | Continuous — each growth mission re-cycles V3–V5 gates |
+| **V6 Operate & evolve** | Growth is *users and features*: the `/operate` loop — measured numbers from the `analyst`, error/cost triage from `ops`, funnel/channel review against the launch metrics (`marketing`), economics drift (`business`) — beside feedback → ranked feature ideas → user-reviewed → growth missions (phased trio with locked decisions); retros that amend THIS document | Continuous — each growth mission re-cycles V3–V5 gates |
 
 A stage may be revisited (a pivot reopens V0/V1; a big growth mission re-runs V4
 before its launch). The stages sequence the *product*; the altitudes (§1)
@@ -211,7 +211,9 @@ reviewers raises its confidence. Routine checkpoints stay single-reviewer —
 this is where review cost is spent deliberately, not everywhere.
 
 The trio is authored by the `planner` agent and driven by the bundled `/mission`
-command (plan · run · continue · replan). The `planner` explores once and
+command (plan · run · continue · replan). Technical open questions may be routed
+through the `architect` for an options memo before they reach the human — the
+human still decides. The `planner` explores once and
 pre-resolves every brief's targets; `/mission` orchestrates execution phase by
 phase, spawning specialist implementers per brief and the `reviewer` at each
 checkpoint. The planner can also **convert an existing plan document** into the
@@ -251,10 +253,29 @@ pre-resolves every brief's targets and sizes them to the context budget; it does
 tactical decomposition, not strategic scope (main session + HITL own that). Driven
 by `/mission`.
 
+**Architect** (`architect`) is the technical consultant for shape-before-build
+decisions. At V1 it authors the stack decision and data-model sketch as option
+memos — 2–3 options, tradeoffs, reversal cost, a recommendation — under
+`docs/product/decisions/`; during missions it digests technical open questions
+into decision-ready memos. It consults; the human decides (dated locked
+decisions), implementers build, the reviewer verifies — it does none of those.
+
+**Advisor** (`advisor`) is the decision red-team: the reviewer's counterpart
+for judgment instead of code. Convened at the human gates via `/counsel` — 2–3
+fresh instances, lens-partitioned (technical / market / financial) — each
+argues the strongest case AGAINST the pending recommendation with cited
+evidence and returns counsel (proceed / proceed-with-changes / hold), merged
+into a one-page brief recorded in the decision log. It never decides, never
+blocks, never edits the artifacts it critiques — and it is bound to the gates,
+never ambient.
+
 **Designer** (`designer`) works at V1–V2 and for redesigns: it surfaces several
 distinct brand/UX directions for the owner to choose from, then organizes the
-chosen one into a design-token system the `frontend` agent implements. It
-proposes and organizes; the owner picks; frontend builds.
+chosen one into a design-token system the `frontend` agent implements. It also
+owns the PRD's user journeys and information architecture at V1, and runs the
+heuristic usability evaluation in the V4 UX audit (flagging its own
+independence caveat). It proposes and organizes; the owner picks; frontend
+builds.
 
 **Marketing** (`marketing`) works at V5–V6: it turns the V0 evidence and the PRD
 into launch assets under `docs/product/launch/`, one file per deliverable —
@@ -281,6 +302,20 @@ It lays the pipeline at V2 and prepares the launch at V5, co-owning CI security
 posture with `security`. It prepares deploys/releases; the human fires the
 irreversible ones (see §11).
 
+**Ops** (`ops`) owns V6 operations: error/monitoring triage ranked by user
+impact, runbook truthfulness, postmortem drafts, and infra-cost review against
+the business model — each finding converted into a ranked, runnable mission or
+session candidate. It is read-only against production; restarts, rollbacks, and
+deploys are the human's to fire. Usually convened via `/operate`.
+
+**Analyst** (`analyst`) is the venture's measurement engine. It owns the
+tracking plan (every event, and the question it answers), reads the numbers,
+and hands cited conclusions to `marketing` (funnel), `business` (unit
+economics), `ops` (trends), and the efficiency audits — so the venture runs on
+one set of measurements instead of three improvised estimates. It specifies
+instrumentation (implementers wire it, with review) and never invents a
+number: unmeasured stays "unmeasured".
+
 ### 6.1 Documentation of record (Chronicler)
 
 Three artifacts kept current so the project's story survives any single session:
@@ -302,8 +337,9 @@ republishes** `overview.html` via the Artifact tool to its recorded URL
 
 DONE = gates green → live verification passed (real client for UI) → docs updated
 when behavior/config changed → PR merged by HITL → **post-deploy verification on
-the deployed instance** for anything user-facing. "Deployed and verified" is the
-finish line, not "PR open".
+the deployed instance** for anything user-facing (`/verify` is the vehicle:
+drive the real flow, confirm monitoring is receiving, record the result).
+"Deployed and verified" is the finish line, not "PR open".
 
 ## 8. Evolution: the loop that improves the loop
 
@@ -319,8 +355,11 @@ finish line, not "PR open".
 ## 9. How this maps to the plugin
 
 - Agents ship with the plugin: `researcher` (V0 validation), `designer`
-  (V1–V2 brand/UX), `business` (V1/V5/V6 model, pricing, business documents),
-  `planner` (mission decomposition), `marketing` (V5–V6 go-to-market),
+  (V1–V2 brand/UX, journeys/IA, V4 usability pass), `architect` (V1
+  shape-before-build option memos), `business` (V1/V5/V6 model, pricing,
+  business documents), `planner` (mission decomposition), `advisor` (decision
+  red-team at the human gates, via `/counsel`), `marketing` (V5–V6
+  go-to-market), `ops` (V6 operations), `analyst` (measurement engine),
   `reviewer`, `chronicler`, and the specialist implementers `backend`,
   `frontend`, `security`, `devops` (CI/CD, deploy, releases).
 - Guardrail hooks (§3) install automatically.
@@ -329,8 +368,11 @@ finish line, not "PR open".
   existing plans + stage-gap report; `fill` mode also drafts the missing
   document deliverables, decisions pending), `/autopilot` (drive an idea to
   launch-ready, §11), `/mission` (plan + drive a multi-session mission),
-  `/release` (cut a version), `/start-work`, `/check-workflow`, `/pre-pr`,
-  `/end-work`, `/quick-fix`, `/retro`.
+  `/counsel` (advisor red-team on a pending decision), `/audit` (on-demand
+  adversarial pillar audit), `/release` (cut a version), `/verify` (post-deploy
+  verification, §7), `/operate` (the V6 loop), `/upgrade-workflow` (bring
+  docs/WORKFLOW.md up to the installed protocol master), `/start-work`,
+  `/check-workflow`, `/pre-pr`, `/end-work`, `/quick-fix`, `/retro`.
 - The `protocol` skill points every session at the project's
   `docs/WORKFLOW.md` (or this master if none exists yet).
 - Templates for the status page, `idea.md`, `flight-plan.md`, `decision-log.md`,
@@ -383,13 +425,15 @@ branch) and the human merges once, at the consolidated launch confirmation.
 
 **What runs autonomously**: the reviewer-verified stage gates. The `researcher`
 validates (and can auto-stop on kill criteria); the `designer` picks a direction
-if pre-authorized; the `business` agent proposes model and pricing (V1) for the
-human to approve with scope; `devops` lays the pipeline (V2) and stages the
-release (V5); `marketing` drafts the launch assets (V5) for the human to publish;
-`backend`/`frontend`/`security` build with a `reviewer` checkpoint per phase
-(one corrective retry, then surface); the `chronicler` keeps the status page live
-as the owner's window; a `decision-log.md` records every autonomous choice and
-how to reverse it.
+if pre-authorized and drafts the journeys/IA; the `architect` shapes stack and
+data model as option memos; the `business` agent proposes model and pricing (V1)
+for the human to approve with scope; `devops` lays the pipeline (V2) and stages
+the release (V5); `marketing` drafts the launch assets (V5) for the human to
+publish; `backend`/`frontend`/`security` build with a `reviewer` checkpoint per
+phase (one corrective retry, then surface); the `chronicler` keeps the status
+page live as the owner's window; a `decision-log.md` records every autonomous
+choice and how to reverse it. At the human gates, `/counsel` convenes the
+`advisor` red-team so each pause arrives with the case against in hand.
 
 **The safety boundary is never crossed autonomously** — even here, these need an
 explicit human confirmation each time (pre-authorization lets you *prepare*, not

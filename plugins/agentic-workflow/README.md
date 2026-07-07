@@ -16,13 +16,20 @@ a permanent record of the journey.
 - **Four pillar gates** checked at every checkpoint and audited before launch.
 - **Agents**: `researcher` (V0 idea validation — cited evidence for and against),
   `designer` (V1–V2 brand/UX — surfaces distinct directions to choose from, then
-  organizes the chosen one into a token system), `business` (V1/V5/V6 — business
-  model, pricing strategy, executive summary and business documents under
-  `docs/product/business/`; proposes, the human decides), `planner` (decomposes
-  a mission into the `.plans/` trio, pre-resolving every brief), `marketing` (V5–V6
-  go-to-market — one file per deliverable under `docs/product/launch/`:
+  organizes the chosen one into a token system; also owns user journeys/IA and
+  the V4 heuristic usability pass), `architect` (V1 shape-before-build — stack
+  and data-model decisions as option memos; the human decides), `business`
+  (V1/V5/V6 — business model, pricing strategy, executive summary and business
+  documents under `docs/product/business/`; proposes, the human decides),
+  `planner` (decomposes a mission into the `.plans/` trio, pre-resolving every
+  brief), `advisor` (decision red-team convened at the human gates via
+  `/counsel` — argues the strongest case against, never decides), `marketing`
+  (V5–V6 go-to-market — one file per deliverable under `docs/product/launch/`:
   positioning, landing copy, per-channel announcements, channel plan,
-  post-launch content plan; the human publishes), `reviewer` (fresh-context, four pillar lenses + QA +
+  post-launch content plan; the human publishes), `ops` (V6 operations —
+  error/cost triage, runbooks, postmortems; read-only against production),
+  `analyst` (measurement engine — tracking plan and cited numbers for funnel,
+  economics, and audits), `reviewer` (fresh-context, four pillar lenses + QA +
   architecture), `chronicler` (keeps CHANGELOG, a posterity JOURNEY, and the
   live owner status page), and specialist implementers `backend`, `frontend`,
   `security`, `devops` (CI/CD, GitHub workflows, deploy, releases) — each
@@ -36,8 +43,12 @@ a permanent record of the journey.
   and gates, nudges doc updates on high-impact files.
 - **Commands**: `/init-workflow`, `/adopt` (one-command adoption of an existing
   project — bootstrap, convert existing plans, stage-gap report; `/adopt fill`
-  also drafts the missing document deliverables), `/autopilot`,
-  `/mission`, `/release`, `/start-work`, `/check-workflow`, `/pre-pr`,
+  also drafts the missing document deliverables), `/autopilot`, `/mission`,
+  `/counsel` (advisor red-team on a pending decision), `/audit` (on-demand
+  adversarial pillar audit), `/release`, `/verify` (post-deploy verification on
+  the deployed instance), `/operate` (the V6 loop — errors, funnel, costs,
+  economics in one pass), `/upgrade-workflow` (bring a project's protocol copy
+  up to the installed master), `/start-work`, `/check-workflow`, `/pre-pr`,
   `/end-work`, `/quick-fix`, `/retro`.
 - **A skill** that points every session at the project's protocol.
 

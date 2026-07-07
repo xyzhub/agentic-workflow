@@ -1,6 +1,6 @@
 ---
 description: Close a work session cleanly — verify, commit, update the record, hand off.
-allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, Task]
+allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, Task, Artifact, SlashCommand]
 ---
 
 Complete the current work session (Agentic Workflow §4 "Close"). Run before a
@@ -47,8 +47,8 @@ Artifact tool to the URL in its `artifact-url` comment.
 git push -u origin <branch>
 ```
 
-Reference `/pre-pr` before opening the PR. **Never merge the default branch** —
-that's the human owner's act.
+Run `/pre-pr` before opening the PR (no remote yet → it says so; skip the
+push). **Never merge the default branch** — that's the human owner's act.
 
 ## Output
 

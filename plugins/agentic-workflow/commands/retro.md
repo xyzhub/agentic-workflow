@@ -18,12 +18,14 @@ or memory.
 
 ## Turn each lesson into an action
 
-- A durable rule → edit `docs/WORKFLOW.md` (a pillar rule, a gotcha, a gate)
-  via PR like any other change.
+- A durable rule → edit `docs/WORKFLOW.md` — in its **Local amendments**
+  section, so `/upgrade-workflow` preserves it — via PR like any other change.
 - A stale doc → fix it now (stale-doc rule).
 - A project-specific fact → the conventions file or repo docs.
 - An agent-behavioral lesson → auto-memory (not both places).
 - A missing guardrail → propose a hook change.
+- A behavioral regression an automated check could have caught → add a scenario
+  to the project's eval suite (§10), if it has one.
 
 ## Output
 

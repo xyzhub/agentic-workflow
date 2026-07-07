@@ -19,8 +19,8 @@ Name the venture stage, then pick the altitude:
 ## 2. Branch
 
 ```bash
-git fetch origin -q
-git checkout <default> && git pull -q
+# fetch/pull only when a remote exists (fresh V0–V2 projects may have none yet)
+git remote get-url origin >/dev/null 2>&1 && { git fetch origin -q; git checkout <default> && git pull -q; } || git checkout <default>
 git checkout -b <type>/<short-description>    # feat/…, fix/…  — never the default branch
 ```
 
