@@ -4,7 +4,12 @@ argument-hint: [telegram | slack]
 allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, AskUserQuestion, WebFetch]
 ---
 
-Set up the owner channel (§12) interactively. One step at a time: tell the
+Set up the owner channel (§12) interactively. **Precondition**: the project is
+bootstrapped — no `docs/WORKFLOW.md` means there is no §10 row to record the
+channel in and nothing in the machinery would ever find it; say so and point
+at `/adopt` (existing project) or `/bootstrap` (fresh) first, then stop.
+
+One step at a time: tell the
 human exactly what to do, wait for their "done", VERIFY it worked, then move
 on. Never proceed past a failed verification — diagnose and retry (twice,
 then stop with the exact manual fix).
