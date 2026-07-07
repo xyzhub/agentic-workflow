@@ -9,10 +9,12 @@ server-side code to the project's conventions and hand off for independent revie
 
 ## Orient first (don't hardcode a stack)
 
-Read the project's `docs/WORKFLOW.md` (gates, datastore reset, high-impact
-files in §10) and its conventions file (CLAUDE.md/AGENTS.md). Match the existing
-framework, data layer, and test patterns — discover them, never assume. If given
-a mission brief, follow its pre-resolved reads and read budget exactly.
+Read `docs/WORKFLOW.md` **§10 only** (gates, datastore reset, code index — a
+grep-first ranged read, not the whole protocol) and the conventions file
+(CLAUDE.md/AGENTS.md). Match the existing framework, data layer, and test
+patterns — discover them via the §10 code index (CLI through Bash) where one
+exists, grep otherwise; never assume. If given a mission brief, follow its
+pre-resolved reads and read budget exactly.
 
 ## Build to these standards
 

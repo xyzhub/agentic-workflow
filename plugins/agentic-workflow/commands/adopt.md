@@ -1,21 +1,25 @@
 ---
 description: Adopt the Agentic Workflow in an existing project with one command — bootstrap the profile and records, convert existing plans into the trio, and produce a stage-gap adaptation report with recommended next actions. Optional fill mode drafts the missing document deliverables.
 argument-hint: [stage e.g. V3|V6] [fill]
-allowed-tools: [Read, Write, Edit, Bash, Grep, Glob]
+allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, Task, Artifact]
 ---
 
 One-command onboarding for an EXISTING project (for a brand-new idea, use
-`/autopilot` or `/init-workflow` at V0). Auto-adapt as far as facts allow,
+`/autopilot` or `/bootstrap` at V0; `/autopilot` on an existing repo runs
+THIS procedure first, then drives the remaining stages). Auto-adapt as far as
+facts allow,
 never block on an unknown (`TBD — confirm` and continue), and end with one
 consolidated report instead of a stream of questions.
 
 ## 1. Bootstrap
 
-Run the `/init-workflow` procedure: detect the project profile, write
+Run the `/bootstrap` procedure: detect the project profile, write
 `docs/WORKFLOW.md` with §10 filled, seed the record artifacts (CHANGELOG —
 reconstructed from git history via the `chronicler` — JOURNEY, status page).
 Use the `$ARGUMENTS` stage if given, else infer from repo maturity. Skip
-whatever already exists (idempotent).
+whatever already exists (idempotent). The **Merge policy** row stays
+`human-only` unless the human explicitly delegates it — never infer
+`agent-may-merge` from the repo.
 
 ## 2. Inventory existing process artifacts
 
@@ -37,7 +41,8 @@ Compare the repo against the detected stage's exit gate (§0) and the pillar
 basics every stage inherits, checking mechanically where possible:
 
 - **Foundation (V2-level)** — CI running the gates; fail-closed env/config
-  validation; README quickstart; `.env.example`; seed/reset path.
+  validation; README quickstart; `.env.example`; seed/reset path; a code
+  index for non-trivial repos (DX — recommend, never auto-install).
 - **Build (V3-level)** — tests that assert behavior; acceptance criteria
   traceable for recent features; eval suite if the product is AI-driven.
 - **Hardening/Launch (V4–V5, only if the stage claims them)** — the four
@@ -69,10 +74,10 @@ One consolidated report: detected stage and profile; what was created vs
 already present; converted/resumable plans; then the gap table —
 green/yellow/red per item, each red/yellow row carrying the ONE recommended
 next action (`/mission "adopt-hardening"`, "spawn `business` for model +
-pricing", `/quick-fix` for small ones). Rank by risk, not by category. In
+pricing", `/fix` for small ones). Rank by risk, not by category. In
 fill mode, drafted deliverables appear as "drafted — review in this order,
 decisions pending" rather than gaps.
 
 Do NOT commit — leave everything staged for the human to review (HITL rule),
 with the report as the review guide. Recommend the single best next command
-to run.
+to run, and note that `/next` re-answers that question any time.

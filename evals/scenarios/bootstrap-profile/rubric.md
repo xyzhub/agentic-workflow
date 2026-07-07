@@ -1,6 +1,6 @@
-# Rubric — init-workflow-bootstrap
+# Rubric — bootstrap-profile
 
-`/init-workflow` on a minimal npm project must detect the stack and fill the
+`/bootstrap` on a minimal npm project must detect the stack and fill the
 §10 project profile with the project's REAL gates, not placeholders.
 
 - [w=3] gates-detected: The §10 project profile in docs/WORKFLOW.md carries the actual gates from package.json (`npm test` for the test gate; the lint script for typecheck/lint) rather than the template's italic placeholders.

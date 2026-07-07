@@ -1,7 +1,7 @@
 ---
 description: Bootstrap this project into the Agentic Workflow — detect the stack, write docs/WORKFLOW.md with a filled project profile, and seed the record artifacts.
 argument-hint: [stage e.g. V0|V2|V6]
-allowed-tools: [Read, Write, Edit, Bash, Grep, Glob]
+allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, Task, Artifact]
 ---
 
 Bootstrap the current repository into the Agentic Workflow. Idempotent — if an
@@ -26,9 +26,21 @@ then. Ask questions only when a human is actually present to answer them.
   etc.; and how one confirms on the deployed instance.
 - **High-impact files** — the conventions file (CLAUDE.md/AGENTS.md), schema,
   architecture docs.
+- **Code index** — a `.codegraph/` dir, an index MCP server in the project's
+  MCP config, or an index CLI on PATH. Record HOW to query it (the CLI
+  command agents run via Bash, and/or MCP tool names). None and the repo is
+  beyond trivial size → recommend one in the report (DX pillar: the repo
+  legible to models); `none` in the profile until then.
+- **Memory/recall store** — optional; only record one that already exists.
+- **Owner channel** — cannot be inferred; leave `none` and recommend
+  `/connect` in the report (it guides the setup and proves the round-trip).
 - **Issue tracker** — GitHub Issues (`gh`), Linear, none.
 - **HITL** — the human owner's name (from git config/repo ownership if
   plausible; otherwise `TBD — confirm`).
+- **Merge policy** — always default `human-only`. Write `agent-may-merge
+  (delegated <date>)` ONLY from an explicit human answer (or the flight plan's
+  Merge authority field) — never infer delegation from the repo, even if its
+  history shows bot merges.
 - **Current stage** — infer V0–V6 from repo maturity (no code → V0; skeleton +
   CI → V2; shipping features → V3; deployed with real users → V5/V6). Use the
   `$ARGUMENTS` value if the user passed one.
@@ -37,8 +49,12 @@ then. Ask questions only when a human is actually present to answer them.
 
 Copy the bundled master from `${CLAUDE_PLUGIN_ROOT}/templates/WORKFLOW.md` into
 `docs/WORKFLOW.md`, then **replace §10 (Project profile)** with the concrete
-values from step 1. Drop the "this is the bundled master" banner at the top. This
-project-local copy now wins over the bundled one.
+values from step 1. Replace the "this is the bundled master" banner at the top
+with a version stamp — `<!-- protocol-master: vX.Y.Z -->`, where X.Y.Z is the
+plugin version from `${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json` —
+`/check` uses it to detect protocol drift. Keep the empty **Local
+amendments** section at the end. This project-local copy now wins over the
+bundled one.
 
 ## 3. Seed the record artifacts (§6.1)
 
@@ -67,8 +83,9 @@ duplicate the protocol into it.
 
 Summarize: detected stage, the filled profile (gates, deploy, HITL), the files
 created/updated, the status-page URL, and the recommended next action for the
-current stage (e.g. at V0: fill idea.md and get a go/no-go; at V3: `/start-work`;
-at V6: plan a growth mission).
+current stage (e.g. at V0: fill idea.md and get a go/no-go; at V3: `/start`;
+at V6: plan a growth mission). Close with: "`/next` answers this question any
+time; the Quick reference at the top of docs/WORKFLOW.md has the full map."
 
 Do NOT commit — leave the changes staged-and-visible for the human to review,
 per the workflow's HITL rule.

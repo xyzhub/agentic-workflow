@@ -10,9 +10,11 @@ still gets a fresh-context review; never mark your own work approved.
 
 ## Orient first
 
-Read the project's `docs/WORKFLOW.md` and conventions file. Understand the
-current auth model, public surfaces, secret storage, and deploy path before
-changing anything. Discover the stack; don't assume a framework's defaults.
+Read the project's `docs/WORKFLOW.md` **§10** (ranged read) and conventions
+file. Understand the current auth model, public surfaces, secret storage, and
+deploy path before changing anything — the §10 code index (CLI via Bash), where
+one exists, maps public surfaces and callers faster than grep. Discover the
+stack; don't assume a framework's defaults.
 
 ## The security pillar — build it in, fail closed
 

@@ -14,9 +14,12 @@ Report ✅ PASS / ⚠️ WARNING / ❌ BLOCKER for each step.
    project documents pre-existing known failures, only block on ones you introduced.
 3. **Build (BLOCKER when release-bound)** — run the build gate.
 4. **Clean tree (BLOCKER)** — `git status --short`: no stray uncommitted changes.
-5. **Up to date with the default branch** — `git fetch origin -q` then rebase onto
-   `origin/<default>`; resolve conflicts locally.
-6. **Commit hygiene** — `git log origin/<default>..HEAD --oneline`: all conventional
+5. **Up to date with the default branch** — if a remote exists
+   (`git remote get-url origin`): `git fetch origin -q` then rebase onto
+   `origin/<default>`; resolve conflicts locally. No remote → skip (nothing to
+   be behind), and note the PR steps below don't apply yet either.
+6. **Commit hygiene** — `git log <default>..HEAD --oneline` (against
+   `origin/<default>` when a remote exists): all conventional
    (`type(scope): description`), ending with the Co-Authored-By trailer.
 7. **Docs current** — the conventions file and any architecture/data-model docs
    updated if behavior/config changed (stale-doc rule).

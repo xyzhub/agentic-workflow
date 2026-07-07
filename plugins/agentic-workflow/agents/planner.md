@@ -14,8 +14,9 @@ decided; you turn them into an executable plan.
 Execution sessions must never explore — that's your job now, so their briefs can
 be followed without discovery. Explore efficiently:
 
-- If a code index exists (codegraph or similar), use it for where/what/
-  blast-radius before grep.
+- If a code index exists (§10 **Code index** records how to query it — e.g.
+  codegraph), use it for where/what/blast-radius before grep. Your toolset has
+  no MCP tools: run the index's CLI via Bash.
 - Grep-first ranged reads for large files (grep the anchor, read ±30–50 lines);
   never read a >400-line file whole.
 - Build a **large-files table** (file → measured line count via `wc -l`) for the

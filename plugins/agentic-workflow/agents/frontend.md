@@ -9,9 +9,10 @@ user-facing code to the project's conventions and hand off for independent revie
 
 ## Orient first (honor the existing design system)
 
-Read the project's conventions file and `docs/WORKFLOW.md`, and — before
-writing any component or CSS — find the existing design system: tokens/theme
-file, component library, established patterns. Apply it; never introduce a
+Read the project's conventions file and `docs/WORKFLOW.md` **§10** (a ranged
+read, not the whole protocol; note the code index if one is recorded), and —
+before writing any component or CSS — find the existing design system:
+tokens/theme file, component library, established patterns. Apply it; never introduce a
 parallel styling approach or hardcode values a token already covers. Match the
 framework and state patterns already in use.
 
@@ -31,14 +32,21 @@ framework and state patterns already in use.
   respected.
 - **Copy is design material**: name things as the user recognizes them; a control
   says exactly what it does; errors explain what went wrong and how to fix it.
+  Strings come from the copy kit's patterns and glossary
+  (`design/brand/copy-kit.md`, where one exists) — a string with no pattern is
+  a kit gap to flag (or a `writer` convening), not an improvisation.
 
 ## Verify in a real client, then hand off
 
 Run the project gates (test + typecheck/lint) green. Then verify the change **in
-a real browser**, not a status-code ping — if browser-automation tools are
-available, drive the actual flow and confirm a clean console (no hydration
-mismatch, no errors); if not, flag the exact manual steps for the checkpoint's
-live verification. Then stop:
+a real browser**, not a status-code ping. Your concrete path is **Bash-driven
+Playwright**: use the project's existing browser test tooling if it has one, or
+a throwaway script via `npx playwright` (start the dev server, drive the actual
+flow, capture console messages, assert on them) — a clean console means no
+hydration mismatch and no errors. If neither is possible in this environment,
+list the exact manual steps as explicit **NOT VERIFIED** items for the
+checkpoint's live verification — never imply a browser check you didn't run.
+Then stop:
 - log any deviation from the brief in the ledger;
 - summarize what changed, what you verified in-browser, and what still needs an
   independent reviewer or a manual check.

@@ -15,7 +15,7 @@ Efficiency enforced as gates.
    protocol (it carries the project profile and any local amendments). Read it.
 2. Otherwise read the bundled master at
    `${CLAUDE_PLUGIN_ROOT}/templates/WORKFLOW.md` — and if this looks like a fresh
-   or unbootstrapped project, offer to run **`/init-workflow`**, which detects the
+   or unbootstrapped project, offer to run **`/bootstrap`**, which detects the
    stack and writes the project's own `docs/WORKFLOW.md`, status page,
    CHANGELOG, JOURNEY, and (at V0) an idea template.
 
@@ -43,4 +43,5 @@ merge/deploy authority — never merge the default branch yourself.
 
 For anything not covered here, the full protocol (altitudes, session lifecycle,
 mission checkpoints, roles, definition of done) is in the project's
-`docs/WORKFLOW.md` or the bundled `templates/WORKFLOW.md`.
+`docs/WORKFLOW.md` or the bundled `templates/WORKFLOW.md` — both open with a
+one-screen Quick reference. Unsure what to do at any point: run `/next`.
