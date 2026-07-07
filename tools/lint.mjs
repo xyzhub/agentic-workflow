@@ -106,6 +106,14 @@ function checkCommands() {
     if (fm['allowed-tools'])
       for (const t of toolList(fm['allowed-tools']))
         if (!KNOWN_TOOLS.has(t)) fail(file, 1, `unknown tool "${t}"`);
+    // A command that instructs agent spawning must be allowed the Task tool —
+    // otherwise headless runs (claude -p, evals, autopilot) are denied at the
+    // permission layer. "it spawns" (describing another command) doesn't count.
+    const text = read(file);
+    const m = text.replace(/^---\n[\s\S]*?\n---/, (s) => ' '.repeat(s.length))
+      .match(/(?<!\bit )\bspawn(?:s|ing|ed)?\b/i);
+    if (m && !(fm['allowed-tools'] && toolList(fm['allowed-tools']).includes('Task')))
+      fail(file, lineOf(text, m.index), 'instructs agent spawning but allowed-tools lacks "Task"');
   }
 }
 

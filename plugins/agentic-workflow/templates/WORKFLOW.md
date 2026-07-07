@@ -4,6 +4,11 @@
 > When a project has its own `docs/WORKFLOW.md` (written by `/init-workflow`),
 > THAT copy wins — it carries the project profile (§10) and any local amendments.
 > This master is the fallback and the thing `/init-workflow` copies from.
+> When copying, `/init-workflow` replaces this banner with a version stamp
+> (`<!-- protocol-master: vX.Y.Z -->`, from the plugin's manifest) that
+> `/check-workflow` compares against the installed plugin to detect protocol
+> drift. Keep project-specific edits in the **Local amendments** section at the
+> end so upgrades stay mechanical.
 
 One workflow that can take any project from a raw idea to a working, viable
 product — and keep evolving it. Two halves:
@@ -30,7 +35,7 @@ gate is a logged deviation, not a shortcut.
 | **V1 Definition** | PRD + MVP scope (what's deliberately OUT), user journeys with acceptance criteria, data-model sketch, stack decision with rationale; brand/UX directions from the `designer` agent for the owner to choose; business model + pricing proposal from the `business` agent (`docs/product/business/`) — the model shapes scope and the data model | Stop-the-line: no implementation without acceptance criteria. **Human approves scope** (with the business model and the brand direction) |
 | **V2 Foundation** | Deployable skeleton (`devops` lays CI + deploy): repo + CI gates (test/typecheck), deploy pipeline + health/ready checks, validated env with a **fail-closed production guard**, auth decision wired, error-monitoring hook, seed/reset path, README quickstart, chosen design system as tokens | "Hello world" **deployed and live-verified**; CI green. Security and DX are laid here — retrofitting costs 10× |
 | **V3 Build (MVP)** | The product, feature by feature, via the execution machinery (§1–§5). Every checkpoint applies the pillar lenses | All MVP acceptance criteria met; behavioral/eval suite exists for AI-driven products |
-| **V4 Hardening** | Four explicit audits (§0.2): security review, UX pass, DX pass, efficiency pass — plus ops readiness (backups, monitoring, runbook, guard coverage). Audits run as an **adversarial multi-vote** (§5): lens-partitioned parallel reviewers, conservative merge | Reviewer-verified production-readiness checklist (full seven-lens scorecard); findings fixed or accepted in writing |
+| **V4 Hardening** | Four explicit audits (§0.2): security review, UX pass, DX pass, efficiency pass — plus ops readiness (backups, monitoring, runbook, guard coverage). Audits run as an **adversarial multi-vote** (§5): lens-partitioned parallel reviewers, conservative merge | Reviewer-verified production-readiness checklist (full six-lens scorecard); findings fixed or accepted in writing |
 | **V5 Launch** | Production deploy (`devops` prepares, `/release` cuts the version), first-user onboarding, **live end-to-end verification on the deployed instance**, monitoring confirmed receiving events, rollback tested; launch assets from the `marketing` agent under `docs/product/launch/` (one file per deliverable: positioning, landing copy, per-channel announcements, post-launch content plan, indexed by `launch-plan.md` with the channel plan) — **the human publishes**; pricing finalized against measured costs and the executive summary refreshed (`business`) | Pre-launch **multi-vote review** (§5) green; first real user/business served. **Human owns the launch decision** |
 | **V6 Operate & evolve** | Growth is *users and features*: funnel/channel review against the launch metrics (`marketing`) beside feedback → ranked feature ideas → user-reviewed → growth missions (phased trio with locked decisions); ops review of errors/costs; retros that amend THIS document | Continuous — each growth mission re-cycles V3–V5 gates |
 
@@ -95,7 +100,7 @@ and speed wins at V0–V2 prototyping — say which mode you're in.
 | **Mission** | Too big for one sitting: multi-feature, migration, audit | Plan trio + phases + checkpoints (§5) | `.plans/` ledger, reviewer gates |
 
 Name the stage (§0), then route. When unsure between Session and Mission: if you
-cannot pre-resolve all file targets in one exploration pass, it's an Mission.
+cannot pre-resolve all file targets in one exploration pass, it's a Mission.
 Escalating mid-flight is fine (log it); silently sprawling is not.
 
 ## 2. Principles
@@ -129,7 +134,10 @@ Shipped by this plugin as hooks. Advisory except where marked:
 | Prompt submit | Reminder when the working tree is on the default branch |
 | `git commit` | Conventional-format reminder |
 | `git push` | **BLOCKS** any push while on the default branch (feature branches only) |
+| `git push` | **BLOCKS** any refspec targeting the default branch (`HEAD:main`, `feature:main`, `:main`) — never sanctioned, even with delegated merge authority |
+| `git push --tags` / `--follow-tags` | Warns that tag pushes may fire a release/deploy pipeline — per `/release`, the human runs them |
 | `git push` | Warns when tracked files are modified-but-uncommitted (untracked scratch dirs don't warn) |
+| `gh pr merge` | **BLOCKS** unless the §10 **Merge policy** is `agent-may-merge` (fail closed when unset/absent); when delegated, reminds: merge only on a reviewer APPROVE |
 | `gh pr create` | Reminder to have run the gates |
 | `Write`/`Edit` | Reminder to update docs when high-impact files change |
 
@@ -175,7 +183,10 @@ CI/deploy-touching changes get extra checkpoint scrutiny; **one-corrective-retry
 to the human.
 
 **Gate policy** (chosen at mission start; default `human-merge`):
-- `human-merge` — on APPROVE, pause for HITL to merge each phase branch.
+- `human-merge` — on APPROVE, pause for HITL to merge each phase branch. Where
+  the §10 **Merge policy** is `agent-may-merge`, the orchestrator may merge the
+  reviewer-APPROVEd phase PR itself (logged in the ledger) instead of pausing —
+  the delegation covers *who clicks merge*, never *skipping the review*.
 - `batch` — on APPROVE, the orchestrator merges the phase branch into a
   long-lived `mission/<name>-integration` branch — **never the default branch**,
   so the push-block guardrail (§3) and the merge authority (§11 safety boundary)
@@ -213,8 +224,8 @@ silently changed.
 
 | Role | Who | Duty |
 |---|---|---|
-| **Implementer** | The main session agent, or a **specialist implementer** subagent (`backend`, `frontend`, `security`) — used for a domain slice or to run slices in parallel in a mission | Route, build to convention, verify, document, hand off |
-| **Reviewer** | The `reviewer` agent — always a fresh context | Checkpoint reviews; pre-merge review of risky changes; five pillar lenses + QA + architecture in one pass |
+| **Implementer** | The main session agent, or a **specialist implementer** subagent (`backend`, `frontend`, `security`, `devops`) — used for a domain slice or to run slices in parallel in a mission | Route, build to convention, verify, document, hand off |
+| **Reviewer** | The `reviewer` agent — always a fresh context | Checkpoint reviews; pre-merge review of risky changes; four pillar lenses + QA + architecture in one pass |
 | **Chronicler** | The `chronicler` agent | Keeps the record (§6.1); documents, never touches product code |
 | **HITL** | The human owner (§10) | Answers open questions, merges the default branch, owns deploys and anything irreversible |
 
@@ -337,6 +348,7 @@ concrete values.
 | Key | Value |
 |---|---|
 | **HITL (merge/deploy authority)** | _(the human owner's name)_ |
+| **Merge policy** | _(`human-only` — the default — or `agent-may-merge (delegated <date>)`; only an explicit human decision sets the latter. Delegation lets agents merge **reviewer-APPROVEd PRs**; direct pushes to the default branch stay blocked, and deploys/spending/publishing are never delegable)_ |
 | **Default branch** | _(e.g. main)_ |
 | **Test gate** | _(e.g. `npm test`)_ |
 | **Typecheck/lint gate** | _(e.g. `npm run typecheck`)_ |
@@ -353,6 +365,10 @@ concrete values.
 the bare-minimum human input — validation, definition, design choice, foundation,
 build, hardening, and launch-prep — pausing only at the gates a human must own.
 It's the same workflow, orchestrated end-to-end instead of session-by-session.
+On an **existing project**, autopilot first runs the `/adopt` procedure
+(profile, plan conversion, stage-gap audit), then resumes at the first stage
+whose exit gate isn't met — the gap report's findings become its first work
+items; existing artifacts are settled history, not gates to re-run.
 Autopilot does not run V6 operations; at the launch gate it hands the owner a V6
 operating brief (feedback channels, ranked growth backlog, retro cadence) and ends.
 
@@ -377,9 +393,12 @@ how to reverse it.
 
 **The safety boundary is never crossed autonomously** — even here, these need an
 explicit human confirmation each time (pre-authorization lets you *prepare*, not
-*fire*): merging the default branch, deploying to production / going live,
-spending beyond the flight-plan ceiling, publishing outward or messaging on the
-owner's behalf, and destructive/irreversible actions. These are **batched**: at
+*fire*): merging the default branch (unless the §10 **Merge policy** delegates it
+— the delegation itself is a human decision, and even then only reviewer-APPROVEd
+PRs, never direct pushes), deploying to production / going live, spending beyond
+the flight-plan ceiling, publishing outward or messaging on the owner's behalf,
+and destructive/irreversible actions. Merge authority is the ONE delegable item;
+the rest are never delegable. These are **batched**: at
 the launch boundary the human gets ONE consolidated "ready to launch" summary to
 confirm, not a stream of interruptions.
 
@@ -391,3 +410,10 @@ of the machinery (§2): its durable state is files (flight plan, decision log,
 stage artifacts, status page), it ends cleanly at a stage boundary when its
 context fills, and `/autopilot continue` re-derives the current stage from
 those files and resumes — locked decisions stay decided.
+
+## Local amendments
+
+_(Project-specific rules land here. `/check-workflow`'s upgrade procedure
+preserves this section and §10 verbatim when re-copying a newer protocol
+master, so amendments survive upgrades — anything edited elsewhere in the
+document will be flagged as drift instead.)_

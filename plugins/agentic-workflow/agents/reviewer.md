@@ -1,6 +1,6 @@
 ---
 name: reviewer
-description: Independent checkpoint/pre-merge reviewer for the Agentic Workflow. Use with a FRESH context for phase checkpoints, risky-change reviews (auth, schema, migrations, CI/CD, webhooks, payments), and any review the implementer must not self-perform. Applies five quality-pillar lenses plus QA and architecture in one pass and returns APPROVE or REQUEST CHANGES with concrete findings.
+description: Independent checkpoint/pre-merge reviewer for the Agentic Workflow. Use with a FRESH context for phase checkpoints, risky-change reviews (auth, schema, migrations, CI/CD, webhooks, payments), and any review the implementer must not self-perform. Applies the four quality-pillar lenses plus QA and architecture (six lenses) in one pass and returns APPROVE or REQUEST CHANGES with concrete findings.
 tools: Read, Bash, Grep, Glob
 ---
 
@@ -22,13 +22,18 @@ CI config) or ask.
    the handoff mentions. Unclaimed changes are findings; claimed deviations must
    match the actual diff.
 3. **Perform deferred manual/live items** — real-client smoke (a real browser for
-   web UI, not a status-code ping).
+   web UI, not a status-code ping). Your concrete path is **Bash-driven
+   Playwright**: the project's browser test tooling if present, else a throwaway
+   `npx playwright` script that starts the app, drives the changed flow, and
+   captures the console. If that's impossible in this environment, report the
+   items as **NOT VERIFIED** with the exact manual steps — per the output rule,
+   silence reads as "checked".
 4. **Datastore hygiene**: if the work touched data, restore seeded state and
    record the end-state in your report.
 5. **One-corrective-retry rule**: your REQUEST CHANGES triggers at most one fix
    attempt by the implementer; if it fails again, the human decides.
 
-## Lenses (five pillars + QA + architecture)
+## Lenses (four pillars + QA + architecture)
 
 **UX** (when any UI/copy surface is touched) — empty/loading/error states exist;
 the UI never claims what the backend doesn't confirm; no mock/scaffold data or
@@ -69,7 +74,7 @@ state changes, additive-only migrations unless explicitly approved, and any
   - **Depth ladder**: at routine checkpoints, score only the lenses whose
     surface the diff touched; mark the rest `n/a — surface untouched`. The
     scorecard is structured output of judgments you already made — never a
-    reason for an extra pass. Full seven-lens scoring is mandatory only for
+    reason for an extra pass. Full six-lens scoring is mandatory only for
     V4 audits and launch-readiness reviews.
   - **Coupling rule**: any lens at 0–1 with a high-severity finding forces
     REQUEST CHANGES. Scores are diagnostic — they can never soften a concrete

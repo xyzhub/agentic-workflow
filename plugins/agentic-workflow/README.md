@@ -22,7 +22,7 @@ a permanent record of the journey.
   a mission into the `.plans/` trio, pre-resolving every brief), `marketing` (V5–V6
   go-to-market — one file per deliverable under `docs/product/launch/`:
   positioning, landing copy, per-channel announcements, channel plan,
-  post-launch content plan; the human publishes), `reviewer` (fresh-context, five pillar lenses + QA +
+  post-launch content plan; the human publishes), `reviewer` (fresh-context, four pillar lenses + QA +
   architecture), `chronicler` (keeps CHANGELOG, a posterity JOURNEY, and the
   live owner status page), and specialist implementers `backend`, `frontend`,
   `security`, `devops` (CI/CD, GitHub workflows, deploy, releases) — each
@@ -30,8 +30,10 @@ a permanent record of the journey.
 - **Autopilot mode**: `/autopilot "<idea>"` drives the whole lifecycle
   (validate → define → design → build → harden → launch-prep) from a one-line
   idea and a short flight plan, pausing only at the gates a human must own.
-- **Guardrail hooks**: blocks pushes to the default branch, reminds on commit
-  format and gates, nudges doc updates on high-impact files.
+- **Guardrail hooks**: blocks pushes to (or refspecs targeting) the default
+  branch and `gh pr merge` unless the project's Merge policy delegates it
+  (fail closed), warns on tag pushes that may deploy, reminds on commit format
+  and gates, nudges doc updates on high-impact files.
 - **Commands**: `/init-workflow`, `/adopt` (one-command adoption of an existing
   project — bootstrap, convert existing plans, stage-gap report; `/adopt fill`
   also drafts the missing document deliverables), `/autopilot`,

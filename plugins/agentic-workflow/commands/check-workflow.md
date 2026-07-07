@@ -18,6 +18,12 @@ Quick workflow health check. Report a traffic-light status at the end.
 5. **Mission ledger** — if `.plans/*.state.md` exists, report `Next up:` and any
    blocked items.
 6. **Stage** — name the current venture stage (V0–V6) and the next gate.
+7. **Protocol drift** — if `docs/WORKFLOW.md` exists, compare its
+   `<!-- protocol-master: vX.Y.Z -->` stamp against the installed plugin
+   version (`${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json`). Older or
+   missing stamp → 🟡 with the upgrade procedure: re-copy the bundled master,
+   restore §10 (project profile) and the **Local amendments** section verbatim,
+   write the new stamp, and diff-review the result like any other change.
 
 ## Output
 

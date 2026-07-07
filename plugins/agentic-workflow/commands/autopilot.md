@@ -1,12 +1,15 @@
 ---
 description: Autopilot mode — drive an idea through the full venture lifecycle (V0→V5, then a V6 handoff) with the bare-minimum human input, pausing only at genuinely irreversible or spending gates.
-argument-hint: "<one-line idea>" | continue
-allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, WebSearch, WebFetch]
+argument-hint: "<one-line idea or goal for an existing project>" | continue
+allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, WebSearch, WebFetch, Task, SlashCommand]
 ---
 
-Take the idea in `$ARGUMENTS` and drive it toward a launched product with as
-little human intervention as safely possible (Agentic Workflow §11). You
-orchestrate the agents and stages; you do NOT skip the safety boundary.
+Take the idea (or, for an existing project, the goal) in `$ARGUMENTS` and drive
+it toward a launched product with as little human intervention as safely
+possible (Agentic Workflow §11). Autopilot works greenfield (a raw idea, from
+V0) and brownfield (an existing repo — adopt first per step 0.5 below, then
+resume mid-lifecycle). You orchestrate the agents and stages; you do NOT skip
+the safety boundary.
 
 **You are an orchestrator — protect your context.** Ingest agent reports and
 stage artifacts, never corpora: spawn agents for all reading and building, and
@@ -46,6 +49,23 @@ Record this as `docs/product/flight-plan.md`, from the bundled template
 (`${CLAUDE_PLUGIN_ROOT}/templates/flight-plan.md`). It is your standing
 authorization; anything outside it comes back to the human.
 
+## 0.5 Existing project? Adopt first, then resume mid-lifecycle
+
+If the repo already contains product code, do NOT assume V0. Run the `/adopt`
+procedure first — profile bootstrap, conversion of existing plans into the
+trio, stage-gap audit (its fill mode only if the flight plan authorizes
+drafting the missing documents). Then:
+
+- Resume at the **first stage whose exit gate isn't met** — the same
+  file-derivation logic `continue` mode uses — instead of starting at V0.
+- The adaptation report's red/yellow rows become the first work items: route
+  each by altitude (a gap-closing `/mission`, a session, or `/quick-fix`),
+  then continue the normal stage sequence toward launch.
+- Artifacts that already exist (idea.md, a PRD, CI) are settled history —
+  improve what the gate audit flags; never re-litigate or regenerate them.
+- `$ARGUMENTS` here is a goal for the existing product ("take it to launch",
+  "harden and ship v2") — fold it into the flight plan's Idea field.
+
 ## 1. Drive the lifecycle
 
 Run V0→V5, making the reviewer-verified gates yourself and surfacing only the
@@ -78,7 +98,7 @@ owner can watch live.
   (§5): 2–3 fresh lens-partitioned `reviewer` instances in parallel, conservative
   merge (any REQUEST CHANGES blocks; findings unioned). `security` implements
   hardening; fix or record findings. The pre-launch review at V5 repeats the
-  multi-vote with a full seven-lens scorecard.
+  multi-vote with a full six-lens scorecard.
 - **V5 Launch prep** — `devops` stages everything up to the button (deploy
   config, `/release` version cut, runbook, monitoring wired, rollback tested
   against a staging/preview where possible). In parallel, spawn `marketing` to
@@ -102,6 +122,10 @@ These require an explicit human confirmation every time, even in autopilot mode
 — pre-authorization in the flight plan lets you *prepare* them, not *fire* them:
 
 - **Merging the default branch** — you open PRs; the human (HITL) merges.
+  Exception: if the flight plan's **Merge authority** (recorded as the §10 Merge
+  policy) says `agent-may-merge`, you may merge reviewer-APPROVEd PRs yourself —
+  the delegation is the human's explicit, recorded decision, covers only
+  APPROVEd PRs, and never extends to direct pushes or anything below.
 - **Deploying to production / going live** — you stage it; the human triggers it.
 - **Spending money or committing to paid services** beyond the flight-plan ceiling.
 - **Publishing outward** (domains, app stores, public posts) or sending anything
@@ -120,8 +144,9 @@ for a single confirmation, rather than nagging along the way.
   `${CLAUDE_PLUGIN_ROOT}/templates/decision-log.md`): each autonomous decision,
   the options, why you chose, and how to reverse it. This is how a hands-off
   owner audits you.
-- Use a push notification for the moments that need them (a kill-stop, the one
-  brand choice, the launch confirmation) — not routine progress.
+- If the harness provides push notifications, use one for the moments that need
+  them (a kill-stop, the one brand choice, the launch confirmation) — not
+  routine progress.
 
 ## Output
 

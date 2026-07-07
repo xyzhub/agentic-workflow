@@ -11,6 +11,10 @@ what it does._
 - **Budget ceiling**: _(max spend on paid services before checking in, e.g. "$20/mo")_
 - **Risk tolerance**: _(conservative / balanced / aggressive — governs how much
   validation before building)_
+- **Merge authority**: _(`human-only` — the default — or `agent-may-merge`:
+  agents may merge reviewer-APPROVEd PRs themselves. Only an explicit answer
+  here delegates it; "you decide" keeps `human-only`. Recorded in
+  `docs/WORKFLOW.md` §10 as the Merge policy.)_
 
 ## Brand
 _A preference ("clinical and calm", "playful"), a reference, or "you choose" —
@@ -33,6 +37,7 @@ Leave blank to decide at V5._
 ---
 _Standing authorization: within these bounds autopilot proceeds without asking.
 The safety boundary (§11) is never crossed autonomously regardless of what this
-file says: default-branch merges, production deploys, spending beyond the
+file says: default-branch merges (unless Merge authority above delegates them —
+and then only reviewer-APPROVEd PRs), production deploys, spending beyond the
 ceiling, publishing outward, and destructive actions always need an explicit
-human confirmation._
+human confirmation. Merge authority is the one delegable item._

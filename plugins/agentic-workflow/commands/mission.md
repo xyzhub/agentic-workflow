@@ -1,7 +1,7 @@
 ---
 description: Plan and drive a multi-session mission end to end — authors the .plans/ trio (via the planner agent) if needed, then runs it phase by phase with independent checkpoint reviews.
 argument-hint: "<mission name or goal>" [plan | run | continue | replan] [gate: human-merge | batch]
-allowed-tools: [Read, Write, Edit, Bash, Grep, Glob]
+allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, Task]
 ---
 
 Drive a mission (Agentic Workflow §5). `$ARGUMENTS` is the mission name/goal, an
@@ -59,7 +59,10 @@ routine checkpoints — see §5). Include the scorecard in the ledger handoff en
 
 - **APPROVE** → apply the gate policy. `human-merge` (default): pause for the
   **human to merge** the phase branch (never merge the default branch yourself;
-  merging often deploys), then continue. `batch`: merge the phase branch into the
+  merging often deploys) — unless the project's §10 **Merge policy** is
+  `agent-may-merge`, in which case you may merge the APPROVEd phase PR yourself
+  (`gh pr merge`; the guardrail hook checks the policy) and log the merge in the
+  ledger. Then continue. `batch`: merge the phase branch into the
   long-lived `mission/<name>-integration` branch yourself — **never the default
   branch** — log the merge in the ledger, and continue; the human merges the
   integration branch once, at the batched end-of-mission confirmation.

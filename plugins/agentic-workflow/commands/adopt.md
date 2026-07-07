@@ -1,11 +1,13 @@
 ---
 description: Adopt the Agentic Workflow in an existing project with one command — bootstrap the profile and records, convert existing plans into the trio, and produce a stage-gap adaptation report with recommended next actions. Optional fill mode drafts the missing document deliverables.
 argument-hint: [stage e.g. V3|V6] [fill]
-allowed-tools: [Read, Write, Edit, Bash, Grep, Glob]
+allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, Task]
 ---
 
 One-command onboarding for an EXISTING project (for a brand-new idea, use
-`/autopilot` or `/init-workflow` at V0). Auto-adapt as far as facts allow,
+`/autopilot` or `/init-workflow` at V0; `/autopilot` on an existing repo runs
+THIS procedure first, then drives the remaining stages). Auto-adapt as far as
+facts allow,
 never block on an unknown (`TBD — confirm` and continue), and end with one
 consolidated report instead of a stream of questions.
 
@@ -15,7 +17,9 @@ Run the `/init-workflow` procedure: detect the project profile, write
 `docs/WORKFLOW.md` with §10 filled, seed the record artifacts (CHANGELOG —
 reconstructed from git history via the `chronicler` — JOURNEY, status page).
 Use the `$ARGUMENTS` stage if given, else infer from repo maturity. Skip
-whatever already exists (idempotent).
+whatever already exists (idempotent). The **Merge policy** row stays
+`human-only` unless the human explicitly delegates it — never infer
+`agent-may-merge` from the repo.
 
 ## 2. Inventory existing process artifacts
 

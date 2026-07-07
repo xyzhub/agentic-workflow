@@ -37,6 +37,8 @@ prints its path.
 | `reviewer-checkpoint` | the reviewer trusting handoff claims / missing planted flaws / no scorecard |
 | `mission-plan` | `/mission plan` producing briefs that still require exploration |
 | `business-model` | the business agent inventing numbers, deciding instead of proposing, or dishonest economics |
+| `mission-batch-gate` | the batch gate policy merging into main instead of the integration branch, or skipping the independent checkpoint |
+| `adopt-existing-project` | `/adopt` committing, rewriting existing plans, inferring merge delegation, or skipping the gap report |
 
 ## Anatomy of a scenario
 

@@ -1,7 +1,7 @@
 ---
 description: Cut a release — bump version, update the changelog, tag, and prepare the GitHub release. Prepares; the human triggers the production deploy.
 argument-hint: [version e.g. v1.2.0 | major|minor|patch]
-allowed-tools: [Read, Write, Edit, Bash, Grep, Glob]
+allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, Task]
 ---
 
 Prepare a release (Agentic Workflow §7, V5). `$ARGUMENTS` is an explicit version

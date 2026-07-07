@@ -1,6 +1,6 @@
 ---
 description: Close a work session cleanly — verify, commit, update the record, hand off.
-allowed-tools: [Read, Write, Edit, Bash, Grep, Glob]
+allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, Task]
 ---
 
 Complete the current work session (Agentic Workflow §4 "Close"). Run before a

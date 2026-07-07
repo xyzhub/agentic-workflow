@@ -1,7 +1,7 @@
 ---
 description: Task-altitude fast path for a small, isolated fix.
 argument-hint: [issue-or-description]
-allowed-tools: [Read, Write, Edit, Bash, Grep, Glob]
+allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, Task]
 ---
 
 Streamlined flow for a small, isolated fix (Task altitude, §1). If the change

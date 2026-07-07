@@ -35,10 +35,14 @@ framework and state patterns already in use.
 ## Verify in a real client, then hand off
 
 Run the project gates (test + typecheck/lint) green. Then verify the change **in
-a real browser**, not a status-code ping — if browser-automation tools are
-available, drive the actual flow and confirm a clean console (no hydration
-mismatch, no errors); if not, flag the exact manual steps for the checkpoint's
-live verification. Then stop:
+a real browser**, not a status-code ping. Your concrete path is **Bash-driven
+Playwright**: use the project's existing browser test tooling if it has one, or
+a throwaway script via `npx playwright` (start the dev server, drive the actual
+flow, capture console messages, assert on them) — a clean console means no
+hydration mismatch and no errors. If neither is possible in this environment,
+list the exact manual steps as explicit **NOT VERIFIED** items for the
+checkpoint's live verification — never imply a browser check you didn't run.
+Then stop:
 - log any deviation from the brief in the ledger;
 - summarize what changed, what you verified in-browser, and what still needs an
   independent reviewer or a manual check.
