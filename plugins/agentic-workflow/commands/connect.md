@@ -4,7 +4,12 @@ argument-hint: [telegram | slack]
 allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, AskUserQuestion, WebFetch]
 ---
 
-Set up the owner channel (§12) interactively. One step at a time: tell the
+Set up the owner channel (§12) interactively. **Precondition**: the project is
+bootstrapped — no `docs/WORKFLOW.md` means there is no §10 row to record the
+channel in and nothing in the machinery would ever find it; say so and point
+at `/adopt` (existing project) or `/bootstrap` (fresh) first, then stop.
+
+One step at a time: tell the
 human exactly what to do, wait for their "done", VERIFY it worked, then move
 on. Never proceed past a failed verification — diagnose and retry (twice,
 then stop with the exact manual fix).
@@ -29,8 +34,10 @@ Before guiding any creation, check for machine-level credentials (the §12 env
 names in the environment, or another project's setup):
 
 - **Slack token found** → offer reuse: verify with `auth.test`, then ask —
-  shared DM, or a private per-project channel (invite the bot; that channel
-  id becomes THIS project's `SLACK_OWNER_DM`, in the project `.env`)? Then
+  shared DM, or a private per-project channel? (The HUMAN creates the channel
+  and invites the bot — no create scope needed; private channels require the
+  app to have `groups:read` + `groups:history`. That channel id becomes THIS
+  project's `SLACK_OWNER_DM`, in the project `.env`.) Then
   skip straight to the round-trip test.
 - **Telegram token found** → do NOT silently reuse: a shared bot races on
   `getUpdates` polling across projects (§12 — updates and button taps get
@@ -59,7 +66,11 @@ Reuse skips setup, never proof — the round-trip test always runs.
 
 1. **App**: "api.slack.com/apps → Create New App → From scratch → your
    workspace. OAuth & Permissions → Bot Token Scopes: `chat:write`,
-   `im:read`, `im:history`. Install to Workspace. Put the Bot User OAuth
+   `im:write` (required by `conversations.open` in step 2), `im:read`,
+   `im:history` — add `groups:read` + `groups:history` ONLY if you'll use a
+   private per-project channel instead of the DM (§12 multi-project). No
+   channel-create scope: you create channels and invite the bot. Install to
+   Workspace. Put the Bot User OAuth
    Token (`xoxb-…`) in your env as `SLACK_BOT_TOKEN`. Say done."
    → Verify: `auth.test` succeeds (show only the bot name/workspace).
 2. **IDs**: ask for their member ID (profile → ⋯ → Copy member ID — it's
