@@ -43,4 +43,5 @@ merge/deploy authority — never merge the default branch yourself.
 
 For anything not covered here, the full protocol (altitudes, session lifecycle,
 mission checkpoints, roles, definition of done) is in the project's
-`docs/WORKFLOW.md` or the bundled `templates/WORKFLOW.md`.
+`docs/WORKFLOW.md` or the bundled `templates/WORKFLOW.md` — both open with a
+one-screen Quick reference. Unsure what to do at any point: run `/next`.

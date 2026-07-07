@@ -10,6 +10,41 @@
 > drift. Keep project-specific edits in the **Local amendments** section at the
 > end so upgrades stay mechanical.
 
+## Quick reference — humans start here
+
+**Entry points**
+
+| You have | Run |
+|---|---|
+| A raw idea | `/autopilot "<idea>"` — hands-off; or `/init-workflow` to go stage by stage |
+| An existing project | `/adopt` (add `fill` to also draft missing docs) |
+| No idea what's next | `/next` — always safe, recommends exactly one command |
+
+**The daily loop**: `/start-work` → build → `/end-work` → PR → human merges.
+Small isolated fix → `/quick-fix`. Bigger than one sitting → `/mission "<goal>"`.
+
+**Stages at a glance**: V0 validate → V1 define → V2 foundation → V3 build →
+V4 harden → V5 launch → V6 operate.
+
+**The right command for the moment**
+
+| Moment | Command |
+|---|---|
+| Before a big human decision | `/counsel "<decision>"` |
+| "Is this production-ready?" | `/audit` |
+| Cutting a version | `/release` |
+| Just deployed | `/verify` |
+| Weekly, once live | `/operate` |
+| Health check / feeling stuck | `/check-workflow`, then `/next` |
+| Protocol copy out of date | `/upgrade-workflow` |
+| After a mission or incident | `/retro` |
+
+**You (the human) always own**: merges to the default branch (unless §10
+delegates them), production deploys, spending, outward publishing, user
+experiments, anything destructive. Agents prepare; you fire.
+
+---
+
 One workflow that can take any project from a raw idea to a working, viable
 product — and keep evolving it. Two halves:
 
@@ -379,7 +414,8 @@ drive the real flow, confirm monitoring is receiving, record the result).
   `/counsel` (advisor red-team on a pending decision), `/audit` (on-demand
   adversarial pillar audit), `/release` (cut a version), `/verify` (post-deploy
   verification, §7), `/operate` (the V6 loop), `/upgrade-workflow` (bring
-  docs/WORKFLOW.md up to the installed protocol master), `/start-work`,
+  docs/WORKFLOW.md up to the installed protocol master), `/next` (recommends
+  the single best next command from the project state), `/start-work`,
   `/check-workflow`, `/pre-pr`, `/end-work`, `/quick-fix`, `/retro`.
 - The `protocol` skill points every session at the project's
   `docs/WORKFLOW.md` (or this master if none exists yet).

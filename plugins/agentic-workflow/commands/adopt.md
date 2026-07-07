@@ -79,4 +79,4 @@ decisions pending" rather than gaps.
 
 Do NOT commit — leave everything staged for the human to review (HITL rule),
 with the report as the review guide. Recommend the single best next command
-to run.
+to run, and note that `/next` re-answers that question any time.

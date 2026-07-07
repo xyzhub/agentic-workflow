@@ -15,7 +15,8 @@ viable product, with UX, DX, Security, and Efficiency enforced as gates.
 (Replace `xyzhub/agentic-workflow` with wherever you host this repo.)
 
 Then in any project: `/adopt` (existing project — bootstraps, converts plans,
-reports gaps) or `/init-workflow` (fresh start).
+reports gaps), `/init-workflow` (fresh start), or `/next` (unsure — recommends
+the one best next command).
 
 ## What's here
 
@@ -27,7 +28,7 @@ evals/                               # tier-2 scenario evals (see evals/README.m
 plugins/agentic-workflow/            # the plugin
   .claude-plugin/plugin.json         # plugin manifest
   agents/    researcher.md, designer.md, architect.md, business.md, planner.md, advisor.md, marketing.md, ops.md, analyst.md, reviewer.md, chronicler.md, backend.md, frontend.md, security.md, devops.md
-  commands/  init-workflow, adopt, autopilot, mission, counsel, audit, release, verify, operate, upgrade-workflow, start-work, check-workflow, pre-pr, end-work, quick-fix, retro
+  commands/  init-workflow, adopt, autopilot, mission, counsel, audit, release, verify, operate, upgrade-workflow, next, start-work, check-workflow, pre-pr, end-work, quick-fix, retro
   hooks/     hooks.json               # guardrails
   skills/    protocol/                # the entry-point skill
   templates/ WORKFLOW.md, overview.html, idea.md, flight-plan.md, decision-log.md, launch-*.md (plan, positioning, landing-page, announcement, content-plan), business-*.md (executive-summary, model, pricing)

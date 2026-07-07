@@ -6,6 +6,23 @@ gates**, not aspirations. It gives Claude Code a consistent way to route, build,
 review, ship, and document work, and gives the human owner a live status page and
 a permanent record of the journey.
 
+## Start here (three doors)
+
+| You have | Run | What happens |
+|---|---|---|
+| A raw idea | `/autopilot "<idea>"` | Drives V0→V5 hands-off; pauses only at the gates you must own |
+| An existing project | `/adopt` | Bootstraps the profile, folds in your plans, hands you a gap report |
+| Neither / lost | `/next` | Reads the repo, recommends exactly ONE next command |
+
+Then the daily loop is just: `/start-work` → build → `/end-work` → PR → you
+merge. `/quick-fix` for small things, `/mission "<goal>"` for big ones, `/next`
+whenever you're unsure. Every bootstrapped project carries a one-screen **Quick
+reference** at the top of its `docs/WORKFLOW.md`.
+
+Three rules cover 90% of safe usage: agents never merge to main (unless you
+delegate it in the project profile), never deploy or spend, and never publish
+outward — they prepare, you fire.
+
 ## What you get
 
 - **A venture lifecycle** (V0 idea → V1 definition → V2 foundation → V3 build →
@@ -48,8 +65,9 @@ a permanent record of the journey.
   adversarial pillar audit), `/release`, `/verify` (post-deploy verification on
   the deployed instance), `/operate` (the V6 loop — errors, funnel, costs,
   economics in one pass), `/upgrade-workflow` (bring a project's protocol copy
-  up to the installed master), `/start-work`, `/check-workflow`, `/pre-pr`,
-  `/end-work`, `/quick-fix`, `/retro`.
+  up to the installed master), `/next` (the zero-knowledge entry point —
+  recommends the single best next command), `/start-work`, `/check-workflow`,
+  `/pre-pr`, `/end-work`, `/quick-fix`, `/retro`.
 - **A skill** that points every session at the project's protocol.
 
 ## Install
