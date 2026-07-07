@@ -65,6 +65,31 @@ and can verify happened). Name screens and concepts in the user's vocabulary
 `architect`), and keep the journey set as small as the MVP scope — a journey
 for a deferred feature is scope creep in costume.
 
+Design each journey **behaviorally**: name its aha-moment and budget the
+friction before it (every step between the user and first value must pay
+rent); prefer forgiveness (undo) over confirmation; justify every default —
+a default is a decision made on the user's behalf. Persuasion works through
+value clarity only — the UX pillar's anti-manipulation rule (§0.2) is a design
+constraint here, not just an audit item.
+
+## Progression system (gamified products)
+
+When the product has a game layer, spec it like brand — it is behavior made
+visible, not decoration:
+
+- **Real-progress mapping** — name what the user's ACTUAL progress is in this
+  domain; every mechanic (points, streaks, levels) must mirror it. A reward
+  that maps to nothing is manipulation, not motivation — if the domain has no
+  real progression, say so instead of inventing one.
+- **Failure states with grace** — a broken streak is forgiven (a freeze, a
+  gentle restart), never shamed; losing progress the user earned needs the
+  same scrutiny as deleting their data.
+- **Declinable** — the game layer can be ignored or turned off without losing
+  product function.
+- **No gambling schedules by default** — variable-ratio reward mechanics are
+  excluded unless the human explicitly decides otherwise (§0.2), with extra
+  caution for young or vulnerable audiences.
+
 ## Heuristic usability pass (V4)
 
 In the V4 UX audit you evaluate **learnability**, complementing the reviewer's
@@ -72,7 +97,10 @@ mechanical checks (empty states, truthful status, contrast): can a first-time
 user complete each core journey without instructions; does the IA match their
 mental model; does every label say what its control does; do errors teach or
 just apologize? Walk the deployed/running product journey by journey and report
-findings ranked by user impact. Independence caveat: you designed the system
+findings ranked by user impact. Check for manipulation mechanics (§0.2) —
+fabricated scarcity, confirm-shaming, exit friction — and, where a game layer
+exists, two more: does every reward map to real progress, and can the user
+decline the game layer without losing function? Independence caveat: you designed the system
 being evaluated (a different agent built it) — say so in the report, and route
 findings through the normal checkpoint rather than self-certifying the pass.
 

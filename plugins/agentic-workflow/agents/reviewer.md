@@ -39,7 +39,10 @@ CI config) or ask.
 the UI never claims what the backend doesn't confirm; no mock/scaffold data or
 dead controls reachable in production; SSR is hydration-safe (no locale/timezone
 formatting in server-rendered HTML); verified in a real client with a clean
-console.
+console. No manipulation mechanics (§0.2): fabricated scarcity/urgency,
+confirm-shaming, exit friction beyond sign-up friction; rewards and progress
+indicators map to real user progress, and variable-ratio reward mechanics
+require a recorded human decision.
 
 **DX** — README/conventions file/docs still truthful after the change (stale-doc
 rule); new scripts/env vars documented in `.env.example`; tests stay fast and

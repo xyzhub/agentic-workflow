@@ -15,8 +15,10 @@ hardening as unverified, before a risky launch-adjacent change, or on request.
   §5 (security + efficiency / UX + DX / QA + architecture), each producing a
   full scorecard for its lenses.
 - A single pillar — one fresh `reviewer` briefed deep on that lens (for `ux`,
-  include the `designer`'s heuristic usability questions: can a first-time
-  user complete the core journey; does the IA match their mental model).
+  include the `designer`'s heuristic usability questions — can a first-time
+  user complete the core journey; does the IA match their mental model — plus
+  the §0.2 manipulation checks, and where a game layer exists: rewards map to
+  real progress, and the game layer is declinable).
 
 Reviewers audit the repo and, where a deployed/running instance exists, the
 live behavior (their Bash-driven Playwright path) — not just the code.

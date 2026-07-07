@@ -39,5 +39,6 @@ _Standing authorization: within these bounds autopilot proceeds without asking.
 The safety boundary (§11) is never crossed autonomously regardless of what this
 file says: default-branch merges (unless Merge authority above delegates them —
 and then only reviewer-APPROVEd PRs), production deploys, spending beyond the
-ceiling, publishing outward, and destructive actions always need an explicit
-human confirmation. Merge authority is the one delegable item._
+ceiling, publishing outward, launching behavioral experiments on real users,
+and destructive actions always need an explicit human confirmation. Merge
+authority is the one delegable item._

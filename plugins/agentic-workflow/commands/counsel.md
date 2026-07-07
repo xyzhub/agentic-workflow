@@ -19,9 +19,11 @@ framing is the first finding — resolve it before spawning anyone.
 
 ## 2. Spawn the advisors (parallel, lens-partitioned)
 
-Default lenses: **technical**, **market**, **financial** — drop a lens that
-plainly doesn't apply, honor an explicit lens list in `$ARGUMENTS`. Spawn one
-fresh `advisor` per lens, in parallel, each given the framing plus its lens.
+Default lenses: **technical**, **market**, **financial** — add **behavioral**
+when the decision is engagement-critical (onboarding scope, pricing-page
+design, notification strategy, game mechanics). Drop a lens that plainly
+doesn't apply, honor an explicit lens list in `$ARGUMENTS`. Spawn one fresh
+`advisor` per lens, in parallel, each given the framing plus its lens.
 Each returns: the case against (ranked, evidence-classed), what would change
 its mind, and a counsel verdict (proceed / proceed-with-changes / hold).
 

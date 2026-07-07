@@ -14,6 +14,9 @@ Spawn the `analyst`: funnel vs. the launch metrics (from `marketing`'s launch
 plan), cost per user / per feature, error and performance trends since the last
 cycle. Every number cited; unmeasured reported as unmeasured — the rest of the
 loop consumes these conclusions, so nothing downstream may improvise its own.
+Funnel findings arrive with ranked behavioral hypotheses and the cheapest
+experiment for each — experiments are proposed to the human, never launched
+(§11).
 
 ## 2. The three reviews (parallel, consuming the analyst's numbers)
 

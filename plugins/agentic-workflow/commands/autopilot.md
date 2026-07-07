@@ -134,6 +134,8 @@ These require an explicit human confirmation every time, even in autopilot mode
 - **Spending money or committing to paid services** beyond the flight-plan ceiling.
 - **Publishing outward** (domains, app stores, public posts) or sending anything
   on the owner's behalf.
+- **Launching behavioral experiments on real users** — you propose (hypothesis,
+  measurement plan, per §11); the human launches.
 - **Destructive or irreversible actions** on data or infrastructure.
 
 Batch these: when you reach the launch boundary, run `/counsel` on the launch

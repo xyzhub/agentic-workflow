@@ -59,6 +59,13 @@ and speed wins at V0–V2 prototyping — say which mode you're in.
   hydration-safe SSR with no locale/timezone formatting in server HTML;
   keyboard + label + contrast basics).
 - Copy is in the user's language and register.
+- **Persuasion only through value clarity — never manipulation**: no fabricated
+  scarcity or urgency, no confirm-shaming, no dark defaults, cancellation no
+  harder than sign-up; retention comes from delivered value, not exit friction.
+  Rewards and progress indicators map to REAL user progress (a reward that maps
+  to nothing is manipulation, not motivation); variable-ratio reward mechanics
+  — the gambling schedule — are excluded by default, and including them is an
+  explicit human decision.
 
 **DX** — *a stranger clones the repo and ships a fix the same day.*
 - README quickstart with few commands incl. a one-command dev datastore;
@@ -262,7 +269,8 @@ decisions), implementers build, the reviewer verifies — it does none of those.
 
 **Advisor** (`advisor`) is the decision red-team: the reviewer's counterpart
 for judgment instead of code. Convened at the human gates via `/counsel` — 2–3
-fresh instances, lens-partitioned (technical / market / financial) — each
+fresh instances, lens-partitioned (technical / market / financial, plus
+behavioral for engagement-critical decisions) — each
 argues the strongest case AGAINST the pending recommendation with cited
 evidence and returns counsel (proceed / proceed-with-changes / hold), merged
 into a one-page brief recorded in the decision log. It never decides, never
@@ -441,8 +449,9 @@ explicit human confirmation each time (pre-authorization lets you *prepare*, not
 — the delegation itself is a human decision, and even then only reviewer-APPROVEd
 PRs, never direct pushes), deploying to production / going live, spending beyond
 the flight-plan ceiling, publishing outward or messaging on the owner's behalf,
-and destructive/irreversible actions. Merge authority is the ONE delegable item;
-the rest are never delegable. These are **batched**: at
+launching behavioral experiments on real users (propose the hypothesis and
+measurement plan; the human launches), and destructive/irreversible actions.
+Merge authority is the ONE delegable item; the rest are never delegable. These are **batched**: at
 the launch boundary the human gets ONE consolidated "ready to launch" summary to
 confirm, not a stream of interruptions.
 
