@@ -1,6 +1,6 @@
 ---
 description: Convene the advisor red-team on a pending decision — 2–3 lens-partitioned advisors in parallel, merged into a one-page counsel brief appended to the decision log. The human decides with the case against in hand.
-argument-hint: "<the pending decision>" [lenses e.g. technical,market,financial]
+argument-hint: '"<the pending decision>" [lenses e.g. technical,market,financial]'
 allowed-tools: [Read, Write, Edit, Grep, Glob, Task]
 ---
 

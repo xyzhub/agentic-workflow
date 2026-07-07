@@ -1,6 +1,6 @@
 ---
 description: Plan and drive a multi-session mission end to end — authors the .plans/ trio (via the planner agent) if needed, then runs it phase by phase with independent checkpoint reviews.
-argument-hint: "<mission name or goal>" [plan | run | continue | replan] [gate: human-merge | batch]
+argument-hint: '"<mission name or goal>" [plan | run | continue | replan] [gate: human-merge | batch]'
 allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, Task, Artifact, AskUserQuestion]
 ---
 

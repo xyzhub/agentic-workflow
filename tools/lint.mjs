@@ -191,6 +191,37 @@ function checkSections() {
   }
 }
 
+// ── 6.5 Frontmatter YAML safety ──────────────────────────────────────────
+// The harness parses frontmatter as real YAML; the regex parser above does
+// not. Two classes break strict parsers: an unquoted value containing ": "
+// (parsed as a nested mapping) and a quoted value with content outside the
+// quotes.
+function checkFrontmatterYaml() {
+  const files = [
+    ...mdFiles(path.join(PLUGIN, 'agents')),
+    ...mdFiles(path.join(PLUGIN, 'commands')),
+    path.join(PLUGIN, 'skills/protocol/SKILL.md'),
+  ];
+  for (const file of files) {
+    const m = read(file).match(/^---\n([\s\S]*?)\n---/);
+    if (!m) continue;
+    let line = 1;
+    for (const raw of m[1].split('\n')) {
+      line++;
+      const kv = raw.match(/^([A-Za-z-]+):\s*(.*)$/);
+      if (!kv) continue;
+      const val = kv[2];
+      if (/^["']/.test(val)) {
+        const q = val[0];
+        if (!(val.length > 1 && val.endsWith(q) && val.split(q).length === 3))
+          fail(file, line, `frontmatter "${kv[1]}" has content outside its quotes (YAML error)`);
+      } else if (val.includes(': ')) {
+        fail(file, line, `frontmatter "${kv[1]}" contains unquoted ": " (YAML parses a nested mapping) — quote the value or reword`);
+      }
+    }
+  }
+}
+
 // ── 7. hooks.json ────────────────────────────────────────────────────────
 function checkHooks() {
   const file = path.join(PLUGIN, 'hooks/hooks.json');
@@ -215,7 +246,7 @@ function checkHooks() {
   }
 }
 
-for (const check of [checkManifests, checkAgents, checkCommands, checkCrossRefs, checkTemplateRefs, checkSections, checkHooks]) {
+for (const check of [checkManifests, checkAgents, checkCommands, checkCrossRefs, checkTemplateRefs, checkSections, checkFrontmatterYaml, checkHooks]) {
   check();
 }
 

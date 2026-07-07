@@ -1,6 +1,6 @@
 ---
 description: Autopilot mode — drive an idea through the full venture lifecycle (V0→V5, then a V6 handoff) with the bare-minimum human input, pausing only at genuinely irreversible or spending gates.
-argument-hint: "<one-line idea or goal for an existing project>" | continue
+argument-hint: '"<one-line idea or goal for an existing project>" | continue'
 allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, WebSearch, WebFetch, Task, SlashCommand, Artifact, AskUserQuestion]
 ---
 

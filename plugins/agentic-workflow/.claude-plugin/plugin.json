@@ -1,7 +1,7 @@
 {
   "name": "agentic-workflow",
   "displayName": "Agentic Workflow",
-  "version": "1.28.0",
+  "version": "1.28.1",
   "description": "An agentic workflow from idea to viable product: venture lifecycle with UX/DX/Security/Efficiency gates, session & mission machinery, independent review, a chronicler that keeps the record, and a live owner status page.",
   "author": {
     "name": "Baker"
