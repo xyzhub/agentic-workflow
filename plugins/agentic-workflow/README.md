@@ -82,6 +82,10 @@ outward — they prepare, you fire.
   default), `/connect` (interactive owner-channel setup — guided, verified),
   `/start`, `/check`, `/pr`, `/end`,
   `/fix`, `/retro`.
+- **Token discipline as architecture**: the planner explores once so execution
+  sessions never do; agents ingest conclusions, not corpora; gates return
+  signals, not logs; reads are index-first when a code index exists
+  (codegraph via its CLI); record-keeping agents default to a mid-tier model.
 - **A skill** that points every session at the project's protocol.
 
 ## Install
@@ -119,11 +123,23 @@ placeholder — gates, deploy, HITL, high-impact files. `/bootstrap` fills it
 per project, producing a local `docs/WORKFLOW.md` that wins over the
 bundled master. Nothing about any one project's stack is baked into the plugin.
 
+The local copy carries a **version stamp** (`protocol-master: vX.Y.Z`);
+`/check` flags drift when the installed plugin moves ahead, and `/sync`
+upgrades the copy while preserving §10 and the **Local amendments** section
+verbatim — so project-specific rules survive every protocol upgrade.
+
 ## The mission loop
 
 Multi-session missions are fully handled in-plugin: the `planner` agent authors
 the `.plans/` trio (exploring once so execution sessions never do), and the
 `/mission` command drives it phase by phase with independent checkpoint reviews.
+
+Everything is **loop-drivable**: the ledger is the state, so a recurring
+`/loop /mission "<name>" continue` (or `/loop /autopilot continue`, or a
+weekly scheduled agent running `/operate`) executes one brief or stage
+boundary per tick in a fresh context — no transcript bloat, crash-safe by
+construction, and with the owner channel connected the gates come to your
+phone instead of blocking silently.
 
 ## License
 
