@@ -47,7 +47,7 @@ Artifact tool to the URL in its `artifact-url` comment.
 git push -u origin <branch>
 ```
 
-Run `/pre-pr` before opening the PR (no remote yet → it says so; skip the
+Run `/pr` before opening the PR (no remote yet → it says so; skip the
 push). **Never merge the default branch** — that's the human owner's act.
 
 ## Output

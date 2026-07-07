@@ -1,12 +1,12 @@
 # The Workflow — one agentic protocol from idea to viable product
 
 > **This is the bundled master protocol** shipped by the Agentic Workflow plugin.
-> When a project has its own `docs/WORKFLOW.md` (written by `/init-workflow`),
+> When a project has its own `docs/WORKFLOW.md` (written by `/bootstrap`),
 > THAT copy wins — it carries the project profile (§10) and any local amendments.
-> This master is the fallback and the thing `/init-workflow` copies from.
-> When copying, `/init-workflow` replaces this banner with a version stamp
+> This master is the fallback and the thing `/bootstrap` copies from.
+> When copying, `/bootstrap` replaces this banner with a version stamp
 > (`<!-- protocol-master: vX.Y.Z -->`, from the plugin's manifest) that
-> `/check-workflow` compares against the installed plugin to detect protocol
+> `/check` compares against the installed plugin to detect protocol
 > drift. Keep project-specific edits in the **Local amendments** section at the
 > end so upgrades stay mechanical.
 
@@ -16,12 +16,12 @@
 
 | You have | Run |
 |---|---|
-| A raw idea | `/autopilot "<idea>"` — hands-off; or `/init-workflow` to go stage by stage |
+| A raw idea | `/autopilot "<idea>"` — hands-off; or `/bootstrap` to go stage by stage |
 | An existing project | `/adopt` (add `fill` to also draft missing docs) |
 | No idea what's next | `/next` — always safe, recommends exactly one command |
 
-**The daily loop**: `/start-work` → build → `/end-work` → PR → human merges.
-Small isolated fix → `/quick-fix`. Bigger than one sitting → `/mission "<goal>"`.
+**The daily loop**: `/start` → build → `/end` → PR → human merges.
+Small isolated fix → `/fix`. Bigger than one sitting → `/mission "<goal>"`.
 Long missions and autopilot are **loop-friendly**: drive them with a recurring
 `/loop … continue` or a scheduled agent — each tick resumes from files with a
 fresh context. Once live, schedule `/operate` weekly.
@@ -38,10 +38,10 @@ V4 harden → V5 launch → V6 operate.
 | Cutting a version | `/release` |
 | Just deployed | `/verify` |
 | Weekly, once live | `/operate` |
-| Health check / feeling stuck | `/check-workflow`, then `/next` |
+| Health check / feeling stuck | `/check`, then `/next` |
 | Something feels broken (tools, profile, hooks) | `/doctor` — add `fix` to install missing tools |
 | An agent keeps underperforming | `/tune <agent> opus` — back: `/tune <agent> reset` |
-| Protocol copy out of date | `/upgrade-workflow` |
+| Protocol copy out of date | `/sync` |
 | After a mission or incident | `/retro` |
 
 **You (the human) always own**: merges to the default branch (unless §10
@@ -438,20 +438,20 @@ drive the real flow, confirm monitoring is receiving, record the result).
   THAT one. Tunes are files: committed and reviewed like any harness change
   (§8).
 - Guardrail hooks (§3) install automatically.
-- Commands: `/init-workflow` (bootstrap a project into this workflow),
+- Commands: `/bootstrap` (bootstrap a project into this workflow),
   `/adopt` (one-command adoption for an existing project: bootstrap + convert
   existing plans + stage-gap report; `fill` mode also drafts the missing
   document deliverables, decisions pending), `/autopilot` (drive an idea to
   launch-ready, §11), `/mission` (plan + drive a multi-session mission),
   `/counsel` (advisor red-team on a pending decision), `/audit` (on-demand
   adversarial pillar audit), `/release` (cut a version), `/verify` (post-deploy
-  verification, §7), `/operate` (the V6 loop), `/upgrade-workflow` (bring
+  verification, §7), `/operate` (the V6 loop), `/sync` (bring
   docs/WORKFLOW.md up to the installed protocol master), `/next` (recommends
   the single best next command from the project state), `/doctor` (machinery
   diagnosis — environment tools, §10 truthfulness; `fix` installs missing dev
   tools like codegraph and ripgrep), `/tune` (per-project agent model
-  upgrade/reset), `/start-work`,
-  `/check-workflow`, `/pre-pr`, `/end-work`, `/quick-fix`, `/retro`.
+  upgrade/reset), `/start`,
+  `/check`, `/pr`, `/end`, `/fix`, `/retro`.
 - The `protocol` skill points every session at the project's
   `docs/WORKFLOW.md` (or this master if none exists yet).
 - Templates for the status page, `idea.md`, `flight-plan.md`, `decision-log.md`,
@@ -460,9 +460,9 @@ drive the real flow, confirm monitoring is receiving, record the result).
   the business set (`business-executive-summary.md`, `business-model.md`,
   `business-pricing.md`), and this protocol live under the plugin's `templates/`.
 
-## 10. Project profile (filled by `/init-workflow`)
+## 10. Project profile (filled by `/bootstrap`)
 
-Until `/init-workflow` runs, these are unknown — discover them from the repo or
+Until `/bootstrap` runs, these are unknown — discover them from the repo or
 ask the human. A project's own `docs/WORKFLOW.md` replaces this block with
 concrete values.
 
@@ -542,7 +542,7 @@ fresh context.
 
 ## Local amendments
 
-_(Project-specific rules land here. `/check-workflow`'s upgrade procedure
+_(Project-specific rules land here. `/check`'s upgrade procedure
 preserves this section and §10 verbatim when re-copying a newer protocol
 master, so amendments survive upgrades — anything edited elsewhere in the
 document will be flagged as drift instead.)_

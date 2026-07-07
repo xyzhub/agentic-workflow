@@ -50,7 +50,7 @@ Copy the bundled master from `${CLAUDE_PLUGIN_ROOT}/templates/WORKFLOW.md` into
 values from step 1. Replace the "this is the bundled master" banner at the top
 with a version stamp — `<!-- protocol-master: vX.Y.Z -->`, where X.Y.Z is the
 plugin version from `${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json` —
-`/check-workflow` uses it to detect protocol drift. Keep the empty **Local
+`/check` uses it to detect protocol drift. Keep the empty **Local
 amendments** section at the end. This project-local copy now wins over the
 bundled one.
 
@@ -81,7 +81,7 @@ duplicate the protocol into it.
 
 Summarize: detected stage, the filled profile (gates, deploy, HITL), the files
 created/updated, the status-page URL, and the recommended next action for the
-current stage (e.g. at V0: fill idea.md and get a go/no-go; at V3: `/start-work`;
+current stage (e.g. at V0: fill idea.md and get a go/no-go; at V3: `/start`;
 at V6: plan a growth mission). Close with: "`/next` answers this question any
 time; the Quick reference at the top of docs/WORKFLOW.md has the full map."
 

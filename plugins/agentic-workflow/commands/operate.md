@@ -37,7 +37,7 @@ experiment for each — experiments are proposed to the human, never launched
 - **Growth**: funnel vs. launch metrics, what moved and why we think so.
 - **Economics**: cost and margin drift against the business model.
 - **Ranked backlog**: every finding shaped as a runnable next step — a
-  `/mission "<name>"` for big items, a session, or `/quick-fix` — with
+  `/mission "<name>"` for big items, a session, or `/fix` — with
   acceptance criteria sketched. Rank by user impact and risk across ALL
   categories, not per-category.
 - **Owner action items**: the human-only moves (merges, spend, publishing).

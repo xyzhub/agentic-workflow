@@ -1,4 +1,4 @@
-// Deterministic assertions for init-workflow-bootstrap.
+// Deterministic assertions for bootstrap-profile.
 import { existsSync } from 'node:fs';
 import path from 'node:path';
 

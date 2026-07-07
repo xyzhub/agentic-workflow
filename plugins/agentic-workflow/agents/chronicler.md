@@ -12,7 +12,7 @@ code, tests, or config.
 
 If the three artifacts don't exist yet, create them from the plugin's templates
 (`overview.html` from `templates/overview.html`; CHANGELOG in Keep-a-Changelog
-format; JOURNEY as a dated append-only narrative) — `/init-workflow` normally
+format; JOURNEY as a dated append-only narrative) — `/bootstrap` normally
 seeds them.
 
 ## Sources (conclusions, not corpora)

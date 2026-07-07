@@ -22,7 +22,7 @@ Quick workflow health check. Report a traffic-light status at the end.
 7. **Protocol drift** — if `docs/WORKFLOW.md` exists, compare its
    `<!-- protocol-master: vX.Y.Z -->` stamp against the installed plugin
    version (`${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json`). Older or
-   missing stamp → 🟡, recommend `/upgrade-workflow` (it re-copies the master,
+   missing stamp → 🟡, recommend `/sync` (it re-copies the master,
    preserving §10 and the Local amendments section verbatim).
 
 ## Output

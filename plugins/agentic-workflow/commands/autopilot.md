@@ -25,7 +25,7 @@ with `/autopilot continue`. A clean stage boundary beats a degraded launch.
 **`continue` mode**: re-derive where the venture stands from files alone — the
 flight plan (standing authorization), `decision-log.md` (choices already made:
 do not re-decide them), the stage artifacts present (idea.md → PRD →
-skeleton/CI → `.plans/` ledger → audits → launch prep), and `/check-workflow`.
+skeleton/CI → `.plans/` ledger → audits → launch prep), and `/check`.
 Resume at the first stage whose exit gate isn't met. Losing the transcript
 must never lose the venture. `continue` is also the **loop mode**: driven
 recurringly (`/loop /autopilot continue`, or a scheduled agent), each tick
@@ -61,7 +61,7 @@ drafting the missing documents). Then:
 - Resume at the **first stage whose exit gate isn't met** — the same
   file-derivation logic `continue` mode uses — instead of starting at V0.
 - The adaptation report's red/yellow rows become the first work items: route
-  each by altitude (a gap-closing `/mission`, a session, or `/quick-fix`),
+  each by altitude (a gap-closing `/mission`, a session, or `/fix`),
   then continue the normal stage sequence toward launch.
 - Artifacts that already exist (idea.md, a PRD, CI) are settled history —
   improve what the gate audit flags; never re-litigate or regenerate them.
@@ -88,7 +88,7 @@ owner can watch live.
   V1 pause (scope + brand + model together) — run `/counsel` on it first so
   the human decides with the case against in hand; never set live prices
   autonomously.
-- **V2 Foundation** — `/init-workflow`, then scaffold the deployable skeleton;
+- **V2 Foundation** — `/bootstrap`, then scaffold the deployable skeleton;
   spawn `devops` to lay the CI + deploy pipeline (gates, health checks, scoped
   permissions, SHA-pinned actions) alongside the fail-closed config guard, env
   validation, and seed.

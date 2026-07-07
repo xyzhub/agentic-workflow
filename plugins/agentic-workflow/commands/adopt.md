@@ -5,7 +5,7 @@ allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, Task, Artifact]
 ---
 
 One-command onboarding for an EXISTING project (for a brand-new idea, use
-`/autopilot` or `/init-workflow` at V0; `/autopilot` on an existing repo runs
+`/autopilot` or `/bootstrap` at V0; `/autopilot` on an existing repo runs
 THIS procedure first, then drives the remaining stages). Auto-adapt as far as
 facts allow,
 never block on an unknown (`TBD — confirm` and continue), and end with one
@@ -13,7 +13,7 @@ consolidated report instead of a stream of questions.
 
 ## 1. Bootstrap
 
-Run the `/init-workflow` procedure: detect the project profile, write
+Run the `/bootstrap` procedure: detect the project profile, write
 `docs/WORKFLOW.md` with §10 filled, seed the record artifacts (CHANGELOG —
 reconstructed from git history via the `chronicler` — JOURNEY, status page).
 Use the `$ARGUMENTS` stage if given, else infer from repo maturity. Skip
@@ -74,7 +74,7 @@ One consolidated report: detected stage and profile; what was created vs
 already present; converted/resumable plans; then the gap table —
 green/yellow/red per item, each red/yellow row carrying the ONE recommended
 next action (`/mission "adopt-hardening"`, "spawn `business` for model +
-pricing", `/quick-fix` for small ones). Rank by risk, not by category. In
+pricing", `/fix` for small ones). Rank by risk, not by category. In
 fill mode, drafted deliverables appear as "drafted — review in this order,
 decisions pending" rather than gaps.
 

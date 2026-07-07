@@ -5,7 +5,7 @@ allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, WebFetch]
 ---
 
 Diagnose whether the workflow MACHINERY works in this project — complementing
-`/check-workflow` (how is the work?) and `/next` (what do I do?). Default is
+`/check` (how is the work?) and `/next` (what do I do?). Default is
 read-only diagnosis; `fix` also repairs what's mechanical, local, and free.
 Report a 🟢/🟡/🔴 table; every red/yellow row carries exactly ONE fix (a
 command, or "run `/doctor fix`").
@@ -42,10 +42,10 @@ The profile is load-bearing and written once — verify it still tells the truth
 - CHANGELOG.md, docs/product/JOURNEY.md, docs/product/overview.html present;
   the status page has an `artifact-url` recorded.
 - JOURNEY silent while `git log` shows heavy recent activity → 🟡 (the record
-  is falling behind; spawnless fix: run `/end-work` properly next session).
+  is falling behind; spawnless fix: run `/end` properly next session).
 - Orphaned ledgers: `.plans/*.state.md` referencing branches that no longer
   exist → recommend `/mission "<name>" replan`.
-- Protocol stamp older than the installed plugin → recommend `/upgrade-workflow`.
+- Protocol stamp older than the installed plugin → recommend `/sync`.
 - **Stale tunes**: `.claude/agents/` overrides carrying a `Tuned from` banner
   stamped older than the installed plugin → 🟡, the base prompt may have
   changed — refresh with `/tune <agent> <model>` (it re-copies fresh).

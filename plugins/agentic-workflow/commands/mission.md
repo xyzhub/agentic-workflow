@@ -34,7 +34,7 @@ decisions locked (invalidated ones come back as open questions, unlocking is the
 human's call), and appends a dated `Replan` entry to the master plan. Surface
 the resulting open questions to the human, then stop — resuming is an explicit
 `continue`. Use after a long pause, after significant unplanned changes landed,
-or when `/check-workflow` shows ledger drift.
+or when `/check` shows ledger drift.
 
 ## 2. Run — phase by phase
 

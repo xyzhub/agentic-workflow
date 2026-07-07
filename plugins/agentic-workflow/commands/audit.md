@@ -32,7 +32,7 @@ Assemble the combined scorecard (per-lens 0–3).
 ## 3. Route the fixes
 
 Rank findings by severity. Each gets ONE recommended route: `security` for
-hardening, the other specialists per domain, `/quick-fix` for small items, a
+hardening, the other specialists per domain, `/fix` for small items, a
 `/mission` when the fixes are bigger than a sitting. Apply the
 one-corrective-retry rule to any fix session; accepted-not-fixed findings need
 the human's acceptance **in writing**.

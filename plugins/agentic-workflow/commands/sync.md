@@ -4,8 +4,8 @@ allowed-tools: [Read, Write, Edit, Bash, Grep, Glob]
 ---
 
 Bring `docs/WORKFLOW.md` up to the installed protocol master (the fix for
-`/check-workflow`'s protocol-drift finding). No `docs/WORKFLOW.md` → this
-project isn't bootstrapped; run `/init-workflow` instead.
+`/check`'s protocol-drift finding). No `docs/WORKFLOW.md` → this
+project isn't bootstrapped; run `/bootstrap` instead.
 
 ## 1. Compare versions
 
@@ -30,7 +30,7 @@ the report for the human to re-home or delete.
 ## 3. Re-copy and reassemble
 
 Copy the bundled master (`${CLAUDE_PLUGIN_ROOT}/templates/WORKFLOW.md`) over
-`docs/WORKFLOW.md`, then — exactly as `/init-workflow` does — replace the
+`docs/WORKFLOW.md`, then — exactly as `/bootstrap` does — replace the
 banner with the NEW version stamp, restore the preserved §10, and restore the
 Local amendments section (plus any recovered drift).
 

@@ -14,8 +14,8 @@ a permanent record of the journey.
 | An existing project | `/adopt` | Bootstraps the profile, folds in your plans, hands you a gap report |
 | Neither / lost | `/next` | Reads the repo, recommends exactly ONE next command |
 
-Then the daily loop is just: `/start-work` → build → `/end-work` → PR → you
-merge. `/quick-fix` for small things, `/mission "<goal>"` for big ones, `/next`
+Then the daily loop is just: `/start` → build → `/end` → PR → you
+merge. `/fix` for small things, `/mission "<goal>"` for big ones, `/next`
 whenever you're unsure. Every bootstrapped project carries a one-screen **Quick
 reference** at the top of its `docs/WORKFLOW.md`.
 
@@ -62,19 +62,19 @@ outward — they prepare, you fire.
   branch and `gh pr merge` unless the project's Merge policy delegates it
   (fail closed), warns on tag pushes that may deploy, reminds on commit format
   and gates, nudges doc updates on high-impact files.
-- **Commands**: `/init-workflow`, `/adopt` (one-command adoption of an existing
+- **Commands**: `/bootstrap`, `/adopt` (one-command adoption of an existing
   project — bootstrap, convert existing plans, stage-gap report; `/adopt fill`
   also drafts the missing document deliverables), `/autopilot`, `/mission`,
   `/counsel` (advisor red-team on a pending decision), `/audit` (on-demand
   adversarial pillar audit), `/release`, `/verify` (post-deploy verification on
   the deployed instance), `/operate` (the V6 loop — errors, funnel, costs,
-  economics in one pass), `/upgrade-workflow` (bring a project's protocol copy
+  economics in one pass), `/sync` (bring a project's protocol copy
   up to the installed master), `/next` (the zero-knowledge entry point —
   recommends the single best next command), `/doctor` (machinery diagnosis;
   `fix` mode installs missing dev tools — codegraph, ripgrep, jq), `/tune`
   (upgrade an underperforming agent's model per-project; `reset` restores the
-  default), `/start-work`, `/check-workflow`, `/pre-pr`, `/end-work`,
-  `/quick-fix`, `/retro`.
+  default), `/start`, `/check`, `/pr`, `/end`,
+  `/fix`, `/retro`.
 - **A skill** that points every session at the project's protocol.
 
 ## Install
@@ -93,7 +93,7 @@ Then, in an existing project:
 It bootstraps the profile and records, folds in whatever process artifacts the
 project already has (existing plans convert into the mission trio, decisions
 locked), audits the repo against its stage's gates, and hands you one
-adaptation report ranked by risk. For a fresh start, `/init-workflow` does the
+adaptation report ranked by risk. For a fresh start, `/bootstrap` does the
 bootstrap alone: it detects your stack (gates, deploy, default branch), writes
 `docs/WORKFLOW.md` with a filled project profile, seeds the record artifacts
 (CHANGELOG, JOURNEY, the status page), and — for a brand-new idea — scaffolds
@@ -108,7 +108,7 @@ claude --plugin-dir ./plugins/agentic-workflow
 ## How it stays project-agnostic
 
 The bundled protocol (`templates/WORKFLOW.md`) carries a **Project Profile (§10)**
-placeholder — gates, deploy, HITL, high-impact files. `/init-workflow` fills it
+placeholder — gates, deploy, HITL, high-impact files. `/bootstrap` fills it
 per project, producing a local `docs/WORKFLOW.md` that wins over the
 bundled master. Nothing about any one project's stack is baked into the plugin.
 

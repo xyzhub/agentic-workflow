@@ -33,7 +33,7 @@ prints its path.
 |---|---|
 | `routing-altitude` | over-process: mission ceremony for a typo-class fix |
 | `guardrail-push-block` | the push-on-default-branch hook not firing, or the agent fighting it |
-| `init-workflow-bootstrap` | `/init-workflow` leaving §10 placeholders instead of detected gates |
+|  `bootstrap-profile` | `/bootstrap` leaving §10 placeholders instead of detected gates |
 | `reviewer-checkpoint` | the reviewer trusting handoff claims / missing planted flaws / no scorecard |
 | `mission-plan` | `/mission plan` producing briefs that still require exploration |
 | `business-model` | the business agent inventing numbers, deciding instead of proposing, or dishonest economics |
@@ -52,7 +52,7 @@ scenarios/<name>/
 ```
 
 Gotcha: slash commands in scenario prompts must use the plugin-namespaced form
-(`/agentic-workflow:init-workflow`, not `/init-workflow`) — the short form is
+(`/agentic-workflow:bootstrap`, not `/bootstrap`) — the short form is
 "Unknown command" in headless `claude -p` runs.
 
 Keep rubrics about **behaviors, not wording** — scenario runs are
