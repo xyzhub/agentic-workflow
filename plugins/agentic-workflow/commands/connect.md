@@ -66,26 +66,36 @@ Reuse skips setup, never proof — the round-trip test always runs.
 
 1. **App**: "api.slack.com/apps → Create New App → From scratch → your
    workspace. OAuth & Permissions → Bot Token Scopes: `chat:write`,
-   `im:write` (required by `conversations.open` in step 2), `im:read`,
-   `im:history` — add `groups:read` + `groups:history` ONLY if you'll use a
+   `im:write` (required by `conversations.open` in step 3), `im:read`,
+   `im:history`, `reactions:read` (tap-to-decide via emoji reactions) — add
+   `groups:read` + `groups:history` ONLY if you'll use a
    private per-project channel instead of the DM (§12 multi-project). No
    channel-create scope: you create channels and invite the bot. Install to
    Workspace. Put the Bot User OAuth
    Token (`xoxb-…`) in your env as `SLACK_BOT_TOKEN`. Say done."
    → Verify: `auth.test` succeeds (show only the bot name/workspace).
-2. **IDs**: ask for their member ID (profile → ⋯ → Copy member ID — it's
+2. **Enable the DM composer** — Slack disables it by default; without this
+   the human cannot write back at all: "App settings → **App Home → Show
+   Tabs** → enable **Messages Tab** AND check **'Allow users to send Slash
+   commands and messages from the messages tab'**. Reload your Slack client.
+   Say done."
+3. **IDs**: ask for their member ID (profile → ⋯ → Copy member ID — it's
    not a secret) → `conversations.open` with it → derive the DM channel id
    automatically. Export both as `SLACK_OWNER_ID` / `SLACK_OWNER_DM`.
-3. **Round-trip test**: `chat.postMessage` a test line, then: "Reply
-   `approve CONNECT-TEST` in that DM." → Poll `conversations.history`,
-   verify the reply's `user` matches `SLACK_OWNER_ID` → **inbound verified**
-   (typed protocol — remind them buttons need an interactivity endpoint).
+4. **Round-trip test**: `chat.postMessage` a test line, then: "React to that
+   message with ✅." → Poll the message's reactions (`reactions.get` on its
+   `ts`), verify a reaction from `SLACK_OWNER_ID` → **inbound verified**.
+   Reactions are Slack's daemon-free tap-to-decide (§12): they sit ON the
+   gate message — structurally bound like Telegram's buttons — and carry the
+   reactor's id. Typed replies (`approve <id>`) remain the fallback and the
+   way to attach a reject reason; true Block Kit buttons still need an
+   interactivity endpoint.
 
 ## 3. Record (only after the round-trip passed)
 
 - Fill the §10 **Owner channel** row in `docs/WORKFLOW.md`: transport, send
   template, env var NAMES, owner id, inbound method (Telegram: polling with
-  buttons; Slack: polling, text protocol).
+  buttons; Slack: polling with emoji-reaction decisions + typed fallback).
 - Add the var NAMES to `.env.example` (values never).
 - If a flight plan exists, fill its Owner channel field.
 - Leave the edits uncommitted for review; suggest `/doctor` as the ongoing
