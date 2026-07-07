@@ -70,8 +70,10 @@ outward — they prepare, you fire.
   the deployed instance), `/operate` (the V6 loop — errors, funnel, costs,
   economics in one pass), `/upgrade-workflow` (bring a project's protocol copy
   up to the installed master), `/next` (the zero-knowledge entry point —
-  recommends the single best next command), `/start-work`, `/check-workflow`,
-  `/pre-pr`, `/end-work`, `/quick-fix`, `/retro`.
+  recommends the single best next command), `/doctor` (machinery diagnosis;
+  `fix` mode installs missing dev tools — codegraph, ripgrep, jq),
+  `/start-work`, `/check-workflow`, `/pre-pr`, `/end-work`, `/quick-fix`,
+  `/retro`.
 - **A skill** that points every session at the project's protocol.
 
 ## Install

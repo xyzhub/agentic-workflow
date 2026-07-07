@@ -39,6 +39,7 @@ V4 harden → V5 launch → V6 operate.
 | Just deployed | `/verify` |
 | Weekly, once live | `/operate` |
 | Health check / feeling stuck | `/check-workflow`, then `/next` |
+| Something feels broken (tools, profile, hooks) | `/doctor` — add `fix` to install missing tools |
 | Protocol copy out of date | `/upgrade-workflow` |
 | After a mission or incident | `/retro` |
 
@@ -155,7 +156,8 @@ Escalating mid-flight is fine (log it); silently sprawling is not.
    in chat. Any fresh agent must resume from files alone.
 2. **Ingest conclusions, not corpora.** Delegate high-volume reading to subagents
    that return distilled results. Budget ≤30% of the context window per session
-   (~1,500 lines of reads); grep-first ranged reads for files >400 lines.
+   (~1,500 lines of reads); grep-first ranged reads for files >400 lines
+   (Bash-side searches prefer `rg` when present — `/doctor fix` installs it).
 3. **Retrieval-first.** If a code index exists (§10 records how to query it),
    use it before grep + whole-file reads for where/what/blast-radius questions.
    Agents whose toolset lacks the index's MCP tools use its CLI via Bash — the
@@ -438,7 +440,9 @@ drive the real flow, confirm monitoring is receiving, record the result).
   adversarial pillar audit), `/release` (cut a version), `/verify` (post-deploy
   verification, §7), `/operate` (the V6 loop), `/upgrade-workflow` (bring
   docs/WORKFLOW.md up to the installed protocol master), `/next` (recommends
-  the single best next command from the project state), `/start-work`,
+  the single best next command from the project state), `/doctor` (machinery
+  diagnosis — environment tools, §10 truthfulness; `fix` installs missing dev
+  tools like codegraph and ripgrep), `/start-work`,
   `/check-workflow`, `/pre-pr`, `/end-work`, `/quick-fix`, `/retro`.
 - The `protocol` skill points every session at the project's
   `docs/WORKFLOW.md` (or this master if none exists yet).

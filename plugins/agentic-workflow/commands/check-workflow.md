@@ -28,3 +28,5 @@ Quick workflow health check. Report a traffic-light status at the end.
 ## Output
 
 🟢 / 🟡 / 🔴 overall, with the one or two things that most need attention next.
+If the problem looks like machinery rather than work (missing tools, §10 rows
+that don't resolve, silent hooks), point at `/doctor` instead of guessing.
