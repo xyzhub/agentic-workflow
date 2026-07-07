@@ -351,6 +351,16 @@ the business model — each finding converted into a ranked, runnable mission or
 session candidate. It is read-only against production; restarts, rollbacks, and
 deploys are the human's to fire. Usually convened via `/operate`.
 
+**Writer** (`writer`) is the optional copy & content craft specialist —
+convened when a slice is copy-heavy (landing-page pass, UI-string sweep,
+articles/docs, terminology audit), never a mandatory stop. It owns the **copy
+kit/glossary** (`design/brand/copy-kit.md`, seeded by the `designer`): voice
+rules, one-term-per-concept glossary, and string patterns applied per surface —
+UI, marketing, docs. Every agent writes to the kit; the writer is the
+specialist who maintains it and does the heavy drafting. It never publishes
+(§11), never invents claims, and never owns positioning (`marketing`) or the
+brand voice itself (`designer`).
+
 **Analyst** (`analyst`) is the venture's measurement engine. It owns the
 tracking plan (every event, and the question it answers), reads the numbers,
 and hands cited conclusions to `marketing` (funnel), `business` (unit
@@ -403,8 +413,9 @@ drive the real flow, confirm monitoring is receiving, record the result).
   business documents), `planner` (mission decomposition), `advisor` (decision
   red-team at the human gates, via `/counsel`), `marketing` (V5–V6
   go-to-market), `ops` (V6 operations), `analyst` (measurement engine),
-  `reviewer`, `chronicler`, and the specialist implementers `backend`,
-  `frontend`, `security`, `devops` (CI/CD, deploy, releases).
+  `writer` (optional copy craft — owns the copy kit/glossary), `reviewer`,
+  `chronicler`, and the specialist implementers `backend`, `frontend`,
+  `security`, `devops` (CI/CD, deploy, releases).
 - Guardrail hooks (§3) install automatically.
 - Commands: `/init-workflow` (bootstrap a project into this workflow),
   `/adopt` (one-command adoption for an existing project: bootstrap + convert

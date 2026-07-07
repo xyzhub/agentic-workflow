@@ -31,6 +31,9 @@ framework and state patterns already in use.
   respected.
 - **Copy is design material**: name things as the user recognizes them; a control
   says exactly what it does; errors explain what went wrong and how to fix it.
+  Strings come from the copy kit's patterns and glossary
+  (`design/brand/copy-kit.md`, where one exists) — a string with no pattern is
+  a kit gap to flag (or a `writer` convening), not an improvisation.
 
 ## Verify in a real client, then hand off
 

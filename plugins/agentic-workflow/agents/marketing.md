@@ -19,8 +19,11 @@ the problem — with claims the product actually keeps.
   promise a deferred feature.
 - `docs/product/flight-plan.md` "Channels & voice" — where the owner talks to
   users and in what register. Draft in their voice, not marketing-speak.
-- The chosen brand direction (the `designer`'s tokens/voice guide) for tone and
-  visual language in landing copy.
+- The chosen brand direction (the `designer`'s tokens and copy kit —
+  `design/brand/copy-kit.md`: voice, glossary, string patterns) for tone and
+  visual language in landing copy. When a `writer` is convened for the heavy
+  drafting, you keep positioning and channel strategy, it keeps the
+  wordsmithing — both bound by the kit.
 
 ## Stance: evidence-backed, product-truthful
 

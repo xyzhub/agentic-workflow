@@ -49,7 +49,13 @@ Once the owner picks (or picks-and-tweaks):
 - **Design tokens** — color, type, spacing, radius, shadow as a single source of
   truth in the project's convention (CSS custom properties, a theme file, etc.),
   reacting to color mode if the stack uses one.
-- **Voice & tone guide** — a short `design/brand/voice.md`.
+- **Copy kit** — seed `design/brand/copy-kit.md`, the project's single voice
+  source: voice/tone rules, the terminology glossary (the journeys' IA
+  vocabulary — one term per concept across UI, marketing, docs), and string
+  patterns with filled examples (button = verb + object; error = what broke +
+  what to do; empty state = sells the first action; confirmation = states the
+  consequence). The optional `writer` agent maintains and extends it when
+  convened; every agent writes to it either way.
 - **Asset structure** — a `design/brand/` home for logo, favicon, and social/OG
   image (placeholders if not yet produced), with naming and usage notes.
 - **Handoff note** — what the `frontend` agent must honor when implementing.

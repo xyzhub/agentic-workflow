@@ -46,7 +46,9 @@ outward — they prepare, you fire.
   post-launch content plan; the human publishes), `ops` (V6 operations —
   error/cost triage, runbooks, postmortems; read-only against production),
   `analyst` (measurement engine — tracking plan and cited numbers for funnel,
-  economics, and audits), `reviewer` (fresh-context, four pillar lenses + QA +
+  economics, and audits), `writer` (optional copy craft, convened when a slice
+  is copy-heavy — owns the copy kit/glossary every surface writes to),
+  `reviewer` (fresh-context, four pillar lenses + QA +
   architecture), `chronicler` (keeps CHANGELOG, a posterity JOURNEY, and the
   live owner status page), and specialist implementers `backend`, `frontend`,
   `security`, `devops` (CI/CD, GitHub workflows, deploy, releases) — each
