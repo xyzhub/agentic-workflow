@@ -39,4 +39,5 @@ milestone), then republish the status page via the Artifact tool.
 
 FAIL: what broke, user impact, and the §10 rollback story — **the rollback
 decision and trigger are the human's** (§11); prepare the exact commands,
-never fire them.
+never fire them. A FAIL is **alert-tier** on the owner channel (§12) when one
+is configured.

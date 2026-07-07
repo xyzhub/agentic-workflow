@@ -47,6 +47,10 @@ experiment for each — experiments are proposed to the human, never launched
 Spawn the `chronicler` (JOURNEY entry + status page data regions), then
 republish the status page via the Artifact tool to its recorded URL. The
 next `/operate` compares against this cycle — the report is the baseline.
+When an owner channel is configured (§12): send the **digest** (≤3 lines +
+status-page link), and a separate **alert** for any user-impacting incident —
+also check `.plans/pending-gates.md` against the channel for decisions taken
+since the last cycle (verify sender + nonce, consume, log).
 
 Nothing here fires production changes: diagnose, rank, prepare. Growth missions
 re-cycle the V3–V5 gates like any other work (§0, V6 row).

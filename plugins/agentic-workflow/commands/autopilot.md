@@ -155,9 +155,11 @@ for a single confirmation, rather than nagging along the way.
   `${CLAUDE_PLUGIN_ROOT}/templates/decision-log.md`): each autonomous decision,
   the options, why you chose, and how to reverse it. This is how a hands-off
   owner audits you.
-- If the harness provides push notifications, use one for the moments that need
-  them (a kill-stop, the one brand choice, the launch confirmation) — not
-  routine progress.
+- Gate-tier moments (a kill-stop, the one brand choice, the V1 approval, the
+  launch confirmation) go to the **owner channel** (§12) when one is
+  configured — decision gates carry Approve/Reject buttons bound to the gate
+  id; action gates carry the link the human fires. Fall back to harness push
+  notifications, and never message routine progress.
 
 ## Output
 

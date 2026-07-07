@@ -29,6 +29,13 @@ also authorizes the `batch` mission gate policy — phases merge into a mission
 integration branch and the human merges once at launch; check-in-each-stage
 keeps `human-merge` per phase._
 
+## Owner channel
+_Where the workflow may message YOU — a private Telegram bot chat or Slack DM
+(§12): transport, the env-var NAMES holding the token/webhook + chat id, and
+your user id for inbound verification. Gate notifications arrive here with
+Approve/Reject buttons; decisions you tap are nonce-bound and recorded. Leave
+blank → harness push notifications where available, else the status page only._
+
 ## Channels & voice
 _Where the owner talks to users (site, social, mailing list, communities) and in
 what register — the `marketing` agent drafts the V5 launch assets in this voice.

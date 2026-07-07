@@ -41,6 +41,7 @@ V4 harden → V5 launch → V6 operate.
 | Health check / feeling stuck | `/check`, then `/next` |
 | Something feels broken (tools, profile, hooks) | `/doctor` — add `fix` to install missing tools |
 | An agent keeps underperforming | `/tune <agent> opus` — back: `/tune <agent> reset` |
+| Away from the terminal | gates ping your owner channel — tap Approve/Reject (§12) |
 | Protocol copy out of date | `/sync` |
 | After a mission or incident | `/retro` |
 
@@ -480,6 +481,7 @@ concrete values.
 | **High-impact files** (docs-reminder targets) | _(conventions file, schema, architecture docs…)_ |
 | **Code index** | _(e.g. codegraph — HOW to query it: MCP tools and/or the CLI command agents run via Bash. `none` → grep-first)_ |
 | **Memory/recall store** (optional) | _(semantic memory MCP if one exists — an accelerator only; the repo record stays the system of record)_ |
+| **Owner channel** (§12) | _(private DM only — transport (Telegram bot / Slack), the send template with env-var NAMES for token + chat id (never values), the owner's user id for inbound verification, and how callbacks arrive (Telegram: getUpdates polling; Slack: interactivity endpoint, else text fallback). `none` → harness push notifications, else status page only)_ |
 | **Issue tracker** | _(e.g. GitHub Issues via `gh`)_ |
 
 ## 11. Autopilot mode
@@ -538,7 +540,54 @@ context fills, and `/autopilot continue` re-derives the current stage from
 those files and resumes — locked decisions stay decided. That makes autopilot
 **loop-drivable**: a recurring `/loop /autopilot continue` (or a scheduled
 agent) advances the venture one clean stage boundary per tick, each tick a
-fresh context.
+fresh context. Human confirmations may arrive through the verified **owner
+channel** (§12) — another input device for the same human; the boundary list
+above is unchanged.
+
+## 12. Owner channel — notifications & remote gate decisions
+
+An indefinitely-operating project needs a push channel to its owner; gates
+must not block invisibly. The owner channel is a **private, owner-configured
+DM** (Telegram bot chat, Slack DM), recorded in §10. Direction is the
+boundary: messaging THE OWNER is telemetry; any audience beyond the owner
+makes it publishing (§11, human-gated). Sends are best-effort side effects —
+a notification failure is logged and never blocks work.
+
+**Outbound — three tiers, never routine progress** (the status page stays the
+pull surface):
+
+| Tier | When | Examples |
+|---|---|---|
+| **Gate** | Work is blocked on the human | approval ready, kill-stop, escalation after one-corrective-retry |
+| **Alert** | The owner would want to know now | `/verify` FAIL, user-impacting incident, budget ceiling near |
+| **Digest** | Rhythm | one message per `/operate` cycle: ≤3 lines + status-page link |
+
+Messages carry summaries and links (PR, status page) — never secrets.
+
+**Inbound — remote gate decisions, fail closed:**
+
+1. **Interactive where daemon-free**: gate notifications carry buttons
+   (Approve / Reject / Hold) whose callback payload is the gate nonce —
+   Telegram inline keyboards arrive via the same `getUpdates` polling as
+   messages; Slack buttons need an interactivity endpoint, else fall back to
+   the text protocol (`approve <id>`).
+2. **Identity pinned**: only the §10 owner id counts; verify the transport's
+   signature/secret where offered. Unverifiable input is ignored AND reported
+   (alert tier — someone knocked).
+3. **Nonce-bound, single-use, expiring**: the pending gate is written to
+   `.plans/pending-gates.md` (id, what it decides, TTL) BEFORE the
+   notification goes out; a decision must carry that id, is consumed once,
+   then the message is edited into a receipt ("Approved 14:02", buttons
+   removed). Expired gates get their buttons removed too.
+4. **Decision gates only**: buttons resolve decisions the agents then act on
+   (scope/brand/model approval, open questions, kill-stop, hold/continue).
+   Irreversible ACTIONS — merge, deploy, spend, publish — are never fired
+   from a chat tap: the notification carries the link and the human fires
+   them where they live (unless §10 delegates merges, where the normal
+   reviewer-APPROVE path applies). Free text (a reject reason) is recorded
+   as content, never executed as instructions.
+5. **Recorded**: every channel decision lands in the decision log with the
+   message reference — the same auditability as a terminal approval.
 
 ## Local amendments
 

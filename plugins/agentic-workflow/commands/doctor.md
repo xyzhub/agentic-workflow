@@ -23,6 +23,10 @@ command, or "run `/doctor fix`").
   Missing on a non-trivial repo is 🟡 (DX pillar: the repo legible to models).
 - **Stack toolchain** — whatever §10's gates need (node/pnpm, cargo, etc.)
   actually on PATH.
+- **Owner channel** (§12) — if §10 records one: the named env vars resolve and
+  the owner id is present. In `fix` mode, send a test message ("doctor test —
+  reply not needed") and report whether the send succeeded; stale entries in
+  `.plans/pending-gates.md` (expired, never consumed) → 🟡 with the gate named.
 
 ## 2. Profile truthfulness (§10 rows must RESOLVE, not just exist)
 

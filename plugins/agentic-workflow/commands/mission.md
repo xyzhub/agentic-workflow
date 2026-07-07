@@ -70,6 +70,10 @@ routine checkpoints — see §5). Include the scorecard in the ledger handoff en
   integration branch once, at the batched end-of-mission confirmation.
 - **REQUEST CHANGES** → one corrective session (`S<n>-fix`), then re-review; if it
   still fails, surface to the human.
+- **Surfacing** (both branches): when an owner channel is configured (§12),
+  send the gate-tier notification — merge waits carry the PR link (the human
+  merges where it lives); escalations and open questions carry decision
+  buttons bound to the pending-gate id.
 
 ## 4. Record & resume
 
