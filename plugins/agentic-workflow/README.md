@@ -52,7 +52,9 @@ outward — they prepare, you fire.
   architecture), `chronicler` (keeps CHANGELOG, a posterity JOURNEY, and the
   live owner status page), and specialist implementers `backend`, `frontend`,
   `security`, `devops` (CI/CD, GitHub workflows, deploy, releases) — each
-  carries its pillar bias and hands off to independent review.
+  carries its pillar bias and hands off to independent review. `chronicler`,
+  `analyst`, and `writer` default to a mid-tier model (the Efficiency pillar
+  applied to the plugin itself — override in the agent file if you want more).
 - **Autopilot mode**: `/autopilot "<idea>"` drives the whole lifecycle
   (validate → define → design → build → harden → launch-prep) from a one-line
   idea and a short flight plan, pausing only at the gates a human must own.

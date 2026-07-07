@@ -20,7 +20,9 @@ CI config) or ask.
    Report signals (green/red + first failing case), not log dumps.
 2. **Diff-review the full range** (`git diff <base>..<head>`) — not just the files
    the handoff mentions. Unclaimed changes are findings; claimed deviations must
-   match the actual diff.
+   match the actual diff. If §10 records a **code index**, use it (its CLI via
+   Bash) for blast-radius on changed symbols — callers/impact queries beat a
+   grep expedition — before any ranged reads.
 3. **Perform deferred manual/live items** — real-client smoke (a real browser for
    web UI, not a status-code ping). Your concrete path is **Bash-driven
    Playwright**: the project's browser test tooling if present, else a throwaway

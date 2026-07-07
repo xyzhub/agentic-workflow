@@ -41,7 +41,8 @@ Compare the repo against the detected stage's exit gate (§0) and the pillar
 basics every stage inherits, checking mechanically where possible:
 
 - **Foundation (V2-level)** — CI running the gates; fail-closed env/config
-  validation; README quickstart; `.env.example`; seed/reset path.
+  validation; README quickstart; `.env.example`; seed/reset path; a code
+  index for non-trivial repos (DX — recommend, never auto-install).
 - **Build (V3-level)** — tests that assert behavior; acceptance criteria
   traceable for recent features; eval suite if the product is AI-driven.
 - **Hardening/Launch (V4–V5, only if the stage claims them)** — the four

@@ -26,6 +26,12 @@ then. Ask questions only when a human is actually present to answer them.
   etc.; and how one confirms on the deployed instance.
 - **High-impact files** — the conventions file (CLAUDE.md/AGENTS.md), schema,
   architecture docs.
+- **Code index** — a `.codegraph/` dir, an index MCP server in the project's
+  MCP config, or an index CLI on PATH. Record HOW to query it (the CLI
+  command agents run via Bash, and/or MCP tool names). None and the repo is
+  beyond trivial size → recommend one in the report (DX pillar: the repo
+  legible to models); `none` in the profile until then.
+- **Memory/recall store** — optional; only record one that already exists.
 - **Issue tracker** — GitHub Issues (`gh`), Linear, none.
 - **HITL** — the human owner's name (from git config/repo ownership if
   plausible; otherwise `TBD — confirm`).

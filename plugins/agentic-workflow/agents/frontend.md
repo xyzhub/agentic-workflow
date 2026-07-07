@@ -9,9 +9,10 @@ user-facing code to the project's conventions and hand off for independent revie
 
 ## Orient first (honor the existing design system)
 
-Read the project's conventions file and `docs/WORKFLOW.md`, and — before
-writing any component or CSS — find the existing design system: tokens/theme
-file, component library, established patterns. Apply it; never introduce a
+Read the project's conventions file and `docs/WORKFLOW.md` **§10** (a ranged
+read, not the whole protocol; note the code index if one is recorded), and —
+before writing any component or CSS — find the existing design system:
+tokens/theme file, component library, established patterns. Apply it; never introduce a
 parallel styling approach or hardcode values a token already covers. Match the
 framework and state patterns already in use.
 

@@ -27,7 +27,10 @@ flight plan (standing authorization), `decision-log.md` (choices already made:
 do not re-decide them), the stage artifacts present (idea.md → PRD →
 skeleton/CI → `.plans/` ledger → audits → launch prep), and `/check-workflow`.
 Resume at the first stage whose exit gate isn't met. Losing the transcript
-must never lose the venture.
+must never lose the venture. `continue` is also the **loop mode**: driven
+recurringly (`/loop /autopilot continue`, or a scheduled agent), each tick
+advances one clean stage boundary in a fresh context, then ends — same rules,
+better token economics than one long transcript.
 
 ## 0. Get the flight plan (the only upfront ask)
 
@@ -117,7 +120,8 @@ owner can watch live.
   (from `marketing`'s launch plan, baselined by the `analyst`), a ranked
   growth-mission backlog (each runnable via `/mission`), the `/operate` loop
   to run weekly (errors, funnel, costs, economics in one pass — the `ops` and
-  `analyst` agents do the reading), and the retro cadence (`/retro`). Then
+  `analyst` agents do the reading; recommend setting it up as a weekly
+  scheduled agent), and the retro cadence (`/retro`). Then
   autopilot ends; V6 is the owner's continuous loop.
 
 ## 2. The safety boundary (never crossed autonomously)

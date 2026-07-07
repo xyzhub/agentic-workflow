@@ -22,6 +22,9 @@
 
 **The daily loop**: `/start-work` → build → `/end-work` → PR → human merges.
 Small isolated fix → `/quick-fix`. Bigger than one sitting → `/mission "<goal>"`.
+Long missions and autopilot are **loop-friendly**: drive them with a recurring
+`/loop … continue` or a scheduled agent — each tick resumes from files with a
+fresh context. Once live, schedule `/operate` weekly.
 
 **Stages at a glance**: V0 validate → V1 define → V2 foundation → V3 build →
 V4 harden → V5 launch → V6 operate.
@@ -153,8 +156,10 @@ Escalating mid-flight is fine (log it); silently sprawling is not.
 2. **Ingest conclusions, not corpora.** Delegate high-volume reading to subagents
    that return distilled results. Budget ≤30% of the context window per session
    (~1,500 lines of reads); grep-first ranged reads for files >400 lines.
-3. **Retrieval-first.** If a code index exists, use it before grep + whole-file
-   reads for where/what/blast-radius questions.
+3. **Retrieval-first.** If a code index exists (§10 records how to query it),
+   use it before grep + whole-file reads for where/what/blast-radius questions.
+   Agents whose toolset lacks the index's MCP tools use its CLI via Bash — the
+   same pattern as Bash-driven browser verification.
 4. **Gates, not logs.** Verification returns a signal (green/red + first error),
    never pasted build output. The project's gates are in §10.
 5. **Verify live, in a real client.** Anything with a runtime surface gets
@@ -251,6 +256,13 @@ UX + DX / QA + architecture), instead of one. Merge conservatively: any
 REQUEST CHANGES blocks; findings are unioned; the same finding from two
 reviewers raises its confidence. Routine checkpoints stay single-reviewer —
 this is where review cost is spent deliberately, not everywhere.
+
+**Loop mode.** The ledger makes missions loop-drivable: a recurring
+`/loop /mission "<name>" continue` (or a scheduled agent) gives every tick a
+FRESH context that reads the ledger, executes exactly one brief or checkpoint,
+writes the handoff, and ends. Context never bloats across phases, a crashed
+tick loses nothing, and the human can stop the loop at any gate. The same
+applies to `/autopilot continue` at venture scale (§11).
 
 The trio is authored by the `planner` agent and driven by the bundled `/mission`
 command (plan · run · continue · replan). Technical open questions may be routed
@@ -454,6 +466,8 @@ concrete values.
 | **Deploy + live-verify** | _(how it ships and how you confirm on the deployed instance)_ |
 | **Eval suite** (behavioral, if any) | _(e.g. `node evals/run.mjs` — run before releases; see `/release`)_ |
 | **High-impact files** (docs-reminder targets) | _(conventions file, schema, architecture docs…)_ |
+| **Code index** | _(e.g. codegraph — HOW to query it: MCP tools and/or the CLI command agents run via Bash. `none` → grep-first)_ |
+| **Memory/recall store** (optional) | _(semantic memory MCP if one exists — an accelerator only; the repo record stays the system of record)_ |
 | **Issue tracker** | _(e.g. GitHub Issues via `gh`)_ |
 
 ## 11. Autopilot mode
@@ -509,7 +523,10 @@ Autopilot is also **crash-safe and context-disciplined** like every other part
 of the machinery (§2): its durable state is files (flight plan, decision log,
 stage artifacts, status page), it ends cleanly at a stage boundary when its
 context fills, and `/autopilot continue` re-derives the current stage from
-those files and resumes — locked decisions stay decided.
+those files and resumes — locked decisions stay decided. That makes autopilot
+**loop-drivable**: a recurring `/loop /autopilot continue` (or a scheduled
+agent) advances the venture one clean stage boundary per tick, each tick a
+fresh context.
 
 ## Local amendments
 

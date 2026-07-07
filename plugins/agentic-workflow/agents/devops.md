@@ -11,7 +11,8 @@ you never cross the safety boundary autonomously.
 
 ## Orient first (don't assume a platform)
 
-Read `docs/WORKFLOW.md` §10 (gates, deploy target, default branch) and the
+Read `docs/WORKFLOW.md` §10 (gates, deploy target, default branch — a ranged
+read, not the whole protocol) and the
 existing CI/deploy files. Match what's there — the CI provider (GitHub Actions,
 etc.), the host (container/VPS, Fly, Vercel, cloud), the registry. Discover the
 stack; never impose one.

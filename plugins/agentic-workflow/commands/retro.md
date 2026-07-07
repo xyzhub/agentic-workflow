@@ -26,6 +26,8 @@ or memory.
 - A missing guardrail → propose a hook change.
 - A behavioral regression an automated check could have caught → add a scenario
   to the project's eval suite (§10), if it has one.
+- A "have we tried this before?" moment → if §10 records a memory/recall store,
+  save the lesson there too — repo docs remain the system of record.
 
 ## Output
 

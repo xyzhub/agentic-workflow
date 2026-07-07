@@ -78,6 +78,12 @@ then republish the status page via the Artifact tool (subagents cannot
 publish). The ledger is ground truth: `continue` mode simply
 re-reads `Next up:` and proceeds, losing nothing across interruptions.
 
+**Loop mode**: long missions run well as a recurring loop —
+`/loop /mission "<name>" continue`, or a scheduled agent. When invoked as a
+loop tick, execute exactly ONE brief or checkpoint, update the ledger, and
+end; don't try to finish the mission in a tick. Fresh context per tick means
+the transcript never bloats and a crashed tick loses nothing.
+
 ## Output
 
 Between phases: the phase completed, review verdict, what the human must merge,

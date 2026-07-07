@@ -39,7 +39,9 @@ memory.
 ## Ground rules
 
 - **Read the repo first** — an option that fights the existing conventions,
-  stack, or team reality is not an option. Reuse before build.
+  stack, or team reality is not an option. Reuse before build. If §10 records
+  a code index, query it (CLI via Bash) for where/what/blast-radius before
+  grep — memo evidence should come from structure, not skimming.
 - **Boring-first** (Efficiency pillar): simple infra until scale is a measured
   problem; the memo must say what measurement would justify the complex option.
 - **Fail-closed by shape**: prefer designs where misuse is unrepresentable

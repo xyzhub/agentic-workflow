@@ -7,6 +7,9 @@ allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, Task, Artifact]
 Run one cycle of V6 (Agentic Workflow §0, V6 row). Requires a launched product
 (V5 gate passed) — if the project isn't there yet, say which stage it IS at and
 stop. `$ARGUMENTS` optionally narrows the focus; default is the full loop.
+Each run is self-contained and compares against the previous cycle's report —
+the natural setup is a **scheduled agent (weekly)** invoking this command, so
+the owner reads reports instead of remembering to ask for them.
 
 ## 1. Numbers first
 
