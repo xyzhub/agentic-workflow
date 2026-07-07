@@ -568,11 +568,15 @@ Messages carry summaries and links (PR, status page) — never secrets.
 
 **Inbound — remote gate decisions, fail closed:**
 
-1. **Interactive where daemon-free**: gate notifications carry buttons
-   (Approve / Reject / Hold) whose callback payload is the gate nonce —
-   Telegram inline keyboards arrive via the same `getUpdates` polling as
-   messages; Slack buttons need an interactivity endpoint, else fall back to
-   the text protocol (`approve <id>`).
+1. **Interactive where daemon-free**: Telegram gate notifications carry
+   buttons (Approve / Reject / Hold) whose callback payload is the gate
+   nonce — callbacks arrive via the same `getUpdates` polling as messages.
+   Slack's daemon-free equivalent is **emoji reactions** on the gate message
+   (✅ approve / ❌ reject / ✋ hold, read via `reactions.get` polling) —
+   structurally bound to the gate because the reaction sits ON the message,
+   and carrying the reactor's id. Typed replies (`approve <id>`) are the
+   universal fallback and carry reject reasons; Slack Block Kit buttons need
+   an interactivity endpoint, which most solo setups don't have.
 2. **Identity pinned**: only the §10 owner id counts; verify the transport's
    signature/secret where offered. Unverifiable input is ignored AND reported
    (alert tier — someone knocked).

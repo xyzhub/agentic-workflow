@@ -59,7 +59,8 @@ outward — they prepare, you fire.
   (validate → define → design → build → harden → launch-prep) from a one-line
   idea and a short flight plan, pausing only at the gates a human must own.
 - **An owner channel** (private Telegram/Slack DM): gate/alert/digest
-  notifications outward; tap-to-decide gate buttons inward — nonce-bound,
+  notifications outward; tap-to-decide inward — Telegram inline buttons, or
+  Slack emoji reactions on the gate message — nonce-bound,
   identity-pinned, fail-closed, and decisions land in the decision log.
   Action gates (merge, deploy, spend, publish) always carry a link instead —
   the human fires those where they live. Set up in minutes with `/connect`:
