@@ -591,6 +591,25 @@ Messages carry summaries and links (PR, status page) — never secrets.
 5. **Recorded**: every channel decision lands in the decision log with the
    message reference — the same auditability as a terminal approval.
 
+**Multi-project, one owner.** Several projects on one machine can share the
+owner — with transport-specific rules:
+
+- **Slack shares cleanly**: one app/token machine-wide. `conversations.history`
+  is a NON-consuming read — every project polls independently with its own
+  local read cursor, nobody steals messages. A shared DM works for a few
+  projects; a private channel per project (bot invited, that channel id as
+  this project's `SLACK_OWNER_DM` in its `.env`) gives a named stream per
+  venture.
+- **Telegram: one bot per project**. `getUpdates` has a single CONSUMING
+  offset per bot — two projects polling the same bot race each other and
+  steal updates (including button taps). A fresh BotFather bot per project
+  (token in the project's `.env`) avoids the race and yields per-project
+  chats.
+- **Attribution rules regardless of transport**: every message starts with a
+  `[<project>]` prefix; gate nonces embed the project slug
+  (`G-<project>-7f3a`); a project matches ONLY its own pending ids when
+  polling a shared channel.
+
 ## Local amendments
 
 _(Project-specific rules land here. `/check`'s upgrade procedure

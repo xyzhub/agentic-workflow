@@ -23,6 +23,23 @@ transcript — rotate it — and continue with the rotated one.
   a public interactivity endpoint, which most solo setups don't have. Say
   this tradeoff when asking.
 
+## 0.5 Second project on this machine? Reuse what exists
+
+Before guiding any creation, check for machine-level credentials (the §12 env
+names in the environment, or another project's setup):
+
+- **Slack token found** → offer reuse: verify with `auth.test`, then ask —
+  shared DM, or a private per-project channel (invite the bot; that channel
+  id becomes THIS project's `SLACK_OWNER_DM`, in the project `.env`)? Then
+  skip straight to the round-trip test.
+- **Telegram token found** → do NOT silently reuse: a shared bot races on
+  `getUpdates` polling across projects (§12 — updates and button taps get
+  stolen). Recommend a fresh bot for this project (token under a per-project
+  env name in the project `.env`); reuse only if the human accepts the
+  single-poller caveat.
+
+Reuse skips setup, never proof — the round-trip test always runs.
+
 ## 1. Telegram path
 
 1. **Bot**: "Open Telegram → `@BotFather` → send it /newbot → name it. Put the

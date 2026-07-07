@@ -50,7 +50,8 @@ next `/operate` compares against this cycle — the report is the baseline.
 When an owner channel is configured (§12): send the **digest** (≤3 lines +
 status-page link), and a separate **alert** for any user-impacting incident —
 also check `.plans/pending-gates.md` against the channel for decisions taken
-since the last cycle (verify sender + nonce, consume, log).
+since the last cycle (verify sender + nonce, consume, log — matching only
+THIS project's `G-<project>-…` ids on a shared channel, §12).
 
 Nothing here fires production changes: diagnose, rank, prepare. Growth missions
 re-cycle the V3–V5 gates like any other work (§0, V6 row).
