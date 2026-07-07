@@ -83,6 +83,10 @@ outward — they prepare, you fire.
   default), `/connect` (interactive owner-channel setup — guided, verified),
   `/start`, `/check`, `/pr`, `/end`,
   `/fix`, `/retro`.
+- **Portfolio mode** (§13 — one owner, many ventures): a registry repo
+  (files + git, never a database) lists every venture; `/operate` run there
+  sweeps them all into one report with a single cross-venture backlog, and
+  `precedents.md` makes each venture's locked decisions citable by the others.
 - **Token discipline as architecture**: the planner explores once so execution
   sessions never do; agents ingest conclusions, not corpora; gates return
   signals, not logs; reads are index-first when a code index exists

@@ -21,6 +21,11 @@ whatever already exists (idempotent). The **Merge policy** row stays
 `human-only` unless the human explicitly delegates it — never infer
 `agent-may-merge` from the repo.
 
+**Portfolio registration (§13)**: ask whether this venture belongs to a
+portfolio. Given a registry path/remote — write the §10 **Portfolio** row,
+and append this venture's row to the registry's `registry.md` (uncommitted
+there too; the human reviews both repos). No portfolio → `none`, move on.
+
 ## 2. Inventory existing process artifacts
 
 Look for what the project already uses and fold it in rather than duplicating:

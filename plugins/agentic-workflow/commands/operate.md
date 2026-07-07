@@ -7,6 +7,18 @@ allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, Task, Artifact]
 Run one cycle of V6 (Agentic Workflow §0, V6 row). Requires a launched product
 (V5 gate passed) — if the project isn't there yet, say which stage it IS at and
 stop. `$ARGUMENTS` optionally narrows the focus; default is the full loop.
+
+**Portfolio mode (§13)** — when run inside a registry repo (a `registry.md`
+with venture rows), sweep instead of single-venture: one reader per
+registered venture ingesting its existing conclusions (status-page data
+regions, ledger `Next up:`, track record — local checkout at the recorded
+path, else its remote via `gh`; never its corpora). Roll up to ONE report:
+each venture's stage and health, blocked gates across the portfolio, and a
+single cross-venture ranked backlog — this week's mission goes where? Update
+the registry rows (`last /operate`, stage), the portfolio ledger, and the
+portfolio status page (seed `overview.html` on the first run), then send the
+digest (§12). A venture needing its own deep cycle gets a one-line route:
+run `/operate` there.
 Each run is self-contained and compares against the previous cycle's report —
 the natural setup is a **scheduled agent (weekly)** invoking this command, so
 the owner reads reports instead of remembering to ask for them.
