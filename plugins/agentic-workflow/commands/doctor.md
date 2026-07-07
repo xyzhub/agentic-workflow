@@ -46,6 +46,10 @@ The profile is load-bearing and written once — verify it still tells the truth
 - Orphaned ledgers: `.plans/*.state.md` referencing branches that no longer
   exist → recommend `/mission "<name>" replan`.
 - Protocol stamp older than the installed plugin → recommend `/upgrade-workflow`.
+- **Stale tunes**: `.claude/agents/` overrides carrying a `Tuned from` banner
+  stamped older than the installed plugin → 🟡, the base prompt may have
+  changed — refresh with `/tune <agent> <model>` (it re-copies fresh).
+  Overrides without the banner are hand-rolled agents — report, don't touch.
 
 ## 4. `fix` mode (explicit opt-in — mechanical, local, free repairs only)
 

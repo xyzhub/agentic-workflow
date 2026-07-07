@@ -40,6 +40,7 @@ V4 harden → V5 launch → V6 operate.
 | Weekly, once live | `/operate` |
 | Health check / feeling stuck | `/check-workflow`, then `/next` |
 | Something feels broken (tools, profile, hooks) | `/doctor` — add `fix` to install missing tools |
+| An agent keeps underperforming | `/tune <agent> opus` — back: `/tune <agent> reset` |
 | Protocol copy out of date | `/upgrade-workflow` |
 | After a mission or incident | `/retro` |
 
@@ -430,6 +431,12 @@ drive the real flow, confirm monitoring is receiving, record the result).
   `writer` (optional copy craft — owns the copy kit/glossary), `reviewer`,
   `chronicler`, and the specialist implementers `backend`, `frontend`,
   `security`, `devops` (CI/CD, deploy, releases).
+- **Model tuning**: `/tune <agent> <model>` shadows a plugin agent with a
+  project-level copy (`.claude/agents/`) whose only change is the model —
+  upgrade an underperformer, `/tune <agent> reset` to restore the default.
+  When a `TUNED`-prefixed variant of an agent exists, orchestrators spawn
+  THAT one. Tunes are files: committed and reviewed like any harness change
+  (§8).
 - Guardrail hooks (§3) install automatically.
 - Commands: `/init-workflow` (bootstrap a project into this workflow),
   `/adopt` (one-command adoption for an existing project: bootstrap + convert
@@ -442,7 +449,8 @@ drive the real flow, confirm monitoring is receiving, record the result).
   docs/WORKFLOW.md up to the installed protocol master), `/next` (recommends
   the single best next command from the project state), `/doctor` (machinery
   diagnosis — environment tools, §10 truthfulness; `fix` installs missing dev
-  tools like codegraph and ripgrep), `/start-work`,
+  tools like codegraph and ripgrep), `/tune` (per-project agent model
+  upgrade/reset), `/start-work`,
   `/check-workflow`, `/pre-pr`, `/end-work`, `/quick-fix`, `/retro`.
 - The `protocol` skill points every session at the project's
   `docs/WORKFLOW.md` (or this master if none exists yet).
