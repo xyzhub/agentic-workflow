@@ -525,7 +525,8 @@ choice and how to reverse it. At the human gates, `/counsel` convenes the
 explicit human confirmation each time (pre-authorization lets you *prepare*, not
 *fire*): merging the default branch (unless the §10 **Merge policy** delegates it
 — the delegation itself is a human decision, and even then only reviewer-APPROVEd
-PRs, never direct pushes), deploying to production / going live, spending beyond
+PRs or §13 registry bookkeeping, never direct pushes), deploying to production /
+going live, spending beyond
 the flight-plan ceiling, publishing outward or messaging on the owner's behalf,
 launching behavioral experiments on real users (propose the hypothesis and
 measurement plan; the human launches), and destructive/irreversible actions.
@@ -637,6 +638,16 @@ Pointers run both ways: the registry points at ventures via paths/remotes
 (co-location under one folder is tidy *convention*, never a requirement),
 and a venture's §10 **Portfolio** row points back so agents working inside
 it can find and cite cross-venture precedent.
+
+**Registry bookkeeping is delegable.** The owner may set the registry
+repo's §10 Merge policy to `agent-may-merge (bookkeeping, delegated <date>)`:
+bookkeeping PRs — registry rows, ledger appends, precedent pointers, the
+portfolio status page — may then be merged by the orchestrator WITHOUT
+independent review. Rationale: the registry is record, not product — no
+runtime, no users, fully git-reversible; PRs (never direct pushes, which stay
+unconditionally blocked) preserve the audit trail. The delegation is scoped:
+anything in a registry repo beyond those bookkeeping files (CI workflows,
+scripts, this policy file itself) still needs the human.
 
 Awareness is **command-time and daemon-free**, like everything else:
 `/operate` run in the registry repo sweeps every registered venture — one
