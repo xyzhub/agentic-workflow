@@ -62,7 +62,8 @@ outward — they prepare, you fire.
   notifications outward; tap-to-decide gate buttons inward — nonce-bound,
   identity-pinned, fail-closed, and decisions land in the decision log.
   Action gates (merge, deploy, spend, publish) always carry a link instead —
-  the human fires those where they live.
+  the human fires those where they live. Set up in minutes with `/connect`:
+  guided steps, auto-discovered IDs, and a proven round-trip test.
 - **Guardrail hooks**: blocks pushes to (or refspecs targeting) the default
   branch and `gh pr merge` unless the project's Merge policy delegates it
   (fail closed), warns on tag pushes that may deploy, reminds on commit format
@@ -78,7 +79,8 @@ outward — they prepare, you fire.
   recommends the single best next command), `/doctor` (machinery diagnosis;
   `fix` mode installs missing dev tools — codegraph, ripgrep, jq), `/tune`
   (upgrade an underperforming agent's model per-project; `reset` restores the
-  default), `/start`, `/check`, `/pr`, `/end`,
+  default), `/connect` (interactive owner-channel setup — guided, verified),
+  `/start`, `/check`, `/pr`, `/end`,
   `/fix`, `/retro`.
 - **A skill** that points every session at the project's protocol.
 

@@ -28,7 +28,7 @@ evals/                               # tier-2 scenario evals (see evals/README.m
 plugins/agentic-workflow/            # the plugin
   .claude-plugin/plugin.json         # plugin manifest
   agents/    researcher.md, designer.md, architect.md, business.md, planner.md, advisor.md, marketing.md, ops.md, analyst.md, writer.md, reviewer.md, chronicler.md, backend.md, frontend.md, security.md, devops.md
-  commands/  bootstrap, adopt, autopilot, mission, counsel, audit, release, verify, operate, sync, next, doctor, tune, start, check, pr, end, fix, retro
+  commands/  bootstrap, adopt, autopilot, mission, counsel, audit, release, verify, operate, sync, next, doctor, tune, connect, start, check, pr, end, fix, retro
   hooks/     hooks.json               # guardrails
   skills/    protocol/                # the entry-point skill
   templates/ WORKFLOW.md, overview.html, idea.md, flight-plan.md, decision-log.md, launch-*.md (plan, positioning, landing-page, announcement, content-plan), business-*.md (executive-summary, model, pricing)

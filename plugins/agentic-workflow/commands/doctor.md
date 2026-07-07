@@ -27,6 +27,8 @@ command, or "run `/doctor fix`").
   the owner id is present. In `fix` mode, send a test message ("doctor test —
   reply not needed") and report whether the send succeeded; stale entries in
   `.plans/pending-gates.md` (expired, never consumed) → 🟡 with the gate named.
+  No channel recorded, or the check fails structurally → recommend `/connect`
+  (interactive setup with a round-trip test).
 
 ## 2. Profile truthfulness (§10 rows must RESOLVE, not just exist)
 

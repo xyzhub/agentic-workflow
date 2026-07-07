@@ -32,6 +32,8 @@ then. Ask questions only when a human is actually present to answer them.
   beyond trivial size → recommend one in the report (DX pillar: the repo
   legible to models); `none` in the profile until then.
 - **Memory/recall store** — optional; only record one that already exists.
+- **Owner channel** — cannot be inferred; leave `none` and recommend
+  `/connect` in the report (it guides the setup and proves the round-trip).
 - **Issue tracker** — GitHub Issues (`gh`), Linear, none.
 - **HITL** — the human owner's name (from git config/repo ownership if
   plausible; otherwise `TBD — confirm`).

@@ -41,7 +41,7 @@ V4 harden → V5 launch → V6 operate.
 | Health check / feeling stuck | `/check`, then `/next` |
 | Something feels broken (tools, profile, hooks) | `/doctor` — add `fix` to install missing tools |
 | An agent keeps underperforming | `/tune <agent> opus` — back: `/tune <agent> reset` |
-| Away from the terminal | gates ping your owner channel — tap Approve/Reject (§12) |
+| Away from the terminal | gates ping your owner channel — tap Approve/Reject (§12; set up: `/connect`) |
 | Protocol copy out of date | `/sync` |
 | After a mission or incident | `/retro` |
 
@@ -451,7 +451,8 @@ drive the real flow, confirm monitoring is receiving, record the result).
   the single best next command from the project state), `/doctor` (machinery
   diagnosis — environment tools, §10 truthfulness; `fix` installs missing dev
   tools like codegraph and ripgrep), `/tune` (per-project agent model
-  upgrade/reset), `/start`,
+  upgrade/reset), `/connect` (interactive owner-channel setup with a
+  round-trip test), `/start`,
   `/check`, `/pr`, `/end`, `/fix`, `/retro`.
 - The `protocol` skill points every session at the project's
   `docs/WORKFLOW.md` (or this master if none exists yet).
@@ -548,7 +549,8 @@ above is unchanged.
 
 An indefinitely-operating project needs a push channel to its owner; gates
 must not block invisibly. The owner channel is a **private, owner-configured
-DM** (Telegram bot chat, Slack DM), recorded in §10. Direction is the
+DM** (Telegram bot chat, Slack DM), recorded in §10 — set up interactively
+with `/connect` (guided steps, auto-discovered IDs, round-trip test). Direction is the
 boundary: messaging THE OWNER is telemetry; any audience beyond the owner
 makes it publishing (§11, human-gated). Sends are best-effort side effects —
 a notification failure is logged and never blocks work.
