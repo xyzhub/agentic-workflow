@@ -471,7 +471,7 @@ drive the real flow, confirm monitoring is receiving, record the result).
 | **High-impact files** (docs-reminder targets) | `plugins/agentic-workflow/templates/WORKFLOW.md`, `hooks/hooks.json`, `tools/lint.mjs`, `agents/*`, `commands/*` |
 | **Code index** | none — markdown-only repo; `rg` + the tier-1 lint's cross-reference checks suffice |
 | **Memory/recall store** (optional) | none |
-| **Owner channel** (§12) | none — set up with `/connect` |
+| **Owner channel** (§12) | Slack, **shared DM** (reused app `agentic_operating_pro`, workspace XYZ — connected & round-trip-verified 2026-07-08). Send: `chat.postMessage` with `$SLACK_BOT_TOKEN` → `$SLACK_OWNER_DM`, every message prefixed `[venture-workflow-plugin]`. Inbound: emoji-reaction decisions (✅/❌/✋ via `reactions.get` polling, verified against `$SLACK_OWNER_ID`) + typed `approve <id>` fallback. Env names in `.env.example`; values in the uncommitted `.env` |
 | **Portfolio** (§13) | `/Users/baker/Playground/registry` (github.com/xyzhub/registry) — registered as row 1 |
 | **Issue tracker** | GitHub Issues via `gh` |
 
