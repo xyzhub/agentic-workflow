@@ -32,6 +32,9 @@ Inspect fast, decide, recommend — total output under 12 lines. No lectures;
 ## Output (exactly this shape)
 
 - **Where you are** — stage + one-line state.
-- **Do this** — ONE copy-pasteable command.
+- **Do this** — ONE copy-pasteable command, **real values filled in** (the
+  actual mission name from the ledger, the actual version, the actual URL —
+  never `<placeholders>`; if a value is genuinely unknowable, that unknown IS
+  the next action: say what to decide).
 - **Why** — one line.
 - *(optional)* **Runner-up** — one alternative, one line.
