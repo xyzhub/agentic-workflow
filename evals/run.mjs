@@ -77,10 +77,21 @@ const parseWeights = (rubric) =>
 
 function judge(rubric, transcript, artifacts) {
   const input = `${JUDGE_PROMPT}\n\n## Rubric\n${rubric}\n\n## Transcript\n${transcript}\n\n## Artifacts\n${artifacts || '(none)'}`;
-  const res = runClaude(['-p', '--output-format', 'json', '--model', JUDGE_MODEL], { input, cwd: EVALS });
-  const result = JSON.parse(res.stdout).result ?? '';
-  const json = result.slice(result.indexOf('{'), result.lastIndexOf('}') + 1);
-  return JSON.parse(json); // {criteria: [{id, score, evidence}]}
+  // The judge occasionally emits malformed JSON; a judge retry costs cents
+  // while the agent run it would otherwise waste costs dollars.
+  let lastErr;
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    const res = runClaude(['-p', '--output-format', 'json', '--model', JUDGE_MODEL], { input, cwd: EVALS });
+    const result = JSON.parse(res.stdout).result ?? '';
+    const json = result.slice(result.indexOf('{'), result.lastIndexOf('}') + 1);
+    try {
+      return JSON.parse(json); // {criteria: [{id, score, evidence}]}
+    } catch (e) {
+      lastErr = e;
+      console.log(`  ⚠ judge emitted malformed JSON (attempt ${attempt}/2) — ${attempt < 2 ? 'retrying' : 'giving up'}`);
+    }
+  }
+  throw lastErr;
 }
 
 const runId = new Date().toISOString().replace(/[:.]/g, '-');
