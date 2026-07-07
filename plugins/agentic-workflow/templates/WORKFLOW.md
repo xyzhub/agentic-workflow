@@ -42,6 +42,7 @@ V4 harden → V5 launch → V6 operate.
 | Something feels broken (tools, profile, hooks) | `/doctor` — add `fix` to install missing tools |
 | An agent keeps underperforming | `/tune <agent> opus` — back: `/tune <agent> reset` |
 | Away from the terminal | gates ping your owner channel — tap Approve/Reject (§12; set up: `/connect`) |
+| Several ventures, one owner | a registry repo; `/operate` run there sweeps them all (§13) |
 | Protocol copy out of date | `/sync` |
 | After a mission or incident | `/retro` |
 
@@ -483,6 +484,7 @@ concrete values.
 | **Code index** | _(e.g. codegraph — HOW to query it: MCP tools and/or the CLI command agents run via Bash. `none` → grep-first)_ |
 | **Memory/recall store** (optional) | _(semantic memory MCP if one exists — an accelerator only; the repo record stays the system of record)_ |
 | **Owner channel** (§12) | _(private DM only — transport (Telegram bot / Slack), the send template with env-var NAMES for token + chat id (never values), the owner's user id for inbound verification, and how callbacks arrive (Telegram: getUpdates polling; Slack: interactivity endpoint, else text fallback). `none` → harness push notifications, else status page only)_ |
+| **Portfolio** (§13, optional) | _(path or remote of the registry repo this venture is registered in; `none` if standalone)_ |
 | **Issue tracker** | _(e.g. GitHub Issues via `gh`)_ |
 
 ## 11. Autopilot mode
@@ -613,6 +615,37 @@ owner — with transport-specific rules:
   `[<project>]` prefix; gate nonces embed the project slug
   (`G-<project>-7f3a`); a project matches ONLY its own pending ids when
   polling a shared channel.
+
+## 13. Portfolio — one owner, many ventures
+
+When one owner runs several ventures, portfolio awareness lives in a
+**registry repo** — files + git, like every other record. Never a database:
+a DB may exist only as the §10 memory *accelerator*; the registry is the
+record. Structure:
+
+- **`registry.md`** — one row per venture: name · local path · git remote ·
+  stage · status-page URL · owner channel · last `/operate`.
+- **`ledger.md`** — portfolio-level decisions and handoffs (same rules as
+  mission ledgers: dated, append-biased, crash-safe).
+- **`precedents.md`** — POINTERS to citable decisions across ventures
+  (repo + file + one-line summary), never copies — each venture stays its
+  own system of record.
+- **`overview.html`** — the portfolio status page: every venture's stage
+  rail in one view (the first portfolio `/operate` seeds it).
+
+Pointers run both ways: the registry points at ventures via paths/remotes
+(co-location under one folder is tidy *convention*, never a requirement),
+and a venture's §10 **Portfolio** row points back so agents working inside
+it can find and cite cross-venture precedent.
+
+Awareness is **command-time and daemon-free**, like everything else:
+`/operate` run in the registry repo sweeps every registered venture — one
+reader per venture ingesting its existing *conclusions* (status-page data
+regions, ledger `Next up:`, track record), never its corpora — and rolls up
+to one report: every stage, blocked gates, and ONE ranked cross-portfolio
+backlog (this week's mission goes where?). Registration is a single
+`registry.md` row, offered by `/adopt`. Ventures without a local checkout
+are read via their remotes (`gh`) — slower, same record.
 
 ## Local amendments
 
