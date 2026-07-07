@@ -194,7 +194,10 @@ Shipped by this plugin as hooks. Advisory except where marked:
 | `Write`/`Edit` | Reminder to update docs when high-impact files change |
 
 Blockers exit 2 (hard stop); reminders exit 0. Guardrails catch autopilot
-mistakes; they never replace judgment.
+mistakes; they never replace judgment. Checks evaluate in the command's
+**target repo** — a leading `cd <dir>` or `git -C <dir>`, else the session
+cwd — and read **pre-execution** state: branch-switching and pushing belong
+in separate commands.
 
 ## 4. Session lifecycle (the default altitude)
 
