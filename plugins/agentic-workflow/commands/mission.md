@@ -18,7 +18,9 @@ building.
 ## 1. Plan (if no trio exists)
 
 If `.plans/<mission>.{md,sessions.md,state.md}` don't exist, spawn the **planner**
-agent with the goal. It explores once and writes the trio. **Converting an
+agent with the goal. (For a feature that still needs DEFINING — scope,
+journeys, shape decisions — `/plan` is the interview-driven front door that
+ends here with everything locked.) It explores once and writes the trio. **Converting an
 existing plan**: if the goal names a plan document (a PLAN.md, migration doc,
 ticket export), pass it to the planner as source material — its decisions become
 locked decisions, not things to re-litigate. Then surface the master plan's

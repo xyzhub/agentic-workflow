@@ -5,6 +5,12 @@ here, in [Keep a Changelog](https://keepachangelog.com/) format. This repo
 has no tags — each version-stamped commit on `main` IS the release.
 
 ## [Unreleased]
+### Added
+- /plan — interview-driven feature planning in one command: the human
+  answers batched questions with drafted options, the team (designer,
+  architect, analyst, advisors, planner) produces the brief, journeys,
+  option memos, metrics, counsel, and the mission trio; one consolidated
+  approval; optional immediate /mission run.
 ### Docs
 - Self-adoption: the repo now runs its own workflow — `docs/WORKFLOW.md`
   (§10 profile, stage V6), reconstructed CHANGELOG/JOURNEY, live status page,
