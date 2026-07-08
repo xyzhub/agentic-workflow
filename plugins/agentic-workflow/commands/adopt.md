@@ -21,10 +21,20 @@ whatever already exists (idempotent). The **Merge policy** row stays
 `human-only` unless the human explicitly delegates it — never infer
 `agent-may-merge` from the repo.
 
-**Portfolio registration (§13)**: ask whether this venture belongs to a
-portfolio. Given a registry path/remote — write the §10 **Portfolio** row,
-and append this venture's row to the registry's `registry.md` (uncommitted
-there too; the human reviews both repos). No portfolio → `none`, move on.
+## 1.5 Portfolio registration (§13) — ALWAYS runs
+
+This step is exempt from step 1's idempotency skip: an already-adopted
+project re-running `/adopt` (or freshly `/sync`ed) still gets asked. Check
+BOTH sides independently and repair whichever is missing:
+
+- §10 has no **Portfolio** row (or `none`) → ask whether this venture belongs
+  to a portfolio; given a registry path/remote, write the row.
+- The registry's `registry.md` lacks this venture's row → append it (name ·
+  path · remote · stage · status page · owner channel · `never`). Registry
+  rows are bookkeeping (§13): PR them, and merge under a recorded delegation
+  where one exists; otherwise leave for the human.
+
+No portfolio → `none`, move on.
 
 ## 2. Inventory existing process artifacts
 
