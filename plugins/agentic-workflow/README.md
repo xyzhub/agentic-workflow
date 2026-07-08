@@ -118,6 +118,7 @@ any agent's model per project, reversibly.
 
 | Command | Does |
 |---|---|
+| `/plan` | Feature front door: interactive interview → the team drafts brief/journeys/memos/metrics → counsel → ONE approval → the planner's trio, ready to run |
 | `/mission` | Plan + drive multi-session work: the planner authors a `.plans/` trio (master plan · session briefs · ledger), then phases execute with independent checkpoint reviews; `continue` resumes from the ledger, `replan` reconciles it with reality; loop-drivable |
 | `/counsel` | Convene 2–3 lens-partitioned advisors on a pending decision → one-page brief in the decision log |
 | `/audit` | The V4 adversarial multi-vote on demand: lens-partitioned fresh reviewers, conservative merge, findings ranked and routed |
