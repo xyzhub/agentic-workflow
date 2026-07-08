@@ -34,6 +34,14 @@ Copy the bundled master (`${CLAUDE_PLUGIN_ROOT}/templates/WORKFLOW.md`) over
 banner with the NEW version stamp, restore the preserved §10, and restore the
 Local amendments section (plus any recovered drift).
 
+**Reconcile new §10 rows**: diff the preserved profile's row keys against the
+new master's §10 template — keys the newer master introduced (e.g. Merge
+policy, Owner channel, Portfolio) are APPENDED with detected values where
+cheaply detectable, else `TBD — confirm`; existing values are never touched.
+If the new master has §13 and the machine has a registry repo, offer
+registration (the `/adopt` 1.5 procedure) rather than leaving the Portfolio
+row `TBD`.
+
 ## 4. Review & hand off
 
 Summarize what changed in the protocol between the two versions (new/changed
