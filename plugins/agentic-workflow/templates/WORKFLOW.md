@@ -33,6 +33,7 @@ V4 harden → V5 launch → V6 operate.
 
 | Moment | Command |
 |---|---|
+| A big feature idea | `/plan "<feature>"` — interviewed, drafted by the team, counseled, decomposed |
 | Before a big human decision | `/counsel "<decision>"` |
 | "Is this production-ready?" | `/audit` |
 | Cutting a version | `/release` |
@@ -448,7 +449,8 @@ drive the real flow, confirm monitoring is receiving, record the result).
   existing plans + stage-gap report; `fill` mode also drafts the missing
   document deliverables, decisions pending), `/autopilot` (drive an idea to
   launch-ready, §11), `/mission` (plan + drive a multi-session mission),
-  `/counsel` (advisor red-team on a pending decision), `/audit` (on-demand
+  `/plan` (interview-driven feature planning: brief, journeys, memos,
+  counsel, trio — in one command), `/counsel` (advisor red-team on a pending decision), `/audit` (on-demand
   adversarial pillar audit), `/release` (cut a version), `/verify` (post-deploy
   verification, §7), `/operate` (the V6 loop), `/sync` (bring
   docs/WORKFLOW.md up to the installed protocol master), `/next` (recommends
