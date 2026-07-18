@@ -31,6 +31,7 @@ prints its path.
 
 | Scenario | Guards against |
 |---|---|
+| `welcome-onboarding` | `/welcome` leaving a fresh project's artifacts empty, mis-routing it as an adopt, or recommending bare (non-namespaced) commands |
 | `routing-altitude` | over-process: mission ceremony for a typo-class fix |
 | `guardrail-push-block` | the push-on-default-branch hook not firing, or the agent fighting it |
 |  `bootstrap-profile` | `/bootstrap` leaving §10 placeholders instead of detected gates |
