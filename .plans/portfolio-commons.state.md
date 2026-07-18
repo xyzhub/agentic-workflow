@@ -20,7 +20,7 @@ Mission started: **2026-07-18**.
 - [x] S3 — Author `commands/ingest.md` (branch `mission/portfolio-commons-p2`)
 - [~] Checkpoint — phase 2 review **APPROVED** (stacked; no merge until mission end)
 - [x] S4 — Author `agents/curator.md` + fold in the two phase-2 acceptance items (branch `mission/portfolio-commons-p3`)
-- [ ] Checkpoint — phase 3 review + merge
+- [~] Checkpoint — phase 3 review **APPROVED** (3·3·3·3; stacked, no merge)
 - [ ] S5 — Frontend consults the commons; write-back path (branch `mission/portfolio-commons-p4`)
 - [ ] Checkpoint — phase 4 review + paired eval + merge
 - [ ] S6 — Guard + docs + version bump (branch `mission/portfolio-commons-p5`)
@@ -82,6 +82,17 @@ the phase-1 checkpoint._
   flows into any `mkdir`/`cp`/`git clone` path (traversal/injection guard).
 
 ## Handoff log (newest first)
+
+- **2026-07-18 · Phase-3 checkpoint (reviewer)** — **APPROVE** (Architecture 3/3 ·
+  DX 3/3 · Security 3/3 · QA 3/3). Re-ran `node tools/lint.mjs` → clean. Both phase-2
+  findings verified **genuinely fixed**: slug `^[a-z0-9-]+$` is anchored, stops (not
+  sanitize-and-continue), and provably precedes any `mkdir`/`cp`/`git clone`; the
+  collision guard is a real precondition (dir OR index-entry check → stop without
+  `--refresh`, update-in-place with it, never overwrite+duplicate). Curator coherent
+  with §13 (k=1 + escalation trigger, freshness age-OR-source-advance surfaced-never-
+  auto-mutated, write-back as delegable bookkeeping, hard boundary); `model:` correctly
+  omitted (D6 opus); §6 roles row + §13 consistent, section order intact; stamped copy
+  untouched. No unclaimed changes. Stacked policy — no merge now.
 
 - **2026-07-18 · S4 (backend)** — Authored
   `plugins/agentic-workflow/agents/curator.md`. Frontmatter: `name: curator`
@@ -174,14 +185,13 @@ the phase-1 checkpoint._
   mechanical. All reversal costs LOW. `node tools/lint.mjs` → clean (memo under `docs/`,
   no incidental breakage). No protocol/code touched (that is S2).
 
-Next up: **Phase-3 checkpoint** — the fresh-context `reviewer` re-runs `node
-tools/lint.mjs` (must be clean) and diff-reviews `base..head` for the `curator`
-agent (k=1 brokering + freshness + hard boundary unambiguous; `model:` correctly
-omitted for the opus tier) and the two `ingest.md` guards (collision/refresh +
-slug validation). Then **Phase 4 / S5** — the `frontend` agent consults the
-commons (conditioned on a commons existing, so `commons-cold` stays green) and the
-write-back path lands, on `mission/portfolio-commons-p4` (stacked off p3). A later
-increment can route `/agentic-workflow:ingest` harvest through the `curator`.
+Next up: **Phase 4 / S5** — the `frontend` agent consults the commons (conditioned
+on a commons existing, so `commons-cold` stays green) and the write-back path lands,
+on `mission/portfolio-commons-p4` (stacked off p3). **This is the eval-gated phase:**
+the reviewer re-runs `node evals/run.mjs commons-warm commons-cold` at the checkpoint
+and BOTH must stay green (warm still consults+adapts; cold does not hallucinate a
+commons). A later increment can route `/agentic-workflow:ingest` harvest through the
+`curator`.
 (Stacked-phases policy: no intermediate merge; one `/agentic-workflow:sync` after
 all §-master edits land — S2/S3/S4 all touched the master; the human merges at
 mission end.)
