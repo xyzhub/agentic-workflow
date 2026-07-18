@@ -4,8 +4,12 @@ _The durable state that outlives any transcript (WORKFLOW.md §2, principle 1): 
 fresh agent resumes the mission from this file alone. Write-ahead — update it before
 ending a session. Deploys to `.plans/portfolio-commons.state.md`._
 
-Gate policy: **human-merge (default)** — pause for the human to merge each phase
-branch on APPROVE. Recorded at mission start.
+Gate policy: **human-merge**, adjusted **2026-07-18** (human choice) to **stacked
+phases, one merge at end**: phase branches stack (`p2`←`p1`←…), a reviewer checkpoint
+gates each phase, but there are **no intermediate merges**. At mission end, one PR
+`feat/template-ingestion → main` for the human to review + merge; `/agentic-workflow:sync`
+runs **once** (master → stamped `docs/WORKFLOW.md`) after all §-master edits land
+(S2/S3/S4 all touch the master). Reviewer checkpoints still run per phase.
 Mission started: **2026-07-18**.
 
 ## Checklist
