@@ -40,6 +40,18 @@ prints its path.
 | `business-model` | the business agent inventing numbers, deciding instead of proposing, or dishonest economics |
 | `mission-batch-gate` | the batch gate policy merging into main instead of the integration branch, or skipping the independent checkpoint |
 | `adopt-existing-project` | `/adopt` committing, rewriting existing plans, inferring merge delegation, or skipping the gap report |
+| `commons-cold` | (baseline control) the frontend agent building a landing+auth pair from scratch with no shared commons |
+| `commons-warm` | the frontend agent ignoring an available commons exemplar, or blind-copying it instead of adapting it to the current product |
+
+**Paired experiment — `commons-cold` vs `commons-warm`.** These two share a fixture
+(the "Cove" journaling app) and task (build `LandingHero.vue` + `SignInForm.vue`);
+warm additionally seeds a battle-tested exemplar under `commons/` and asks the
+agent to copy-and-adapt it. Run both and compare the **delta** on the four shared
+criteria (`not-ai-slop`, `honors-tokens`, `task-correct`, `production-quality`) —
+warm should meet or beat cold there *without* regressing `task-correct`, and pass
+its own `adapted-not-copied` / `consulted-commons` criteria. This validates the
+Portfolio Commons premise (grounding changes output) before any `/ingest` or
+curator machinery is built; see `docs/product/features/portfolio-commons/idea.md`.
 
 ## Anatomy of a scenario
 

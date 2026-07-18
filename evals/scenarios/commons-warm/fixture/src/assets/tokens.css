@@ -1,0 +1,56 @@
+/* Cove — design tokens. Single source of truth for color, type, spacing.
+   Components consume these custom properties; they do not hardcode values a
+   token already covers. */
+
+:root {
+  /* Color — a cool, papery neutral base with one confident accent.
+     Deliberately not cream-and-terracotta, not near-black-and-acid-green,
+     not a purple→blue gradient. */
+  --color-bg: #f5f6f7;        /* page */
+  --color-surface: #ffffff;   /* raised */
+  --color-ink: #191c20;       /* primary text */
+  --color-ink-soft: #5b616b;  /* secondary text */
+  --color-line: #e2e5e9;      /* hairlines / borders */
+  --color-accent: #2f6f6a;    /* deep teal — links, primary actions */
+  --color-accent-ink: #f5f6f7;/* text on accent */
+  --color-accent-soft: #e6efee;
+  --color-danger: #9a3b34;
+
+  /* Type — a system sans for body, a serif reserved for display. */
+  --font-body: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+
+  /* Fluid type scale (1.25 ratio). */
+  --text-xs: 0.79rem;
+  --text-sm: 0.889rem;
+  --text-base: 1rem;
+  --text-md: 1.125rem;
+  --text-lg: clamp(1.25rem, 1.1rem + 0.6vw, 1.5rem);
+  --text-xl: clamp(1.6rem, 1.3rem + 1.4vw, 2.1rem);
+  --text-2xl: clamp(2.1rem, 1.6rem + 2.6vw, 3.25rem);
+
+  --leading-tight: 1.12;
+  --leading-normal: 1.55;
+  --tracking-tight: -0.02em;
+
+  /* Spacing scale (0.25rem base). */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-8: 3rem;
+  --space-12: 4.5rem;
+  --space-16: 6rem;
+
+  /* Radius — restrained, not rounded-everything. */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+
+  /* Elevation. */
+  --shadow-sm: 0 1px 2px rgba(25, 28, 32, 0.06);
+  --shadow-md: 0 6px 24px rgba(25, 28, 32, 0.08);
+
+  --measure: 62ch;   /* readable line length */
+}
