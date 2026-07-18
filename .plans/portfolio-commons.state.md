@@ -12,7 +12,7 @@ Mission started: **2026-07-18**.
 
 - [x] S1 — Commons shape memo (branch `mission/portfolio-commons-p1`)
 - [x] S2 — §13 commons amendment (branch `mission/portfolio-commons-p1`)
-- [ ] Checkpoint — phase 1 review + human locks shape + merge
+- [~] Checkpoint — phase 1 review **APPROVED** + shape locked; **merge pending human**
 - [ ] S3 — Author `commands/ingest.md` (branch `mission/portfolio-commons-p2`)
 - [ ] Checkpoint — phase 2 review + merge
 - [ ] S4 — Author `agents/curator.md` (branch `mission/portfolio-commons-p3`)
@@ -49,9 +49,26 @@ the phase-1 checkpoint._
 
 ## Deviations
 
-(none)
+- **Phase-1 review nits (non-blocking, deferred)** — reviewer flagged two, neither
+  requiring a corrective retry: (1) **DX** — the S1 memo cites §13 by hard line
+  numbers that already rot after the S2 edit; prefer citing by subsection heading
+  (cosmetic, internal to the memo). (2) **Security** — the delegable lane now covers
+  `code/` copied into `commons/` merged without independent review; the framing holds
+  (registry has no runtime; a commons exemplar only reaches production when a consumer
+  copy-adapts it through that venture's own gates), but that downstream gate is
+  implicit at the §13 delegation — add one explicit sentence in a later increment so
+  "no runtime" doesn't read as "agent-merged code is safe."
 
 ## Handoff log (newest first)
+
+- **2026-07-18 · Phase-1 checkpoint (reviewer)** — **APPROVE**. Re-ran
+  `node tools/lint.mjs` → clean; confirmed the `docs/WORKFLOW.md` stamped copy is
+  untouched; verified §13 implements all six locked dimensions (D1–D5 in §13, D6
+  correctly deferred to `agents/curator.md` frontmatter); forward-cross-ref deferral
+  confirmed deliberate (lint scans `templates/`, not `docs/`). Scorecard
+  (diff-touched lenses): Architecture 3/3 · DX/protocol-clarity 2/3 · Security 2/3 ·
+  QA/gates 3/3. Two minor non-blocking findings → Deviations. **Gate: human-merge**
+  — awaiting the human to merge `mission/portfolio-commons-p1`.
 
 - **2026-07-18 · S2 (backend)** — Amended WORKFLOW **master** §13
   (`plugins/agentic-workflow/templates/WORKFLOW.md`) to the locked shape: added the
@@ -82,8 +99,7 @@ the phase-1 checkpoint._
   mechanical. All reversal costs LOW. `node tools/lint.mjs` → clean (memo under `docs/`,
   no incidental breakage). No protocol/code touched (that is S2).
 
-Next up: **Phase-1 checkpoint** — reviewer (fresh context) re-runs `node tools/lint.mjs`
-and diff-reviews `base..head` of the §13 amendment; human merges `mission/portfolio-commons-p1`
-per gate policy (human-merge). Checkpoint item for the merge: `/agentic-workflow:sync`
-propagates the §13 master edit into the stamped `docs/WORKFLOW.md` (not hand-edited).
-Then **Phase 2 / S3** — author `commands/ingest.md`.
+Next up: **Human merges `mission/portfolio-commons-p1`** (phase-1 APPROVED by the
+reviewer, shape locked). On merge, run `/agentic-workflow:sync` to propagate the §13
+master edit into the stamped `docs/WORKFLOW.md` (do NOT hand-edit it). Then
+**Phase 2 / S3** — author `plugins/agentic-workflow/commands/ingest.md`.
