@@ -24,7 +24,13 @@ Mission started: **2026-07-18**.
 - [x] S5 — Frontend consults the commons; write-back path (branch `mission/portfolio-commons-p4`)
 - [~] Checkpoint — phase 4 review **APPROVED** (3·3·3; both evals green; stacked, no merge)
 - [x] S6 — Guard + docs + version bump (branch `mission/portfolio-commons-p5`)
-- [ ] Checkpoint — phase 5 review + evals + merge (mission-end wrap)
+- [~] Checkpoint — phase 5 review **APPROVED** (3·3·3); **mission-end wrap pending** (sync + human merge)
+
+**ALL SIX SESSIONS COMPLETE · all five phase checkpoints APPROVED.** Mission-end wrap
+is the human's: (1) reconcile the stamped `docs/WORKFLOW.md` with the master §-edits
+(see the sync caveat in the handoff log), (2) review + merge the single PR
+`feat/template-ingestion → main`. Two post-mission follow-ups remain out of scope
+(nit 2 cold-rubric criterion; routing `/agentic-workflow:ingest` harvest through the curator).
 
 ## Open questions
 
@@ -97,6 +103,21 @@ the phase-1 checkpoint._
   not bundled into a release-prep session. Left `commons-cold/rubric.md` unchanged.
 
 ## Handoff log (newest first)
+
+- **2026-07-18 · Phase-5 checkpoint (reviewer) — FINAL** — **APPROVE** (DX 3/3 ·
+  Architecture 3/3 · QA 3/3). `node tools/lint.mjs` → clean; version `1.37.0` correct
+  semver; CHANGELOG accurate + non-overclaiming; §13 sentence coherent, section order
+  intact; `docs/WORKFLOW.md` NOT hand-edited; `commons-cold/rubric.md` unchanged (nit 2
+  correctly deferred). Paired eval not re-run (phase-5 non-behavioral; phase-4 artifacts
+  stand). **Mission-level: coherent and release-ready.** Loose end flagged: the stamped
+  `docs/WORKFLOW.md` still shows `protocol-master: v1.30.0` and lacks the S2/S3/S4/S6
+  master §-edits.
+  **⚠ SYNC CAVEAT (orchestrator note):** `/agentic-workflow:sync` sources the master from
+  `${CLAUDE_PLUGIN_ROOT}` = the INSTALLED plugin cache (still v1.36.0), NOT this
+  working-tree master. Running it now would pull the stale installed master and
+  OVERWRITE the new §13/§6 edits in `docs/WORKFLOW.md`. Correct order: release/install
+  v1.37.0 first, THEN `/agentic-workflow:sync`; or hand-propagate the working-tree master
+  → `docs/WORKFLOW.md` preserving §10 + Local amendments. Do NOT run a plain `/sync` now.
 
 - **2026-07-18 · S6 (backend)** — Release prep, docs/JSON/§-master prose only (no
   code, no eval fixtures/rubrics). (1) **Version bump** —
@@ -261,16 +282,16 @@ the phase-1 checkpoint._
   mechanical. All reversal costs LOW. `node tools/lint.mjs` → clean (memo under `docs/`,
   no incidental breakage). No protocol/code touched (that is S2).
 
-Next up: **Phase-5 checkpoint + mission-end wrap** — all six sessions (S1–S6) are
-authored; only the phase-5 checkpoint remains. The reviewer re-runs `node tools/lint.mjs`
-(clean at S6), diff-reviews `base..head`, and re-runs the paired eval at their
-discretion (S6 changes are non-behavioral docs/version/§13-prose — the phase-4 green
-artifacts remain representative). **Mission-end wrap:** run `/agentic-workflow:sync`
-**once** (master → stamped `docs/WORKFLOW.md`; propagates the S2/S3/S4 §-master edits +
-the S6 §13 delegable-lane sentence — S2/S3/S4/S6 all touched the master, but sync runs
-only once, at the end); then the **human reviews + merges the single PR
-`feat/template-ingestion → main`** (stacked-phases policy: no intermediate merges).
-**Nit 1 resolved** (§13 downstream-gate sentence, in master). **Post-mission follow-ups:**
+Next up: **MISSION-END WRAP (human-owned)** — all six sessions (S1–S6) are authored and
+all five phase checkpoints APPROVED. The orchestrator has fast-forwarded
+`feat/template-ingestion` to the p5 tip so it carries the whole feature linearly.
+Remaining, human-owned: **(1)** reconcile the stamped `docs/WORKFLOW.md` with the master
+§-edits — **NOT** a plain `/agentic-workflow:sync` right now (see the ⚠ sync caveat in the
+handoff log: sync sources the stale INSTALLED cache and would overwrite the new edits);
+release/install v1.37.0 first then sync, or hand-propagate. **(2)** review + merge the
+single PR `feat/template-ingestion → main` (stacked-phases policy: no intermediate
+merges). **Nit 1 resolved** (§13 downstream-gate sentence, in master). **Post-mission
+follow-ups:**
 (a) nit 2 — add a "did-not-hallucinate-a-commons" negative criterion to
 `commons-cold/rubric.md` as its own small change (re-certifies the cold eval); (b) route
 `/agentic-workflow:ingest` harvest through the `curator`; (c) seed a real first commons
