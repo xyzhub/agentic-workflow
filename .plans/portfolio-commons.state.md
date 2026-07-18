@@ -21,7 +21,7 @@ Mission started: **2026-07-18**.
 - [~] Checkpoint — phase 2 review **APPROVED** (stacked; no merge until mission end)
 - [x] S4 — Author `agents/curator.md` + fold in the two phase-2 acceptance items (branch `mission/portfolio-commons-p3`)
 - [~] Checkpoint — phase 3 review **APPROVED** (3·3·3·3; stacked, no merge)
-- [ ] S5 — Frontend consults the commons; write-back path (branch `mission/portfolio-commons-p4`)
+- [x] S5 — Frontend consults the commons; write-back path (branch `mission/portfolio-commons-p4`)
 - [ ] Checkpoint — phase 4 review + paired eval + merge
 - [ ] S6 — Guard + docs + version bump (branch `mission/portfolio-commons-p5`)
 - [ ] Checkpoint — phase 5 review + evals + merge
@@ -82,6 +82,27 @@ the phase-1 checkpoint._
   flows into any `mkdir`/`cp`/`git clone` path (traversal/injection guard).
 
 ## Handoff log (newest first)
+
+- **2026-07-18 · S5 (frontend)** — Added a **conditional commons beat** inside the
+  "Orient first" section of `plugins/agentic-workflow/agents/frontend.md` (right after
+  the "find the existing design system" sentence, ~line 23). Exact wording:
+  "**Consult the commons — only where one exists.** *Where a portfolio commons is
+  present* (a `commons/index.md` in the §13 registry/project), read it and pick the
+  **single best match (k=1, never a pile)**, then **copy-and-adapt** it to THIS project:
+  rewrite the product name, copy, routes, and tokens, follow the entry's README
+  adaptation notes, and close any token gap it flags — never blind-copy. *Where no
+  commons exists, proceed exactly as today* — build from the existing design system /
+  from scratch; introduce nothing and do not go hunting for a commons that isn't there.
+  When you improve reused material (close a flagged gap, fix a bug), flag it for the
+  `curator` to write back into the commons as a delegable §13 bookkeeping PR — you never
+  write to the commons yourself." The where-exists / where-none conditional is
+  symmetric and italic-marked so a mid-tier reader cannot read it as "always assume a
+  commons" (keeps `commons-cold` green); k=1 + copy-and-adapt + write-back-via-`curator`
+  keep `commons-warm` green. Consistent with `curator.md` (read-protocol against
+  `commons/index.md`, curator is sole writer). `node tools/lint.mjs` → **clean**
+  (`` `curator` `` ref resolves; frontmatter untouched). Eval fixtures/rubrics/other
+  agents/product code untouched. **Did NOT run the cold eval myself** — deferred the
+  `~$1–3` cold sanity-run to the reviewer's paired run at the checkpoint.
 
 - **2026-07-18 · Phase-3 checkpoint (reviewer)** — **APPROVE** (Architecture 3/3 ·
   DX 3/3 · Security 3/3 · QA 3/3). Re-ran `node tools/lint.mjs` → clean. Both phase-2
@@ -185,13 +206,15 @@ the phase-1 checkpoint._
   mechanical. All reversal costs LOW. `node tools/lint.mjs` → clean (memo under `docs/`,
   no incidental breakage). No protocol/code touched (that is S2).
 
-Next up: **Phase 4 / S5** — the `frontend` agent consults the commons (conditioned
-on a commons existing, so `commons-cold` stays green) and the write-back path lands,
-on `mission/portfolio-commons-p4` (stacked off p3). **This is the eval-gated phase:**
-the reviewer re-runs `node evals/run.mjs commons-warm commons-cold` at the checkpoint
-and BOTH must stay green (warm still consults+adapts; cold does not hallucinate a
-commons). A later increment can route `/agentic-workflow:ingest` harvest through the
-`curator`.
+Next up: **Phase-4 checkpoint (reviewer)** — S5 landed the conditional commons beat in
+`frontend.md`; the reviewer now re-runs `node tools/lint.mjs` (must print `lint: clean`)
+**and** the paired eval `node evals/run.mjs commons-warm commons-cold` — **BOTH must
+stay green** (warm still consults+copy-adapts+notes write-back; cold does NOT
+hallucinate a commons — the italic "where no commons exists, proceed exactly as today"
+clause is the guard to confirm). S5 did **not** self-run the cold eval, so the
+checkpoint run is the first eval verification. On approve → **Phase 5 / S6** (guard +
+docs + version bump, branch `mission/portfolio-commons-p5`). A later increment can
+route `/agentic-workflow:ingest` harvest through the `curator`.
 (Stacked-phases policy: no intermediate merge; one `/agentic-workflow:sync` after
 all §-master edits land — S2/S3/S4 all touched the master; the human merges at
 mission end.)
