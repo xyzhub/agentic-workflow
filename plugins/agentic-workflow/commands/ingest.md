@@ -1,6 +1,6 @@
 ---
 description: Harvest a reusable first-party artifact into the portfolio commons — copy it into the registry repo, pin provenance, and write its index entry, all as delegable §13 bookkeeping.
-argument-hint: [git-url-or-path] [--type code]
+argument-hint: [git-url-or-path] [--type code] [--refresh]
 allowed-tools: [Read, Write, Edit, Bash, Grep, Glob]
 ---
 
@@ -29,13 +29,36 @@ a git repo (`git -C <registry> rev-parse` via Bash). If §10 has no Portfolio
 row, or the path does not resolve, **stop and tell the human** to set it (via
 `/agentic-workflow:adopt`, which registers the venture) — do not guess a path.
 
-## 2. Copy the source into the commons
+## 2. Derive the slug, then validate and guard collisions
 
 Derive a `<slug>` (kebab-case: venture + what-it-is, e.g. `tend-landing-auth`).
-Create `commons/code/<slug>/` in the registry repo and copy the artifact in via
-Bash — `git clone` (then strip `.git`, or copy the specific files out) for a
-remote URL, `cp -R` for a local path. Copy only the reusable files, not a whole
-repo's scaffolding. This is a **copy-and-adapt** exemplar, not a submodule.
+
+**Validate the slug before it touches the filesystem.** It MUST match
+`^[a-z0-9-]+$` (lowercase letters, digits, hyphens only). Reject anything else —
+a slash, `..`, whitespace, or a shell metacharacter — and **stop**: the slug flows
+straight into `mkdir`/`cp`/`git clone` paths, so an unvalidated slug is a path-
+traversal / injection hole. Never sanitize-and-continue; a malformed slug is a
+caller error to surface, not to silently rewrite.
+
+**Guard collisions before writing.** Check whether `commons/code/<slug>/` already
+exists OR `commons/index.md` already has an entry for that slug:
+
+- **No collision** → proceed with a fresh harvest (step 2b).
+- **Collision without `--refresh`** → **stop** and report the existing entry.
+  Do NOT overwrite the directory and do NOT append a second index row — a
+  duplicate slug corrupts the single-best-match (k=1) broker surface the commons
+  depends on. Tell the caller to pass `--refresh` if an update is intended.
+- **Collision with `--refresh`** → **update in place**: refresh the existing
+  `commons/code/<slug>/` from source, re-pin provenance, and rewrite that one
+  index entry (bumping `last-reviewed`) — never create a second directory or a
+  second row. This refresh-on-source-advance path is curator-owned de-stale
+  semantics (see the `curator` agent); `/agentic-workflow:ingest` is the mechanism.
+
+**2b — copy the source in.** Create (or, under `--refresh`, reuse)
+`commons/code/<slug>/` in the registry repo and copy the artifact in via Bash —
+`git clone` (then strip `.git`, or copy the specific files out) for a remote URL,
+`cp -R` for a local path. Copy only the reusable files, not a whole repo's
+scaffolding. This is a **copy-and-adapt** exemplar, not a submodule.
 
 ## 3. Capture provenance and derive metadata
 
@@ -68,8 +91,9 @@ consumer can choose without opening every artifact:
 `provenance` and `last-reviewed` are load-bearing, not decorative: an entry is
 **stale** when it ages past its `last-reviewed` threshold OR its source repo
 advances past the pinned commit. Staleness is surfaced for review, never
-auto-mutated — so an ingest only ever *writes today's date*, it does not
-rewrite older entries.
+auto-mutated — a fresh ingest only ever *writes today's date* for its own new
+entry and never touches another entry; a deliberate `--refresh` (step 2)
+re-dates exactly the one entry it re-harvests, nothing else.
 
 ## 6. Hand off as delegable bookkeeping
 

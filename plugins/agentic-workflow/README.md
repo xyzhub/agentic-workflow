@@ -94,6 +94,7 @@ as what it does.
 | `frontend` | Build | UI slices — owns the UX pillar; verifies in a real browser | Self-approves; introduces parallel styling systems |
 | `security` | Hardening | Fail-closed config guards, auth, rate limits, secret handling, CI pinning — and proves each guard blocks | Marks its own work approved |
 | `devops` | V2, V5 | CI/CD, deploy config, releases, rollback — prepares the path to production | Fires irreversible deploys or merges |
+| `curator` | Portfolio (§13) | Owns the commons lifecycle — harvests reusable first-party material, brokers the single-best-match (k=1), keeps entries fresh, routes improvements back as delegable bookkeeping PRs | Decides product direction; ships product code into a venture; merges |
 
 Model tiering: `chronicler`, `analyst`, and `writer` default to a mid-tier
 model (the Efficiency pillar applied to the plugin itself); `/agentic-workflow:tune` overrides

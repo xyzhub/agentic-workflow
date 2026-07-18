@@ -19,7 +19,7 @@ Mission started: **2026-07-18**.
 - [~] Checkpoint — phase 1 review **APPROVED** + shape locked; **merge pending human**
 - [x] S3 — Author `commands/ingest.md` (branch `mission/portfolio-commons-p2`)
 - [~] Checkpoint — phase 2 review **APPROVED** (stacked; no merge until mission end)
-- [ ] S4 — Author `agents/curator.md` (branch `mission/portfolio-commons-p3`)
+- [x] S4 — Author `agents/curator.md` + fold in the two phase-2 acceptance items (branch `mission/portfolio-commons-p3`)
 - [ ] Checkpoint — phase 3 review + merge
 - [ ] S5 — Frontend consults the commons; write-back path (branch `mission/portfolio-commons-p4`)
 - [ ] Checkpoint — phase 4 review + paired eval + merge
@@ -69,17 +69,43 @@ the phase-1 checkpoint._
   `allowed-tools` omits `Task`, and the body contains no "spawn" and no backticked
   `curator`-agent ref — curator is named only as a plain-word read-side concept. A
   later increment can route harvest through the curator once it exists.
-- **S4 acceptance items (from the phase-2 review, non-blocking then, required now):**
-  (1) **Collision/refresh guard** — `/ingest` must, before writing, check whether
-  `commons/code/<slug>/` or an `index.md` entry for that slug already exists; on
-  collision, stop (or update-in-place under an explicit `--refresh`) rather than
-  overwrite the dir + append a duplicate index row (a duplicate corrupts the k=1
-  broker surface). This is curator-lifecycle territory (upkeep/refresh) — S4 owns
-  it, touching `ingest.md` as needed. (2) **Slug validation** — enforce
-  `^[a-z0-9-]+$` before the slug flows into any `mkdir`/`cp`/`git clone` path
-  (traversal/injection defense-in-depth).
+- **S4 acceptance items (from the phase-2 review) — RESOLVED in S4 (2026-07-18):**
+  (1) **Collision/refresh guard** — DONE. `commands/ingest.md` step 2 now checks
+  whether `commons/code/<slug>/` or an `index.md` entry for the slug exists before
+  writing; no collision → fresh harvest; collision without `--refresh` → **stop**
+  (no overwrite, no duplicate row); collision with `--refresh` → **update in
+  place** (re-harvest, re-pin, rewrite the one entry, bump `last-reviewed`).
+  `--refresh` added to `argument-hint`; step 5 staleness note reconciled with the
+  deliberate re-date. `curator.md` records this refresh-on-source-advance as
+  curator-owned de-stale semantics. (2) **Slug validation** — DONE. Step 2
+  enforces `^[a-z0-9-]+$` and stops (never sanitize-and-continue) before the slug
+  flows into any `mkdir`/`cp`/`git clone` path (traversal/injection guard).
 
 ## Handoff log (newest first)
+
+- **2026-07-18 · S4 (backend)** — Authored
+  `plugins/agentic-workflow/agents/curator.md`. Frontmatter: `name: curator`
+  (= filename), long third-person trigger-oriented `description` with a hard
+  NEVER/NOT boundary (curates + brokers ONE best match, never a top-N dump; does
+  not decide product direction, ship product code, or merge), comma-separated
+  `tools: Read, Write, Edit, Bash, Grep, Glob` (no `Task` — does not spawn), and
+  **`model:` omitted** (locked D6 default/opus tier — the plugin convention is
+  omit-to-inherit-top; only writer/analyst/chronicler pin sonnet). Body — commons
+  lifecycle: **find/harvest** (owns *what* is worth keeping + how it's tagged; the
+  `/agentic-workflow:ingest` write path exists), **broker k=1** (curates the index
+  so it yields one best match; states the screenful-per-type / consumer-consults->1
+  escalation trigger to a dedicated single-match broker), **write/upkeep** (owns
+  the freshness signal — stale on `last-reviewed` age OR source-advance; surfaces,
+  never auto-mutates; re-harvests + owns the `--refresh` de-stale semantics),
+  **write-back** (sole writer; consumer improvements → delegable §13 bookkeeping
+  PR), and a **hard boundary**. **Both phase-2 acceptance items implemented in
+  `commands/ingest.md`** (see Deviations, now resolved): (1) collision/refresh
+  guard + `--refresh` in `argument-hint`; (2) slug `^[a-z0-9-]+$` validation before
+  any `mkdir`/`cp`/`git clone`. Doc surfaces: plugin `README.md` agents table row,
+  root `README.md` agents list, WORKFLOW master §6 roles table row + §13 (the
+  existing curator prose now names the real `` `curator` `` agent). `node
+  tools/lint.mjs` → **clean**. Master edit (§6 + §13) — stamped `docs/WORKFLOW.md`
+  still propagated once by `/agentic-workflow:sync` at mission end, not hand-edited.
 
 - **2026-07-18 · Phase-2 checkpoint (reviewer)** — **APPROVE**. Re-ran
   `node tools/lint.mjs` → clean; `/agentic-workflow:ingest` present + namespaced in all
@@ -148,11 +174,14 @@ the phase-1 checkpoint._
   mechanical. All reversal costs LOW. `node tools/lint.mjs` → clean (memo under `docs/`,
   no incidental breakage). No protocol/code touched (that is S2).
 
-Next up: **Phase 3 / S4** — author `plugins/agentic-workflow/agents/curator.md` (the
-curator role + k=1 brokering + freshness signal) on `mission/portfolio-commons-p3`
-(stacked off p2). **Fold in the two phase-2 review acceptance items** (Deviations):
-the `/ingest` collision/refresh guard and slug validation — curator owns commons
-upkeep, so S4 adds the collision/refresh handling and touches `ingest.md` for the
-slug guard. A later increment can route `/agentic-workflow:ingest` harvest through the
-curator. (Stacked-phases policy: no intermediate merge; one `/agentic-workflow:sync`
-after all §-master edits land; the human merges at mission end.)
+Next up: **Phase-3 checkpoint** — the fresh-context `reviewer` re-runs `node
+tools/lint.mjs` (must be clean) and diff-reviews `base..head` for the `curator`
+agent (k=1 brokering + freshness + hard boundary unambiguous; `model:` correctly
+omitted for the opus tier) and the two `ingest.md` guards (collision/refresh +
+slug validation). Then **Phase 4 / S5** — the `frontend` agent consults the
+commons (conditioned on a commons existing, so `commons-cold` stays green) and the
+write-back path lands, on `mission/portfolio-commons-p4` (stacked off p3). A later
+increment can route `/agentic-workflow:ingest` harvest through the `curator`.
+(Stacked-phases policy: no intermediate merge; one `/agentic-workflow:sync` after
+all §-master edits land — S2/S3/S4 all touched the master; the human merges at
+mission end.)

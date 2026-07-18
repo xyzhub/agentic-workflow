@@ -296,6 +296,7 @@ silently changed.
 | **Implementer** | The main session agent, or a **specialist implementer** subagent (`backend`, `frontend`, `security`, `devops`) — used for a domain slice or to run slices in parallel in a mission | Route, build to convention, verify, document, hand off |
 | **Reviewer** | The `reviewer` agent — always a fresh context | Checkpoint reviews; pre-merge review of risky changes; four pillar lenses + QA + architecture in one pass |
 | **Chronicler** | The `chronicler` agent | Keeps the record (§6.1); documents, never touches product code |
+| **Curator** | The `curator` agent | Owns the §13 portfolio commons lifecycle — harvest, single-best-match (k=1) brokering, freshness, write-back; never decides product direction, ships product code into a venture, or merges |
 | **HITL** | The human owner (§10) | Answers open questions, merges the default branch, owns deploys and anything irreversible |
 
 **Specialist implementers** carry their domain's pillar bias — `backend`
@@ -730,12 +731,12 @@ threshold OR its source repo has advanced past the pinned commit. Staleness is
 computed daemon-free (git + a date, like all §13 awareness) and **surfaced, never
 auto-mutated** — a stale entry is flagged for review, not silently rewritten.
 
-**A dedicated curator role owns the commons lifecycle.** It finds reusable
+**The `curator` agent owns the commons lifecycle.** It finds reusable
 artifacts, harvests them (copy-and-adapt into `commons/<type>/<slug>/`, pinning
-provenance), brokers them to other agents, writes the index entry, and keeps
-entries fresh — re-harvesting when the freshness signal fires, and writing a
-consumer's improvements back as a delegable bookkeeping PR (below). This role
-and the ingest capability that populates the commons — `/agentic-workflow:ingest`,
+provenance), brokers them single-best-match to other agents, writes the index
+entry, and keeps entries fresh — re-harvesting when the freshness signal fires,
+and writing a consumer's improvements back as a delegable bookkeeping PR (below).
+This role and the ingest capability that populates the commons — `/agentic-workflow:ingest`,
 which copies a reusable first-party artifact into `commons/code/<slug>/`, pins its
 provenance, and writes its index entry as a delegable bookkeeping PR — are each
 specified in their own protocol surface; §13 fixes only the shared layout and the
