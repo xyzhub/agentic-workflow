@@ -10,8 +10,8 @@ Mission started: **2026-07-18**.
 
 ## Checklist
 
-- [ ] S1 — Commons shape memo (branch `mission/portfolio-commons-p1`)
-- [ ] S2 — §13 commons amendment (branch `mission/portfolio-commons-p1`)
+- [x] S1 — Commons shape memo (branch `mission/portfolio-commons-p1`)
+- [x] S2 — §13 commons amendment (branch `mission/portfolio-commons-p1`)
 - [ ] Checkpoint — phase 1 review + human locks shape + merge
 - [ ] S3 — Author `commands/ingest.md` (branch `mission/portfolio-commons-p2`)
 - [ ] Checkpoint — phase 2 review + merge
@@ -53,6 +53,37 @@ the phase-1 checkpoint._
 
 ## Handoff log (newest first)
 
-(none yet)
+- **2026-07-18 · S2 (backend)** — Amended WORKFLOW **master** §13
+  (`plugins/agentic-workflow/templates/WORKFLOW.md`) to the locked shape: added the
+  writable **`commons/`** copy-holding surface (`commons/index.md` + per-type
+  `commons/<type>/<slug>/`, `code/` only in increment 1), contrasted with
+  `registry.md`/`precedents.md` staying pointers-never-copies; folded commons writes
+  into the "bookkeeping is delegable" scope; recorded the index-entry schema (slug ·
+  path · type · stack · tags · provenance[venture·repo·commit] · licence ·
+  why-it's-good · reuse-match · `last-reviewed`) and the freshness signal
+  (age-threshold OR source-advance, surfaced never auto-mutated); described the
+  curator lifecycle, the k=1 read-protocol brokering, and the escalation trigger.
+  Curator/ingest phrased as **descriptive concepts** (no backticked `` `curator` ``
+  agent / `/…:ingest` command refs) because those files don't exist until S3/S4 and
+  lint's cross-ref check would fail a forward ref — S3/S4 add the concrete names.
+  `node tools/lint.mjs` → **clean**. **Checkpoint item:** master edit only; the
+  stamped copy `docs/WORKFLOW.md` is propagated by `/agentic-workflow:sync`, not
+  hand-edited.
 
-Next up: S1
+- **2026-07-18 · S1 (architect)** — Authored shape memo
+  `docs/product/decisions/2026-07-18-commons-shape.md`: six dimensions, each 2–3
+  real options + recommendation + reversal cost. Recs: (1) storage = per-type dirs
+  `commons/{type}/<slug>/` (the fixture shape); (2) index schema = fixture fields +
+  `licence` + `provenance`(repo·commit) + `last-reviewed`; (3) freshness = age-threshold
+  OR source-advance flag (both signals); (4) refresh = provenance backpointer + curator
+  re-harvest + delegable §13 write-back PR; (5) brokering = read-protocol against the
+  index by default (k=1, keeps eval valid), curator-spawn reserved for large/ambiguous
+  commons; (6) curator model = default/opus tier, `/tune` to sonnet if brokering proves
+  mechanical. All reversal costs LOW. `node tools/lint.mjs` → clean (memo under `docs/`,
+  no incidental breakage). No protocol/code touched (that is S2).
+
+Next up: **Phase-1 checkpoint** — reviewer (fresh context) re-runs `node tools/lint.mjs`
+and diff-reviews `base..head` of the §13 amendment; human merges `mission/portfolio-commons-p1`
+per gate policy (human-merge). Checkpoint item for the merge: `/agentic-workflow:sync`
+propagates the §13 master edit into the stamped `docs/WORKFLOW.md` (not hand-edited).
+Then **Phase 2 / S3** — author `commands/ingest.md`.

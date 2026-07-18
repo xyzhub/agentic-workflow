@@ -92,6 +92,28 @@ repo (`github.com/xyzhub/registry`) at runtime; authoring them ships no runtime 
 - **2026-07-18** — First increment scopes to **high-taste / low-adaptation**
   artifacts (researcher: copy-and-adapt only pays there; clone economics turn
   negative on heavily-rewritten code).
+- **2026-07-18 (shape lock — S1 memo → human)** — Commons shape locked per
+  `docs/product/decisions/2026-07-18-commons-shape.md`:
+  - **D1 storage** — per-type `commons/{type}/<slug>/` + per-entry README (the
+    `commons-warm` shape); `code/` only in increment 1.
+  - **D2 index schema** — the fixture field set **+ `licence` + `provenance`
+    (repo · commit) + `last-reviewed`**.
+  - **D3 freshness** — `last-reviewed` age-threshold **and** source-advance flag;
+    daemon-free (git + a date); surfaces staleness, never auto-mutates.
+  - **D4 copy-adapt / refresh** — provenance backpointer → curator re-harvests on
+    source advance; improvements flow back as a delegable §13 bookkeeping PR.
+  - **D5 brokering** — **read-protocol** against the curated index (preserves k=1,
+    keeps the eval green). **Escalation trigger:** move to a curator-spawn broker
+    if the index grows past ~a screenful per type OR any consumer is observed
+    consulting >1 entry.
+  - **D6 curator model** — **default/opus** tier; `/agentic-workflow:tune` may
+    drop to sonnet once brokering proves mechanical.
+- **2026-07-18** — Licensing: first increment harvests **own-venture (first-party)
+  only**; carry `licence` + `provenance` fields now, defer any third-party-code
+  policy to a later human call.
+- **2026-07-18** — First-increment artifact class: **front-end taste-anchoring
+  components** (landing/auth shells, token-driven SFCs) — what the validation
+  exercised; keeps the existing eval as the guard.
 
 ## Risks
 
@@ -112,9 +134,9 @@ repo (`github.com/xyzhub/registry`) at runtime; authoring them ships no runtime 
 
 ## Open questions
 
-_Split for the human before `/agentic-workflow:mission` drives execution. The (b)
-technical set is the exact scope of the S1 architect memo — the human can answer
-directly from the recommendations below or confirm at the phase-1 checkpoint._
+_**All resolved 2026-07-18** — the (a) scope calls and the (b) technical set (via
+the S1 architect memo) are now dated locked decisions above (shape lock). The
+recommendations below are retained for provenance / reversal context._
 
 **(a) Plain scope / policy calls for the human**
 
