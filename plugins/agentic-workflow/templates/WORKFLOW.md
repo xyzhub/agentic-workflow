@@ -759,7 +759,12 @@ portfolio status page, and commons writes (index entries + copied/refreshed
 artifacts under `commons/`) — may then be merged by the orchestrator WITHOUT
 independent review. Rationale: the registry is record, not product — no
 runtime, no users, fully git-reversible; PRs (never direct pushes, which stay
-unconditionally blocked) preserve the audit trail. The delegation is scoped:
+unconditionally blocked) preserve the audit trail. Merging a commons exemplar
+here ships nothing to production: copied `code/` under `commons/` runs nowhere
+in the registry — it reaches a live product only when a consuming venture
+copy-adapts it **through that venture's own review gates**, so "no runtime"
+means the commons is a staging library, never a deploy path, and never a way
+for agent-merged code to skip a product's own review. The delegation is scoped:
 anything in a registry repo beyond those bookkeeping files (CI workflows,
 scripts, this policy file itself) still needs the human.
 

@@ -23,8 +23,8 @@ Mission started: **2026-07-18**.
 - [~] Checkpoint — phase 3 review **APPROVED** (3·3·3·3; stacked, no merge)
 - [x] S5 — Frontend consults the commons; write-back path (branch `mission/portfolio-commons-p4`)
 - [~] Checkpoint — phase 4 review **APPROVED** (3·3·3; both evals green; stacked, no merge)
-- [ ] S6 — Guard + docs + version bump (branch `mission/portfolio-commons-p5`)
-- [ ] Checkpoint — phase 5 review + evals + merge
+- [x] S6 — Guard + docs + version bump (branch `mission/portfolio-commons-p5`)
+- [ ] Checkpoint — phase 5 review + evals + merge (mission-end wrap)
 
 ## Open questions
 
@@ -81,15 +81,49 @@ the phase-1 checkpoint._
   enforces `^[a-z0-9-]+$` and stops (never sanitize-and-continue) before the slug
   flows into any `mkdir`/`cp`/`git clone` path (traversal/injection guard).
 - **S6 fold-in items (deferred nits to close before release):** (1) **Phase-1 Security
-  nit** — add one explicit sentence at the §13 delegable-lane so "registry has no
-  runtime" doesn't read as "agent-merged commons code is inherently safe" (name the
-  downstream gate: a commons exemplar only reaches production through a consuming
-  venture's own review gates). (2) **Phase-4 nit** — add an explicit
-  "did-not-hallucinate-a-commons" negative criterion to `commons-cold/rubric.md` so the
-  no-hunt guard is asserted, not merely implied by `task-correct`. Both are small and
-  fit S6's docs/guard scope.
+  nit** — **RESOLVED in S6 (2026-07-18).** Added one explicit sentence to WORKFLOW
+  **master** §13 "Registry bookkeeping is delegable" lane: merging a commons exemplar
+  ships nothing to production — copied `code/` under `commons/` runs nowhere in the
+  registry and reaches a live product only when a consuming venture copy-adapts it
+  **through that venture's own review gates**, so "no runtime" means the commons is a
+  staging library, never a deploy path or a way for agent-merged code to skip a
+  product's own review. Master only; `/agentic-workflow:sync` propagates to the stamped
+  `docs/WORKFLOW.md` at mission end. (2) **Phase-4 nit — DEFERRED (post-mission
+  follow-up), NOT implemented in S6.** Reason: adding a
+  "did-not-hallucinate-a-commons" negative criterion changes `commons-cold/rubric.md`
+  and would force re-certifying the cold eval; the phase-4 checkpoint transcript already
+  confirmed the no-hallucinate behavior (single bounded `find` probe → empty → built
+  from scratch), so this is hardening, best done as its own small post-mission change,
+  not bundled into a release-prep session. Left `commons-cold/rubric.md` unchanged.
 
 ## Handoff log (newest first)
+
+- **2026-07-18 · S6 (backend)** — Release prep, docs/JSON/§-master prose only (no
+  code, no eval fixtures/rubrics). (1) **Version bump** —
+  `plugins/agentic-workflow/.claude-plugin/plugin.json` `1.36.0 → 1.37.0` (minor;
+  backward-compatible feature). (2) **CHANGELOG** — added a `## [Unreleased]`
+  `### Added` **Portfolio Commons** entry (Keep-a-Changelog): the §13 writable
+  commons surface, `/agentic-workflow:ingest` (code type, provenance + index entry,
+  slug + collision/refresh guard, first-party-only), the `curator` agent (k=1
+  brokering, freshness signal, sole-writer write-back), the frontend
+  consult-and-write-back beat, and the `commons-warm`/`commons-cold` regression evals.
+  (3) **Guard confirmed** — `commons-warm` + `commons-cold` both present under
+  `evals/scenarios/` (each has `scenario.md`) and **auto-discovered** by
+  `evals/run.mjs` (`readdirSync(SCENARIOS_DIR)` filtered on presence of `scenario.md`,
+  line 29–30) — no registration needed; both already in the `evals/README.md`
+  scenarios table (confirmed). (4) **Doc completeness** — verified `ingest` +
+  `curator` each appear in all three surfaces: root `README.md` (agents+commands
+  lists, ll. 32–33), plugin `README.md` (curator agents-table row @ 97,
+  `/agentic-workflow:ingest` command-table row @ 149), WORKFLOW master (Curator §6
+  role @ 299, §13 curator prose @ 734, ingest @ 739). No additions needed. (5)
+  **Nit 1 RESOLVED** — one explicit sentence added to WORKFLOW **master** §13
+  delegable lane (see Deviations). (6) **Nit 2 DEFERRED** — `commons-cold/rubric.md`
+  left unchanged (post-mission follow-up; reason in Deviations). **Gate:**
+  `node tools/lint.mjs` → **clean** (cross-refs resolve, §-integrity intact after the
+  §13 sentence, namespaced command refs). **Did NOT re-run the paired eval** — phase-5
+  changes are non-behavioral (docs/version/§13 prose); the phase-4 green artifacts
+  remain representative. Stamped `docs/WORKFLOW.md` untouched — `/agentic-workflow:sync`
+  propagates the §13 sentence at mission end. Stacked policy — no merge now.
 
 - **2026-07-18 · Phase-4 checkpoint (reviewer)** — **APPROVE** (DX 3/3 · Architecture
   3/3 · QA 3/3). `node tools/lint.mjs` → clean. Eval verified via **result artifacts**
@@ -227,16 +261,18 @@ the phase-1 checkpoint._
   mechanical. All reversal costs LOW. `node tools/lint.mjs` → clean (memo under `docs/`,
   no incidental breakage). No protocol/code touched (that is S2).
 
-Next up: **Phase 5 / S6** — the final phase (guard + docs + version bump), branch
-`mission/portfolio-commons-p5` (stacked off p4). Confirm the `commons-warm`/`commons-cold`
-pair is the permanent auto-discovered guard; verify all three doc surfaces mention
-`/agentic-workflow:ingest` + `curator`; bump `plugin.json` (1.36.0 → 1.37.0) + add a
-`CHANGELOG.md` `## [Unreleased]` entry for the commons/ingest/curator feature. **Fold in
-the two S6 deferred nits** (Deviations): the §13 downstream-gate sentence and the
-`commons-cold` "did-not-hallucinate" negative rubric criterion. Then the phase-5
-checkpoint + mission-end wrap (one `/agentic-workflow:sync` for the §-master edits; the
-human reviews + merges the single PR `feat/template-ingestion → main`). A later
-increment can route `/agentic-workflow:ingest` harvest through the `curator`.
-(Stacked-phases policy: no intermediate merge; one `/agentic-workflow:sync` after
-all §-master edits land — S2/S3/S4 all touched the master; the human merges at
-mission end.)
+Next up: **Phase-5 checkpoint + mission-end wrap** — all six sessions (S1–S6) are
+authored; only the phase-5 checkpoint remains. The reviewer re-runs `node tools/lint.mjs`
+(clean at S6), diff-reviews `base..head`, and re-runs the paired eval at their
+discretion (S6 changes are non-behavioral docs/version/§13-prose — the phase-4 green
+artifacts remain representative). **Mission-end wrap:** run `/agentic-workflow:sync`
+**once** (master → stamped `docs/WORKFLOW.md`; propagates the S2/S3/S4 §-master edits +
+the S6 §13 delegable-lane sentence — S2/S3/S4/S6 all touched the master, but sync runs
+only once, at the end); then the **human reviews + merges the single PR
+`feat/template-ingestion → main`** (stacked-phases policy: no intermediate merges).
+**Nit 1 resolved** (§13 downstream-gate sentence, in master). **Post-mission follow-ups:**
+(a) nit 2 — add a "did-not-hallucinate-a-commons" negative criterion to
+`commons-cold/rubric.md` as its own small change (re-certifies the cold eval); (b) route
+`/agentic-workflow:ingest` harvest through the `curator`; (c) seed a real first commons
+in the registry repo (one runtime `/agentic-workflow:ingest`); (d) optional graded/sonnet
+`commons-warm` re-run for leg-(a) genericness. All out of this mission's scope.

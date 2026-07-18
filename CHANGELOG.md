@@ -6,6 +6,30 @@ has no tags — each version-stamped commit on `main` IS the release.
 
 ## [Unreleased]
 ### Added
+- **Portfolio Commons** — the §13 registry gains a writable, copy-holding
+  **commons** surface (`commons/index.md` + per-type `commons/code/<slug>/`),
+  so agents copy-and-adapt reusable first-party material across ventures and
+  write improvements back — a library that compounds instead of every venture
+  starting cold:
+  - **`/agentic-workflow:ingest`** — harvests a reusable first-party artifact
+    (code type first) into `commons/code/<slug>/`, pins provenance (source repo
+    + commit), and writes its full §13 index entry, all as a delegable
+    bookkeeping PR. First-party-only for now; a slug guard and a
+    collision/refresh guard (`--refresh` re-harvests in place, else it stops
+    rather than overwrite or duplicate) keep writes safe.
+  - **`curator` agent** — owns the commons lifecycle: harvest, **single-best-
+    match (k=1) brokering** (never a top-N dump), the freshness signal (stale on
+    `last-reviewed` age OR source-advance, surfaced never auto-mutated), and
+    write-back. Sole writer to the commons; does not decide product direction,
+    ship product code, or merge.
+  - **Frontend consults the commons** — inside its "orient first" beat, and only
+    where a commons exists, the `frontend` agent reads the index, picks the
+    single best match, copy-and-adapts (never blind-copies), and flags
+    improvements for the curator to write back. Where no commons exists it
+    proceeds exactly as before.
+  - **Regression guard** — the paired `commons-warm` / `commons-cold` evals
+    (auto-discovered by `evals/run.mjs`) become the feature's permanent guard:
+    warm must consult-and-adapt, cold must not hallucinate a commons.
 - Onboarding UX overhaul, from real test-user feedback (didn't know what to
   type, how to start, or why artifacts stayed empty):
   - **`/welcome`** — one guided front door: orients, detects where the project
