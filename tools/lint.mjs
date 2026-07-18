@@ -135,7 +135,7 @@ function checkCrossRefs() {
   // bare short form may not resolve (headless, or when another plugin/built-in
   // shadows the name). Matches args forms too (no closing backtick required).
   const agentMention = /(?:the )?`([a-z][a-z-]*)` agent\b|spawn(?:s|ed|ing)? (?:the )?`([a-z][a-z-]*)`/g;
-  const commandMention = /`\/(agentic-workflow:)?([a-z][a-z-]*)/g;
+  const commandMention = /`\/(agentic-workflow:)?([a-z][a-z-]*)(?=[`\s]|$)/g;
   for (const file of allMd) {
     const text = read(file);
     for (const m of text.matchAll(agentMention)) {
