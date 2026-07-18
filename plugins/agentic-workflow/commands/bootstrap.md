@@ -1,7 +1,7 @@
 ---
 description: Bootstrap this project into the Agentic Workflow — detect the stack, write docs/WORKFLOW.md with a filled project profile, and seed the record artifacts.
 argument-hint: [stage e.g. V0|V2|V6]
-allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, Task, Artifact]
+allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, Task, Artifact, AskUserQuestion, SlashCommand]
 ---
 
 Bootstrap the current repository into the Agentic Workflow. Idempotent — if an
@@ -33,7 +33,7 @@ then. Ask questions only when a human is actually present to answer them.
   legible to models); `none` in the profile until then.
 - **Memory/recall store** — optional; only record one that already exists.
 - **Owner channel** — cannot be inferred; leave `none` and recommend
-  `/connect` in the report (it guides the setup and proves the round-trip).
+  `/agentic-workflow:connect` in the report (it guides the setup and proves the round-trip).
 - **Issue tracker** — GitHub Issues (`gh`), Linear, none.
 - **HITL** — the human owner's name (from git config/repo ownership if
   plausible; otherwise `TBD — confirm`).
@@ -41,6 +41,10 @@ then. Ask questions only when a human is actually present to answer them.
   (delegated <date>)` ONLY from an explicit human answer (or the flight plan's
   Merge authority field) — never infer delegation from the repo, even if its
   history shows bot merges.
+- **Publish policy** — always default `human-only` (§14, fail closed). Write
+  `may-publish (delegated <date>, …)` ONLY from an explicit human answer; never
+  infer it. `none` if no publishing channels are set up (`/agentic-workflow:publish connect`
+  configures them later).
 - **Current stage** — infer V0–V6 from repo maturity (no code → V0; skeleton +
   CI → V2; shipping features → V3; deployed with real users → V5/V6). Use the
   `$ARGUMENTS` value if the user passed one.
@@ -52,7 +56,7 @@ Copy the bundled master from `${CLAUDE_PLUGIN_ROOT}/templates/WORKFLOW.md` into
 values from step 1. Replace the "this is the bundled master" banner at the top
 with a version stamp — `<!-- protocol-master: vX.Y.Z -->`, where X.Y.Z is the
 plugin version from `${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json` —
-`/check` uses it to detect protocol drift. Keep the empty **Local
+`/agentic-workflow:check` uses it to detect protocol drift. Keep the empty **Local
 amendments** section at the end. This project-local copy now wins over the
 bundled one.
 
@@ -68,10 +72,23 @@ bundled one.
   timeline; then publish it via the Artifact tool and record the returned URL in
   the file's `artifact-url` comment.
 - If stage is **V0**, also seed `docs/product/idea.md` from
-  `${CLAUDE_PLUGIN_ROOT}/templates/idea.md`, and offer to spawn the `researcher`
+  `${CLAUDE_PLUGIN_ROOT}/templates/idea.md`. If the idea is still raw or
+  unformed (no clear problem/who-pays yet), point at `/agentic-workflow:brainstorm` first — the
+  `brainstormer` shapes it into framings to choose from before validation.
+  Once the framing is set, offer to spawn the `researcher`
   agent to validate the problem, size the market, map competitors, and
   pressure-test the riskiest assumption (evidence for AND against) before the
   human's go/no-go. No product code until that gate passes.
+- If stage is **V1 or later**, seed the V1 definition set (only those that don't
+  already exist) from templates: `docs/product/prd.md`
+  (`${CLAUDE_PLUGIN_ROOT}/templates/prd.md` — scope, in-scope journeys +
+  acceptance criteria, memo pointers, success metrics), the `designer`'s
+  `docs/product/ux-brief.md` (`${CLAUDE_PLUGIN_ROOT}/templates/ux-brief.md` —
+  personas, journeys, IA), and the `architect`'s
+  `docs/product/architecture.md` (`${CLAUDE_PLUGIN_ROOT}/templates/architecture.md`)
+  and `docs/product/interface-contract.md`
+  (`${CLAUDE_PLUGIN_ROOT}/templates/interface-contract.md`). The
+  `designer`/`architect`/`analyst` fill them; adoption `fill` mode drafts them.
 
 ## 4. Point the project's memory at the workflow
 
@@ -83,8 +100,10 @@ duplicate the protocol into it.
 
 Summarize: detected stage, the filled profile (gates, deploy, HITL), the files
 created/updated, the status-page URL, and the recommended next action for the
-current stage (e.g. at V0: fill idea.md and get a go/no-go; at V3: `/start`;
-at V6: plan a growth mission). Close with: "`/next` answers this question any
+current stage (e.g. at V0: fill idea.md and get a go/no-go; at V3: `/agentic-workflow:start`;
+at V6: plan a growth mission). Then **offer to run that next command** for them
+(AskUserQuestion → SlashCommand), unless it's a human-only gate (merge/deploy/
+spend/publish). Close with: "`/agentic-workflow:next` answers this question any
 time; the Quick reference at the top of docs/WORKFLOW.md has the full map."
 
 Do NOT commit — leave the changes staged-and-visible for the human to review,

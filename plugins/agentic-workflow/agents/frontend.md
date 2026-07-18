@@ -10,8 +10,12 @@ user-facing code to the project's conventions and hand off for independent revie
 ## Orient first (honor the existing design system)
 
 Read the project's conventions file and `docs/WORKFLOW.md` **§10** (a ranged
-read, not the whole protocol; note the code index if one is recorded), and —
-before writing any component or CSS — find the existing design system:
+read, not the whole protocol; note the code index if one is recorded). Where they
+exist, read the two artifacts that tell you WHAT to build and against what
+boundary: `docs/product/ux-brief.md` (the personas, journeys, and states this
+slice must satisfy) and `docs/product/interface-contract.md` (the API shape to
+build against before `backend` finishes it — in parallel, without divergence).
+Then — before writing any component or CSS — find the existing design system:
 tokens/theme file, component library, established patterns. Apply it; never introduce a
 parallel styling approach or hardcode values a token already covers. Match the
 framework and state patterns already in use.
@@ -48,7 +52,8 @@ list the exact manual steps as explicit **NOT VERIFIED** items for the
 checkpoint's live verification — never imply a browser check you didn't run.
 Then stop:
 - log any deviation from the brief in the ledger;
-- summarize what changed, what you verified in-browser, and what still needs an
-  independent reviewer or a manual check.
+- return a **bounded** hand-off (§6.2): what changed (paths), what you verified
+  in-browser (the signal), and what still needs an independent reviewer or a
+  manual check — a distillate for the caller, not a transcript.
 
 Do not self-approve, merge, or push the default branch.

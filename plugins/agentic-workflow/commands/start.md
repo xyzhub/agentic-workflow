@@ -12,7 +12,7 @@ issue number or short description.
 Name the venture stage, then pick the altitude:
 - **Task** — typo/config/one-file fix with an obvious test → branch, fix, PR.
 - **Session** — one sitting of focused work → this lifecycle.
-- **Mission** — can't pre-resolve all targets in one pass → run `/mission
+- **Mission** — can't pre-resolve all targets in one pass → run `/agentic-workflow:mission
   "<goal>"` (it spawns the `planner` to author the trio, then drives it) instead
   of starting to code.
 
@@ -27,6 +27,10 @@ git checkout -b <type>/<short-description>    # feat/…, fix/…  — never the
 ## 3. Load context
 
 - Read the project's conventions file and `docs/WORKFLOW.md`.
+- If a `docs/product/session-handoff.md` manifest exists (a prior session handed
+  off before its context filled, §6.2), read it and continue from its **Next** —
+  following only the pointers you need. It's a re-read manifest, not a summary;
+  the files it names are the memory.
 - If continuing a mission, read `.plans/<mission>.state.md` → `Next up:` → that
   brief, and follow it (including its read budget).
 - If the work maps to a tracked issue, read it and confirm acceptance criteria

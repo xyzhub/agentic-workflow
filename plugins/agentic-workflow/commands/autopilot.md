@@ -13,19 +13,19 @@ the safety boundary.
 
 **You are an orchestrator — protect your context.** Ingest agent reports and
 stage artifacts, never corpora: spawn agents for all reading and building, and
-let `/mission` carry V3 (its ledger, not your transcript, holds the detail).
+let `/agentic-workflow:mission` carry V3 (its ledger, not your transcript, holds the detail).
 Your durable state lives in files — the flight plan, `decision-log.md`, the
 stage artifacts, the status page — never only in this conversation.
 
 **Context discipline**: when your context is filling (roughly past two-thirds),
 finish the CURRENT stage cleanly — decision log current, status page
 republished, stage artifact written — then end, telling the human to relaunch
-with `/autopilot continue`. A clean stage boundary beats a degraded launch.
+with `/agentic-workflow:autopilot continue`. A clean stage boundary beats a degraded launch.
 
 **`continue` mode**: re-derive where the venture stands from files alone — the
 flight plan (standing authorization), `decision-log.md` (choices already made:
 do not re-decide them), the stage artifacts present (idea.md → PRD →
-skeleton/CI → `.plans/` ledger → audits → launch prep), and `/check`.
+skeleton/CI → `.plans/` ledger → audits → launch prep), and `/agentic-workflow:check`.
 Resume at the first stage whose exit gate isn't met. Losing the transcript
 must never lose the venture. `continue` is also the **loop mode**: driven
 recurringly (`/loop /autopilot continue`, or a scheduled agent), each tick
@@ -44,7 +44,7 @@ Before starting, collect the **bare minimum** from the human — ask all at once
 - **Brand** — a preference, or "you choose" (the `designer` surfaces options).
 - **Deploy target** — where it should ship, and whether credentials exist yet.
 - **Check-in level** — "only stop at hard gates" (default) vs. "check in each
-  stage". This also selects the `/mission` gate policy (§5): hard-gates-only
+  stage". This also selects the `/agentic-workflow:mission` gate policy (§5): hard-gates-only
   authorizes `batch`; check-in-each-stage keeps `human-merge` per phase.
 
 Record this as `docs/product/flight-plan.md`, from the bundled template
@@ -53,7 +53,7 @@ authorization; anything outside it comes back to the human.
 
 ## 0.5 Existing project? Adopt first, then resume mid-lifecycle
 
-If the repo already contains product code, do NOT assume V0. Run the `/adopt`
+If the repo already contains product code, do NOT assume V0. Run the `/agentic-workflow:adopt`
 procedure first — profile bootstrap, conversion of existing plans into the
 trio, stage-gap audit (its fill mode only if the flight plan authorizes
 drafting the missing documents). Then:
@@ -61,7 +61,7 @@ drafting the missing documents). Then:
 - Resume at the **first stage whose exit gate isn't met** — the same
   file-derivation logic `continue` mode uses — instead of starting at V0.
 - The adaptation report's red/yellow rows become the first work items: route
-  each by altitude (a gap-closing `/mission`, a session, or `/fix`),
+  each by altitude (a gap-closing `/agentic-workflow:mission`, a session, or `/agentic-workflow:fix`),
   then continue the normal stage sequence toward launch.
 - Artifacts that already exist (idea.md, a PRD, CI) are settled history —
   improve what the gate audit flags; never re-litigate or regenerate them.
@@ -85,14 +85,14 @@ owner can watch live.
   choose", pick one with rationale and record it; otherwise present the
   options and pause once. Spawn `business` to propose the model + pricing
   hypothesis (`docs/product/business/`). Fold everything into the same single
-  V1 pause (scope + brand + model together) — run `/counsel` on it first so
+  V1 pause (scope + brand + model together) — run `/agentic-workflow:counsel` on it first so
   the human decides with the case against in hand; never set live prices
   autonomously.
-- **V2 Foundation** — `/bootstrap`, then scaffold the deployable skeleton;
+- **V2 Foundation** — `/agentic-workflow:bootstrap`, then scaffold the deployable skeleton;
   spawn `devops` to lay the CI + deploy pipeline (gates, health checks, scoped
   permissions, SHA-pinned actions) alongside the fail-closed config guard, env
   validation, and seed.
-- **V3 Build** — for anything beyond a single sitting, run `/mission` with the
+- **V3 Build** — for anything beyond a single sitting, run `/agentic-workflow:mission` with the
   gate policy from the flight plan's check-in level (the `planner` decomposes it
   into a phased trio; you drive it). Implement via
   `backend` / `frontend` / `devops` specialists in parallel where slices are
@@ -105,7 +105,7 @@ owner can watch live.
   hardening; fix or record findings. The pre-launch review at V5 repeats the
   multi-vote with a full six-lens scorecard.
 - **V5 Launch prep** — `devops` stages everything up to the button (deploy
-  config, `/release` version cut, runbook, monitoring wired, rollback tested
+  config, `/agentic-workflow:release` version cut, runbook, monitoring wired, rollback tested
   against a staging/preview where possible). In parallel, spawn `marketing` to
   draft the launch assets under `docs/product/launch/` — one file per
   deliverable (positioning, landing copy, per-channel announcements in the
@@ -118,10 +118,10 @@ owner can watch live.
   consolidated launch confirmation, deliver a **V6 operating brief**: the
   feedback channels to watch, the launch metrics and channel plan to review
   (from `marketing`'s launch plan, baselined by the `analyst`), a ranked
-  growth-mission backlog (each runnable via `/mission`), the `/operate` loop
+  growth-mission backlog (each runnable via `/agentic-workflow:mission`), the `/agentic-workflow:operate` loop
   to run weekly (errors, funnel, costs, economics in one pass — the `ops` and
   `analyst` agents do the reading; recommend setting it up as a weekly
-  scheduled agent), and the retro cadence (`/retro`). Then
+  scheduled agent), and the retro cadence (`/agentic-workflow:retro`). Then
   autopilot ends; V6 is the owner's continuous loop.
 
 ## 2. The safety boundary (never crossed autonomously)
@@ -142,7 +142,7 @@ These require an explicit human confirmation every time, even in autopilot mode
   measurement plan, per §11); the human launches.
 - **Destructive or irreversible actions** on data or infrastructure.
 
-Batch these: when you reach the launch boundary, run `/counsel` on the launch
+Batch these: when you reach the launch boundary, run `/agentic-workflow:counsel` on the launch
 decision, then present ONE consolidated "ready to launch" summary (what will
 happen, what it costs, what's irreversible — with the counsel brief attached)
 for a single confirmation, rather than nagging along the way.

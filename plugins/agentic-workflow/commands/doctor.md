@@ -5,10 +5,10 @@ allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, WebFetch]
 ---
 
 Diagnose whether the workflow MACHINERY works in this project — complementing
-`/check` (how is the work?) and `/next` (what do I do?). Default is
+`/agentic-workflow:check` (how is the work?) and `/agentic-workflow:next` (what do I do?). Default is
 read-only diagnosis; `fix` also repairs what's mechanical, local, and free.
 Report a 🟢/🟡/🔴 table; every red/yellow row carries exactly ONE fix (a
-command, or "run `/doctor fix`").
+command, or "run `/agentic-workflow:doctor fix`").
 
 ## 1. Environment tools
 
@@ -27,7 +27,7 @@ command, or "run `/doctor fix`").
   the owner id is present. In `fix` mode, send a test message ("doctor test —
   reply not needed") and report whether the send succeeded; stale entries in
   `.plans/pending-gates.md` (expired, never consumed) → 🟡 with the gate named.
-  No channel recorded, or the check fails structurally → recommend `/connect`
+  No channel recorded, or the check fails structurally → recommend `/agentic-workflow:connect`
   (interactive setup with a round-trip test).
 
 ## 2. Profile truthfulness (§10 rows must RESOLVE, not just exist)
@@ -48,13 +48,13 @@ The profile is load-bearing and written once — verify it still tells the truth
 - CHANGELOG.md, docs/product/JOURNEY.md, docs/product/overview.html present;
   the status page has an `artifact-url` recorded.
 - JOURNEY silent while `git log` shows heavy recent activity → 🟡 (the record
-  is falling behind; spawnless fix: run `/end` properly next session).
+  is falling behind; spawnless fix: run `/agentic-workflow:end` properly next session).
 - Orphaned ledgers: `.plans/*.state.md` referencing branches that no longer
-  exist → recommend `/mission "<name>" replan`.
-- Protocol stamp older than the installed plugin → recommend `/sync`.
+  exist → recommend `/agentic-workflow:mission "<name>" replan`.
+- Protocol stamp older than the installed plugin → recommend `/agentic-workflow:sync`.
 - **Stale tunes**: `.claude/agents/` overrides carrying a `Tuned from` banner
   stamped older than the installed plugin → 🟡, the base prompt may have
-  changed — refresh with `/tune <agent> <model>` (it re-copies fresh).
+  changed — refresh with `/agentic-workflow:tune <agent> <model>` (it re-copies fresh).
   Overrides without the banner are hand-rolled agents — report, don't touch.
 
 ## 4. `fix` mode (explicit opt-in — mechanical, local, free repairs only)
@@ -69,7 +69,7 @@ The profile is load-bearing and written once — verify it still tells the truth
   renamed test script) — edits stay uncommitted for HITL review.
 - **Never**: paid services or anything credentialed (§11 spending boundary),
   system config beyond dev tools, engineering gaps (missing CI, no tests —
-  those are `/mission` work), or force-anything. Not sure it's safe → report
+  those are `/agentic-workflow:mission` work), or force-anything. Not sure it's safe → report
   instead of fixing.
 - Re-run the failed checks after fixing; report before → after per row.
 

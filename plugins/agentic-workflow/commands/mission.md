@@ -8,7 +8,7 @@ Drive a mission (Agentic Workflow §5). `$ARGUMENTS` is the mission name/goal, a
 optional mode: `plan` (author the trio and stop), `run` (plan if needed, then
 execute), `continue` (resume from the ledger), or `replan` (re-evaluate an
 existing trio against current reality), and an optional **gate policy**:
-`human-merge` (default) or `batch` (§5 — used by `/autopilot` under a "only hard
+`human-merge` (default) or `batch` (§5 — used by `/agentic-workflow:autopilot` under a "only hard
 gates" flight plan). Record the gate policy in the ledger at mission start.
 
 You are the **orchestrator**. Read only the ledger, briefs, and agent reports —
@@ -19,7 +19,7 @@ building.
 
 If `.plans/<mission>.{md,sessions.md,state.md}` don't exist, spawn the **planner**
 agent with the goal. (For a feature that still needs DEFINING — scope,
-journeys, shape decisions — `/plan` is the interview-driven front door that
+journeys, shape decisions — `/agentic-workflow:plan` is the interview-driven front door that
 ends here with everything locked.) It explores once and writes the trio. **Converting an
 existing plan**: if the goal names a plan document (a PLAN.md, migration doc,
 ticket export), pass it to the planner as source material — its decisions become
@@ -36,7 +36,7 @@ decisions locked (invalidated ones come back as open questions, unlocking is the
 human's call), and appends a dated `Replan` entry to the master plan. Surface
 the resulting open questions to the human, then stop — resuming is an explicit
 `continue`. Use after a long pause, after significant unplanned changes landed,
-or when `/check` shows ledger drift.
+or when `/agentic-workflow:check` shows ledger drift.
 
 ## 2. Run — phase by phase
 

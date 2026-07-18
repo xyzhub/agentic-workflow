@@ -19,7 +19,7 @@ or memory.
 ## Turn each lesson into an action
 
 - A durable rule → edit `docs/WORKFLOW.md` — in its **Local amendments**
-  section, so `/sync` preserves it — via PR like any other change.
+  section, so `/agentic-workflow:sync` preserves it — via PR like any other change.
 - A stale doc → fix it now (stale-doc rule).
 - A project-specific fact → the conventions file or repo docs.
 - An agent-behavioral lesson → auto-memory (not both places).

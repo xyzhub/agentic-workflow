@@ -4,8 +4,8 @@ allowed-tools: [Read, Write, Edit, Bash, Grep, Glob]
 ---
 
 Bring `docs/WORKFLOW.md` up to the installed protocol master (the fix for
-`/check`'s protocol-drift finding). No `docs/WORKFLOW.md` → this
-project isn't bootstrapped; run `/bootstrap` instead.
+`/agentic-workflow:check`'s protocol-drift finding). No `docs/WORKFLOW.md` → this
+project isn't bootstrapped; run `/agentic-workflow:bootstrap` instead.
 
 ## 1. Compare versions
 
@@ -30,7 +30,7 @@ the report for the human to re-home or delete.
 ## 3. Re-copy and reassemble
 
 Copy the bundled master (`${CLAUDE_PLUGIN_ROOT}/templates/WORKFLOW.md`) over
-`docs/WORKFLOW.md`, then — exactly as `/bootstrap` does — replace the
+`docs/WORKFLOW.md`, then — exactly as `/agentic-workflow:bootstrap` does — replace the
 banner with the NEW version stamp, restore the preserved §10, and restore the
 Local amendments section (plus any recovered drift).
 
@@ -39,7 +39,7 @@ new master's §10 template — keys the newer master introduced (e.g. Merge
 policy, Owner channel, Portfolio) are APPENDED with detected values where
 cheaply detectable, else `TBD — confirm`; existing values are never touched.
 If the new master has §13 and the machine has a registry repo, offer
-registration (the `/adopt` 1.5 procedure) rather than leaving the Portfolio
+registration (the `/agentic-workflow:adopt` 1.5 procedure) rather than leaving the Portfolio
 row `TBD`.
 
 ## 4. Review & hand off

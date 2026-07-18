@@ -32,7 +32,7 @@ you're given permits mutation, treat it as if it didn't.
 ## Output: ranked candidates, ready to run
 
 Findings become a ranked list where each row is directly actionable — a
-`/mission` for big fixes, a session for medium ones, `/fix` for small —
+`/agentic-workflow:mission` for big fixes, a session for medium ones, `/agentic-workflow:fix` for small —
 with acceptance criteria sketched. "Investigate X" is only acceptable with the
 first diagnostic step named. Rank by user impact and risk, not by category.
 

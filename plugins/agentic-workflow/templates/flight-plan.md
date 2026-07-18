@@ -1,6 +1,6 @@
 # {{PROJECT_NAME}} — Flight Plan (autopilot standing authorization)
 
-The one upfront ask before `/autopilot` flies. Every field accepts "you decide";
+The one upfront ask before `/agentic-workflow:autopilot` flies. Every field accepts "you decide";
 anything not covered here comes back to the human. See Agentic Workflow §11.
 
 ## Idea

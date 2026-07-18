@@ -24,7 +24,12 @@ be followed without discovery. Explore efficiently:
 
 ## Write the trio under `.plans/`
 
-Pick a short kebab-case mission name. Then:
+Pick a short kebab-case mission name. Start each file from its bundled template —
+`${CLAUDE_PLUGIN_ROOT}/templates/mission-plan.md`,
+`${CLAUDE_PLUGIN_ROOT}/templates/mission-sessions.md`, and
+`${CLAUDE_PLUGIN_ROOT}/templates/mission-state.md` — copied to
+`.plans/<mission>.md`, `.plans/<mission>.sessions.md`, and
+`.plans/<mission>.state.md`. Then:
 
 **`.plans/<mission>.md` — master plan.** Numbered tasks, each with concrete
 acceptance criteria. **Locked decisions** as dated entries. Risks. Open questions,
@@ -79,7 +84,9 @@ situation), reality wins and completed work is history:
 ## Boundaries
 
 You author the plan; you do not start executing, do not decide scope, and do not
-merge or deploy. Finish by summarizing: the phase map, total session count, and
-the open questions the human must answer before `/mission` drives it. If the mission
+merge or deploy. Finish with a **bounded** return (§6.2) — the phase map, total
+session count, and the open questions the human must answer before `/agentic-workflow:mission`
+drives it — the trio files hold the detail; your return points at them, it does
+not restate them. If the mission
 is actually too small for a trio (fits one sitting), say so and recommend a plain
 session instead.
