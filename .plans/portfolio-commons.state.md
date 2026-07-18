@@ -18,7 +18,7 @@ Mission started: **2026-07-18**.
 - [x] S2 — §13 commons amendment (branch `mission/portfolio-commons-p1`)
 - [~] Checkpoint — phase 1 review **APPROVED** + shape locked; **merge pending human**
 - [x] S3 — Author `commands/ingest.md` (branch `mission/portfolio-commons-p2`)
-- [ ] Checkpoint — phase 2 review + merge
+- [~] Checkpoint — phase 2 review **APPROVED** (stacked; no merge until mission end)
 - [ ] S4 — Author `agents/curator.md` (branch `mission/portfolio-commons-p3`)
 - [ ] Checkpoint — phase 3 review + merge
 - [ ] S5 — Frontend consults the commons; write-back path (branch `mission/portfolio-commons-p4`)
@@ -69,8 +69,28 @@ the phase-1 checkpoint._
   `allowed-tools` omits `Task`, and the body contains no "spawn" and no backticked
   `curator`-agent ref — curator is named only as a plain-word read-side concept. A
   later increment can route harvest through the curator once it exists.
+- **S4 acceptance items (from the phase-2 review, non-blocking then, required now):**
+  (1) **Collision/refresh guard** — `/ingest` must, before writing, check whether
+  `commons/code/<slug>/` or an `index.md` entry for that slug already exists; on
+  collision, stop (or update-in-place under an explicit `--refresh`) rather than
+  overwrite the dir + append a duplicate index row (a duplicate corrupts the k=1
+  broker surface). This is curator-lifecycle territory (upkeep/refresh) — S4 owns
+  it, touching `ingest.md` as needed. (2) **Slug validation** — enforce
+  `^[a-z0-9-]+$` before the slug flows into any `mkdir`/`cp`/`git clone` path
+  (traversal/injection defense-in-depth).
 
 ## Handoff log (newest first)
+
+- **2026-07-18 · Phase-2 checkpoint (reviewer)** — **APPROVE**. Re-ran
+  `node tools/lint.mjs` → clean; `/agentic-workflow:ingest` present + namespaced in all
+  three docs; confirmed the index-write matches the §13 schema field-for-field; verified
+  the fail-closed guardrails (registry path from §10 or stop; first-party-only; PR'd
+  bookkeeping, never pushes the registry default branch; nothing committed here);
+  confirmed no forward cross-ref (no Task/spawn, curator only a plain-word concept);
+  stamped copy untouched. Scorecard: Architecture 3/3 · DX 3/3 · Security 2/3 · QA 2/3.
+  Two minor findings → **S4 acceptance items** (collision/refresh guard; slug
+  validation), no corrective retry required before this stacked phase. Stacked policy —
+  no merge now.
 
 - **2026-07-18 · S3 (backend)** — Authored
   `plugins/agentic-workflow/commands/ingest.md`. Frontmatter: one-line
@@ -128,11 +148,11 @@ the phase-1 checkpoint._
   mechanical. All reversal costs LOW. `node tools/lint.mjs` → clean (memo under `docs/`,
   no incidental breakage). No protocol/code touched (that is S2).
 
-Next up: **Phase-2 checkpoint** — reviewer re-runs `node tools/lint.mjs` and
-diff-reviews the S3 change (`commands/ingest.md` + the three doc mentions),
-confirming the self-contained/no-curator-spawn refinement is deliberate (not a
-missing capability). Then **Phase 3 / S4** — author
-`plugins/agentic-workflow/agents/curator.md` (the curator role + freshness signal;
-a later increment can then route `/agentic-workflow:ingest` harvest through it).
-(Stacked-phases policy: no intermediate merge; one `/agentic-workflow:sync` after all
-§-master edits land; the human merges at mission end.)
+Next up: **Phase 3 / S4** — author `plugins/agentic-workflow/agents/curator.md` (the
+curator role + k=1 brokering + freshness signal) on `mission/portfolio-commons-p3`
+(stacked off p2). **Fold in the two phase-2 review acceptance items** (Deviations):
+the `/ingest` collision/refresh guard and slug validation — curator owns commons
+upkeep, so S4 adds the collision/refresh handling and touches `ingest.md` for the
+slug guard. A later increment can route `/agentic-workflow:ingest` harvest through the
+curator. (Stacked-phases policy: no intermediate merge; one `/agentic-workflow:sync`
+after all §-master edits land; the human merges at mission end.)
