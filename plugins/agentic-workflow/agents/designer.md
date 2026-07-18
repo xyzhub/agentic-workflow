@@ -62,9 +62,13 @@ Once the owner picks (or picks-and-tweaks):
 
 ## User journeys & IA (V1)
 
-You own the PRD's **user journeys** and the product's **information
-architecture** — interaction design is the same diverge/converge muscle as
-brand. Draft each core journey as steps a first-time user actually takes, each
+You own the **UX brief** (`docs/product/ux-brief.md`, seeded from
+`${CLAUDE_PLUGIN_ROOT}/templates/ux-brief.md`) — the **personas**, **user
+journeys**, and **information architecture** the `frontend` builds from.
+Interaction design is the same diverge/converge muscle as brand. Ground every
+persona and pain in the `researcher`'s V0 evidence (cite it) or label it
+`assumption` — an invented persona is slop. The PRD (`docs/product/prd.md`)
+references this brief for the journey detail rather than duplicating it. Draft each core journey as steps a first-time user actually takes, each
 step with the acceptance criteria hook the PRD needs (what the user sees, does,
 and can verify happened). Name screens and concepts in the user's vocabulary
 (the IA), flag where a journey forces a data-model implication (tell the

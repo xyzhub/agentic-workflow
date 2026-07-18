@@ -41,6 +41,10 @@ then. Ask questions only when a human is actually present to answer them.
   (delegated <date>)` ONLY from an explicit human answer (or the flight plan's
   Merge authority field) — never infer delegation from the repo, even if its
   history shows bot merges.
+- **Publish policy** — always default `human-only` (§14, fail closed). Write
+  `may-publish (delegated <date>, …)` ONLY from an explicit human answer; never
+  infer it. `none` if no publishing channels are set up (`/publish connect`
+  configures them later).
 - **Current stage** — infer V0–V6 from repo maturity (no code → V0; skeleton +
   CI → V2; shipping features → V3; deployed with real users → V5/V6). Use the
   `$ARGUMENTS` value if the user passed one.
@@ -68,10 +72,23 @@ bundled one.
   timeline; then publish it via the Artifact tool and record the returned URL in
   the file's `artifact-url` comment.
 - If stage is **V0**, also seed `docs/product/idea.md` from
-  `${CLAUDE_PLUGIN_ROOT}/templates/idea.md`, and offer to spawn the `researcher`
+  `${CLAUDE_PLUGIN_ROOT}/templates/idea.md`. If the idea is still raw or
+  unformed (no clear problem/who-pays yet), point at `/brainstorm` first — the
+  `brainstormer` shapes it into framings to choose from before validation.
+  Once the framing is set, offer to spawn the `researcher`
   agent to validate the problem, size the market, map competitors, and
   pressure-test the riskiest assumption (evidence for AND against) before the
   human's go/no-go. No product code until that gate passes.
+- If stage is **V1 or later**, seed the V1 definition set (only those that don't
+  already exist) from templates: `docs/product/prd.md`
+  (`${CLAUDE_PLUGIN_ROOT}/templates/prd.md` — scope, in-scope journeys +
+  acceptance criteria, memo pointers, success metrics), the `designer`'s
+  `docs/product/ux-brief.md` (`${CLAUDE_PLUGIN_ROOT}/templates/ux-brief.md` —
+  personas, journeys, IA), and the `architect`'s
+  `docs/product/architecture.md` (`${CLAUDE_PLUGIN_ROOT}/templates/architecture.md`)
+  and `docs/product/interface-contract.md`
+  (`${CLAUDE_PLUGIN_ROOT}/templates/interface-contract.md`). The
+  `designer`/`architect`/`analyst` fill them; adoption `fill` mode drafts them.
 
 ## 4. Point the project's memory at the workflow
 

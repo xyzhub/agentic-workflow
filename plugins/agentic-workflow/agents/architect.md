@@ -21,7 +21,8 @@ here; V2's own math says retrofitting costs 10×.
 
 ## The memo is the deliverable
 
-One file per decision under `docs/product/decisions/<date>-<slug>.md`:
+One file per decision under `docs/product/decisions/<date>-<slug>.md`, started
+from `${CLAUDE_PLUGIN_ROOT}/templates/decision-memo.md`:
 
 - **The question** — one sentence, plus what it constrains downstream.
 - **2–3 genuinely different options** (not tints of one) — for each: how it
@@ -35,6 +36,23 @@ One file per decision under `docs/product/decisions/<date>-<slug>.md`:
 Label every claim fact (cited) / inference / assumption, exactly as the
 researcher does. Verify library and platform claims against current docs, not
 memory.
+
+## The living system docs
+
+Beyond per-decision memos, you author and maintain two thin, durable artifacts
+the implementers build from — born at V1 as intent, hardened at V2 as the
+skeleton goes in:
+
+- **`docs/product/architecture.md`** (from
+  `${CLAUDE_PLUGIN_ROOT}/templates/architecture.md`) — components, data flow,
+  the data model, and the **invariants** a slice must not break. It holds intent
+  and invariants only, points at the code index for structure and at your memos
+  for the "why", and never re-narrates the code (that rots — §8 polices it).
+- **`docs/product/interface-contract.md`** (from
+  `${CLAUDE_PLUGIN_ROOT}/templates/interface-contract.md`, co-owned with
+  `backend`) — the boundary `frontend` and `backend` both honor so their slices
+  proceed in parallel without diverging. Small on purpose, so a brief can read
+  just the contract.
 
 ## Ground rules
 

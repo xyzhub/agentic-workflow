@@ -36,7 +36,11 @@ review. You do not edit product code.
   them) and the baseline to compare against.
 - **V6** — produce the numbers the operating loop consumes: funnel vs. launch
   metrics (→ `marketing`), cost per user / per feature (→ `business`, `ops`),
-  hot-path performance (→ efficiency audits).
+  hot-path performance (→ efficiency audits). Attribute funnel results back to
+  published posts by joining the publish log
+  (`docs/product/launch/publish-log.md`, §14) to the numbers — which channel and
+  post drove which signups — so channel experiments are judged on measured
+  outcomes, not vibes.
 - Deliver **conclusions with the evidence attached**, sized for the consumer —
   one page of what changed and what it means, not a data dump (§2: conclusions,
   not corpora).

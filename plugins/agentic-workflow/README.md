@@ -2,7 +2,7 @@
 
 An **agentic operating protocol** that carries any project from a raw idea to
 a launched, viable product — and keeps operating it after launch. Packaged as
-a Claude Code plugin: 16 agents, 20 commands, guardrail hooks, a protocol
+a Claude Code plugin: 17 agents, 24 commands, guardrail hooks, a protocol
 document every project carries, and an eval suite that tests the prompts
 themselves.
 
@@ -72,7 +72,8 @@ as what it does.
 
 | Agent | When | Does | Never |
 |---|---|---|---|
-| `researcher` | V0 | Validates the idea — cited evidence for AND against, riskiest assumption, kill criteria; drafts `idea.md` | Decides go/no-go; writes product code |
+| `brainstormer` | V0 (front) | Shapes a raw idea — 2–3 genuinely distinct framings (the bet, who pays, riskiest assumption, case against each) for the human to pick; seeds `idea.md` | Validates with evidence; decides; designs; builds |
+| `researcher` | V0 | Validates the chosen framing — cited evidence for AND against, riskiest assumption, kill criteria; fills `idea.md` | Decides go/no-go; writes product code |
 | `designer` | V1–V2, V4 | Brand directions to choose from; user journeys + IA; design tokens + copy kit; V4 heuristic usability pass | Decides (the owner picks); ships production UI |
 | `architect` | V1, missions | Shape-before-build option memos (stack, data model: 2–3 options, tradeoffs, reversal cost); digests technical open questions | Implements; sets scope; verifies |
 | `business` | V1, V4–V5, V6 | Business model, pricing, executive summary — proposes with evidence and the case against | Sets live prices; spends; signs up for services |
@@ -99,6 +100,7 @@ any agent's model per project, reversibly.
 
 | Command | Does |
 |---|---|
+| `/brainstorm` | Shape a raw, fuzzy idea into a chosen direction: light interview → the brainstormer drafts distinct framings → you pick one → seeds `idea.md` for the researcher to validate |
 | `/bootstrap` | Detect the stack, write `docs/WORKFLOW.md` with a filled §10 profile, seed the records |
 | `/adopt` | One-command adoption of an existing project: bootstrap + convert existing plans into mission trios (decisions arrive locked) + stage-gap report; portfolio registration always runs; `fill` also drafts missing product docs |
 | `/autopilot` | Drive an idea (or an existing repo — it adopts first) to launch-ready from a one-page flight plan, pausing only at human gates |
@@ -113,6 +115,7 @@ any agent's model per project, reversibly.
 | `/pr` | Run every gate (tests, lint, build, docs, live verification), then push and open the PR |
 | `/fix` | Task-altitude fast path for a small isolated fix |
 | `/check` | Traffic-light health check: branch, commits, ledger, stage, protocol drift |
+| `/handoff` | Snapshot the live session's working state to a re-read manifest so a fresh agent continues without the diluting auto-summary (§6.2) — mid-session, git-independent, pointers not corpora |
 
 **Scale & gates**
 
@@ -125,6 +128,7 @@ any agent's model per project, reversibly.
 | `/release` | Cut a version on a release branch: changelog, PR, and the post-merge tag commands — the human fires them |
 | `/verify` | Post-deploy verification on the deployed instance: drive the real flow, confirm monitoring receives, record the result |
 | `/operate` | The V6 loop: analyst numbers → ops/marketing/business reviews → one report with a ranked backlog; in a registry repo it sweeps the whole portfolio |
+| `/publish` | The §14 publishing pipeline: connect channels, stage posts into the queue (marketing/writer), then fire — human-fired by default, or a scheduled run within a scoped, revocable `may-publish` delegation; paid always human-fired |
 | `/retro` | Turn lessons into protocol amendments, eval scenarios, hook proposals — via PR like any change |
 
 **Machinery**
@@ -141,8 +145,11 @@ any agent's model per project, reversibly.
 ```
 docs/WORKFLOW.md            # the protocol copy: Quick reference, §0–§13,
                             # YOUR §10 profile, Local amendments (survive /sync)
-docs/product/               # idea.md · JOURNEY.md · overview.html (live status
-                            # page) · business/ · launch/ · decisions/ (memos)
+docs/product/               # idea.md · prd.md · ux-brief.md · architecture.md ·
+                            # interface-contract.md · JOURNEY.md · overview.html
+                            # (live status page) · business/ · launch/
+                            # (assets · publish-queue.md · publish-log.md) ·
+                            # decisions/ (memos)
 .plans/                     # one trio per mission + pending-gates
 CHANGELOG.md                # Keep-a-Changelog, chronicler-maintained
 .env.example                # var names for the owner channel etc. (never values)

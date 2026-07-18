@@ -22,6 +22,26 @@
             "description": "git/gh guardrails, evaluated in the command's TARGET repo (leading `cd <dir>` or `git -C <dir>`, else session cwd): block push on/into the default branch (incl. refspecs); policy-aware gh pr merge block; tag-push, commit-format, pre-PR reminders; dirty-tracked-tree warning"
           }
         ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "INPUT=$(cat); CMD=$(printf '%s' \"$INPUT\" | jq -r '.tool_input.command // \"\"' 2>/dev/null || printf '%s' \"$INPUT\"); D=$(printf '%s' \"$CMD\" | sed -n 's/^ *cd  *\\([^;&|]*\\).*/\\1/p' | sed 's/\"//g; s/ *$//'); D=${D:-.}; TOP=$(git -C \"$D\" rev-parse --show-toplevel 2>/dev/null); WF=\"$TOP/docs/WORKFLOW.md\"; if printf '%s' \"$CMD\" | grep -qiE 'ads-api\\.|googleads|adaccounts|/act_[0-9]+/|/ads/'; then if ! printf '%s' \"$CMD\" | grep -q 'PAID_CONFIRMED_BY_HUMAN'; then echo '❌ BLOCKED: paid promotion crosses the money boundary (§11) — never delegable; it must be human-fired within the budget ceiling. No autonomous ad spend.' >&2; exit 2; fi; fi; if printf '%s' \"$CMD\" | grep -qiE 'api\\.(x|twitter|linkedin)\\.com|dev\\.to/api|buttondown|mailchimp|bsky\\.social|hashnode|/api/v1/statuses'; then if grep -qiE '\\*\\*Publish policy\\*\\* *\\| *_?may-publish' \"$WF\" 2>/dev/null; then echo '📣 Publishing under a delegated Publish policy (§14) — post only approved, due, organic queue items within scope; append each to publish-log.md.'; else echo '📣 Publishing is §14-gated: Publish policy is not delegated — post only an approved queue item via a human-fired /publish run, and log it. Paid stays human-fired.'; fi; fi; exit 0",
+            "description": "publishing guardrail (§14): hard-block paid/ad-spend endpoints unless human-confirmed (never delegable); remind that organic publish-host calls must be policy-authorized, approved queue items logged to publish-log.md"
+          }
+        ]
+      },
+      {
+        "matcher": "Read",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "INPUT=$(cat); F=$(printf '%s' \"$INPUT\" | jq -r '.tool_input.file_path // \"\"' 2>/dev/null); L=$(printf '%s' \"$INPUT\" | jq -r '.tool_input.limit // \"\"' 2>/dev/null); if [ -n \"$F\" ] && [ -z \"$L\" ] && [ -f \"$F\" ]; then N=$(wc -l < \"$F\" 2>/dev/null | tr -d ' '); if [ -n \"$N\" ] && [ \"$N\" -gt 800 ]; then echo \"📖 Large whole-file read ($N lines) — prefer a ranged read (offset/limit) or delegate to a subagent that returns a bounded distillate (§2 / §6.2). The main agent ingests conclusions, not corpora.\"; fi; fi; exit 0",
+            "description": "context-discipline backstop (§2/§6.2): advisory reminder when a whole-file Read (no limit) targets a file over ~800 lines — prefer a ranged read or a subagent that returns a distillate; never blocks (exit 0)"
+          }
+        ]
       }
     ],
     "PostToolUse": [

@@ -16,6 +16,7 @@
 
 | You have | Run |
 |---|---|
+| A fuzzy idea, not yet a clear problem | `/brainstorm "<itch>"` — shapes it into framings to choose from |
 | A raw idea | `/autopilot "<idea>"` — hands-off; or `/bootstrap` to go stage by stage |
 | An existing project | `/adopt` (add `fill` to also draft missing docs) |
 | No idea what's next | `/next` — always safe, recommends exactly one command |
@@ -74,8 +75,8 @@ gate is a logged deviation, not a shortcut.
 
 | Stage | Produces | Exit gate |
 |---|---|---|
-| **V0 Idea & validation** | `docs/product/idea.md`: problem, who pays, why now, riskiest assumption, kill criteria, cheapest test of the assumption — informed by the `researcher` agent (evidence for AND against) | **Human go/no-go.** No code before this exists — an unvalidated idea is cheapest to kill in prose |
-| **V1 Definition** | PRD + MVP scope (what's deliberately OUT); user journeys with acceptance criteria and brand/UX directions from the `designer` agent (it owns journeys and IA as well as brand) for the owner to choose; data-model sketch + stack decision as option memos from the `architect` agent (`docs/product/decisions/`); business model + pricing proposal from the `business` agent (`docs/product/business/`) — the model shapes scope and the data model | Stop-the-line: no implementation without acceptance criteria. **Human approves scope** (with the business model and the brand direction; `/counsel` convenes the advisor red-team on the approval first) |
+| **V0 Idea & validation** | `docs/product/idea.md`: problem, who pays, why now, riskiest assumption, kill criteria, cheapest test of the assumption. When the idea is still raw, the `brainstormer` agent shapes it first — 2–3 distinct framings for the human to choose between (`/brainstorm`) — then the `researcher` agent validates the chosen one (evidence for AND against) | **Human go/no-go.** No code before this exists — an unvalidated idea is cheapest to kill in prose |
+| **V1 Definition** | PRD + MVP scope (what's deliberately OUT); the **UX brief** (personas, user journeys with acceptance criteria, IA) and brand/UX directions from the `designer` agent (`docs/product/ux-brief.md`) for the owner to choose; data-model sketch + stack decision as option memos from the `architect` agent (`docs/product/decisions/`), consolidated into the living **system architecture** doc and the frontend/backend **interface contract** the implementers build from; business model + pricing proposal from the `business` agent (`docs/product/business/`) — the model shapes scope and the data model | Stop-the-line: no implementation without acceptance criteria. **Human approves scope** (with the business model and the brand direction; `/counsel` convenes the advisor red-team on the approval first) |
 | **V2 Foundation** | Deployable skeleton (`devops` lays CI + deploy): repo + CI gates (test/typecheck), deploy pipeline + health/ready checks, validated env with a **fail-closed production guard**, auth decision wired, error-monitoring hook, seed/reset path, README quickstart, chosen design system as tokens | "Hello world" **deployed and live-verified**; CI green. Security and DX are laid here — retrofitting costs 10× |
 | **V3 Build (MVP)** | The product, feature by feature, via the execution machinery (§1–§5). Every checkpoint applies the pillar lenses | All MVP acceptance criteria met; behavioral/eval suite exists for AI-driven products |
 | **V4 Hardening** | Four explicit audits (§0.2): security review, UX pass (incl. the `designer`'s heuristic usability evaluation), DX pass, efficiency pass — plus ops readiness (backups, monitoring, runbook, guard coverage). Audits run as an **adversarial multi-vote** (§5): lens-partitioned parallel reviewers, conservative merge — standalone via `/audit` at any stage | Reviewer-verified production-readiness checklist (full six-lens scorecard); findings fixed or accepted in writing |
@@ -220,7 +221,9 @@ owner status page); **never merge the default branch yourself** — HITL merges
 **Context discipline** — at ~25% usage, finish the current edit to a compiling
 state, verify, write the handoff, end. A clean half-session beats a degraded full
 one. Finished early (<15%)? Pull the next same-phase brief (checkpoints always
-end a session).
+end a session). For a long *interactive* session with no natural session end,
+`/handoff` writes a fresh-self re-read manifest so the reset stays lossless
+(§6.2) — never lean on the auto-summary.
 
 ## 5. Mission lifecycle (multi-session work)
 
@@ -304,6 +307,16 @@ pushes the default branch. Reach for them when a session has a clear single-doma
 slice, or when a mission has parallel slices that can run at once; a plain session
 on the main agent is fine for small or cross-cutting work.
 
+**Brainstormer** (`brainstormer`) works at the very front of V0, upstream of the
+researcher: it turns a raw, fuzzy idea into 2–3 genuinely distinct framings —
+each with the bet it makes, who it serves and who pays, the core value, and its
+riskiest assumption — for the human to choose between. It questions the premise,
+not just the solution; it is a thinking tool, not an evidence tool (no market
+data required). Convened via `/brainstorm` (or `/bootstrap` at V0); it seeds
+`docs/product/idea.md` with the chosen framing and hands off to the researcher
+to validate. Like the advisor it is gate-bound, never ambient — and it never
+decides, validates, designs, or builds.
+
 **Researcher** (`researcher`) works upstream of code, in V0: it validates the
 problem, sizes the market, maps competitors, and pressure-tests the riskiest
 assumption with cited evidence for AND against, drafting `docs/product/idea.md`.
@@ -320,7 +333,12 @@ by `/mission`.
 decisions. At V1 it authors the stack decision and data-model sketch as option
 memos — 2–3 options, tradeoffs, reversal cost, a recommendation — under
 `docs/product/decisions/`; during missions it digests technical open questions
-into decision-ready memos. It consults; the human decides (dated locked
+into decision-ready memos. It also authors and maintains the two living system
+docs the implementers build from — `docs/product/architecture.md` (components,
+data model, invariants) and `docs/product/interface-contract.md` (the
+frontend/backend boundary that keeps parallel slices from diverging) — thin,
+intent-and-contract only, pointing at the code index rather than re-narrating
+code. It consults; the human decides (dated locked
 decisions), implementers build, the reviewer verifies — it does none of those.
 
 **Advisor** (`advisor`) is the decision red-team: the reviewer's counterpart
@@ -336,7 +354,9 @@ never ambient.
 **Designer** (`designer`) works at V1–V2 and for redesigns: it surfaces several
 distinct brand/UX directions for the owner to choose from, then organizes the
 chosen one into a design-token system the `frontend` agent implements. It also
-owns the PRD's user journeys and information architecture at V1, and runs the
+owns the **UX brief** (`docs/product/ux-brief.md`: personas grounded in the
+researcher's evidence, user journeys with acceptance criteria, and information
+architecture) at V1 — what the `frontend` builds from — and runs the
 heuristic usability evaluation in the V4 UX audit (flagging its own
 independence caveat). It proposes and organizes; the owner picks; frontend
 builds.
@@ -407,6 +427,34 @@ stage change); the chronicler edits the three files, then the **main session
 republishes** `overview.html` via the Artifact tool to its recorded URL
 (subagents cannot publish artifacts). Task-altitude changes update CHANGELOG only.
 
+### 6.2 The context firewall — bounded returns & the fresh-self handoff
+
+A context window fills mostly with **tool output** — file reads, command dumps,
+subagent reports — not the dialogue. When it nears the limit the harness
+auto-summarizes older context, and that paraphrase **dilutes fidelity**. The
+defense is never a better summary; it is to keep the window lean and, when it
+still fills, hand off to a fresh agent that **re-reads verbatim files** rather
+than inheriting a summary. Two rules make that work:
+
+**Bounded returns.** A spawned agent's final message to its caller is a
+**distillate, not a transcript** — target ≤~15 lines: status · changed *paths*
+(not diffs) · verify signal (green/red + first error — §2, "gates not logs") · deviation
+*references* (not content) · what's next / to re-verify. The heavy reading and
+building happened in the subagent's OWN context; only the distillate crosses
+back. The caller ingests conclusions, not corpora (§2, principle 2), and pulls
+detail from the named files on demand into its own budget. `advisor` (one page)
+and `chronicler` (≤10 lines) are the model.
+
+**The fresh-self handoff.** The interactive main session is context-disciplined
+too — the same "ledger outlives the transcript" rule (§2, principle 1) and loop
+mode (§5) that protect missions apply here. Externalize durable state to files
+continuously; when context fills (past ~half for a driving/interactive agent),
+run `/handoff` to write a **re-read manifest** (`docs/product/session-handoff.md`
+— goal, locked decisions, next, and *pointers* to the real artifacts), then the
+human starts a fresh session that resumes from it. A new agent re-reading files
+is lossless where an auto-summary is not; a sharp agent at low context beats a
+tired one near the limit. Agents prepare the handoff; the human fires the reset.
+
 ## 7. Fulfilment: definition of done
 
 DONE = gates green → live verification passed (real client for UI) → docs updated
@@ -428,7 +476,8 @@ drive the real flow, confirm monitoring is receiving, record the result).
 
 ## 9. How this maps to the plugin
 
-- Agents ship with the plugin: `researcher` (V0 validation), `designer`
+- Agents ship with the plugin: `brainstormer` (V0 idea-shaping, front of the
+  lifecycle), `researcher` (V0 validation), `designer`
   (V1–V2 brand/UX, journeys/IA, V4 usability pass), `architect` (V1
   shape-before-build option memos), `business` (V1/V5/V6 model, pricing,
   business documents), `planner` (mission decomposition), `advisor` (decision
@@ -444,7 +493,8 @@ drive the real flow, confirm monitoring is receiving, record the result).
   THAT one. Tunes are files: committed and reviewed like any harness change
   (§8).
 - Guardrail hooks (§3) install automatically.
-- Commands: `/bootstrap` (bootstrap a project into this workflow),
+- Commands: `/brainstorm` (shape a raw idea into a chosen framing via the
+  `brainstormer`, before validation), `/bootstrap` (bootstrap a project into this workflow),
   `/adopt` (one-command adoption for an existing project: bootstrap + convert
   existing plans + stage-gap report; `fill` mode also drafts the missing
   document deliverables, decisions pending), `/autopilot` (drive an idea to
@@ -452,19 +502,28 @@ drive the real flow, confirm monitoring is receiving, record the result).
   `/plan` (interview-driven feature planning: brief, journeys, memos,
   counsel, trio — in one command), `/counsel` (advisor red-team on a pending decision), `/audit` (on-demand
   adversarial pillar audit), `/release` (cut a version), `/verify` (post-deploy
-  verification, §7), `/operate` (the V6 loop), `/sync` (bring
+  verification, §7), `/operate` (the V6 loop), `/publish` (the §14 publishing
+  pipeline — connect channels, stage the queue, fire under the Publish policy),
+  `/sync` (bring
   docs/WORKFLOW.md up to the installed protocol master), `/next` (recommends
   the single best next command from the project state), `/doctor` (machinery
   diagnosis — environment tools, §10 truthfulness; `fix` installs missing dev
   tools like codegraph and ripgrep), `/tune` (per-project agent model
   upgrade/reset), `/connect` (interactive owner-channel setup with a
-  round-trip test), `/start`,
+  round-trip test), `/handoff` (snapshot working state to a re-read manifest for
+  a fresh-self continuation — §6.2), `/start`,
   `/check`, `/pr`, `/end`, `/fix`, `/retro`.
 - The `protocol` skill points every session at the project's
   `docs/WORKFLOW.md` (or this master if none exists yet).
 - Templates for the status page, `idea.md`, `flight-plan.md`, `decision-log.md`,
+  the V1 `prd.md`, the `designer`'s `ux-brief.md`, the `architect`'s
+  `architecture.md` and `interface-contract.md`, the architect's option memo
+  (`decision-memo.md`), the mission
+  trio (`mission-plan.md`, `mission-sessions.md`, `mission-state.md`),
   the launch asset set (`launch-plan.md`, `launch-positioning.md`,
   `launch-landing-page.md`, `launch-announcement.md`, `launch-content-plan.md`),
+  the publishing pipeline (`publish-queue.md`, `publish-log.md`),
+  the `session-handoff.md` re-read manifest,
   the business set (`business-executive-summary.md`, `business-model.md`,
   `business-pricing.md`), and this protocol live under the plugin's `templates/`.
 
@@ -477,7 +536,8 @@ concrete values.
 | Key | Value |
 |---|---|
 | **HITL (merge/deploy authority)** | _(the human owner's name)_ |
-| **Merge policy** | _(`human-only` — the default — or `agent-may-merge (delegated <date>)`; only an explicit human decision sets the latter. Delegation lets agents merge **reviewer-APPROVEd PRs**; direct pushes to the default branch stay blocked, and deploys/spending/publishing are never delegable)_ |
+| **Merge policy** | _(`human-only` — the default — or `agent-may-merge (delegated <date>)`; only an explicit human decision sets the latter. Delegation lets agents merge **reviewer-APPROVEd PRs**; direct pushes to the default branch stay blocked, and deploys/spending are never delegable. Organic publishing has its own Publish policy row below.)_ |
+| **Publish policy** | _(`human-only` — the default, fail-closed — or `may-publish (delegated <date>, channels: …, rate: N/wk, organic-only)`; only an explicit human decision (or the flight-plan) sets the latter. Delegation lets a scheduled `/publish run` post **approved, due, organic** items within the scope (§14); **paid promotion is never in this delegation** — paid is always human-fired and budget-bounded (§11). `none` → no publishing configured)_ |
 | **Default branch** | _(e.g. main)_ |
 | **Test gate** | _(e.g. `npm test`)_ |
 | **Typecheck/lint gate** | _(e.g. `npm run typecheck`)_ |
@@ -532,10 +592,16 @@ explicit human confirmation each time (pre-authorization lets you *prepare*, not
 — the delegation itself is a human decision, and even then only reviewer-APPROVEd
 PRs or §13 registry bookkeeping, never direct pushes), deploying to production /
 going live, spending beyond
-the flight-plan ceiling, publishing outward or messaging on the owner's behalf,
-launching behavioral experiments on real users (propose the hypothesis and
-measurement plan; the human launches), and destructive/irreversible actions.
-Merge authority is the ONE delegable item; the rest are never delegable. These are **batched**: at
+the flight-plan ceiling, publishing outward or messaging on the owner's behalf
+(unless the §10 **Publish policy** delegates **organic** publishing — scoped,
+dated, revocable, §14; paid promotion and individual outreach to real users stay
+never delegable), launching behavioral experiments on real users (propose the
+hypothesis and measurement plan; the human launches), and
+destructive/irreversible actions. Two authorities are delegable — **merge**
+(§10 Merge policy) and **scoped organic publishing** (§10 Publish policy) — each
+an explicit, dated, revocable human act; everything else here (deploys, spending
+including paid promotion, individual outreach, behavioral experiments,
+destructive actions) is never delegable. These are **batched**: at
 the launch boundary the human gets ONE consolidated "ready to launch" summary to
 confirm, not a stream of interruptions.
 
@@ -662,6 +728,56 @@ to one report: every stage, blocked gates, and ONE ranked cross-portfolio
 backlog (this week's mission goes where?). Registration is a single
 `registry.md` row, offered by `/adopt`. Ventures without a local checkout
 are read via their remotes (`gh`) — slower, same record.
+
+## 14. Publishing & distribution — outward, gated, auditable
+
+Getting the product in front of users is part of the venture, not outside it —
+but publishing outward is reputation-bearing and semi-irreversible (a deleted
+post was still seen and may stay indexed). So it runs as a **pipeline** with the
+same shape as the owner channel (§12): everything up to the moment of publish is
+automated; the publish itself is gated. Set up interactively with `/publish
+connect` (per-channel credentials, secret-rule, round-trip test); driven by
+`/publish`.
+
+**Prepare — always automated, always safe.** The `marketing` agent (short-form,
+strategy) and `writer` agent (long-form articles) populate the **publish queue**
+(`docs/product/launch/publish-queue.md`) from the launch assets and content
+plan. Each item carries its channel, scheduled time, full body, source asset,
+and a state (`draft → approved → posted`). Writing to the queue **fires
+nothing**.
+
+**Fire — gated by the §10 Publish policy.**
+
+| Policy | Who fires | What posts |
+|---|---|---|
+| `human-only` (default, fail-closed) | the human runs `/publish run` | approved + due items, from a formatted preview |
+| `may-publish (delegated <date>, channels, rate, organic-only)` | a scheduled `/publish run` | only approved + due + **organic** items **within the scope** |
+
+The delegation is a §11 authority — the second delegable one alongside merge —
+explicit, dated, scoped (channels, rate limit, organic-only), and revocable by
+editing the §10 row. **Paid promotion is never in it**: paid crosses the money
+boundary (§11 spending), so every paid item is human-fired and bounded by the
+flight-plan budget ceiling, confirmed each time. A change to an approved body
+resets it to `draft` — re-approval before it can fire.
+
+**Record — the audit trail.** Every successful post appends to the **publish
+log** (`docs/product/launch/publish-log.md`: what, where, when, permalink,
+source, and the firing authority) and the queue item becomes a receipt — the
+same auditability §12 gives channel decisions. **Measure**: the `analyst` reads
+the log to attribute funnel results back to posts, into the V6 review.
+
+**Channels**: socials (X, LinkedIn, Mastodon, Bluesky), article platforms
+(dev.to, Medium, Hashnode, own-blog), mailing list (Buttondown/Mailchimp/
+ConvertKit), and own site / RSS (PR-based). Credentials follow the §12 secret
+rule — never echoed, var NAMES only in the profile and `.env.example`, verified
+by a round-trip test, values in the human's env.
+
+**Mechanical backstop.** Like the push/merge guardrails (§3), a hook fails
+closed: an autonomous publish is **blocked unless the §10 Publish policy
+delegates it**, and any paid action is blocked without an explicit human
+confirmation regardless of policy. Interactive human-fired `/publish run` is
+allowed. As with §12, a publish is **never fired from an owner-channel chat
+tap** — the delegated firing is a scheduled command within policy, not a button.
 
 ## Local amendments
 

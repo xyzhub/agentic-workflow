@@ -23,7 +23,8 @@ Inspect fast, decide, recommend — total output under 12 lines. No lectures;
    ledger → `/mission "<name>" continue`; an unmerged approved PR → tell the
    human to merge; a drifted ledger → `/mission "<name>" replan`.
 2. **Unmet gate for the current stage** → the command that meets it
-   (no idea.md at V0 → fill it; no CI at V2+ → `/mission "foundation"`; no
+   (no idea.md at V0 → `/brainstorm "<idea>"` if it's still a raw notion, else
+   fill idea.md and validate; no CI at V2+ → `/mission "foundation"`; no
    audit at V4 → `/audit`; deployed but unverified → `/verify`).
 3. **Nothing in flight** → the stage's natural move: V0 go/no-go → V1 define →
    V2 `/start` on the skeleton → V3 `/start` or `/mission` → V4

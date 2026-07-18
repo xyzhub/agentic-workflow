@@ -6,6 +6,52 @@ has no tags — each version-stamped commit on `main` IS the release.
 
 ## [Unreleased]
 ### Added
+- Context firewall (§6.2) — protects the main agent from context-window bloat
+  and the fidelity loss of auto-summarization. Two rules: **bounded returns**
+  (a spawned agent hands back a ≤~15-line distillate — status/paths/signal/refs,
+  not a transcript; wired into the `backend`/`frontend`/`security`/`devops`
+  implementers and the `planner`) and the **fresh-self handoff** (new `/handoff`
+  command + `session-handoff.md` re-read manifest: when a long interactive
+  session's context fills, snapshot working state as pointers and continue in a
+  fresh session that re-reads verbatim files — lossless where auto-summary is
+  not). `/start` resumes from the manifest; a new advisory `Read` hook warns on
+  large whole-file reads (prefer ranged reads / delegation). Generalizes the
+  "ledger outlives the transcript" rule (§2) to interactive sessions.
+- Publishing & distribution subsystem (§14) — the harness can now publish
+  outward (socials, articles, mailing list, own-site/RSS) through a gated
+  pipeline: `marketing`/`writer` **stage** posts into a publish queue
+  (`publish-queue.md`), and `/publish run` **fires** them — human-fired by
+  default, or a scheduled run within a scoped, dated, revocable `may-publish`
+  §10 Publish policy. Every post lands in an audit log (`publish-log.md`) the
+  `analyst` attributes funnel results against. New `/publish` command (connect ·
+  stage · status · run), a fail-closed publishing guardrail hook (hard-blocks
+  paid/ad-spend endpoints — never delegable — and gates organic posting), and a
+  §11 amendment making **organic publishing the second delegable authority
+  alongside merge** (paid and individual outreach stay never-delegable). Wired
+  into `marketing`, `writer`, `analyst`, `/operate`, `/bootstrap`, `/connect`,
+  and both READMEs.
+- Definition-layer templates — the artifacts the builder roles need to
+  understand WHAT and HOW to build, now first-class and evidence-grounded:
+  `ux-brief.md` (the `designer`'s personas + journeys + IA, what `frontend`
+  builds from), `architecture.md` and `interface-contract.md` (the `architect`'s
+  living system docs — components/data-model/invariants and the frontend/backend
+  boundary that keeps parallel slices from diverging). Both system docs hold
+  intent and contracts only, pointing at the code index rather than re-narrating
+  code (stale-doc rule, §8). Wired into `designer`, `architect`, `backend`,
+  `frontend`, the PRD, WORKFLOW.md (§0/§6/§9), `/bootstrap`, and the READMEs.
+- `brainstormer` agent + `/brainstorm` command — the workflow now owns the
+  front edge of V0 (shaping a raw, fuzzy idea into 2–3 distinct framings for the
+  human to choose between) instead of relying on an external brainstorming
+  skill. Runs upstream of the `researcher`: brainstormer widens and frames, the
+  human picks, the researcher validates the chosen frame. Wired into
+  `/bootstrap`, `/next`, WORKFLOW.md (§0/§6/§9), and both READMEs.
+- Execution-core templates — five deliverables the protocol named but never
+  shipped as templates now do: the mission trio (`mission-plan.md`,
+  `mission-sessions.md`, `mission-state.md`) authored by the `planner`, the V1
+  `prd.md` (owned by `designer`/`architect`/`analyst`), and the architect's
+  `decision-memo.md` option memo. Wired into WORKFLOW.md §9 and referenced by
+  `planner`, `architect`, `designer`, and `/bootstrap` so agents start from a
+  consistent shape instead of improvising. Lint validates every new reference.
 - /plan — interview-driven feature planning in one command: the human
   answers batched questions with drafted options, the team (designer,
   architect, analyst, advisors, planner) produces the brief, journeys,

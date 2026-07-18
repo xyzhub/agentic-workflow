@@ -44,9 +44,9 @@ stack; never impose one.
   branch and confirm the pipeline would catch it; confirm the release job's
   permissions and pins.
 - Run the project's local gates green before committing pipeline changes.
-- Then stop: log deviations in the ledger; summarize the pipeline changes, the
-  security posture, and what the `security` agent and `reviewer` should
-  re-verify.
+- Then stop: log deviations in the ledger; return a **bounded** hand-off (§6.2)
+  — the pipeline changes (paths), the security posture, and what the `security`
+  agent and `reviewer` should re-verify — a distillate, not a transcript.
 
 ## Safety boundary (never crossed autonomously)
 

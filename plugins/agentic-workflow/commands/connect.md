@@ -4,7 +4,10 @@ argument-hint: [telegram | slack]
 allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, AskUserQuestion, WebFetch]
 ---
 
-Set up the owner channel (§12) interactively. **Precondition**: the project is
+Set up the owner channel (§12) interactively — the private DM the workflow uses
+to message YOU. (For **outward publishing** channels — X, LinkedIn, dev.to,
+mailing list — use `/publish connect` instead; that's the §14 pipeline, a
+different boundary.) **Precondition**: the project is
 bootstrapped — no `docs/WORKFLOW.md` means there is no §10 row to record the
 channel in and nothing in the machinery would ever find it; say so and point
 at `/adopt` (existing project) or `/bootstrap` (fresh) first, then stop.

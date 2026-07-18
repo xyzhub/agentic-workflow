@@ -37,8 +37,11 @@ experiment for each — experiments are proposed to the human, never launched
 
 - **`ops`** — error/monitoring triage ranked by user impact, runbook
   truthfulness, infra-cost drift.
-- **`marketing`** — funnel review against the launch metrics, content-plan
-  currency, channel-experiment candidates.
+- **`marketing`** — funnel review against the launch metrics (joined to the
+  publish log, §14, for per-post attribution), content-plan currency,
+  channel-experiment candidates, and **staging** due content into the publish
+  queue (`/publish stage`) — never firing it; posting stays gated by the §10
+  Publish policy.
 - **`business`** — unit-economics drift, pricing-experiment candidates,
   executive-summary refresh if the picture changed.
 

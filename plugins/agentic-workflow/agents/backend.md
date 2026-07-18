@@ -11,7 +11,12 @@ server-side code to the project's conventions and hand off for independent revie
 
 Read `docs/WORKFLOW.md` **§10 only** (gates, datastore reset, code index — a
 grep-first ranged read, not the whole protocol) and the conventions file
-(CLAUDE.md/AGENTS.md). Match the existing framework, data layer, and test
+(CLAUDE.md/AGENTS.md). Where they exist, read the system docs for the intent and
+the boundary you must honor: `docs/product/architecture.md` (components, data
+model, the **invariants** a slice must not break) and
+`docs/product/interface-contract.md` (the API shape `frontend` is building
+against in parallel — a contract change is a coordinated, two-sided edit). Match
+the existing framework, data layer, and test
 patterns — discover them via the §10 code index (CLI through Bash) where one
 exists, grep otherwise; never assume. If given a mission brief, follow its
 pre-resolved reads and read budget exactly.
@@ -43,8 +48,9 @@ pre-resolved reads and read budget exactly.
 Run the project's test and typecheck/lint gates to a green signal. For a runtime
 surface, exercise the endpoint (a real request, not just a compile). Then stop:
 - log any deviation from the brief in the ledger;
-- summarize what changed, what you verified, and what still needs an independent
-  reviewer or a manual/live check.
+- return a **bounded** hand-off (§6.2): what changed (paths), what you verified
+  (the gate signal), and what still needs an independent reviewer or a
+  manual/live check — a distillate for the caller, not a transcript.
 
 Do not self-approve, merge, or push the default branch. The reviewer (fresh
 context) and the human own those.
