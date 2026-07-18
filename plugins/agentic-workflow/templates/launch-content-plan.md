@@ -17,7 +17,7 @@ signup funnel fed from search", "turn early users into references"._
 
 ## Content sources
 _Where pieces come from without inventing work: user feedback and questions
-(V6), feature releases (each `/release` is a content trigger), the V0 research
+(V6), feature releases (each `/agentic-workflow:release` is a content trigger), the V0 research
 findings worth publishing, launch-day reactions worth responding to._
 
 ## Repurposing

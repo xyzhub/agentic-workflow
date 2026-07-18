@@ -22,11 +22,11 @@ Quick workflow health check. Report a traffic-light status at the end.
 7. **Protocol drift** — if `docs/WORKFLOW.md` exists, compare its
    `<!-- protocol-master: vX.Y.Z -->` stamp against the installed plugin
    version (`${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json`). Older or
-   missing stamp → 🟡, recommend `/sync` (it re-copies the master,
+   missing stamp → 🟡, recommend `/agentic-workflow:sync` (it re-copies the master,
    preserving §10 and the Local amendments section verbatim).
 
 ## Output
 
 🟢 / 🟡 / 🔴 overall, with the one or two things that most need attention next.
 If the problem looks like machinery rather than work (missing tools, §10 rows
-that don't resolve, silent hooks), point at `/doctor` instead of guessing.
+that don't resolve, silent hooks), point at `/agentic-workflow:doctor` instead of guessing.

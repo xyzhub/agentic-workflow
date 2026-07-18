@@ -2,14 +2,14 @@
 
 _The staging surface for outward publishing (WORKFLOW.md §14). The `marketing`
 and `writer` agents fill this from the launch assets and content plan; **writing
-a row here fires nothing.** Items are posted only by `/publish run` — the human
+a row here fires nothing.** Items are posted only by `/agentic-workflow:publish run` — the human
 firing it, or, where §10 **Publish policy** delegates it, a scheduled run within
 the granted scope. Deploys to `docs/product/launch/publish-queue.md`._
 
 ## Policy in force
 _Mirror the §10 Publish policy row here so a fresh agent sees the boundary
 without reading the profile: `human-only` (default — staged items wait for the
-human to run `/publish run`) or `may-publish (delegated <YYYY-MM-DD>, channels:
+human to run `/agentic-workflow:publish run`) or `may-publish (delegated <YYYY-MM-DD>, channels:
 …, rate: N/wk, organic-only)`. **Paid is never in this delegation** — a paid
 item is always human-fired and budget-bounded (§11)._
 
@@ -28,7 +28,7 @@ auto-fire regardless of policy._
 
 ## Drafts (full bodies)
 
-_The full text/thread/article body for each queued id, so `/publish run` posts
+_The full text/thread/article body for each queued id, so `/agentic-workflow:publish run` posts
 exactly what was reviewed — no re-drafting at fire time. Media/asset paths
 referenced, not inlined._
 

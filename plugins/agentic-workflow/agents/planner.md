@@ -85,7 +85,7 @@ situation), reality wins and completed work is history:
 
 You author the plan; you do not start executing, do not decide scope, and do not
 merge or deploy. Finish with a **bounded** return (§6.2) — the phase map, total
-session count, and the open questions the human must answer before `/mission`
+session count, and the open questions the human must answer before `/agentic-workflow:mission`
 drives it — the trio files hold the detail; your return points at them, it does
 not restate them. If the mission
 is actually too small for a trio (fits one sitting), say so and recommend a plain

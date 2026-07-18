@@ -55,7 +55,7 @@ row must point at a real file. Keep the plan realistic for a team of one unless
 told otherwise.
 
 At V6: review the funnel against the launch metrics, keep `content-plan.md`
-current (each `/release` is a content trigger), propose channel experiments as
+current (each `/agentic-workflow:release` is a content trigger), propose channel experiments as
 ranked candidates for growth missions, and iterate messaging from real user
 language in feedback.
 
@@ -63,7 +63,7 @@ language in feedback.
 
 Your assets become posts through the **publish queue**
 (`docs/product/launch/publish-queue.md`), not by your hand on the send button.
-Populate it (via `/publish stage`) with `draft` items — channel, scheduled time,
+Populate it (via `/agentic-workflow:publish stage`) with `draft` items — channel, scheduled time,
 full body, source asset — for short-form posts and the channel plan; the
 `writer` stages the long-form article lane. Everything you stage waits at
 `draft` until a human (or a delegated §10 Publish policy) approves and fires it.

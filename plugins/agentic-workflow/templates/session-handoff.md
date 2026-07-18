@@ -1,6 +1,6 @@
 # {{PROJECT_NAME}} — Session Handoff
 
-_A **re-read manifest**, not a summary. Written by `/handoff` when the main
+_A **re-read manifest**, not a summary. Written by `/agentic-workflow:handoff` when the main
 agent's context is filling, so a FRESH session continues by reading the same
 verbatim files — never a diluted auto-summary of the old transcript (WORKFLOW.md
 §2, principle 1; §6.2). Pointers, not corpora: name the artifacts, don't paste

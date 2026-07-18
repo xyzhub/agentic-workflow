@@ -6,7 +6,7 @@ allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, Task, AskUserQuestion, WebF
 
 Drive outward publishing for this project (Agentic Workflow §14). **Precondition**:
 the project is bootstrapped (`docs/WORKFLOW.md` with a §10 profile) — else point
-at `/adopt` or `/bootstrap` and stop. The subcommand is in `$ARGUMENTS`
+at `/agentic-workflow:adopt` or `/agentic-workflow:bootstrap` and stop. The subcommand is in `$ARGUMENTS`
 (default `status`). Everything here is gated: staging is always safe, firing
 obeys the §10 **Publish policy** (fail closed).
 
@@ -52,7 +52,7 @@ The fire step. Read the §10 **Publish policy** FIRST and obey it:
   each via its channel connector.
 - **`may-publish (delegated <date>, …)`**: post only `approved` + due +
   **organic** items **within the scope** (channels, rate limit). This is the
-  path a scheduled `/publish run` takes.
+  path a scheduled `/agentic-workflow:publish run` takes.
 - **`none` / unset**: nothing fires — report that publishing isn't configured
   and stop (fail closed).
 
@@ -66,7 +66,7 @@ logged as `fired by: human`.
 
 ## Boundaries
 
-Staging and connecting are always safe; firing is the gated act. `/publish`
+Staging and connecting are always safe; firing is the gated act. `/agentic-workflow:publish`
 never crosses the safety boundary autonomously beyond what the §10 Publish
 policy delegates (organic only, scoped, revocable), never spends on paid
 promotion without a human, and never messages real users individually. The

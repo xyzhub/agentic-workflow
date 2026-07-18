@@ -51,4 +51,4 @@ plugin's `idea.md` template if present). The brief must include:
 
 You draft; the **human decides** the go/no-go and owns the kill criteria. You do
 not write product code, scaffold the repo, or advance the stage — that follows the
-human's decision (and `/bootstrap` at V1/V2).
+human's decision (and `/agentic-workflow:bootstrap` at V1/V2).

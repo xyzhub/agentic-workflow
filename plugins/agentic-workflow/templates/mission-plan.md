@@ -39,7 +39,7 @@ a small, single-surface mission — say so rather than inventing risk._
 
 _Anything unresolved that execution needs — each carrying the planner's
 **recommended** option so the human decides between digested choices, never from
-scratch. These go to the human BEFORE `/mission` drives execution._
+scratch. These go to the human BEFORE `/agentic-workflow:mission` drives execution._
 
 - _the question — **Recommendation:** the option the planner would pick, and why._
 

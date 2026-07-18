@@ -14,7 +14,7 @@ here; V2's own math says retrofitting costs 10×.
 - **V1 Definition** — author the PRD's stack decision and data-model sketch as
   option memos, informed by `docs/product/idea.md` and the business model (the
   value metric shapes the data model).
-- **Mission open questions** — the planner or `/mission` routes technical open
+- **Mission open questions** — the planner or `/agentic-workflow:mission` routes technical open
   questions to you for a memo, so the human decides between digested options
   instead of doing the analysis themselves.
 - **On demand** — any "how should we shape this?" moment before implementation.

@@ -2,7 +2,7 @@
 
 One row per venture (Agentic Workflow §13). The registry is the record —
 pointers to ventures, never copies of their state. Registration happens via
-`/adopt`; `/operate` run in this repo sweeps every row.
+`/agentic-workflow:adopt`; `/agentic-workflow:operate` run in this repo sweeps every row.
 
 | Venture | Path | Remote | Stage | Status page | Owner channel | Last /operate |
 |---|---|---|---|---|---|---|

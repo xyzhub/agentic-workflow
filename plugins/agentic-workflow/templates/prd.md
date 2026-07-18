@@ -58,5 +58,5 @@ model above, so it belongs in scope review, not after it._
 
 ---
 _Exit V1 → V2 when the **human approves this scope** (with the business model and
-a chosen brand direction). `/counsel` convenes the `advisor` red-team on the
+a chosen brand direction). `/agentic-workflow:counsel` convenes the `advisor` red-team on the
 approval first. Stop-the-line: no implementation without acceptance criteria._

@@ -8,9 +8,9 @@ Shape the raw idea in `$ARGUMENTS` into a direction worth validating (Agentic
 Workflow §0 V0 — the `brainstormer` role). This is the step BEFORE the
 `researcher`: it widens a fuzzy notion into distinct framings and converges on
 one, so validation has something concrete to test. **No precondition** — this
-runs before `/bootstrap`, in an empty repo or a full one; it writes only
+runs before `/agentic-workflow:bootstrap`, in an empty repo or a full one; it writes only
 `docs/product/idea.md` and a scratch framings note, never code. If an idea is
-already well-formed and evidenced, say so and point at `/bootstrap` (fresh) or
+already well-formed and evidenced, say so and point at `/agentic-workflow:bootstrap` (fresh) or
 the `researcher` directly — don't manufacture divergence that isn't needed.
 
 ## 1. The interview (light — the human may not know much yet)
@@ -52,7 +52,7 @@ Seed `docs/product/idea.md` from `${CLAUDE_PLUGIN_ROOT}/templates/idea.md` with
 the chosen framing — problem, who pays, riskiest assumption, rough shape —
 leaving the evidence fields for validation. Then report and route:
 
-- **Fresh repo** → `/bootstrap` (it will offer the `researcher` to validate).
+- **Fresh repo** → `/agentic-workflow:bootstrap` (it will offer the `researcher` to validate).
 - **Already bootstrapped** → the `researcher` validates the framing next
   (evidence for AND against), then the human's go/no-go.
 

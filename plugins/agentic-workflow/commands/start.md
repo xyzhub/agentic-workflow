@@ -12,7 +12,7 @@ issue number or short description.
 Name the venture stage, then pick the altitude:
 - **Task** — typo/config/one-file fix with an obvious test → branch, fix, PR.
 - **Session** — one sitting of focused work → this lifecycle.
-- **Mission** — can't pre-resolve all targets in one pass → run `/mission
+- **Mission** — can't pre-resolve all targets in one pass → run `/agentic-workflow:mission
   "<goal>"` (it spawns the `planner` to author the trio, then drives it) instead
   of starting to code.
 

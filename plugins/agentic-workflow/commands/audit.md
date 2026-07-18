@@ -5,7 +5,7 @@ allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, Task]
 ---
 
 Run the pillar audit machinery (Agentic Workflow §5, adversarial multi-vote)
-outside the V4 flow — typically because `/adopt`'s gap report flagged
+outside the V4 flow — typically because `/agentic-workflow:adopt`'s gap report flagged
 hardening as unverified, before a risky launch-adjacent change, or on request.
 `$ARGUMENTS` scopes it; default `all`.
 
@@ -32,8 +32,8 @@ Assemble the combined scorecard (per-lens 0–3).
 ## 3. Route the fixes
 
 Rank findings by severity. Each gets ONE recommended route: `security` for
-hardening, the other specialists per domain, `/fix` for small items, a
-`/mission` when the fixes are bigger than a sitting. Apply the
+hardening, the other specialists per domain, `/agentic-workflow:fix` for small items, a
+`/agentic-workflow:mission` when the fixes are bigger than a sitting. Apply the
 one-corrective-retry rule to any fix session; accepted-not-fixed findings need
 the human's acceptance **in writing**.
 

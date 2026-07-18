@@ -6,11 +6,11 @@ allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, AskUserQuestion, WebFetch]
 
 Set up the owner channel (§12) interactively — the private DM the workflow uses
 to message YOU. (For **outward publishing** channels — X, LinkedIn, dev.to,
-mailing list — use `/publish connect` instead; that's the §14 pipeline, a
+mailing list — use `/agentic-workflow:publish connect` instead; that's the §14 pipeline, a
 different boundary.) **Precondition**: the project is
 bootstrapped — no `docs/WORKFLOW.md` means there is no §10 row to record the
 channel in and nothing in the machinery would ever find it; say so and point
-at `/adopt` (existing project) or `/bootstrap` (fresh) first, then stop.
+at `/agentic-workflow:adopt` (existing project) or `/agentic-workflow:bootstrap` (fresh) first, then stop.
 
 One step at a time: tell the
 human exactly what to do, wait for their "done", VERIFY it worked, then move
@@ -101,7 +101,7 @@ Reuse skips setup, never proof — the round-trip test always runs.
   buttons; Slack: polling with emoji-reaction decisions + typed fallback).
 - Add the var NAMES to `.env.example` (values never).
 - If a flight plan exists, fill its Owner channel field.
-- Leave the edits uncommitted for review; suggest `/doctor` as the ongoing
+- Leave the edits uncommitted for review; suggest `/agentic-workflow:doctor` as the ongoing
   health check for the channel.
 
 ## Output

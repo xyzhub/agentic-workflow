@@ -6,6 +6,22 @@ has no tags — each version-stamped commit on `main` IS the release.
 
 ## [Unreleased]
 ### Added
+- Onboarding UX overhaul, from real test-user feedback (didn't know what to
+  type, how to start, or why artifacts stayed empty):
+  - **`/welcome`** — one guided front door: orients, detects where the project
+    stands, then either walks the user through it (interview that *fills*
+    idea.md/PRD/etc.) or drives it hands-off — ending with filled docs and the
+    next step offered, not empty templates.
+  - **Namespaced commands everywhere** — every command reference is now the
+    resolvable `/agentic-workflow:<cmd>` form (the bare short form fails
+    headless or when shadowed). A new lint rule **fails on any bare short-form**,
+    so this can't regress.
+  - **Recommenders offer to run the next step** — `/agentic-workflow:next`,
+    `/welcome`, `/bootstrap`, and `/adopt` offer to invoke the recommended
+    command (SlashCommand) so users don't type or namespace it by hand.
+### Changed
+- `tools/lint.mjs` parses the namespaced command form and enforces it.
+### Added (earlier this cycle)
 - Context firewall (§6.2) — protects the main agent from context-window bloat
   and the fidelity loss of auto-summarization. Two rules: **bounded returns**
   (a spawned agent hands back a ≤~15-line distillate — status/paths/signal/refs,

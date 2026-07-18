@@ -11,7 +11,7 @@ fidelity**. This command's job is to make that auto-summary unnecessary: capture
 the working state in a file a **fresh session re-reads verbatim**, so nothing is
 compressed.
 
-Not `/end`: this does not commit, push, or close the session — it can run many
+Not `/agentic-workflow:end`: this does not commit, push, or close the session — it can run many
 times mid-work. Not the `remember` skill either — this is the workflow's own,
 tuned to its artifacts (ledger, decision log, plan file).
 
@@ -45,7 +45,7 @@ lossy summary. Only the human opens a new session — you prepare, they fire.
 
 Read `docs/product/session-handoff.md`, follow only the pointers you need into a
 clean read budget, and continue from **Next**. No transcript replay — the files
-are the memory. (`/start` also loads this manifest when present.)
+are the memory. (`/agentic-workflow:start` also loads this manifest when present.)
 
 ## Output
 

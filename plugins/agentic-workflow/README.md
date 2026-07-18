@@ -2,9 +2,14 @@
 
 An **agentic operating protocol** that carries any project from a raw idea to
 a launched, viable product — and keeps operating it after launch. Packaged as
-a Claude Code plugin: 17 agents, 24 commands, guardrail hooks, a protocol
+a Claude Code plugin: 17 agents, 25 commands, guardrail hooks, a protocol
 document every project carries, and an eval suite that tests the prompts
 themselves.
+
+**New here? Type `/agentic-workflow:welcome`** — one guided door that orients
+you, figures out where your project stands, and takes you all the way to filled
+project docs (guided step-by-step, or hands-off). Everything below is the map it
+walks you through.
 
 Not a dev-loop methodology: a full **venture lifecycle** with enforced gates,
 role boundaries, a permanent record, an owner channel to your phone, and a
@@ -46,12 +51,12 @@ portfolio layer for running many ventures at once.
 
 | You have | Run | What happens |
 |---|---|---|
-| A raw idea | `/autopilot "<idea>"` | Drives V0→V5 hands-off; pauses only at the gates you must own |
-| An existing project | `/adopt` | Bootstraps the profile, folds in your plans, hands you a gap report |
-| Neither / lost | `/next` | Reads the repo, recommends exactly ONE next command |
+| A raw idea | `/agentic-workflow:autopilot "<idea>"` | Drives V0→V5 hands-off; pauses only at the gates you must own |
+| An existing project | `/agentic-workflow:adopt` | Bootstraps the profile, folds in your plans, hands you a gap report |
+| Neither / lost | `/agentic-workflow:next` | Reads the repo, recommends exactly ONE next command |
 
-Then the daily loop is just: `/start` → build → `/end` → PR → you merge.
-`/fix` for small things, `/mission "<goal>"` for big ones, `/next` whenever
+Then the daily loop is just: `/agentic-workflow:start` → build → `/agentic-workflow:end` → PR → you merge.
+`/agentic-workflow:fix` for small things, `/agentic-workflow:mission "<goal>"` for big ones, `/agentic-workflow:next` whenever
 you're unsure. Every adopted project carries a one-screen **Quick reference**
 at the top of its `docs/WORKFLOW.md`.
 
@@ -78,7 +83,7 @@ as what it does.
 | `architect` | V1, missions | Shape-before-build option memos (stack, data model: 2–3 options, tradeoffs, reversal cost); digests technical open questions | Implements; sets scope; verifies |
 | `business` | V1, V4–V5, V6 | Business model, pricing, executive summary — proposes with evidence and the case against | Sets live prices; spends; signs up for services |
 | `planner` | Missions | Decomposes a decided mission into the `.plans/` trio; explores once so execution sessions never do | Decides scope; executes |
-| `advisor` | Human gates | Decision red-team via `/counsel` — lens-partitioned (technical/market/financial/behavioral), argues the strongest case AGAINST | Decides; blocks; edits the artifacts it critiques |
+| `advisor` | Human gates | Decision red-team via `/agentic-workflow:counsel` — lens-partitioned (technical/market/financial/behavioral), argues the strongest case AGAINST | Decides; blocks; edits the artifacts it critiques |
 | `marketing` | V5–V6 | Positioning, landing copy, per-channel announcements, content plan — every claim traces to shipped behavior | Publishes, posts, or sends anything |
 | `ops` | V6 | Error/cost triage ranked by user impact, runbook truth, postmortems → ranked mission candidates | Mutates production (read-only against prod) |
 | `analyst` | V3+ | Tracking plan; cited numbers for funnel/economics/audits; behavioral hypotheses with the cheapest test each | Invents a number (unmeasured stays "unmeasured"); edits code |
@@ -91,7 +96,7 @@ as what it does.
 | `devops` | V2, V5 | CI/CD, deploy config, releases, rollback — prepares the path to production | Fires irreversible deploys or merges |
 
 Model tiering: `chronicler`, `analyst`, and `writer` default to a mid-tier
-model (the Efficiency pillar applied to the plugin itself); `/tune` overrides
+model (the Efficiency pillar applied to the plugin itself); `/agentic-workflow:tune` overrides
 any agent's model per project, reversibly.
 
 ## The commands
@@ -100,45 +105,46 @@ any agent's model per project, reversibly.
 
 | Command | Does |
 |---|---|
-| `/brainstorm` | Shape a raw, fuzzy idea into a chosen direction: light interview → the brainstormer drafts distinct framings → you pick one → seeds `idea.md` for the researcher to validate |
-| `/bootstrap` | Detect the stack, write `docs/WORKFLOW.md` with a filled §10 profile, seed the records |
-| `/adopt` | One-command adoption of an existing project: bootstrap + convert existing plans into mission trios (decisions arrive locked) + stage-gap report; portfolio registration always runs; `fill` also drafts missing product docs |
-| `/autopilot` | Drive an idea (or an existing repo — it adopts first) to launch-ready from a one-page flight plan, pausing only at human gates |
-| `/next` | Zero-knowledge router: reads the repo, returns exactly one copy-pasteable command with real values |
+| `/agentic-workflow:welcome` | 👋 **Start here.** One guided door: orients you, detects where the project stands, then walks you through it or drives it hands-off — filling the real docs as you go |
+| `/agentic-workflow:brainstorm` | Shape a raw, fuzzy idea into a chosen direction: light interview → the brainstormer drafts distinct framings → you pick one → seeds `idea.md` for the researcher to validate |
+| `/agentic-workflow:bootstrap` | Detect the stack, write `docs/WORKFLOW.md` with a filled §10 profile, seed the records |
+| `/agentic-workflow:adopt` | One-command adoption of an existing project: bootstrap + convert existing plans into mission trios (decisions arrive locked) + stage-gap report; portfolio registration always runs; `fill` also drafts missing product docs |
+| `/agentic-workflow:autopilot` | Drive an idea (or an existing repo — it adopts first) to launch-ready from a one-page flight plan, pausing only at human gates |
+| `/agentic-workflow:next` | Zero-knowledge router: reads the repo, returns exactly one copy-pasteable command with real values |
 
 **Daily loop**
 
 | Command | Does |
 |---|---|
-| `/start` | Open a session: name the stage, route the altitude, branch, load context |
-| `/end` | Close cleanly: gates green, commit, chronicler updates the record, push, hand off |
-| `/pr` | Run every gate (tests, lint, build, docs, live verification), then push and open the PR |
-| `/fix` | Task-altitude fast path for a small isolated fix |
-| `/check` | Traffic-light health check: branch, commits, ledger, stage, protocol drift |
-| `/handoff` | Snapshot the live session's working state to a re-read manifest so a fresh agent continues without the diluting auto-summary (§6.2) — mid-session, git-independent, pointers not corpora |
+| `/agentic-workflow:start` | Open a session: name the stage, route the altitude, branch, load context |
+| `/agentic-workflow:end` | Close cleanly: gates green, commit, chronicler updates the record, push, hand off |
+| `/agentic-workflow:pr` | Run every gate (tests, lint, build, docs, live verification), then push and open the PR |
+| `/agentic-workflow:fix` | Task-altitude fast path for a small isolated fix |
+| `/agentic-workflow:check` | Traffic-light health check: branch, commits, ledger, stage, protocol drift |
+| `/agentic-workflow:handoff` | Snapshot the live session's working state to a re-read manifest so a fresh agent continues without the diluting auto-summary (§6.2) — mid-session, git-independent, pointers not corpora |
 
 **Scale & gates**
 
 | Command | Does |
 |---|---|
-| `/plan` | Feature front door: interactive interview → the team drafts brief/journeys/memos/metrics → counsel → ONE approval → the planner's trio, ready to run |
-| `/mission` | Plan + drive multi-session work: the planner authors a `.plans/` trio (master plan · session briefs · ledger), then phases execute with independent checkpoint reviews; `continue` resumes from the ledger, `replan` reconciles it with reality; loop-drivable |
-| `/counsel` | Convene 2–3 lens-partitioned advisors on a pending decision → one-page brief in the decision log |
-| `/audit` | The V4 adversarial multi-vote on demand: lens-partitioned fresh reviewers, conservative merge, findings ranked and routed |
-| `/release` | Cut a version on a release branch: changelog, PR, and the post-merge tag commands — the human fires them |
-| `/verify` | Post-deploy verification on the deployed instance: drive the real flow, confirm monitoring receives, record the result |
-| `/operate` | The V6 loop: analyst numbers → ops/marketing/business reviews → one report with a ranked backlog; in a registry repo it sweeps the whole portfolio |
-| `/publish` | The §14 publishing pipeline: connect channels, stage posts into the queue (marketing/writer), then fire — human-fired by default, or a scheduled run within a scoped, revocable `may-publish` delegation; paid always human-fired |
-| `/retro` | Turn lessons into protocol amendments, eval scenarios, hook proposals — via PR like any change |
+| `/agentic-workflow:plan` | Feature front door: interactive interview → the team drafts brief/journeys/memos/metrics → counsel → ONE approval → the planner's trio, ready to run |
+| `/agentic-workflow:mission` | Plan + drive multi-session work: the planner authors a `.plans/` trio (master plan · session briefs · ledger), then phases execute with independent checkpoint reviews; `continue` resumes from the ledger, `replan` reconciles it with reality; loop-drivable |
+| `/agentic-workflow:counsel` | Convene 2–3 lens-partitioned advisors on a pending decision → one-page brief in the decision log |
+| `/agentic-workflow:audit` | The V4 adversarial multi-vote on demand: lens-partitioned fresh reviewers, conservative merge, findings ranked and routed |
+| `/agentic-workflow:release` | Cut a version on a release branch: changelog, PR, and the post-merge tag commands — the human fires them |
+| `/agentic-workflow:verify` | Post-deploy verification on the deployed instance: drive the real flow, confirm monitoring receives, record the result |
+| `/agentic-workflow:operate` | The V6 loop: analyst numbers → ops/marketing/business reviews → one report with a ranked backlog; in a registry repo it sweeps the whole portfolio |
+| `/agentic-workflow:publish` | The §14 publishing pipeline: connect channels, stage posts into the queue (marketing/writer), then fire — human-fired by default, or a scheduled run within a scoped, revocable `may-publish` delegation; paid always human-fired |
+| `/agentic-workflow:retro` | Turn lessons into protocol amendments, eval scenarios, hook proposals — via PR like any change |
 
 **Machinery**
 
 | Command | Does |
 |---|---|
-| `/doctor` | Machinery diagnosis: environment tools (codegraph, ripgrep, jq, gh), §10 truthfulness (rows must RESOLVE), records, orphaned ledgers; `fix` installs missing dev tools and repairs provably-wrong rows |
-| `/tune` | Upgrade an underperforming agent's model per project (shadow copy in `.claude/agents/`); `reset` restores the default |
-| `/connect` | Interactive owner-channel setup (Telegram or Slack): guided steps, auto-discovered IDs, a proven round-trip test |
-| `/sync` | Upgrade a project's protocol copy to the installed master — §10 and Local amendments preserved verbatim, new profile rows reconciled |
+| `/agentic-workflow:doctor` | Machinery diagnosis: environment tools (codegraph, ripgrep, jq, gh), §10 truthfulness (rows must RESOLVE), records, orphaned ledgers; `fix` installs missing dev tools and repairs provably-wrong rows |
+| `/agentic-workflow:tune` | Upgrade an underperforming agent's model per project (shadow copy in `.claude/agents/`); `reset` restores the default |
+| `/agentic-workflow:connect` | Interactive owner-channel setup (Telegram or Slack): guided steps, auto-discovered IDs, a proven round-trip test |
+| `/agentic-workflow:sync` | Upgrade a project's protocol copy to the installed master — §10 and Local amendments preserved verbatim, new profile rows reconciled |
 
 ## What an adopted project carries
 
@@ -157,7 +163,7 @@ CHANGELOG.md                # Keep-a-Changelog, chronicler-maintained
 
 ## The owner channel
 
-A private Telegram or Slack DM (set up in minutes with `/connect`):
+A private Telegram or Slack DM (set up in minutes with `/agentic-workflow:connect`):
 **outbound** gate/alert/digest notifications — never routine progress;
 **inbound** tap-to-decide — Telegram inline buttons or Slack emoji reactions
 on the gate message, nonce-bound, identity-pinned, single-use, fail-closed.
@@ -169,7 +175,7 @@ decision lands in the decision log.
 
 One owner, many ventures (§13): a **registry repo** — files + git, never a
 database — holds one row per venture, a portfolio ledger, cross-venture
-precedent pointers, and a portfolio status page. `/operate` run there sweeps
+precedent pointers, and a portfolio status page. `/agentic-workflow:operate` run there sweeps
 every venture into one report with a single ranked backlog. Registry
 bookkeeping merges are the ONE delegable merge scope (owner-granted, recorded,
 hook-enforced); everything else stays human.
@@ -193,16 +199,16 @@ fire.** Autopilot batches these into the fewest, best-informed confirmations.
 
 The bundled protocol (`templates/WORKFLOW.md`) carries a **Project Profile
 (§10)** placeholder — gates, deploy, HITL, merge policy, owner channel,
-portfolio. `/bootstrap` fills it per project; the local copy wins over the
-bundled master. The copy carries a version stamp; `/check` flags drift and
-`/sync` upgrades it while preserving everything project-owned. Nothing about
+portfolio. `/agentic-workflow:bootstrap` fills it per project; the local copy wins over the
+bundled master. The copy carries a version stamp; `/agentic-workflow:check` flags drift and
+`/agentic-workflow:sync` upgrades it while preserving everything project-owned. Nothing about
 any one stack is baked in.
 
 ## Loop-drivable by design
 
 The ledger is the state, so long work runs as recurring fresh-context ticks:
 `/loop /mission "<name>" continue`, `/loop /autopilot continue`, or a weekly
-scheduled agent running `/operate`. One brief or stage boundary per tick — no
+scheduled agent running `/agentic-workflow:operate`. One brief or stage boundary per tick — no
 transcript bloat, crash-safe by construction, gates reaching your phone
 instead of blocking silently.
 
@@ -213,8 +219,8 @@ instead of blocking silently.
 /plugin install agentic-workflow@xyz
 ```
 
-Then in any project: `/adopt` (existing), `/bootstrap` (fresh), or
-`/autopilot "<idea>"` (hands-off). Try locally first:
+Then in any project: `/agentic-workflow:adopt` (existing), `/agentic-workflow:bootstrap` (fresh), or
+`/agentic-workflow:autopilot "<idea>"` (hands-off). Try locally first:
 
 ```
 claude --plugin-dir ./plugins/agentic-workflow
