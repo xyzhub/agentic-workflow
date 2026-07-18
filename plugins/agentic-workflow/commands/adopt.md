@@ -1,11 +1,11 @@
 ---
 description: Adopt the Agentic Workflow in an existing project with one command — bootstrap the profile and records, convert existing plans into the trio, and produce a stage-gap adaptation report with recommended next actions. Optional fill mode drafts the missing document deliverables.
 argument-hint: [stage e.g. V3|V6] [fill]
-allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, Task, Artifact]
+allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, Task, Artifact, AskUserQuestion, SlashCommand]
 ---
 
 One-command onboarding for an EXISTING project (for a brand-new idea, use
-`/autopilot` or `/bootstrap` at V0; `/autopilot` on an existing repo runs
+`/agentic-workflow:autopilot` or `/agentic-workflow:bootstrap` at V0; `/agentic-workflow:autopilot` on an existing repo runs
 THIS procedure first, then drives the remaining stages). Auto-adapt as far as
 facts allow,
 never block on an unknown (`TBD — confirm` and continue), and end with one
@@ -13,7 +13,7 @@ consolidated report instead of a stream of questions.
 
 ## 1. Bootstrap
 
-Run the `/bootstrap` procedure: detect the project profile, write
+Run the `/agentic-workflow:bootstrap` procedure: detect the project profile, write
 `docs/WORKFLOW.md` with §10 filled, seed the record artifacts (CHANGELOG —
 reconstructed from git history via the `chronicler` — JOURNEY, status page).
 Use the `$ARGUMENTS` stage if given, else infer from repo maturity. Skip
@@ -24,7 +24,7 @@ whatever already exists (idempotent). The **Merge policy** row stays
 ## 1.5 Portfolio registration (§13) — ALWAYS runs
 
 This step is exempt from step 1's idempotency skip: an already-adopted
-project re-running `/adopt` (or freshly `/sync`ed) still gets asked. Check
+project re-running `/agentic-workflow:adopt` (or freshly `/agentic-workflow:sync`ed) still gets asked. Check
 BOTH sides independently and repair whichever is missing:
 
 - §10 has no **Portfolio** row (or `none`) → ask whether this venture belongs
@@ -40,7 +40,7 @@ No portfolio → `none`, move on.
 
 Look for what the project already uses and fold it in rather than duplicating:
 
-- **A `.plans/` trio** → note it as a resumable mission (`/mission <name>
+- **A `.plans/` trio** → note it as a resumable mission (`/agentic-workflow:mission <name>
   continue`), and recommend `replan` if the ledger has drifted from git.
 - **Loose planning docs** (PLAN.md, TODO.md, ROADMAP.md, `docs/*plan*`, open
   milestone docs) → list them; for the one that looks actively driven, spawn
@@ -64,7 +64,7 @@ basics every stage inherits, checking mechanically where possible:
   pillar audits' artifacts, monitoring, rollback story, launch assets
   (`docs/product/launch/`), business docs (`docs/product/business/`).
 
-## 4. Fill mode (opt-in: `/adopt fill`)
+## 4. Fill mode (opt-in: `/agentic-workflow:adopt fill`)
 
 Without `fill`, deliverable gaps are only reported (step 5). With it, after
 the audit, spawn the doc agents for the **document deliverables** the audit
@@ -88,11 +88,13 @@ go through missions/sessions with review, and the report says which.
 One consolidated report: detected stage and profile; what was created vs
 already present; converted/resumable plans; then the gap table —
 green/yellow/red per item, each red/yellow row carrying the ONE recommended
-next action (`/mission "adopt-hardening"`, "spawn `business` for model +
-pricing", `/fix` for small ones). Rank by risk, not by category. In
+next action (`/agentic-workflow:mission "adopt-hardening"`, "spawn `business` for model +
+pricing", `/agentic-workflow:fix` for small ones). Rank by risk, not by category. In
 fill mode, drafted deliverables appear as "drafted — review in this order,
 decisions pending" rather than gaps.
 
 Do NOT commit — leave everything staged for the human to review (HITL rule),
 with the report as the review guide. Recommend the single best next command
-to run, and note that `/next` re-answers that question any time.
+to run and **offer to run it** for them (AskUserQuestion → SlashCommand) unless
+it's a human-only gate; note that `/agentic-workflow:next` re-answers that
+question any time.

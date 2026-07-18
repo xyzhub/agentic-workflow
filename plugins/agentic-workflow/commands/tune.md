@@ -14,9 +14,9 @@ harness change, §8) and reversal is deletion.
 One row per plugin agent (`${CLAUDE_PLUGIN_ROOT}/agents/*.md`): agent ·
 default model (`model:` from the plugin file, else `inherit`) · active
 override (from `.claude/agents/`, if any) · stamp version. Close with the two
-one-liners: `/tune <agent> <model>` and `/tune <agent> reset`.
+one-liners: `/agentic-workflow:tune <agent> <model>` and `/agentic-workflow:tune <agent> reset`.
 
-## `/tune <agent> <model>` — upgrade (or downgrade)
+## `/agentic-workflow:tune <agent> <model>` — upgrade (or downgrade)
 
 1. Validate: the agent exists in the plugin; the model is a known alias
    (`opus` / `sonnet` / `haiku` / `inherit`) or a full model id.
@@ -32,7 +32,7 @@ one-liners: `/tune <agent> <model>` and `/tune <agent> reset`.
    the override; during autopilot, also record the change in `decision-log.md`
    (a stronger model is a per-token cost change — the owner should see it).
 
-## `/tune <agent> reset` — back to default
+## `/agentic-workflow:tune <agent> reset` — back to default
 
 If `.claude/agents/<agent>.md` carries the tuned banner → delete it; the
 plugin default takes over on the agent's next run. If the file exists WITHOUT the banner

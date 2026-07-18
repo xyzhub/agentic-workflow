@@ -18,7 +18,7 @@ single cross-venture ranked backlog — this week's mission goes where? Update
 the registry rows (`last /operate`, stage), the portfolio ledger, and the
 portfolio status page (seed `overview.html` on the first run), then send the
 digest (§12). A venture needing its own deep cycle gets a one-line route:
-run `/operate` there.
+run `/agentic-workflow:operate` there.
 Each run is self-contained and compares against the previous cycle's report —
 the natural setup is a **scheduled agent (weekly)** invoking this command, so
 the owner reads reports instead of remembering to ask for them.
@@ -37,8 +37,11 @@ experiment for each — experiments are proposed to the human, never launched
 
 - **`ops`** — error/monitoring triage ranked by user impact, runbook
   truthfulness, infra-cost drift.
-- **`marketing`** — funnel review against the launch metrics, content-plan
-  currency, channel-experiment candidates.
+- **`marketing`** — funnel review against the launch metrics (joined to the
+  publish log, §14, for per-post attribution), content-plan currency,
+  channel-experiment candidates, and **staging** due content into the publish
+  queue (`/agentic-workflow:publish stage`) — never firing it; posting stays gated by the §10
+  Publish policy.
 - **`business`** — unit-economics drift, pricing-experiment candidates,
   executive-summary refresh if the picture changed.
 
@@ -49,7 +52,7 @@ experiment for each — experiments are proposed to the human, never launched
 - **Growth**: funnel vs. launch metrics, what moved and why we think so.
 - **Economics**: cost and margin drift against the business model.
 - **Ranked backlog**: every finding shaped as a runnable next step — a
-  `/mission "<name>"` for big items, a session, or `/fix` — with
+  `/agentic-workflow:mission "<name>"` for big items, a session, or `/agentic-workflow:fix` — with
   acceptance criteria sketched. Rank by user impact and risk across ALL
   categories, not per-category.
 - **Owner action items**: the human-only moves (merges, spend, publishing).
@@ -58,7 +61,7 @@ experiment for each — experiments are proposed to the human, never launched
 
 Spawn the `chronicler` (JOURNEY entry + status page data regions), then
 republish the status page via the Artifact tool to its recorded URL. The
-next `/operate` compares against this cycle — the report is the baseline.
+next `/agentic-workflow:operate` compares against this cycle — the report is the baseline.
 When an owner channel is configured (§12): send the **digest** (≤3 lines +
 status-page link), and a separate **alert** for any user-impacting incident —
 also check `.plans/pending-gates.md` against the channel for decisions taken

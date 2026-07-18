@@ -7,10 +7,10 @@ allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, Task, AskUserQuestion, Arti
 Plan the feature in `$ARGUMENTS` end to end — the full proper path (define →
 journeys → shape decisions → red-team → decompose) with the human as
 INTERVIEWEE and approver, never as author. **Precondition**: the project is
-bootstrapped (`docs/WORKFLOW.md` exists); otherwise point at `/adopt` or
-`/bootstrap` and stop. Route check first: if the feature is plainly
-one-sitting-sized, say so and recommend `/start` (or `/fix`) instead of this
-machinery — `/plan` is for mission-class features.
+bootstrapped (`docs/WORKFLOW.md` exists); otherwise point at `/agentic-workflow:adopt` or
+`/agentic-workflow:bootstrap` and stop. Route check first: if the feature is plainly
+one-sitting-sized, say so and recommend `/agentic-workflow:start` (or `/agentic-workflow:fix`) instead of this
+machinery — `/agentic-workflow:plan` is for mission-class features.
 
 ## 1. The interview (the only typing the human does)
 
@@ -44,7 +44,7 @@ then spawn in parallel:
 - `analyst` — how success is measured: events to add, the baseline, the
   number that says "done" per the interview's success definition.
 
-Then convene the `/counsel` procedure on the consolidated proposal — 2–3
+Then convene the `/agentic-workflow:counsel` procedure on the consolidated proposal — 2–3
 `advisor` instances (technical + financial; behavioral when engagement-
 critical), strongest case against, one-page brief.
 
@@ -69,8 +69,8 @@ and republish via the Artifact tool (§6.1 board-currency).
 ## 5. Hand off — or fire
 
 Report: the trio's phase map, session count, locked decisions, and counsel's
-verdict. Then ask ONE last question: start now? Yes → run `/mission
-"<feature>" run` (SlashCommand); later → the ledger's `Next up:` and `/next`
+verdict. Then ask ONE last question: start now? Yes → run `/agentic-workflow:mission
+"<feature>" run` (SlashCommand); later → the ledger's `Next up:` and `/agentic-workflow:next`
 both point at it.
 
 ## Boundaries
@@ -78,5 +78,5 @@ both point at it.
 The human is interviewed and approves — never drafts. All the standing rules
 apply unchanged: stop-the-line (the brief IS the acceptance criteria),
 architect memos for shape decisions, counsel before commitment, dated locks,
-the planner's read budgets. `/plan` produces a plan; it never builds,
+the planner's read budgets. `/agentic-workflow:plan` produces a plan; it never builds,
 merges, or deploys.

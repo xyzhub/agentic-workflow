@@ -1,12 +1,12 @@
 # The Workflow — one agentic protocol from idea to viable product
 
 > **This is the bundled master protocol** shipped by the Agentic Workflow plugin.
-> When a project has its own `docs/WORKFLOW.md` (written by `/bootstrap`),
+> When a project has its own `docs/WORKFLOW.md` (written by `/agentic-workflow:bootstrap`),
 > THAT copy wins — it carries the project profile (§10) and any local amendments.
-> This master is the fallback and the thing `/bootstrap` copies from.
-> When copying, `/bootstrap` replaces this banner with a version stamp
+> This master is the fallback and the thing `/agentic-workflow:bootstrap` copies from.
+> When copying, `/agentic-workflow:bootstrap` replaces this banner with a version stamp
 > (`<!-- protocol-master: vX.Y.Z -->`, from the plugin's manifest) that
-> `/check` compares against the installed plugin to detect protocol
+> `/agentic-workflow:check` compares against the installed plugin to detect protocol
 > drift. Keep project-specific edits in the **Local amendments** section at the
 > end so upgrades stay mechanical.
 
@@ -16,15 +16,17 @@
 
 | You have | Run |
 |---|---|
-| A raw idea | `/autopilot "<idea>"` — hands-off; or `/bootstrap` to go stage by stage |
-| An existing project | `/adopt` (add `fill` to also draft missing docs) |
-| No idea what's next | `/next` — always safe, recommends exactly one command |
+| **Just installed / not sure where to start** | **`/agentic-workflow:welcome`** — the one guided door: orients you, then guides or auto-drives, filling the docs |
+| A fuzzy idea, not yet a clear problem | `/agentic-workflow:brainstorm "<itch>"` — shapes it into framings to choose from |
+| A raw idea | `/agentic-workflow:autopilot "<idea>"` — hands-off; or `/agentic-workflow:bootstrap` to go stage by stage |
+| An existing project | `/agentic-workflow:adopt` (add `fill` to also draft missing docs) |
+| No idea what's next | `/agentic-workflow:next` — always safe, recommends exactly one command |
 
-**The daily loop**: `/start` → build → `/end` → PR → human merges.
-Small isolated fix → `/fix`. Bigger than one sitting → `/mission "<goal>"`.
+**The daily loop**: `/agentic-workflow:start` → build → `/agentic-workflow:end` → PR → human merges.
+Small isolated fix → `/agentic-workflow:fix`. Bigger than one sitting → `/agentic-workflow:mission "<goal>"`.
 Long missions and autopilot are **loop-friendly**: drive them with a recurring
 `/loop … continue` or a scheduled agent — each tick resumes from files with a
-fresh context. Once live, schedule `/operate` weekly.
+fresh context. Once live, schedule `/agentic-workflow:operate` weekly.
 
 **Stages at a glance**: V0 validate → V1 define → V2 foundation → V3 build →
 V4 harden → V5 launch → V6 operate.
@@ -33,19 +35,19 @@ V4 harden → V5 launch → V6 operate.
 
 | Moment | Command |
 |---|---|
-| A big feature idea | `/plan "<feature>"` — interviewed, drafted by the team, counseled, decomposed |
-| Before a big human decision | `/counsel "<decision>"` |
-| "Is this production-ready?" | `/audit` |
-| Cutting a version | `/release` |
-| Just deployed | `/verify` |
-| Weekly, once live | `/operate` |
-| Health check / feeling stuck | `/check`, then `/next` |
-| Something feels broken (tools, profile, hooks) | `/doctor` — add `fix` to install missing tools |
-| An agent keeps underperforming | `/tune <agent> opus` — back: `/tune <agent> reset` |
-| Away from the terminal | gates ping your owner channel — tap Approve/Reject (§12; set up: `/connect`) |
-| Several ventures, one owner | a registry repo; `/operate` run there sweeps them all (§13) |
-| Protocol copy out of date | `/sync` |
-| After a mission or incident | `/retro` |
+| A big feature idea | `/agentic-workflow:plan "<feature>"` — interviewed, drafted by the team, counseled, decomposed |
+| Before a big human decision | `/agentic-workflow:counsel "<decision>"` |
+| "Is this production-ready?" | `/agentic-workflow:audit` |
+| Cutting a version | `/agentic-workflow:release` |
+| Just deployed | `/agentic-workflow:verify` |
+| Weekly, once live | `/agentic-workflow:operate` |
+| Health check / feeling stuck | `/agentic-workflow:check`, then `/agentic-workflow:next` |
+| Something feels broken (tools, profile, hooks) | `/agentic-workflow:doctor` — add `fix` to install missing tools |
+| An agent keeps underperforming | `/agentic-workflow:tune <agent> opus` — back: `/agentic-workflow:tune <agent> reset` |
+| Away from the terminal | gates ping your owner channel — tap Approve/Reject (§12; set up: `/agentic-workflow:connect`) |
+| Several ventures, one owner | a registry repo; `/agentic-workflow:operate` run there sweeps them all (§13) |
+| Protocol copy out of date | `/agentic-workflow:sync` |
+| After a mission or incident | `/agentic-workflow:retro` |
 
 **You (the human) always own**: merges to the default branch (unless §10
 delegates them), production deploys, spending, outward publishing, user
@@ -74,13 +76,13 @@ gate is a logged deviation, not a shortcut.
 
 | Stage | Produces | Exit gate |
 |---|---|---|
-| **V0 Idea & validation** | `docs/product/idea.md`: problem, who pays, why now, riskiest assumption, kill criteria, cheapest test of the assumption — informed by the `researcher` agent (evidence for AND against) | **Human go/no-go.** No code before this exists — an unvalidated idea is cheapest to kill in prose |
-| **V1 Definition** | PRD + MVP scope (what's deliberately OUT); user journeys with acceptance criteria and brand/UX directions from the `designer` agent (it owns journeys and IA as well as brand) for the owner to choose; data-model sketch + stack decision as option memos from the `architect` agent (`docs/product/decisions/`); business model + pricing proposal from the `business` agent (`docs/product/business/`) — the model shapes scope and the data model | Stop-the-line: no implementation without acceptance criteria. **Human approves scope** (with the business model and the brand direction; `/counsel` convenes the advisor red-team on the approval first) |
+| **V0 Idea & validation** | `docs/product/idea.md`: problem, who pays, why now, riskiest assumption, kill criteria, cheapest test of the assumption. When the idea is still raw, the `brainstormer` agent shapes it first — 2–3 distinct framings for the human to choose between (`/agentic-workflow:brainstorm`) — then the `researcher` agent validates the chosen one (evidence for AND against) | **Human go/no-go.** No code before this exists — an unvalidated idea is cheapest to kill in prose |
+| **V1 Definition** | PRD + MVP scope (what's deliberately OUT); the **UX brief** (personas, user journeys with acceptance criteria, IA) and brand/UX directions from the `designer` agent (`docs/product/ux-brief.md`) for the owner to choose; data-model sketch + stack decision as option memos from the `architect` agent (`docs/product/decisions/`), consolidated into the living **system architecture** doc and the frontend/backend **interface contract** the implementers build from; business model + pricing proposal from the `business` agent (`docs/product/business/`) — the model shapes scope and the data model | Stop-the-line: no implementation without acceptance criteria. **Human approves scope** (with the business model and the brand direction; `/agentic-workflow:counsel` convenes the advisor red-team on the approval first) |
 | **V2 Foundation** | Deployable skeleton (`devops` lays CI + deploy): repo + CI gates (test/typecheck), deploy pipeline + health/ready checks, validated env with a **fail-closed production guard**, auth decision wired, error-monitoring hook, seed/reset path, README quickstart, chosen design system as tokens | "Hello world" **deployed and live-verified**; CI green. Security and DX are laid here — retrofitting costs 10× |
 | **V3 Build (MVP)** | The product, feature by feature, via the execution machinery (§1–§5). Every checkpoint applies the pillar lenses | All MVP acceptance criteria met; behavioral/eval suite exists for AI-driven products |
-| **V4 Hardening** | Four explicit audits (§0.2): security review, UX pass (incl. the `designer`'s heuristic usability evaluation), DX pass, efficiency pass — plus ops readiness (backups, monitoring, runbook, guard coverage). Audits run as an **adversarial multi-vote** (§5): lens-partitioned parallel reviewers, conservative merge — standalone via `/audit` at any stage | Reviewer-verified production-readiness checklist (full six-lens scorecard); findings fixed or accepted in writing |
-| **V5 Launch** | Production deploy (`devops` prepares, `/release` cuts the version), first-user onboarding, **live end-to-end verification on the deployed instance**, monitoring confirmed receiving events, rollback tested; launch assets from the `marketing` agent under `docs/product/launch/` (one file per deliverable: positioning, landing copy, per-channel announcements, post-launch content plan, indexed by `launch-plan.md` with the channel plan) — **the human publishes**; pricing finalized against measured costs and the executive summary refreshed (`business`) | Pre-launch **multi-vote review** (§5) green; first real user/business served. **Human owns the launch decision** |
-| **V6 Operate & evolve** | Growth is *users and features*: the `/operate` loop — measured numbers from the `analyst`, error/cost triage from `ops`, funnel/channel review against the launch metrics (`marketing`), economics drift (`business`) — beside feedback → ranked feature ideas → user-reviewed → growth missions (phased trio with locked decisions); retros that amend THIS document | Continuous — each growth mission re-cycles V3–V5 gates |
+| **V4 Hardening** | Four explicit audits (§0.2): security review, UX pass (incl. the `designer`'s heuristic usability evaluation), DX pass, efficiency pass — plus ops readiness (backups, monitoring, runbook, guard coverage). Audits run as an **adversarial multi-vote** (§5): lens-partitioned parallel reviewers, conservative merge — standalone via `/agentic-workflow:audit` at any stage | Reviewer-verified production-readiness checklist (full six-lens scorecard); findings fixed or accepted in writing |
+| **V5 Launch** | Production deploy (`devops` prepares, `/agentic-workflow:release` cuts the version), first-user onboarding, **live end-to-end verification on the deployed instance**, monitoring confirmed receiving events, rollback tested; launch assets from the `marketing` agent under `docs/product/launch/` (one file per deliverable: positioning, landing copy, per-channel announcements, post-launch content plan, indexed by `launch-plan.md` with the channel plan) — **the human publishes**; pricing finalized against measured costs and the executive summary refreshed (`business`) | Pre-launch **multi-vote review** (§5) green; first real user/business served. **Human owns the launch decision** |
+| **V6 Operate & evolve** | Growth is *users and features*: the `/agentic-workflow:operate` loop — measured numbers from the `analyst`, error/cost triage from `ops`, funnel/channel review against the launch metrics (`marketing`), economics drift (`business`) — beside feedback → ranked feature ideas → user-reviewed → growth missions (phased trio with locked decisions); retros that amend THIS document | Continuous — each growth mission re-cycles V3–V5 gates |
 
 A stage may be revisited (a pivot reopens V0/V1; a big growth mission re-runs V4
 before its launch). The stages sequence the *product*; the altitudes (§1)
@@ -161,7 +163,7 @@ Escalating mid-flight is fine (log it); silently sprawling is not.
 2. **Ingest conclusions, not corpora.** Delegate high-volume reading to subagents
    that return distilled results. Budget ≤30% of the context window per session
    (~1,500 lines of reads); grep-first ranged reads for files >400 lines
-   (Bash-side searches prefer `rg` when present — `/doctor fix` installs it).
+   (Bash-side searches prefer `rg` when present — `/agentic-workflow:doctor fix` installs it).
 3. **Retrieval-first.** If a code index exists (§10 records how to query it),
    use it before grep + whole-file reads for where/what/blast-radius questions.
    Agents whose toolset lacks the index's MCP tools use its CLI via Bash — the
@@ -188,7 +190,7 @@ Shipped by this plugin as hooks. Advisory except where marked:
 | `git commit` | Conventional-format reminder |
 | `git push` | **BLOCKS** any push while on the default branch (feature branches only) |
 | `git push` | **BLOCKS** any refspec targeting the default branch (`HEAD:main`, `feature:main`, `:main`) — never sanctioned, even with delegated merge authority |
-| `git push --tags` / `--follow-tags` | Warns that tag pushes may fire a release/deploy pipeline — per `/release`, the human runs them |
+| `git push --tags` / `--follow-tags` | Warns that tag pushes may fire a release/deploy pipeline — per `/agentic-workflow:release`, the human runs them |
 | `git push` | Warns when tracked files are modified-but-uncommitted (untracked scratch dirs don't warn) |
 | `gh pr merge` | **BLOCKS** unless the §10 **Merge policy** is `agent-may-merge` (fail closed when unset/absent); when delegated, reminds: merge only on a reviewer APPROVE |
 | `gh pr create` | Reminder to have run the gates |
@@ -220,7 +222,9 @@ owner status page); **never merge the default branch yourself** — HITL merges
 **Context discipline** — at ~25% usage, finish the current edit to a compiling
 state, verify, write the handoff, end. A clean half-session beats a degraded full
 one. Finished early (<15%)? Pull the next same-phase brief (checkpoints always
-end a session).
+end a session). For a long *interactive* session with no natural session end,
+`/agentic-workflow:handoff` writes a fresh-self re-read manifest so the reset stays lossless
+(§6.2) — never lean on the auto-summary.
 
 ## 5. Mission lifecycle (multi-session work)
 
@@ -247,7 +251,7 @@ to the human.
   long-lived `mission/<name>-integration` branch — **never the default branch**,
   so the push-block guardrail (§3) and the merge authority (§11 safety boundary)
   stay intact — and HITL merges the integration branch once, at the batched
-  end-of-mission (or launch) confirmation. Used by `/autopilot` when the flight
+  end-of-mission (or launch) confirmation. Used by `/agentic-workflow:autopilot` when the flight
   plan says "only stop at hard gates".
 
 **Checkpoints** end every phase: the independent `reviewer` agent (fresh context)
@@ -271,13 +275,13 @@ this is where review cost is spent deliberately, not everywhere.
 FRESH context that reads the ledger, executes exactly one brief or checkpoint,
 writes the handoff, and ends. Context never bloats across phases, a crashed
 tick loses nothing, and the human can stop the loop at any gate. The same
-applies to `/autopilot continue` at venture scale (§11).
+applies to `/agentic-workflow:autopilot continue` at venture scale (§11).
 
-The trio is authored by the `planner` agent and driven by the bundled `/mission`
+The trio is authored by the `planner` agent and driven by the bundled `/agentic-workflow:mission`
 command (plan · run · continue · replan). Technical open questions may be routed
 through the `architect` for an options memo before they reach the human — the
 human still decides. The `planner` explores once and
-pre-resolves every brief's targets; `/mission` orchestrates execution phase by
+pre-resolves every brief's targets; `/agentic-workflow:mission` orchestrates execution phase by
 phase, spawning specialist implementers per brief and the `reviewer` at each
 checkpoint. The planner can also **convert an existing plan document** into the
 trio (its decisions arrive locked, not re-litigated), and **replan** re-evaluates
@@ -304,6 +308,16 @@ pushes the default branch. Reach for them when a session has a clear single-doma
 slice, or when a mission has parallel slices that can run at once; a plain session
 on the main agent is fine for small or cross-cutting work.
 
+**Brainstormer** (`brainstormer`) works at the very front of V0, upstream of the
+researcher: it turns a raw, fuzzy idea into 2–3 genuinely distinct framings —
+each with the bet it makes, who it serves and who pays, the core value, and its
+riskiest assumption — for the human to choose between. It questions the premise,
+not just the solution; it is a thinking tool, not an evidence tool (no market
+data required). Convened via `/agentic-workflow:brainstorm` (or `/agentic-workflow:bootstrap` at V0); it seeds
+`docs/product/idea.md` with the chosen framing and hands off to the researcher
+to validate. Like the advisor it is gate-bound, never ambient — and it never
+decides, validates, designs, or builds.
+
 **Researcher** (`researcher`) works upstream of code, in V0: it validates the
 problem, sizes the market, maps competitors, and pressure-tests the riskiest
 assumption with cited evidence for AND against, drafting `docs/product/idea.md`.
@@ -314,17 +328,22 @@ rather than selling the idea. It informs the human's go/no-go; it never decides.
 trio, doing the expensive exploration once so execution sessions never do. It
 pre-resolves every brief's targets and sizes them to the context budget; it does
 tactical decomposition, not strategic scope (main session + HITL own that). Driven
-by `/mission`.
+by `/agentic-workflow:mission`.
 
 **Architect** (`architect`) is the technical consultant for shape-before-build
 decisions. At V1 it authors the stack decision and data-model sketch as option
 memos — 2–3 options, tradeoffs, reversal cost, a recommendation — under
 `docs/product/decisions/`; during missions it digests technical open questions
-into decision-ready memos. It consults; the human decides (dated locked
+into decision-ready memos. It also authors and maintains the two living system
+docs the implementers build from — `docs/product/architecture.md` (components,
+data model, invariants) and `docs/product/interface-contract.md` (the
+frontend/backend boundary that keeps parallel slices from diverging) — thin,
+intent-and-contract only, pointing at the code index rather than re-narrating
+code. It consults; the human decides (dated locked
 decisions), implementers build, the reviewer verifies — it does none of those.
 
 **Advisor** (`advisor`) is the decision red-team: the reviewer's counterpart
-for judgment instead of code. Convened at the human gates via `/counsel` — 2–3
+for judgment instead of code. Convened at the human gates via `/agentic-workflow:counsel` — 2–3
 fresh instances, lens-partitioned (technical / market / financial, plus
 behavioral for engagement-critical decisions) — each
 argues the strongest case AGAINST the pending recommendation with cited
@@ -336,7 +355,9 @@ never ambient.
 **Designer** (`designer`) works at V1–V2 and for redesigns: it surfaces several
 distinct brand/UX directions for the owner to choose from, then organizes the
 chosen one into a design-token system the `frontend` agent implements. It also
-owns the PRD's user journeys and information architecture at V1, and runs the
+owns the **UX brief** (`docs/product/ux-brief.md`: personas grounded in the
+researcher's evidence, user journeys with acceptance criteria, and information
+architecture) at V1 — what the `frontend` builds from — and runs the
 heuristic usability evaluation in the V4 UX audit (flagging its own
 independence caveat). It proposes and organizes; the owner picks; frontend
 builds.
@@ -370,7 +391,7 @@ irreversible ones (see §11).
 impact, runbook truthfulness, postmortem drafts, and infra-cost review against
 the business model — each finding converted into a ranked, runnable mission or
 session candidate. It is read-only against production; restarts, rollbacks, and
-deploys are the human's to fire. Usually convened via `/operate`.
+deploys are the human's to fire. Usually convened via `/agentic-workflow:operate`.
 
 **Writer** (`writer`) is the optional copy & content craft specialist —
 convened when a slice is copy-heavy (landing-page pass, UI-string sweep,
@@ -407,11 +428,39 @@ stage change); the chronicler edits the three files, then the **main session
 republishes** `overview.html` via the Artifact tool to its recorded URL
 (subagents cannot publish artifacts). Task-altitude changes update CHANGELOG only.
 
+### 6.2 The context firewall — bounded returns & the fresh-self handoff
+
+A context window fills mostly with **tool output** — file reads, command dumps,
+subagent reports — not the dialogue. When it nears the limit the harness
+auto-summarizes older context, and that paraphrase **dilutes fidelity**. The
+defense is never a better summary; it is to keep the window lean and, when it
+still fills, hand off to a fresh agent that **re-reads verbatim files** rather
+than inheriting a summary. Two rules make that work:
+
+**Bounded returns.** A spawned agent's final message to its caller is a
+**distillate, not a transcript** — target ≤~15 lines: status · changed *paths*
+(not diffs) · verify signal (green/red + first error — §2, "gates not logs") · deviation
+*references* (not content) · what's next / to re-verify. The heavy reading and
+building happened in the subagent's OWN context; only the distillate crosses
+back. The caller ingests conclusions, not corpora (§2, principle 2), and pulls
+detail from the named files on demand into its own budget. `advisor` (one page)
+and `chronicler` (≤10 lines) are the model.
+
+**The fresh-self handoff.** The interactive main session is context-disciplined
+too — the same "ledger outlives the transcript" rule (§2, principle 1) and loop
+mode (§5) that protect missions apply here. Externalize durable state to files
+continuously; when context fills (past ~half for a driving/interactive agent),
+run `/agentic-workflow:handoff` to write a **re-read manifest** (`docs/product/session-handoff.md`
+— goal, locked decisions, next, and *pointers* to the real artifacts), then the
+human starts a fresh session that resumes from it. A new agent re-reading files
+is lossless where an auto-summary is not; a sharp agent at low context beats a
+tired one near the limit. Agents prepare the handoff; the human fires the reset.
+
 ## 7. Fulfilment: definition of done
 
 DONE = gates green → live verification passed (real client for UI) → docs updated
 when behavior/config changed → PR merged by HITL → **post-deploy verification on
-the deployed instance** for anything user-facing (`/verify` is the vehicle:
+the deployed instance** for anything user-facing (`/agentic-workflow:verify` is the vehicle:
 drive the real flow, confirm monitoring is receiving, record the result).
 "Deployed and verified" is the finish line, not "PR open".
 
@@ -428,63 +477,76 @@ drive the real flow, confirm monitoring is receiving, record the result).
 
 ## 9. How this maps to the plugin
 
-- Agents ship with the plugin: `researcher` (V0 validation), `designer`
+- Agents ship with the plugin: `brainstormer` (V0 idea-shaping, front of the
+  lifecycle), `researcher` (V0 validation), `designer`
   (V1–V2 brand/UX, journeys/IA, V4 usability pass), `architect` (V1
   shape-before-build option memos), `business` (V1/V5/V6 model, pricing,
   business documents), `planner` (mission decomposition), `advisor` (decision
-  red-team at the human gates, via `/counsel`), `marketing` (V5–V6
+  red-team at the human gates, via `/agentic-workflow:counsel`), `marketing` (V5–V6
   go-to-market), `ops` (V6 operations), `analyst` (measurement engine),
   `writer` (optional copy craft — owns the copy kit/glossary), `reviewer`,
   `chronicler`, and the specialist implementers `backend`, `frontend`,
   `security`, `devops` (CI/CD, deploy, releases).
-- **Model tuning**: `/tune <agent> <model>` shadows a plugin agent with a
+- **Model tuning**: `/agentic-workflow:tune <agent> <model>` shadows a plugin agent with a
   project-level copy (`.claude/agents/`) whose only change is the model —
-  upgrade an underperformer, `/tune <agent> reset` to restore the default.
+  upgrade an underperformer, `/agentic-workflow:tune <agent> reset` to restore the default.
   When a `TUNED`-prefixed variant of an agent exists, orchestrators spawn
   THAT one. Tunes are files: committed and reviewed like any harness change
   (§8).
 - Guardrail hooks (§3) install automatically.
-- Commands: `/bootstrap` (bootstrap a project into this workflow),
-  `/adopt` (one-command adoption for an existing project: bootstrap + convert
+- Commands: `/agentic-workflow:welcome` (the guided front door — orient, then
+  guide or auto-drive, filling the project docs), `/agentic-workflow:brainstorm` (shape a raw idea into a chosen framing via the
+  `brainstormer`, before validation), `/agentic-workflow:bootstrap` (bootstrap a project into this workflow),
+  `/agentic-workflow:adopt` (one-command adoption for an existing project: bootstrap + convert
   existing plans + stage-gap report; `fill` mode also drafts the missing
-  document deliverables, decisions pending), `/autopilot` (drive an idea to
-  launch-ready, §11), `/mission` (plan + drive a multi-session mission),
-  `/plan` (interview-driven feature planning: brief, journeys, memos,
-  counsel, trio — in one command), `/counsel` (advisor red-team on a pending decision), `/audit` (on-demand
-  adversarial pillar audit), `/release` (cut a version), `/verify` (post-deploy
-  verification, §7), `/operate` (the V6 loop), `/sync` (bring
-  docs/WORKFLOW.md up to the installed protocol master), `/next` (recommends
-  the single best next command from the project state), `/doctor` (machinery
+  document deliverables, decisions pending), `/agentic-workflow:autopilot` (drive an idea to
+  launch-ready, §11), `/agentic-workflow:mission` (plan + drive a multi-session mission),
+  `/agentic-workflow:plan` (interview-driven feature planning: brief, journeys, memos,
+  counsel, trio — in one command), `/agentic-workflow:counsel` (advisor red-team on a pending decision), `/agentic-workflow:audit` (on-demand
+  adversarial pillar audit), `/agentic-workflow:release` (cut a version), `/agentic-workflow:verify` (post-deploy
+  verification, §7), `/agentic-workflow:operate` (the V6 loop), `/agentic-workflow:publish` (the §14 publishing
+  pipeline — connect channels, stage the queue, fire under the Publish policy),
+  `/agentic-workflow:sync` (bring
+  docs/WORKFLOW.md up to the installed protocol master), `/agentic-workflow:next` (recommends
+  the single best next command from the project state), `/agentic-workflow:doctor` (machinery
   diagnosis — environment tools, §10 truthfulness; `fix` installs missing dev
-  tools like codegraph and ripgrep), `/tune` (per-project agent model
-  upgrade/reset), `/connect` (interactive owner-channel setup with a
-  round-trip test), `/start`,
-  `/check`, `/pr`, `/end`, `/fix`, `/retro`.
+  tools like codegraph and ripgrep), `/agentic-workflow:tune` (per-project agent model
+  upgrade/reset), `/agentic-workflow:connect` (interactive owner-channel setup with a
+  round-trip test), `/agentic-workflow:handoff` (snapshot working state to a re-read manifest for
+  a fresh-self continuation — §6.2), `/agentic-workflow:start`,
+  `/agentic-workflow:check`, `/agentic-workflow:pr`, `/agentic-workflow:end`, `/agentic-workflow:fix`, `/agentic-workflow:retro`.
 - The `protocol` skill points every session at the project's
   `docs/WORKFLOW.md` (or this master if none exists yet).
 - Templates for the status page, `idea.md`, `flight-plan.md`, `decision-log.md`,
+  the V1 `prd.md`, the `designer`'s `ux-brief.md`, the `architect`'s
+  `architecture.md` and `interface-contract.md`, the architect's option memo
+  (`decision-memo.md`), the mission
+  trio (`mission-plan.md`, `mission-sessions.md`, `mission-state.md`),
   the launch asset set (`launch-plan.md`, `launch-positioning.md`,
   `launch-landing-page.md`, `launch-announcement.md`, `launch-content-plan.md`),
+  the publishing pipeline (`publish-queue.md`, `publish-log.md`),
+  the `session-handoff.md` re-read manifest,
   the business set (`business-executive-summary.md`, `business-model.md`,
   `business-pricing.md`), and this protocol live under the plugin's `templates/`.
 
-## 10. Project profile (filled by `/bootstrap`)
+## 10. Project profile (filled by `/agentic-workflow:bootstrap`)
 
-Until `/bootstrap` runs, these are unknown — discover them from the repo or
+Until `/agentic-workflow:bootstrap` runs, these are unknown — discover them from the repo or
 ask the human. A project's own `docs/WORKFLOW.md` replaces this block with
 concrete values.
 
 | Key | Value |
 |---|---|
 | **HITL (merge/deploy authority)** | _(the human owner's name)_ |
-| **Merge policy** | _(`human-only` — the default — or `agent-may-merge (delegated <date>)`; only an explicit human decision sets the latter. Delegation lets agents merge **reviewer-APPROVEd PRs**; direct pushes to the default branch stay blocked, and deploys/spending/publishing are never delegable)_ |
+| **Merge policy** | _(`human-only` — the default — or `agent-may-merge (delegated <date>)`; only an explicit human decision sets the latter. Delegation lets agents merge **reviewer-APPROVEd PRs**; direct pushes to the default branch stay blocked, and deploys/spending are never delegable. Organic publishing has its own Publish policy row below.)_ |
+| **Publish policy** | _(`human-only` — the default, fail-closed — or `may-publish (delegated <date>, channels: …, rate: N/wk, organic-only)`; only an explicit human decision (or the flight-plan) sets the latter. Delegation lets a scheduled `/agentic-workflow:publish run` post **approved, due, organic** items within the scope (§14); **paid promotion is never in this delegation** — paid is always human-fired and budget-bounded (§11). `none` → no publishing configured)_ |
 | **Default branch** | _(e.g. main)_ |
 | **Test gate** | _(e.g. `npm test`)_ |
 | **Typecheck/lint gate** | _(e.g. `npm run typecheck`)_ |
 | **Build** | _(e.g. `npm run build`)_ |
 | **Datastore seed/reset** | _(e.g. `npm run seed`)_ |
 | **Deploy + live-verify** | _(how it ships and how you confirm on the deployed instance)_ |
-| **Eval suite** (behavioral, if any) | _(e.g. `node evals/run.mjs` — run before releases; see `/release`)_ |
+| **Eval suite** (behavioral, if any) | _(e.g. `node evals/run.mjs` — run before releases; see `/agentic-workflow:release`)_ |
 | **High-impact files** (docs-reminder targets) | _(conventions file, schema, architecture docs…)_ |
 | **Code index** | _(e.g. codegraph — HOW to query it: MCP tools and/or the CLI command agents run via Bash. `none` → grep-first)_ |
 | **Memory/recall store** (optional) | _(semantic memory MCP if one exists — an accelerator only; the repo record stays the system of record)_ |
@@ -494,11 +556,11 @@ concrete values.
 
 ## 11. Autopilot mode
 
-`/autopilot "<idea>"` drives the whole lifecycle (V0→V5, then a V6 handoff) with
+`/agentic-workflow:autopilot "<idea>"` drives the whole lifecycle (V0→V5, then a V6 handoff) with
 the bare-minimum human input — validation, definition, design choice, foundation,
 build, hardening, and launch-prep — pausing only at the gates a human must own.
 It's the same workflow, orchestrated end-to-end instead of session-by-session.
-On an **existing project**, autopilot first runs the `/adopt` procedure
+On an **existing project**, autopilot first runs the `/agentic-workflow:adopt` procedure
 (profile, plan conversion, stage-gap audit), then resumes at the first stage
 whose exit gate isn't met — the gap report's findings become its first work
 items; existing artifacts are settled history, not gates to re-run.
@@ -523,7 +585,7 @@ the release (V5); `marketing` drafts the launch assets (V5) for the human to
 publish; `backend`/`frontend`/`security` build with a `reviewer` checkpoint per
 phase (one corrective retry, then surface); the `chronicler` keeps the status
 page live as the owner's window; a `decision-log.md` records every autonomous
-choice and how to reverse it. At the human gates, `/counsel` convenes the
+choice and how to reverse it. At the human gates, `/agentic-workflow:counsel` convenes the
 `advisor` red-team so each pause arrives with the case against in hand.
 
 **The safety boundary is never crossed autonomously** — even here, these need an
@@ -532,10 +594,16 @@ explicit human confirmation each time (pre-authorization lets you *prepare*, not
 — the delegation itself is a human decision, and even then only reviewer-APPROVEd
 PRs or §13 registry bookkeeping, never direct pushes), deploying to production /
 going live, spending beyond
-the flight-plan ceiling, publishing outward or messaging on the owner's behalf,
-launching behavioral experiments on real users (propose the hypothesis and
-measurement plan; the human launches), and destructive/irreversible actions.
-Merge authority is the ONE delegable item; the rest are never delegable. These are **batched**: at
+the flight-plan ceiling, publishing outward or messaging on the owner's behalf
+(unless the §10 **Publish policy** delegates **organic** publishing — scoped,
+dated, revocable, §14; paid promotion and individual outreach to real users stay
+never delegable), launching behavioral experiments on real users (propose the
+hypothesis and measurement plan; the human launches), and
+destructive/irreversible actions. Two authorities are delegable — **merge**
+(§10 Merge policy) and **scoped organic publishing** (§10 Publish policy) — each
+an explicit, dated, revocable human act; everything else here (deploys, spending
+including paid promotion, individual outreach, behavioral experiments,
+destructive actions) is never delegable. These are **batched**: at
 the launch boundary the human gets ONE consolidated "ready to launch" summary to
 confirm, not a stream of interruptions.
 
@@ -545,7 +613,7 @@ irreducible human decisions collapsed to the fewest, best-informed touchpoints.
 Autopilot is also **crash-safe and context-disciplined** like every other part
 of the machinery (§2): its durable state is files (flight plan, decision log,
 stage artifacts, status page), it ends cleanly at a stage boundary when its
-context fills, and `/autopilot continue` re-derives the current stage from
+context fills, and `/agentic-workflow:autopilot continue` re-derives the current stage from
 those files and resumes — locked decisions stay decided. That makes autopilot
 **loop-drivable**: a recurring `/loop /autopilot continue` (or a scheduled
 agent) advances the venture one clean stage boundary per tick, each tick a
@@ -558,7 +626,7 @@ above is unchanged.
 An indefinitely-operating project needs a push channel to its owner; gates
 must not block invisibly. The owner channel is a **private, owner-configured
 DM** (Telegram bot chat, Slack DM), recorded in §10 — set up interactively
-with `/connect` (guided steps, auto-discovered IDs, round-trip test). Direction is the
+with `/agentic-workflow:connect` (guided steps, auto-discovered IDs, round-trip test). Direction is the
 boundary: messaging THE OWNER is telemetry; any audience beyond the owner
 makes it publishing (§11, human-gated). Sends are best-effort side effects —
 a notification failure is logged and never blocks work.
@@ -569,8 +637,8 @@ pull surface):
 | Tier | When | Examples |
 |---|---|---|
 | **Gate** | Work is blocked on the human | approval ready, kill-stop, escalation after one-corrective-retry |
-| **Alert** | The owner would want to know now | `/verify` FAIL, user-impacting incident, budget ceiling near |
-| **Digest** | Rhythm | one message per `/operate` cycle: ≤3 lines + status-page link |
+| **Alert** | The owner would want to know now | `/agentic-workflow:verify` FAIL, user-impacting incident, budget ceiling near |
+| **Digest** | Rhythm | one message per `/agentic-workflow:operate` cycle: ≤3 lines + status-page link |
 
 Messages carry summaries and links (PR, status page) — never secrets.
 
@@ -630,14 +698,14 @@ a DB may exist only as the §10 memory *accelerator*; the registry is the
 record. Structure:
 
 - **`registry.md`** — one row per venture: name · local path · git remote ·
-  stage · status-page URL · owner channel · last `/operate`.
+  stage · status-page URL · owner channel · last `/agentic-workflow:operate`.
 - **`ledger.md`** — portfolio-level decisions and handoffs (same rules as
   mission ledgers: dated, append-biased, crash-safe).
 - **`precedents.md`** — POINTERS to citable decisions across ventures
   (repo + file + one-line summary), never copies — each venture stays its
   own system of record.
 - **`overview.html`** — the portfolio status page: every venture's stage
-  rail in one view (the first portfolio `/operate` seeds it).
+  rail in one view (the first portfolio `/agentic-workflow:operate` seeds it).
 
 Pointers run both ways: the registry points at ventures via paths/remotes
 (co-location under one folder is tidy *convention*, never a requirement),
@@ -655,17 +723,67 @@ anything in a registry repo beyond those bookkeeping files (CI workflows,
 scripts, this policy file itself) still needs the human.
 
 Awareness is **command-time and daemon-free**, like everything else:
-`/operate` run in the registry repo sweeps every registered venture — one
+`/agentic-workflow:operate` run in the registry repo sweeps every registered venture — one
 reader per venture ingesting its existing *conclusions* (status-page data
 regions, ledger `Next up:`, track record), never its corpora — and rolls up
 to one report: every stage, blocked gates, and ONE ranked cross-portfolio
 backlog (this week's mission goes where?). Registration is a single
-`registry.md` row, offered by `/adopt`. Ventures without a local checkout
+`registry.md` row, offered by `/agentic-workflow:adopt`. Ventures without a local checkout
 are read via their remotes (`gh`) — slower, same record.
+
+## 14. Publishing & distribution — outward, gated, auditable
+
+Getting the product in front of users is part of the venture, not outside it —
+but publishing outward is reputation-bearing and semi-irreversible (a deleted
+post was still seen and may stay indexed). So it runs as a **pipeline** with the
+same shape as the owner channel (§12): everything up to the moment of publish is
+automated; the publish itself is gated. Set up interactively with `/agentic-workflow:publish
+connect` (per-channel credentials, secret-rule, round-trip test); driven by
+`/agentic-workflow:publish`.
+
+**Prepare — always automated, always safe.** The `marketing` agent (short-form,
+strategy) and `writer` agent (long-form articles) populate the **publish queue**
+(`docs/product/launch/publish-queue.md`) from the launch assets and content
+plan. Each item carries its channel, scheduled time, full body, source asset,
+and a state (`draft → approved → posted`). Writing to the queue **fires
+nothing**.
+
+**Fire — gated by the §10 Publish policy.**
+
+| Policy | Who fires | What posts |
+|---|---|---|
+| `human-only` (default, fail-closed) | the human runs `/agentic-workflow:publish run` | approved + due items, from a formatted preview |
+| `may-publish (delegated <date>, channels, rate, organic-only)` | a scheduled `/agentic-workflow:publish run` | only approved + due + **organic** items **within the scope** |
+
+The delegation is a §11 authority — the second delegable one alongside merge —
+explicit, dated, scoped (channels, rate limit, organic-only), and revocable by
+editing the §10 row. **Paid promotion is never in it**: paid crosses the money
+boundary (§11 spending), so every paid item is human-fired and bounded by the
+flight-plan budget ceiling, confirmed each time. A change to an approved body
+resets it to `draft` — re-approval before it can fire.
+
+**Record — the audit trail.** Every successful post appends to the **publish
+log** (`docs/product/launch/publish-log.md`: what, where, when, permalink,
+source, and the firing authority) and the queue item becomes a receipt — the
+same auditability §12 gives channel decisions. **Measure**: the `analyst` reads
+the log to attribute funnel results back to posts, into the V6 review.
+
+**Channels**: socials (X, LinkedIn, Mastodon, Bluesky), article platforms
+(dev.to, Medium, Hashnode, own-blog), mailing list (Buttondown/Mailchimp/
+ConvertKit), and own site / RSS (PR-based). Credentials follow the §12 secret
+rule — never echoed, var NAMES only in the profile and `.env.example`, verified
+by a round-trip test, values in the human's env.
+
+**Mechanical backstop.** Like the push/merge guardrails (§3), a hook fails
+closed: an autonomous publish is **blocked unless the §10 Publish policy
+delegates it**, and any paid action is blocked without an explicit human
+confirmation regardless of policy. Interactive human-fired `/agentic-workflow:publish run` is
+allowed. As with §12, a publish is **never fired from an owner-channel chat
+tap** — the delegated firing is a scheduled command within policy, not a button.
 
 ## Local amendments
 
-_(Project-specific rules land here. `/check`'s upgrade procedure
+_(Project-specific rules land here. `/agentic-workflow:check`'s upgrade procedure
 preserves this section and §10 verbatim when re-copying a newer protocol
 master, so amendments survive upgrades — anything edited elsewhere in the
 document will be flagged as drift instead.)_

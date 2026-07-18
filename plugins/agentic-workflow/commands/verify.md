@@ -6,7 +6,7 @@ allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, Task, Artifact]
 
 Verify the deployed instance (Agentic Workflow §7: DONE ends at post-deploy
 verification, not at "PR merged"). Run after the human deploys — following a
-`/release`, a launch, or any user-facing merge that auto-deploys. `$ARGUMENTS`
+`/agentic-workflow:release`, a launch, or any user-facing merge that auto-deploys. `$ARGUMENTS`
 is the deployed URL; otherwise use the §10 **Deploy + live-verify** row.
 
 ## 1. Reachability & health

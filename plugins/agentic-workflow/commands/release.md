@@ -61,7 +61,7 @@ Spawn the `chronicler` to record the release milestone, then republish the
 status page via the Artifact tool. Report: the version, the changelog delta,
 the release PR, and the exact post-merge commands the human runs to tag,
 publish, and deploy — plus what will happen when they do (this is the
-launch-boundary confirmation). After the deploy, `/verify` confirms it on the
+launch-boundary confirmation). After the deploy, `/agentic-workflow:verify` confirms it on the
 deployed instance.
 
 When the release IS the V5 launch (first production release), include the

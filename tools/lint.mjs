@@ -19,7 +19,7 @@ const KNOWN_TOOLS = new Set([
   'Artifact',
 ]);
 // Slash commands that are Claude Code built-ins, not shipped by this plugin.
-const EXTERNAL_COMMANDS = new Set(['plugin', 'loop']);
+const EXTERNAL_COMMANDS = new Set(['plugin', 'loop', 'clear']);
 
 const findings = [];
 const rel = (p) => path.relative(ROOT, p);
@@ -130,9 +130,12 @@ function checkCrossRefs() {
   const commands = new Set(mdFiles(path.join(PLUGIN, 'commands')).map((f) => path.basename(f, '.md')));
 
   // Forward: an agent-shaped mention (`x` agent / spawn `x`) must be a real agent;
-  // a backticked /command must be a real command (or a known built-in).
+  // a backticked /command must be a real command (or a known built-in), AND our
+  // own commands must use the namespaced `/agentic-workflow:<cmd>` form — the
+  // bare short form may not resolve (headless, or when another plugin/built-in
+  // shadows the name). Matches args forms too (no closing backtick required).
   const agentMention = /(?:the )?`([a-z][a-z-]*)` agent\b|spawn(?:s|ed|ing)? (?:the )?`([a-z][a-z-]*)`/g;
-  const commandMention = /`\/([a-z][a-z-]*)`/g;
+  const commandMention = /`\/(agentic-workflow:)?([a-z][a-z-]*)(?=[`\s]|$)/g;
   for (const file of allMd) {
     const text = read(file);
     for (const m of text.matchAll(agentMention)) {
@@ -141,8 +144,12 @@ function checkCrossRefs() {
         fail(file, lineOf(text, m.index), `mentions unknown agent "${name}"`);
     }
     for (const m of text.matchAll(commandMention)) {
-      if (!commands.has(m[1]) && !EXTERNAL_COMMANDS.has(m[1]))
-        fail(file, lineOf(text, m.index), `mentions unknown command "/${m[1]}"`);
+      const qualified = Boolean(m[1]);
+      const name = m[2];
+      if (!commands.has(name) && !EXTERNAL_COMMANDS.has(name))
+        fail(file, lineOf(text, m.index), `mentions unknown command "/${name}"`);
+      else if (commands.has(name) && !qualified)
+        fail(file, lineOf(text, m.index), `bare short-form "/${name}" — use the namespaced "/agentic-workflow:${name}" (the short form may not resolve)`);
     }
   }
 

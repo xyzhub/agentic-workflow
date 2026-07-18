@@ -37,8 +37,11 @@ CI config) or ask.
 
 ## Lenses (four pillars + QA + architecture)
 
-**UX** (when any UI/copy surface is touched) — empty/loading/error states exist;
-the UI never claims what the backend doesn't confirm; no mock/scaffold data or
+**UX** (when any UI/copy surface is touched) — empty/loading/error states exist:
+for **every collection render** (a `.map()`/loop producing rows, a list/table/
+grid) check the ZERO case explicitly — it must show a message and the primary
+action, not a blank; a render with no empty branch is a finding, even on a
+static read. The UI never claims what the backend doesn't confirm; no mock/scaffold data or
 dead controls reachable in production; SSR is hydration-safe (no locale/timezone
 formatting in server-rendered HTML); verified in a real client with a clean
 console. No manipulation mechanics (§0.2): fabricated scarcity/urgency,

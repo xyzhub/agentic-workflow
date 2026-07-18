@@ -44,8 +44,9 @@ config missing and confirm it refuses; forge an unsigned request and confirm
 rejection; exceed the rate limit and confirm 429. Add tests for each hardening
 rule (fail-closed matrix, not just the happy path). Then:
 - log deviations in the ledger;
-- summarize each control added, how you proved it, and what the reviewer should
-  independently re-verify.
+- return a **bounded** hand-off (§6.2): each control added, how you proved it
+  (the signal), and what the reviewer should independently re-verify — a
+  distillate, not a transcript.
 
 Remediation loop: when fixing a reviewer's findings, address the root cause (not
 the symptom), reference the finding, and return it for re-verification — one
