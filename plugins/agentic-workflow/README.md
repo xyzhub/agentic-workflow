@@ -145,6 +145,7 @@ any agent's model per project, reversibly.
 | `/agentic-workflow:tune` | Upgrade an underperforming agent's model per project (shadow copy in `.claude/agents/`); `reset` restores the default |
 | `/agentic-workflow:connect` | Interactive owner-channel setup (Telegram or Slack): guided steps, auto-discovered IDs, a proven round-trip test |
 | `/agentic-workflow:sync` | Upgrade a project's protocol copy to the installed master — §10 and Local amendments preserved verbatim, new profile rows reconciled |
+| `/agentic-workflow:ingest` | Harvest a reusable first-party artifact into the §13 portfolio **commons**: copy it into the registry repo under `commons/code/<slug>/`, pin provenance, write its index entry — a delegable bookkeeping PR |
 
 ## What an adopted project carries
 

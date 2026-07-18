@@ -735,9 +735,11 @@ artifacts, harvests them (copy-and-adapt into `commons/<type>/<slug>/`, pinning
 provenance), brokers them to other agents, writes the index entry, and keeps
 entries fresh — re-harvesting when the freshness signal fires, and writing a
 consumer's improvements back as a delegable bookkeeping PR (below). This role
-and the ingest capability that populates the commons are each specified in
-their own protocol surface; §13 fixes only the shared layout and the invariants
-they operate on.
+and the ingest capability that populates the commons — `/agentic-workflow:ingest`,
+which copies a reusable first-party artifact into `commons/code/<slug>/`, pins its
+provenance, and writes its index entry as a delegable bookkeeping PR — are each
+specified in their own protocol surface; §13 fixes only the shared layout and the
+invariants they operate on.
 
 **Brokering is single-best-match (k=1), never a top-N firehose.** The default is
 a **read-protocol**: a consumer that needs prior art reads `commons/index.md`,

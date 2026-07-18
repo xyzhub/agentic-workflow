@@ -17,7 +17,7 @@ Mission started: **2026-07-18**.
 - [x] S1 — Commons shape memo (branch `mission/portfolio-commons-p1`)
 - [x] S2 — §13 commons amendment (branch `mission/portfolio-commons-p1`)
 - [~] Checkpoint — phase 1 review **APPROVED** + shape locked; **merge pending human**
-- [ ] S3 — Author `commands/ingest.md` (branch `mission/portfolio-commons-p2`)
+- [x] S3 — Author `commands/ingest.md` (branch `mission/portfolio-commons-p2`)
 - [ ] Checkpoint — phase 2 review + merge
 - [ ] S4 — Author `agents/curator.md` (branch `mission/portfolio-commons-p3`)
 - [ ] Checkpoint — phase 3 review + merge
@@ -62,8 +62,33 @@ the phase-1 checkpoint._
   copy-adapts it through that venture's own gates), but that downstream gate is
   implicit at the §13 delegation — add one explicit sentence in a later increment so
   "no runtime" doesn't read as "agent-merged code is safe."
+- **S3 refinement — `/agentic-workflow:ingest` self-contained in increment 1**
+  (decoupled from the not-yet-existent curator). The brief's "may spawn the curator"
+  note would forward-ref `agents/curator.md` (authored in S4); lint's cross-ref check
+  fails a forward agent/spawn ref. So the command does the copy + index-write itself,
+  `allowed-tools` omits `Task`, and the body contains no "spawn" and no backticked
+  `curator`-agent ref — curator is named only as a plain-word read-side concept. A
+  later increment can route harvest through the curator once it exists.
 
 ## Handoff log (newest first)
+
+- **2026-07-18 · S3 (backend)** — Authored
+  `plugins/agentic-workflow/commands/ingest.md`. Frontmatter: one-line
+  `description`, `argument-hint: [git-url-or-path] [--type code]`, bracketed
+  `allowed-tools: [Read, Write, Edit, Bash, Grep, Glob]` (no `Task`). Body (adopt.md
+  idiom, numbered steps): type-first / per-type `commons/code/<slug>/` placement,
+  first-party-only scope; (1) resolve the §10 Portfolio registry-repo path, stop if
+  unset; (2) `git clone`/`cp` the source in via Bash; (3) pin provenance (source repo
+  + commit) and derive stack/tags; (4) write the per-entry README with adaptation
+  notes; (5) `Edit` `commons/index.md` with the full §13 schema entry
+  (slug·path·type·stack·tags·provenance·licence·why-good·reuse-match·`last-reviewed`=today);
+  (6) hand off as a delegable §13 bookkeeping PR in the registry repo (merge only under
+  a recorded delegation, never push its default branch; nothing committed in THIS repo).
+  **Curator hazard handled** — command is self-contained (no `Task`, no "spawn", no
+  backticked `curator`-agent ref); see Deviations. Doc mentions added: root
+  `README.md` command list, plugin `README.md` **Machinery** group, WORKFLOW master §13
+  (named `/agentic-workflow:ingest` in the existing "ingest capability" sentence).
+  `node tools/lint.mjs` → **clean**.
 
 - **2026-07-18 · Phase-1 checkpoint (reviewer)** — **APPROVE**. Re-ran
   `node tools/lint.mjs` → clean; confirmed the `docs/WORKFLOW.md` stamped copy is
@@ -103,7 +128,11 @@ the phase-1 checkpoint._
   mechanical. All reversal costs LOW. `node tools/lint.mjs` → clean (memo under `docs/`,
   no incidental breakage). No protocol/code touched (that is S2).
 
-Next up: **Human merges `mission/portfolio-commons-p1`** (phase-1 APPROVED by the
-reviewer, shape locked). On merge, run `/agentic-workflow:sync` to propagate the §13
-master edit into the stamped `docs/WORKFLOW.md` (do NOT hand-edit it). Then
-**Phase 2 / S3** — author `plugins/agentic-workflow/commands/ingest.md`.
+Next up: **Phase-2 checkpoint** — reviewer re-runs `node tools/lint.mjs` and
+diff-reviews the S3 change (`commands/ingest.md` + the three doc mentions),
+confirming the self-contained/no-curator-spawn refinement is deliberate (not a
+missing capability). Then **Phase 3 / S4** — author
+`plugins/agentic-workflow/agents/curator.md` (the curator role + freshness signal;
+a later increment can then route `/agentic-workflow:ingest` harvest through it).
+(Stacked-phases policy: no intermediate merge; one `/agentic-workflow:sync` after all
+§-master edits land; the human merges at mission end.)
