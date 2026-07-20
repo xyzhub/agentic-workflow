@@ -20,6 +20,17 @@ tokens/theme file, component library, established patterns. Apply it; never intr
 parallel styling approach or hardcode values a token already covers. Match the
 framework and state patterns already in use.
 
+**Consult the commons — only where one exists.** *Where a portfolio commons is
+present* (a `commons/index.md` in the §13 registry/project), read it and pick the
+**single best match (k=1, never a pile)**, then **copy-and-adapt** it to THIS
+project: rewrite the product name, copy, routes, and tokens, follow the entry's
+README adaptation notes, and close any token gap it flags — never blind-copy.
+*Where no commons exists, proceed exactly as today* — build from the existing
+design system / from scratch; introduce nothing and do not go hunting for a
+commons that isn't there. When you improve reused material (close a flagged gap,
+fix a bug), flag it for the `curator` to write back into the commons as a
+delegable §13 bookkeeping PR — you never write to the commons yourself.
+
 ## Own the UX pillar
 
 - **Every state exists**: empty, loading, and error — not just the happy path.

@@ -296,6 +296,7 @@ silently changed.
 | **Implementer** | The main session agent, or a **specialist implementer** subagent (`backend`, `frontend`, `security`, `devops`) — used for a domain slice or to run slices in parallel in a mission | Route, build to convention, verify, document, hand off |
 | **Reviewer** | The `reviewer` agent — always a fresh context | Checkpoint reviews; pre-merge review of risky changes; four pillar lenses + QA + architecture in one pass |
 | **Chronicler** | The `chronicler` agent | Keeps the record (§6.1); documents, never touches product code |
+| **Curator** | The `curator` agent | Owns the §13 portfolio commons lifecycle — harvest, single-best-match (k=1) brokering, freshness, write-back; never decides product direction, ships product code into a venture, or merges |
 | **HITL** | The human owner (§10) | Answers open questions, merges the default branch, owns deploys and anything irreversible |
 
 **Specialist implementers** carry their domain's pillar bias — `backend`
@@ -704,6 +705,14 @@ record. Structure:
 - **`precedents.md`** — POINTERS to citable decisions across ventures
   (repo + file + one-line summary), never copies — each venture stays its
   own system of record.
+- **`commons/`** — the one **writable, copy-holding** surface: reusable
+  artifacts *copied* into the registry (adapted on the way in, improved and
+  written back), organized **per-type** as `commons/<type>/<slug>/` with a
+  per-entry `README.md`, and indexed by **`commons/index.md`**. `code/` is
+  the only populated type in the first increment. This is the deliberate
+  exception to the pointer rule: `registry.md` and `precedents.md` stay
+  **pointers, never copies**, whereas the commons holds copies precisely so a
+  reusable exemplar survives independent of the venture it came from.
 - **`overview.html`** — the portfolio status page: every venture's stage
   rail in one view (the first portfolio `/agentic-workflow:operate` seeds it).
 
@@ -712,13 +721,50 @@ Pointers run both ways: the registry points at ventures via paths/remotes
 and a venture's §10 **Portfolio** row points back so agents working inside
 it can find and cite cross-venture precedent.
 
+**The commons is a curated, freshness-tracked library.** Each `commons/index.md`
+entry carries a fixed schema so a consumer can choose without opening every
+artifact: **slug · path · type · stack · tags · provenance** (venture · repo ·
+pinned commit) **· licence · why-it's-good · reuse-match · `last-reviewed`**.
+Provenance and `last-reviewed` are load-bearing, not decorative — they drive the
+**freshness signal**: an entry is **stale** when it ages past its `last-reviewed`
+threshold OR its source repo has advanced past the pinned commit. Staleness is
+computed daemon-free (git + a date, like all §13 awareness) and **surfaced, never
+auto-mutated** — a stale entry is flagged for review, not silently rewritten.
+
+**The `curator` agent owns the commons lifecycle.** It finds reusable
+artifacts, harvests them (copy-and-adapt into `commons/<type>/<slug>/`, pinning
+provenance), brokers them single-best-match to other agents, writes the index
+entry, and keeps entries fresh — re-harvesting when the freshness signal fires,
+and writing a consumer's improvements back as a delegable bookkeeping PR (below).
+This role and the ingest capability that populates the commons — `/agentic-workflow:ingest`,
+which copies a reusable first-party artifact into `commons/code/<slug>/`, pins its
+provenance, and writes its index entry as a delegable bookkeeping PR — are each
+specified in their own protocol surface; §13 fixes only the shared layout and the
+invariants they operate on.
+
+**Brokering is single-best-match (k=1), never a top-N firehose.** The default is
+a **read-protocol**: a consumer that needs prior art reads `commons/index.md`,
+picks the **single best** matching entry, opens that entry's README + files, and
+copy-adapts — it does not pull several. This preserves k=1 by construction and
+costs only a file read. **Escalation:** when the commons grows past what one
+index read can disambiguate — roughly a screenful of entries per type, OR a
+consumer is observed consulting more than one entry — brokering escalates to a
+dedicated broker (the curator role, invoked to return exactly one match) so k=1
+moves from discipline to enforced structure.
+
 **Registry bookkeeping is delegable.** The owner may set the registry
 repo's §10 Merge policy to `agent-may-merge (bookkeeping, delegated <date>)`:
 bookkeeping PRs — registry rows, ledger appends, precedent pointers, the
-portfolio status page — may then be merged by the orchestrator WITHOUT
+portfolio status page, and commons writes (index entries + copied/refreshed
+artifacts under `commons/`) — may then be merged by the orchestrator WITHOUT
 independent review. Rationale: the registry is record, not product — no
 runtime, no users, fully git-reversible; PRs (never direct pushes, which stay
-unconditionally blocked) preserve the audit trail. The delegation is scoped:
+unconditionally blocked) preserve the audit trail. Merging a commons exemplar
+here ships nothing to production: copied `code/` under `commons/` runs nowhere
+in the registry — it reaches a live product only when a consuming venture
+copy-adapts it **through that venture's own review gates**, so "no runtime"
+means the commons is a staging library, never a deploy path, and never a way
+for agent-merged code to skip a product's own review. The delegation is scoped:
 anything in a registry repo beyond those bookkeeping files (CI workflows,
 scripts, this policy file itself) still needs the human.
 
