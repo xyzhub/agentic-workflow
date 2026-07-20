@@ -253,7 +253,27 @@ function checkHooks() {
   }
 }
 
-for (const check of [checkManifests, checkAgents, checkCommands, checkCrossRefs, checkTemplateRefs, checkSections, checkFrontmatterYaml, checkHooks]) {
+// Reject suspiciously long single lines in tracked source — the signature of a
+// minified/obfuscated payload. A 2026-07 supply-chain injection appended a
+// ~6.7KB obfuscated loader to eval fixtures, hidden past a run of whitespace on
+// an otherwise-normal line; this makes that class of attack fail tier-1 lint.
+function checkObfuscation() {
+  const MAX = 1000; // legit source in this repo stays well under 200 chars/line
+  const exts = /\.(js|mjs|cjs|ts|jsx|tsx)$/;
+  const tracked = spawnSync('git', ['ls-files', '-z'], { cwd: ROOT, encoding: 'utf8' });
+  if (tracked.status !== 0) return; // not a git working tree — skip
+  for (const f of tracked.stdout.split('\0')) {
+    if (!f || !exts.test(f)) continue;
+    const abs = path.join(ROOT, f);
+    if (!existsSync(abs)) continue;
+    read(abs).split('\n').forEach((ln, i) => {
+      if (ln.length > MAX)
+        fail(abs, i + 1, `line is ${ln.length} chars — suspiciously long single line (possible minified/obfuscated code injection); split it, or raise MAX in checkObfuscation if genuinely intentional`);
+    });
+  }
+}
+
+for (const check of [checkManifests, checkAgents, checkCommands, checkCrossRefs, checkTemplateRefs, checkSections, checkFrontmatterYaml, checkHooks, checkObfuscation]) {
   check();
 }
 
