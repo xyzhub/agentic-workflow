@@ -6,6 +6,13 @@ has no tags — each version-stamped commit on `main` IS the release.
 
 ## [Unreleased]
 ### Added
+- **`/agentic-workflow:ingest` runs from anywhere** — the commons is
+  portfolio-global, so ingest resolves its target registry by `--registry
+  <path|remote>` → the registry repo it is run inside (auto-detect, like
+  `/agentic-workflow:operate`) → the current venture's §10 Portfolio row → a
+  global default (`~/.config/agentic-workflow/registry`, else
+  `$AGENTIC_WORKFLOW_REGISTRY`). Harvest a codebase without first adopting it
+  as a portfolio project.
 - **Portfolio Commons** — the §13 registry gains a writable, copy-holding
   **commons** surface (`commons/index.md` + per-type `commons/code/<slug>/`),
   so agents copy-and-adapt reusable first-party material across ventures and

@@ -1,6 +1,6 @@
 ---
 description: Harvest a reusable first-party artifact into the portfolio commons — copy it into the registry repo, pin provenance, and write its index entry, all as delegable §13 bookkeeping.
-argument-hint: [git-url-or-path] [--type code] [--refresh]
+argument-hint: [git-url-or-path] [--type code] [--refresh] [--registry <path|remote>]
 allowed-tools: [Read, Write, Edit, Bash, Grep, Glob]
 ---
 
@@ -14,20 +14,38 @@ copy-adapting it. A later increment can route harvest through the curator
 and the index-write itself.
 
 **Type first, per-type placement.** `$ARGUMENTS` is a source (a git URL or a
-local path) and an optional `--type` (default `code`). Every artifact lands
+local path), an optional `--type` (default `code`), an optional
+`--registry <path|remote>` (step 1), and an optional `--refresh` (step 2). Every artifact lands
 under `commons/<type>/<slug>/` — **`code/` is the only type this increment
 ingests** — never lumped into one shared templates bucket. The first increment harvests
 **own-venture (first-party) material only**: defer third-party code (carry the
 `licence` field, but do not ingest unlicensed third-party work — that policy is
 a later human call).
 
-## 1. Resolve the registry repo
+## 1. Resolve the target registry (first hit wins)
 
-Read the venture's §10 **Portfolio** profile row for the registry repo path
-(e.g. `/Users/baker/Playground/registry`). Confirm the directory exists and is
-a git repo (`git -C <registry> rev-parse` via Bash). If §10 has no Portfolio
-row, or the path does not resolve, **stop and tell the human** to set it (via
-`/agentic-workflow:adopt`, which registers the venture) — do not guess a path.
+The commons is a **portfolio-level** resource, so ingest need not run inside an
+adopted venture. Resolve the registry repo in this order — first hit wins:
+
+1. **`--registry <path|remote>`** if passed — the explicit override; works from
+   anywhere.
+2. **The current directory is itself a registry repo** — a `registry.md` at the
+   repo root (the §13 registry marker, the same signal `/agentic-workflow:operate`
+   detects). Ingest into the local commons.
+3. **The current venture's §10 Portfolio row** — a registry path/remote recorded
+   there (the in-adopted-project path).
+4. **A portfolio-global default** — a one-line path or remote in
+   `~/.config/agentic-workflow/registry`, else the `$AGENTIC_WORKFLOW_REGISTRY`
+   env var. This lets a bare `/agentic-workflow:ingest <source>` work anywhere
+   once set.
+
+If none resolve, **stop** and tell the human to pass `--registry <path|remote>`
+or set the global default — do not guess a path. Confirm the resolved registry
+is a git repo (`git -C <registry> rev-parse` via Bash); if it is a remote not
+present locally, clone it to a working checkout first (never push its default
+branch — step 6). When the registry resolved from `--registry` or §10 and no
+global default file exists yet, **offer to save it** to
+`~/.config/agentic-workflow/registry` so future ingests need no flag.
 
 ## 2. Derive the slug, then validate and guard collisions
 
