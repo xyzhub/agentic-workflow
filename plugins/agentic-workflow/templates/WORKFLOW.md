@@ -740,7 +740,11 @@ This role and the ingest capability that populates the commons — `/agentic-wor
 which copies a reusable first-party artifact into `commons/code/<slug>/`, pins its
 provenance, and writes its index entry as a delegable bookkeeping PR — are each
 specified in their own protocol surface; §13 fixes only the shared layout and the
-invariants they operate on.
+invariants they operate on. The commons is **portfolio-global**, not owned by any
+one venture: `/agentic-workflow:ingest` resolves its target registry by
+`--registry` flag → the registry repo it is run inside → the current venture's §10
+Portfolio row → a global default (`~/.config/agentic-workflow/registry`), so a
+codebase can be harvested without first adopting it as a portfolio project.
 
 **Brokering is single-best-match (k=1), never a top-N firehose.** The default is
 a **read-protocol**: a consumer that needs prior art reads `commons/index.md`,
