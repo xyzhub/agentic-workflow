@@ -1,6 +1,6 @@
 # The Workflow — one agentic protocol from idea to viable product
 
-<!-- protocol-master: v1.37.0 -->
+<!-- protocol-master: v1.39.0 -->
 
 ## Quick reference — humans start here
 
@@ -187,6 +187,9 @@ Shipped by this plugin as hooks. Advisory except where marked:
 | `gh pr merge` | **BLOCKS** unless the §10 **Merge policy** is `agent-may-merge` (fail closed when unset/absent); when delegated, reminds: merge only on a reviewer APPROVE |
 | `gh pr create` | Reminder to have run the gates |
 | `Write`/`Edit` | Reminder to update docs when high-impact files change |
+| Prompt submit | **Router** (governance) — an un-prefixed work request gets a soft "route it through the protocol — hand to `intake`" nudge; silent on plain chat, never blocks |
+| Prompt submit | **Thread-keeper** (governance) — injects the active ledger's phase + `Next up:` + first unchecked beat each turn; silent when no active ledger, never blocks |
+| `git commit` / turn end | **Beat-enforcer** (governance) — nudges a required-but-unchecked ledger beat (`chronicler` at close, `reviewer` at a checkpoint) at the overdue moment; advisory, never blocks |
 
 Blockers exit 2 (hard stop); reminders exit 0. Guardrails catch autopilot
 mistakes; they never replace judgment. Checks evaluate in the command's
@@ -217,6 +220,13 @@ one. Finished early (<15%)? Pull the next same-phase brief (checkpoints always
 end a session). For a long *interactive* session with no natural session end,
 `/agentic-workflow:handoff` writes a fresh-self re-read manifest so the reset stays lossless
 (§6.2) — never lean on the auto-summary.
+
+**Reflex backstops** — two §3 governance hooks keep a session on-protocol without
+being read: the *thread-keeper* surfaces the active ledger's phase + `Next up:` +
+first open beat every turn, and the *beat-enforcer* nudges a required-but-unchecked
+beat (`chronicler` at close, `reviewer` at a checkpoint) at the moment you try to
+close or advance. Both are advisory — they steer the session back to the ledger,
+never block it.
 
 ## 5. Mission lifecycle (multi-session work)
 
@@ -300,6 +310,17 @@ the fresh-context `reviewer` VERIFIES. No specialist self-approves, merges, or
 pushes the default branch. Reach for them when a session has a clear single-domain
 slice, or when a mission has parallel slices that can run at once; a plain session
 on the main agent is fine for small or cross-cutting work.
+
+**Intake** (`intake`) is the front-door classifier for an un-invoked request:
+when a plain-language work request arrives mid-chat with no command (the router
+hook nudges it), the orchestrator spawns `intake` to classify its altitude
+(mirroring `/agentic-workflow:next`'s tree — raw idea → brainstorm, defined feature → plan →
+mission, small isolated → fix, unsure → next), shape it into a crisp problem
+statement, and RETURN the recommended `/agentic-workflow:` route. It only reads and
+recommends — it never runs commands, spawns agents, builds, or merges; the
+**orchestrator drives** the recommended flow and the human owns every gate. It
+also distinguishes a work request from plain conversation, never command-ifying
+chat.
 
 **Brainstormer** (`brainstormer`) works at the very front of V0, upstream of the
 researcher: it turns a raw, fuzzy idea into 2–3 genuinely distinct framings —
@@ -404,6 +425,19 @@ one set of measurements instead of three improvised estimates. It specifies
 instrumentation (implementers wire it, with review) and never invents a
 number: unmeasured stays "unmeasured".
 
+**Compass** (`compass`) holds the venture's *direction*: where the hooks keep the
+orchestrator on protocol, `compass` keeps it on **purpose**. It owns
+`docs/product/north-star.md` (human-owned Purpose + worthy-progress definition +
+a live done-vs-roadmap rollup it maintains) and runs at strategic beats — a new
+`intake` request, a phase-end, a periodic `/agentic-workflow:operate` sweep, or
+on demand — judging whether the work in flight advances the end-goal. On a
+concrete, named strategic drift it fires ONE **Alert-tier §12** owner
+notification (severity- and frequency-gated so it never cries wolf, secrets by
+name only, owner-only). It flags; it never decides, kills, builds, or merges —
+purpose-misalignment is the human's call. Distinct from `advisor` (red-teams one
+pending decision) and `analyst` (measures numbers); it runs independently of
+`intake` and is never a hard gate on a route.
+
 ### 6.1 Documentation of record (Chronicler)
 
 Three artifacts kept current so the project's story survives any single session:
@@ -470,14 +504,16 @@ drive the real flow, confirm monitoring is receiving, record the result).
 
 ## 9. How this maps to the plugin
 
-- Agents ship with the plugin: `brainstormer` (V0 idea-shaping, front of the
-  lifecycle), `researcher` (V0 validation), `designer`
+- Agents ship with the plugin: `intake` (front-door classifier — routes an
+  un-invoked plain-language request by altitude), `brainstormer` (V0 idea-shaping,
+  front of the lifecycle), `researcher` (V0 validation), `designer`
   (V1–V2 brand/UX, journeys/IA, V4 usability pass), `architect` (V1
   shape-before-build option memos), `business` (V1/V5/V6 model, pricing,
   business documents), `planner` (mission decomposition), `advisor` (decision
   red-team at the human gates, via `/agentic-workflow:counsel`), `marketing` (V5–V6
   go-to-market), `ops` (V6 operations), `analyst` (measurement engine),
-  `writer` (optional copy craft — owns the copy kit/glossary), `reviewer`,
+  `compass` (holds the venture's direction — owns the north-star, flags strategic
+  drift), `writer` (optional copy craft — owns the copy kit/glossary), `reviewer`,
   `chronicler`, and the specialist implementers `backend`, `frontend`,
   `security`, `devops` (CI/CD, deploy, releases).
 - **Model tuning**: `/agentic-workflow:tune <agent> <model>` shadows a plugin agent with a
@@ -520,7 +556,9 @@ drive the real flow, confirm monitoring is receiving, record the result).
   the publishing pipeline (`publish-queue.md`, `publish-log.md`),
   the `session-handoff.md` re-read manifest,
   the business set (`business-executive-summary.md`, `business-model.md`,
-  `business-pricing.md`), and this protocol live under the plugin's `templates/`.
+  `business-pricing.md`), the `compass`'s `north-star.md` (Purpose +
+  worthy-progress definition + done-vs-roadmap rollup), and this protocol live
+  under the plugin's `templates/`.
 
 ## 10. Project profile (filled by `/adopt`, 2026-07-08)
 
@@ -728,7 +766,11 @@ This role and the ingest capability that populates the commons — `/agentic-wor
 which copies a reusable first-party artifact into `commons/code/<slug>/`, pins its
 provenance, and writes its index entry as a delegable bookkeeping PR — are each
 specified in their own protocol surface; §13 fixes only the shared layout and the
-invariants they operate on.
+invariants they operate on. The commons is **portfolio-global**, not owned by any
+one venture: `/agentic-workflow:ingest` resolves its target registry by
+`--registry` flag → the registry repo it is run inside → the current venture's §10
+Portfolio row → a global default (`~/.config/agentic-workflow/registry`), so a
+codebase can be harvested without first adopting it as a portfolio project.
 
 **Brokering is single-best-match (k=1), never a top-N firehose.** The default is
 a **read-protocol**: a consumer that needs prior art reads `commons/index.md`,
