@@ -251,6 +251,18 @@ function checkHooks() {
     if (res.status !== 0)
       fail(file, null, `hook command fails bash syntax check: ${res.stderr.trim().split('\n')[0]}`);
   }
+  // Hook bodies extracted into hooks/lib/*.sh (invoked via ${CLAUDE_PLUGIN_ROOT})
+  // aren't inside a `command` string, so syntax-check them directly too.
+  const libDir = path.join(PLUGIN, 'hooks/lib');
+  if (existsSync(libDir)) {
+    for (const f of readdirSync(libDir)) {
+      if (!f.endsWith('.sh')) continue;
+      const abs = path.join(libDir, f);
+      const res = spawnSync('bash', ['-n', abs], { encoding: 'utf8' });
+      if (res.status !== 0)
+        fail(abs, null, `hook script fails bash syntax check: ${res.stderr.trim().split('\n')[0]}`);
+    }
+  }
 }
 
 // Reject suspiciously long single lines in tracked source — the signature of a
