@@ -5,6 +5,14 @@ here, in [Keep a Changelog](https://keepachangelog.com/) format. This repo
 has no tags — each version-stamped commit on `main` IS the release.
 
 ## [Unreleased]
+### Fixed
+- **Beat-enforcer `Stop` hook no longer loops (v1.39.1).** The governance Stop
+  hook emitted a soft "beat pending" nudge but lacked the `stop_hook_active`
+  guard, so Claude Code re-fired it on every stop attempt — an infinite nudge
+  loop on any project with an active `.plans/*.state.md` ledger holding an
+  unchecked checkpoint/chronicler/reviewer row, until the stop-hook block cap.
+  It now checks `stop_hook_active` first and exits silently on a re-fire, so it
+  nudges once and lets the turn end (still never blocks — `exit 0` only).
 ### Added
 - **Orchestrator governance** — a reflex layer plus two front-door agents that
   keep the orchestrator on protocol *and* on purpose:
