@@ -13,7 +13,8 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const HOOKS = path.join(ROOT, 'plugins/agentic-workflow/hooks/hooks.json');
+const PLUGIN = path.join(ROOT, 'plugins/agentic-workflow');
+const HOOKS = path.join(PLUGIN, 'hooks/hooks.json');
 
 // Pull one hook command out of hooks.json by event, disambiguated by a substring
 // of its authored `description` (the file gives every hook a descriptive one).
@@ -39,6 +40,9 @@ function runHook({ event, desc, input = {}, ledgers }) {
     }
     const r = spawnSync('bash', ['-c', hookCommand(event, desc)], {
       cwd: dir, input: JSON.stringify(input), encoding: 'utf8',
+      // Claude Code exports CLAUDE_PLUGIN_ROOT to hook processes; mirror it so a
+      // hook that invokes `${CLAUDE_PLUGIN_ROOT}/hooks/lib/*.sh` resolves here.
+      env: { ...process.env, CLAUDE_PLUGIN_ROOT: PLUGIN },
     });
     return { code: r.status, stdout: r.stdout || '', stderr: r.stderr || '' };
   } finally {

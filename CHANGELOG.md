@@ -97,6 +97,14 @@ has no tags — each version-stamped commit on `main` IS the release.
     `/welcome`, `/bootstrap`, and `/adopt` offer to invoke the recommended
     command (SlashCommand) so users don't type or namespace it by hand.
 ### Changed
+- **Beat-enforcer hook bodies extracted to `hooks/lib/*.sh` (v1.39.3).** The two
+  beat-enforcers (the `Stop` backstop and the `PreToolUse` closing-action nudge)
+  moved from inline JSON one-liners into reviewable, commented scripts invoked via
+  `bash "${CLAUDE_PLUGIN_ROOT}/hooks/lib/…"`. Behavior is byte-for-byte preserved —
+  proven by the 11-case hook harness, which now dispatches the extracted scripts
+  (it exports `CLAUDE_PLUGIN_ROOT`). `tools/lint.mjs` also syntax-checks
+  `hooks/lib/*.sh`. First step of the "make the hook layer reviewable" hardening;
+  the remaining hooks follow test-first, each with harness coverage before it moves.
 - `tools/lint.mjs` parses the namespaced command form and enforces it.
 ### Added (earlier this cycle)
 - Context firewall (§6.2) — protects the main agent from context-window bloat
