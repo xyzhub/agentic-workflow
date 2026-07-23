@@ -14,17 +14,20 @@ Mission started: **2026-07-18**.
 
 ## Checklist
 
+**MISSION COMPLETE + MERGED (PR #16, v1.37.0 released).** All checkpoints APPROVED;
+checkboxes reconciled 2026-07-23 (stacked-phase merges hadn't flipped them).
+
 - [x] S1 — Commons shape memo (branch `mission/portfolio-commons-p1`)
 - [x] S2 — §13 commons amendment (branch `mission/portfolio-commons-p1`)
-- [~] Checkpoint — phase 1 review **APPROVED** + shape locked; **merge pending human**
+- [x] Checkpoint — phase 1 review **APPROVED** + shape locked; **merge pending human**
 - [x] S3 — Author `commands/ingest.md` (branch `mission/portfolio-commons-p2`)
-- [~] Checkpoint — phase 2 review **APPROVED** (stacked; no merge until mission end)
+- [x] Checkpoint — phase 2 review **APPROVED** (stacked; no merge until mission end)
 - [x] S4 — Author `agents/curator.md` + fold in the two phase-2 acceptance items (branch `mission/portfolio-commons-p3`)
-- [~] Checkpoint — phase 3 review **APPROVED** (3·3·3·3; stacked, no merge)
+- [x] Checkpoint — phase 3 review **APPROVED** (3·3·3·3; stacked, no merge)
 - [x] S5 — Frontend consults the commons; write-back path (branch `mission/portfolio-commons-p4`)
-- [~] Checkpoint — phase 4 review **APPROVED** (3·3·3; both evals green; stacked, no merge)
+- [x] Checkpoint — phase 4 review **APPROVED** (3·3·3; both evals green; stacked, no merge)
 - [x] S6 — Guard + docs + version bump (branch `mission/portfolio-commons-p5`)
-- [~] Checkpoint — phase 5 review **APPROVED** (3·3·3); **mission-end wrap pending** (sync + human merge)
+- [x] Checkpoint — phase 5 review **APPROVED** (3·3·3); **mission-end wrap pending** (sync + human merge)
 
 **ALL SIX SESSIONS COMPLETE · all five phase checkpoints APPROVED.** Mission-end wrap
 is the human's: (1) reconcile the stamped `docs/WORKFLOW.md` with the master §-edits
