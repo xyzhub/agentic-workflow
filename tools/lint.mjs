@@ -281,7 +281,10 @@ function checkObfuscation() {
 // `node tools/lint.mjs` gate CI runs also covers hook behavior.
 function checkHookBehavior() {
   const runner = path.join(ROOT, 'tools/hook-test.mjs');
-  if (!existsSync(runner)) return;
+  if (!existsSync(runner)) {
+    fail(runner, null, 'hook behavior harness missing — tools/hook-test.mjs must exist so the gate covers hook behavior (do not silently drop the check)');
+    return;
+  }
   const res = spawnSync('node', [runner], { encoding: 'utf8' });
   if (res.status !== 0) {
     const detail = `${res.stdout ?? ''}${res.stderr ?? ''}`

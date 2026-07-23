@@ -12,9 +12,11 @@ has no tags — each version-stamped commit on `main` IS the release.
   `[~]` checkpoint already marked **APPROVED** and only awaiting a human merge. That
   fired a spurious "spawn the reviewer" nudge every turn-end for work already done
   (the residual false-positive left after the v1.39.1 loop fix). Both now exclude
-  beats carrying an approved / awaiting-human marker (`approved`, `pending human`,
-  `merge pending`, `human merge`, `human locks`, `wrap pending`), so only a
-  genuinely-unreviewed beat nudges. Locked by the new hook harness below.
+  beats whose row carries a **bold** approved / awaiting-human status marker
+  (`**APPROVED**`, `**merge pending human**`, `**…wrap pending**`, …) — anchored to
+  the bold form so ordinary feature text that merely mentions "approved" still
+  nudges — so only a genuinely-unreviewed beat fires. Locked by the new hook
+  harness below.
 - **Beat-enforcer `Stop` hook no longer loops (v1.39.1).** The governance Stop
   hook emitted a soft "beat pending" nudge but lacked the `stop_hook_active`
   guard, so Claude Code re-fired it on every stop attempt — an infinite nudge

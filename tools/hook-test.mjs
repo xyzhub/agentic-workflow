@@ -156,6 +156,56 @@ const commit = { tool_input: { command: 'git commit -m "wip"' } };
     `code=${r.code} stdout=${JSON.stringify(r.stdout)}`);
 }
 
+// F1 over-match guard: an unbolded "approved" in ordinary feature text must NOT
+// silence a genuinely-unreviewed beat. The exclusion keys on this protocol's
+// bold status markers (**APPROVED**, **merge pending human**), never any substring.
+const APPROVED_IN_FEATURE_TEXT = [
+  '## Checklist',
+  '- [ ] Checkpoint — reviewer to verify the approved-senders flow',
+  '',
+].join('\n');
+{
+  const r = runHook({
+    event: 'Stop', desc: BEAT_ENFORCER_STOP,
+    input: { stop_hook_active: false },
+    ledgers: { 'm.state.md': APPROVED_IN_FEATURE_TEXT },
+  });
+  check('Stop: unbolded "approved" in feature text → still nudges',
+    r.code === 0 && nudged(r),
+    `code=${r.code} stdout=${JSON.stringify(r.stdout)}`);
+}
+
+// F2 per-marker: each status marker excludes on its own (bolded, in isolation),
+// so a regression in any single marker is caught (the combined fixture masks it).
+const APPROVED_ONLY = '## Checklist\n- [~] Checkpoint — phase 3 review **APPROVED** (stacked; no merge)\n';
+const MERGE_PENDING_ONLY = '## Checklist\n- [~] Checkpoint — phase 2 **merge pending human**\n';
+for (const [label, led] of [['approved-only', APPROVED_ONLY], ['merge-pending-only', MERGE_PENDING_ONLY]]) {
+  const r = runHook({
+    event: 'Stop', desc: BEAT_ENFORCER_STOP,
+    input: { stop_hook_active: false }, ledgers: { 'm.state.md': led },
+  });
+  check(`Stop: ${label} bold marker → silent`, r.code === 0 && !nudged(r),
+    `code=${r.code} stdout=${JSON.stringify(r.stdout)}`);
+}
+
+// F4 mixed ledger: an approved [~] row followed by a genuine [ ] row still nudges,
+// and nudges about the pending one (the filter-then-`head -1` interaction).
+const MIXED = [
+  '## Checklist',
+  '- [~] Checkpoint — phase 1 review **APPROVED**; **merge pending human**',
+  '- [ ] Checkpoint — phase 2 review',
+  '',
+].join('\n');
+{
+  const r = runHook({
+    event: 'Stop', desc: BEAT_ENFORCER_STOP,
+    input: { stop_hook_active: false }, ledgers: { 'm.state.md': MIXED },
+  });
+  check('Stop: approved row then genuine pending → nudges the pending one',
+    r.code === 0 && nudged(r) && /phase 2/.test(r.stdout),
+    `code=${r.code} stdout=${JSON.stringify(r.stdout)}`);
+}
+
 if (failures.length) {
   console.error(`\nhook-test: ${failures.length} failure(s)`);
   process.exit(1);
