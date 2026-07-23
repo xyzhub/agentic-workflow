@@ -273,7 +273,27 @@ function checkObfuscation() {
   }
 }
 
-for (const check of [checkManifests, checkAgents, checkCommands, checkCrossRefs, checkTemplateRefs, checkSections, checkFrontmatterYaml, checkHooks, checkObfuscation]) {
+// ── 8. Hook behavior (tier-1.5) ──────────────────────────────────────────
+// The structural checks above prove hook commands *parse* (bash -n); they can't
+// prove they *behave* — the 2026-07 beat-enforcer Stop-hook loop shipped green
+// past a syntax check. Delegate to the dispatch harness, which pipes fixture
+// stdin through each hook and asserts its exit code + emitted nudge, so the one
+// `node tools/lint.mjs` gate CI runs also covers hook behavior.
+function checkHookBehavior() {
+  const runner = path.join(ROOT, 'tools/hook-test.mjs');
+  if (!existsSync(runner)) {
+    fail(runner, null, 'hook behavior harness missing — tools/hook-test.mjs must exist so the gate covers hook behavior (do not silently drop the check)');
+    return;
+  }
+  const res = spawnSync('node', [runner], { encoding: 'utf8' });
+  if (res.status !== 0) {
+    const detail = `${res.stdout ?? ''}${res.stderr ?? ''}`
+      .split('\n').filter((l) => /FAIL|failure|Error/.test(l)).join(' | ');
+    fail(runner, null, `hook behavior test failed — run \`node tools/hook-test.mjs\`: ${detail || '(no detail)'}`);
+  }
+}
+
+for (const check of [checkManifests, checkAgents, checkCommands, checkCrossRefs, checkTemplateRefs, checkSections, checkFrontmatterYaml, checkHooks, checkObfuscation, checkHookBehavior]) {
   check();
 }
 
