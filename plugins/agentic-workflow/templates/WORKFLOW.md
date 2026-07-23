@@ -244,7 +244,7 @@ The plan trio, written by a dedicated planning session:
 |---|---|
 | `.plans/<mission>.md` | Master plan: numbered tasks with acceptance criteria, **locked decisions (dated)**, risks, open questions each with a recommendation |
 | `.plans/<mission>.sessions.md` | One brief per session: pre-resolved reads (file → measured line count → anchors), do/verify steps, read budget; phases with named branches |
-| `.plans/<mission>.state.md` | Ledger: checklist, deviations log, handoff log (≤10 lines each, newest first), `Next up:` |
+| `.plans/<mission>.state.md` | Ledger: checklist, deviations log, handoff log (≤10 lines each, newest first), `Next up:`. Checklist glyphs: `[ ]` not started · `[~]` in-flight / deferred / awaiting owner · `[x]` done — the beat-enforcer nudges only on a not-started `[ ]` checkpoint/reviewer/chronicler row, so set `[~]` when a beat is picked up or parked |
 
 Rules: briefs pre-resolve targets so execution sessions never explore; one branch
 per phase, merged at checkpoint per the **gate policy** below; migrations and

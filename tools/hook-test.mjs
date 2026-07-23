@@ -5,6 +5,10 @@
 // throwaway cwd and asserts exit code + emitted nudge. The 2026-07 beat-enforcer
 // Stop-hook loop shipped green through lint because lint can't dispatch a hook;
 // this harness closes that gap. Run: node tools/hook-test.mjs  (0 = pass, 1 = fail)
+//
+// The beat-enforcers key on the ledger's checkbox GLYPH, never the row's prose:
+//   [ ] not started → may nudge   ·   [~] parked/in-flight/deferred → silent
+//   [x] done → silent
 
 import { readFileSync, mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
@@ -60,154 +64,75 @@ function check(name, cond, detail) {
 // hookSpecificOutput.additionalContext JSON; PreToolUse echoes it to stdout).
 const nudged = (r) => /Beat pending/.test(r.stdout);
 
-const BEAT_ENFORCER_STOP = 'beat-enforcer backstop';
-
-// A checkpoint that has already been reviewed (APPROVED) and is only waiting on a
-// human merge — the recurring 2026-07 false-positive. The review is done; the
-// beat is a human gate, not a forgotten agent spawn, so it must NOT nudge.
-const APPROVED_MERGE_PENDING = [
-  '## Checklist',
-  '- [x] S1 — shape memo',
-  '- [~] Checkpoint — phase 1 review **APPROVED** + shape locked; **merge pending human**',
-  '',
-].join('\n');
-
-// RED: approved / merge-pending checkpoint → the beat-enforcer stays silent.
-{
-  const r = runHook({
-    event: 'Stop', desc: BEAT_ENFORCER_STOP,
-    input: { stop_hook_active: false },
-    ledgers: { 'm.state.md': APPROVED_MERGE_PENDING },
-  });
-  check('Stop: approved/merge-pending checkpoint → silent',
-    r.code === 0 && !nudged(r),
-    `code=${r.code} stdout=${JSON.stringify(r.stdout)}`);
-}
-
-// A genuinely-unreviewed checkpoint — the beat-enforcer SHOULD still nudge here,
-// proving the exclusion filter didn't neuter the hook.
-const PENDING_REVIEW = [
-  '## Checklist',
-  '- [x] S1 — build the thing',
-  '- [ ] Checkpoint — phase 2 review',
-  '',
-].join('\n');
-
-// Control: a real unreviewed checkpoint still nudges at turn-end.
-{
-  const r = runHook({
-    event: 'Stop', desc: BEAT_ENFORCER_STOP,
-    input: { stop_hook_active: false },
-    ledgers: { 'm.state.md': PENDING_REVIEW },
-  });
-  check('Stop: genuinely-pending review → nudges', r.code === 0 && nudged(r),
-    `code=${r.code} stdout=${JSON.stringify(r.stdout)}`);
-}
-
-// Regression: the re-fire guard — a Stop re-fire (stop_hook_active) stays silent
-// even with a pending beat. This is the 2026-07 infinite-loop guard (v1.39.1).
-{
-  const r = runHook({
-    event: 'Stop', desc: BEAT_ENFORCER_STOP,
-    input: { stop_hook_active: true },
-    ledgers: { 'm.state.md': PENDING_REVIEW },
-  });
-  check('Stop: re-fire (stop_hook_active) → silent', r.code === 0 && !nudged(r),
-    `code=${r.code} stdout=${JSON.stringify(r.stdout)}`);
-}
-
-// Regression: no .plans/ at all → silent (nothing to enforce).
-{
-  const r = runHook({ event: 'Stop', desc: BEAT_ENFORCER_STOP, input: { stop_hook_active: false } });
-  check('Stop: no .plans/ → silent', r.code === 0 && !nudged(r),
-    `code=${r.code} stdout=${JSON.stringify(r.stdout)}`);
-}
-
-// The PreToolUse beat-enforcer (fires on the closing action: commit / PR create|
-// merge) carries the identical bug and must get the identical exclusion.
-const BEAT_ENFORCER_PRE = 'beat-enforcer (D4, PreToolUse';
+const STOP = 'beat-enforcer backstop';
+const PRE = 'beat-enforcer (D4, PreToolUse';
 const commit = { tool_input: { command: 'git commit -m "wip"' } };
+const ledger = (...rows) => ({ 'm.state.md': ['## Checklist', ...rows, ''].join('\n') });
 
-// RED: approved/merge-pending checkpoint → PreToolUse enforcer stays silent.
+// ── Ledger fixtures, keyed by glyph ──────────────────────────────────────
+// A not-started checkpoint — the enforcer should nudge.
+const NOT_STARTED = ledger('- [x] S1 — build', '- [ ] Checkpoint — Phase 2 review');
+// A parked/in-flight checkpoint (plain [~], no prose markers) — the author's
+// "hands off" signal. This is the exact case that used to slip the old prose
+// matching; it must be silent purely on the glyph.
+const PARKED = ledger('- [x] S1 — build', '- [~] Checkpoint — Phase 1 review (Fable)');
+// A [~] row that also carries approved/awaiting-human prose — still silent, and
+// the reason is the glyph, not the words.
+const PARKED_WITH_PROSE = ledger('- [~] Checkpoint — phase 1 review **APPROVED**; **merge pending human**');
+// A not-started [ ] row whose feature text merely mentions "approved" — prose is
+// irrelevant, so it still nudges (guards against any prose-based silencing).
+const APPROVED_IN_TEXT = ledger('- [ ] Checkpoint — reviewer to verify the approved-senders flow');
+// A parked [~] row followed by a genuinely not-started [ ] row — nudges the [ ] one.
+const MIXED = ledger('- [~] Checkpoint — phase 1 review **APPROVED**', '- [ ] Checkpoint — phase 2 review');
+// Nothing not-started — every row parked or done. Silent.
+const NONE_OPEN = ledger('- [x] S1 — build', '- [~] Checkpoint — phase 1 review');
+
+// ── Stop backstop (fires every turn-end) ─────────────────────────────────
 {
-  const r = runHook({
-    event: 'PreToolUse', desc: BEAT_ENFORCER_PRE, input: commit,
-    ledgers: { 'm.state.md': APPROVED_MERGE_PENDING },
-  });
-  check('PreToolUse: approved/merge-pending checkpoint → silent',
-    r.code === 0 && !nudged(r),
-    `code=${r.code} stdout=${JSON.stringify(r.stdout)}`);
+  const r = runHook({ event: 'Stop', desc: STOP, input: { stop_hook_active: false }, ledgers: NOT_STARTED });
+  check('Stop: not-started [ ] checkpoint → nudges', r.code === 0 && nudged(r), `stdout=${JSON.stringify(r.stdout)}`);
+}
+{
+  const r = runHook({ event: 'Stop', desc: STOP, input: { stop_hook_active: false }, ledgers: PARKED });
+  check('Stop: parked [~] checkpoint → silent (glyph)', r.code === 0 && !nudged(r), `stdout=${JSON.stringify(r.stdout)}`);
+}
+{
+  const r = runHook({ event: 'Stop', desc: STOP, input: { stop_hook_active: false }, ledgers: PARKED_WITH_PROSE });
+  check('Stop: [~] with approved/human prose → silent (glyph, not prose)', r.code === 0 && !nudged(r), `stdout=${JSON.stringify(r.stdout)}`);
+}
+{
+  const r = runHook({ event: 'Stop', desc: STOP, input: { stop_hook_active: false }, ledgers: APPROVED_IN_TEXT });
+  check('Stop: [ ] with "approved" in feature text → still nudges (prose ignored)', r.code === 0 && nudged(r), `stdout=${JSON.stringify(r.stdout)}`);
+}
+{
+  const r = runHook({ event: 'Stop', desc: STOP, input: { stop_hook_active: false }, ledgers: MIXED });
+  check('Stop: parked [~] then not-started [ ] → nudges the [ ] one', r.code === 0 && nudged(r) && /phase 2/.test(r.stdout), `stdout=${JSON.stringify(r.stdout)}`);
+}
+{
+  const r = runHook({ event: 'Stop', desc: STOP, input: { stop_hook_active: false }, ledgers: NONE_OPEN });
+  check('Stop: nothing not-started → silent', r.code === 0 && !nudged(r), `stdout=${JSON.stringify(r.stdout)}`);
+}
+{ // the v1.39.1 re-fire guard: a Stop re-fire stays silent even with an open beat.
+  const r = runHook({ event: 'Stop', desc: STOP, input: { stop_hook_active: true }, ledgers: NOT_STARTED });
+  check('Stop: re-fire (stop_hook_active) → silent', r.code === 0 && !nudged(r), `stdout=${JSON.stringify(r.stdout)}`);
+}
+{
+  const r = runHook({ event: 'Stop', desc: STOP, input: { stop_hook_active: false } });
+  check('Stop: no .plans/ → silent', r.code === 0 && !nudged(r), `stdout=${JSON.stringify(r.stdout)}`);
 }
 
-// Control: a real unreviewed checkpoint still nudges at the closing action.
+// ── PreToolUse enforcer (fires only at the closing action) ────────────────
 {
-  const r = runHook({
-    event: 'PreToolUse', desc: BEAT_ENFORCER_PRE, input: commit,
-    ledgers: { 'm.state.md': PENDING_REVIEW },
-  });
-  check('PreToolUse: genuinely-pending review → nudges', r.code === 0 && nudged(r),
-    `code=${r.code} stdout=${JSON.stringify(r.stdout)}`);
+  const r = runHook({ event: 'PreToolUse', desc: PRE, input: commit, ledgers: NOT_STARTED });
+  check('PreToolUse: not-started [ ] checkpoint → nudges', r.code === 0 && nudged(r), `stdout=${JSON.stringify(r.stdout)}`);
 }
-
-// Regression: a non-closing command (not commit/PR) never nudges, pending or not.
 {
-  const r = runHook({
-    event: 'PreToolUse', desc: BEAT_ENFORCER_PRE,
-    input: { tool_input: { command: 'ls -la' } },
-    ledgers: { 'm.state.md': PENDING_REVIEW },
-  });
-  check('PreToolUse: non-closing command → silent', r.code === 0 && !nudged(r),
-    `code=${r.code} stdout=${JSON.stringify(r.stdout)}`);
+  const r = runHook({ event: 'PreToolUse', desc: PRE, input: commit, ledgers: PARKED });
+  check('PreToolUse: parked [~] checkpoint → silent (glyph)', r.code === 0 && !nudged(r), `stdout=${JSON.stringify(r.stdout)}`);
 }
-
-// F1 over-match guard: an unbolded "approved" in ordinary feature text must NOT
-// silence a genuinely-unreviewed beat. The exclusion keys on this protocol's
-// bold status markers (**APPROVED**, **merge pending human**), never any substring.
-const APPROVED_IN_FEATURE_TEXT = [
-  '## Checklist',
-  '- [ ] Checkpoint — reviewer to verify the approved-senders flow',
-  '',
-].join('\n');
 {
-  const r = runHook({
-    event: 'Stop', desc: BEAT_ENFORCER_STOP,
-    input: { stop_hook_active: false },
-    ledgers: { 'm.state.md': APPROVED_IN_FEATURE_TEXT },
-  });
-  check('Stop: unbolded "approved" in feature text → still nudges',
-    r.code === 0 && nudged(r),
-    `code=${r.code} stdout=${JSON.stringify(r.stdout)}`);
-}
-
-// F2 per-marker: each status marker excludes on its own (bolded, in isolation),
-// so a regression in any single marker is caught (the combined fixture masks it).
-const APPROVED_ONLY = '## Checklist\n- [~] Checkpoint — phase 3 review **APPROVED** (stacked; no merge)\n';
-const MERGE_PENDING_ONLY = '## Checklist\n- [~] Checkpoint — phase 2 **merge pending human**\n';
-for (const [label, led] of [['approved-only', APPROVED_ONLY], ['merge-pending-only', MERGE_PENDING_ONLY]]) {
-  const r = runHook({
-    event: 'Stop', desc: BEAT_ENFORCER_STOP,
-    input: { stop_hook_active: false }, ledgers: { 'm.state.md': led },
-  });
-  check(`Stop: ${label} bold marker → silent`, r.code === 0 && !nudged(r),
-    `code=${r.code} stdout=${JSON.stringify(r.stdout)}`);
-}
-
-// F4 mixed ledger: an approved [~] row followed by a genuine [ ] row still nudges,
-// and nudges about the pending one (the filter-then-`head -1` interaction).
-const MIXED = [
-  '## Checklist',
-  '- [~] Checkpoint — phase 1 review **APPROVED**; **merge pending human**',
-  '- [ ] Checkpoint — phase 2 review',
-  '',
-].join('\n');
-{
-  const r = runHook({
-    event: 'Stop', desc: BEAT_ENFORCER_STOP,
-    input: { stop_hook_active: false }, ledgers: { 'm.state.md': MIXED },
-  });
-  check('Stop: approved row then genuine pending → nudges the pending one',
-    r.code === 0 && nudged(r) && /phase 2/.test(r.stdout),
-    `code=${r.code} stdout=${JSON.stringify(r.stdout)}`);
+  const r = runHook({ event: 'PreToolUse', desc: PRE, input: { tool_input: { command: 'ls -la' } }, ledgers: NOT_STARTED });
+  check('PreToolUse: non-closing command → silent', r.code === 0 && !nudged(r), `stdout=${JSON.stringify(r.stdout)}`);
 }
 
 if (failures.length) {

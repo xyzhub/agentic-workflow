@@ -45,8 +45,9 @@ Read `.plans/<mission>.state.md` → `Next up:`. For each pending brief:
 1. Route it to the right agent from the brief (`backend`/`frontend`/`security`/
    `devops`, or the main session for cross-cutting work). Spawn it with the brief;
    it follows the pre-resolved reads and read budget, builds, and verifies gates.
-2. On its return: confirm gates are green and the ledger was updated (checkbox,
-   handoff entry, `Next up:` advanced). Apply the **one-corrective-retry rule** —
+2. On its return: confirm gates are green and the ledger was updated (the row
+   marked `[x]` when verified — or `[~]` if it is parked/awaiting you, never left
+   `[ ]` once picked up — handoff entry, `Next up:` advanced). Apply the **one-corrective-retry rule** —
    on failure, re-spawn once with a corrective note; if it fails again, stop and
    surface to the human.
 3. **Merge rule**: if a brief finished well under budget and the next brief is in
@@ -60,6 +61,11 @@ Spawn the **reviewer** agent (fresh context): it re-runs all gates, diff-reviews
 `<base>..<head>`, performs deferred manual/live items, and returns APPROVE or
 REQUEST CHANGES plus a scorecard (per-lens 0–3, diff-touched lenses only at
 routine checkpoints — see §5). Include the scorecard in the ledger handoff entry.
+
+Mark the checkpoint row `[~]` when you spawn the reviewer (in-flight), and flip it
+to `[x]` on APPROVE — or leave `[~]` if it is APPROVE-but-merge-pending. The
+beat-enforcer keys on the glyph (`[ ]` not started → it may nudge; `[~]`/`[x]` →
+silent), so keeping marks current stops it nudging about work already in hand.
 
 - **APPROVE** → apply the gate policy. `human-merge` (default): pause for the
   **human to merge** the phase branch (never merge the default branch yourself;
