@@ -2,7 +2,7 @@
 
 An **agentic operating protocol** that carries any project from a raw idea to
 a launched, viable product — and keeps operating it after launch. Packaged as
-a Claude Code plugin: 17 agents, 25 commands, guardrail hooks, a protocol
+a Claude Code plugin: 20 agents, 26 commands, guardrail hooks, a protocol
 document every project carries, and an eval suite that tests the prompts
 themselves.
 
@@ -191,6 +191,13 @@ unless the target repo's §10 Merge policy delegates them (fail closed); warns
 on tag pushes that may deploy; reminds on commit format, gates, and doc
 updates for high-impact files. Checks evaluate in the command's **target
 repo** and read pre-execution state.
+
+Three **governance reflexes** (advisory, never block) keep a session on the
+protocol without it being read: the **router** nudges an un-prefixed work request
+to route through the workflow (hand to `intake`); the **thread-keeper** surfaces
+the active ledger's phase + `Next up:` + first open beat each turn; the
+**beat-enforcer** nudges a required-but-unchecked ledger beat (`chronicler` at
+close, `reviewer` at a checkpoint) at the moment you try to close or advance.
 
 ## What the human always owns
 

@@ -26,7 +26,7 @@ _All unchecked at start. Checked only when the work is verified, not merely writ
 - [ ] Checkpoint — phase 3 review + merge per gate policy
 - [x] S5 — `compass` agent + north-star template + **LIVE** gated §12 notify (branch `mission/orchestrator-governance-p4`)
 - [ ] Checkpoint — phase 4 review (LIVE §12 + security lens on notify path)
-- [ ] S6 — Docs + version bump + governance eval + sync (branch `mission/orchestrator-governance-p5`)
+- [x] S6 — Docs + version bump + governance eval (sync deferred to post-release) (branch `mission/orchestrator-governance-p5`)
 - [ ] Checkpoint — phase 5 review + eval green; mission-end wrap per gate policy
 
 ## Open questions
@@ -84,6 +84,31 @@ _Any departure from a brief — logged here the moment it happens, with why._
 _≤10 lines per entry: what this session did, the verify signal, the branch, and
 what the next session needs. Newest on top; crash-safe by write-ahead._
 
+- **S6 (2026-07-23, backend)** — Final docs/version/eval pass. **Master `WORKFLOW.md`:**
+  §3 → three governance-hook rows (router / thread-keeper / beat-enforcer, all advisory,
+  never-block); §4 → a "Reflex backstops" amendment (thread-keeper + beat-enforcer keep a
+  session on-protocol, steer never block); §6 intake/compass role paragraphs confirmed
+  already full from S4/S5 (left as-is); **§9 catalog (P4 finding-2 fix)** → added `intake`
+  + `compass` to the agent list AND `north-star.md` to the template catalog. **North-star
+  wiring (finding-2 orphan fix):** `compass.md` now seeds `docs/product/north-star.md` from
+  `${CLAUDE_PLUGIN_ROOT}/templates/north-star.md` on first run (Purpose left human-owned) —
+  gives compass its create path and resolves the template ref. **READMEs:** plugin header
+  count **17 agents/25 commands → 20/26** (measured: 20 `agents/*.md`, 26 `commands/*.md`);
+  governance-hooks note added to the plugin Guardrails section; intake/compass agent rows +
+  root agent/command lists already present from S4/S5. **`plugin.json`:** 1.38.0 → **1.39.0**.
+  **`CHANGELOG.md`:** `[Unreleased]` `### Added` "Orchestrator governance" entry (3 hooks +
+  intake + compass + north-star template). **Governance eval (AUTHORED, NOT RUN):**
+  `evals/scenarios/plain-request-routing/` (scenario.md + rubric.md + checks.mjs + fixture
+  with a stub `docs/WORKFLOW.md`), registered in `evals/README.md`'s table — a plain
+  un-prefixed work request must be routed via the protocol, not silently built on main; run
+  deferred to pre-release (~$1–5, background-flaky). **`/agentic-workflow:sync` NOT run** —
+  installed plugin is 1.38.0, so sync would pull a stale master over `docs/WORKFLOW.md` and
+  drop these v1.39.0 edits; docs sync is a **post-release step** (after 1.39.0 installs),
+  same as portfolio-commons. Verify: `node tools/lint.mjs` → **`lint: clean`** (cross-refs
+  both ways, § integrity, obfuscation, `templates/north-star.md` resolves); `node --check
+  evals/.../checks.mjs` OK; `docs/WORKFLOW.md` NOT hand-edited. Branch:
+  `mission/orchestrator-governance-p5`. Next: the phase-5 checkpoint (reviewer, fresh
+  context).
 - **S5 (2026-07-23, backend)** — Authored `plugins/agentic-workflow/templates/north-star.md`
   + `plugins/agentic-workflow/agents/compass.md`. **North-star schema (D5):** Purpose
   (human-owned, stable end-goal) + Definition of worthy progress (advances-vs-anti-goals
@@ -192,15 +217,16 @@ what the next session needs. Newest on top; crash-safe by write-ahead._
   `node tools/lint.mjs` clean. Branch: `mission/orchestrator-governance-p1`. Next
   session (S2) builds the router + thread-keeper hooks from the locked choices.
 
-Next up: **the phase-4 checkpoint** — the independent `reviewer` (fresh context,
-**security lens**) checks `plugins/agentic-workflow/agents/compass.md` +
-`plugins/agentic-workflow/templates/north-star.md`: confirm it is unmistakably
-**LIVE** (fires §12, per the D7 override — NOT shadow); the frontmatter (`name:
-compass`, `tools: Read, Grep, Glob, Bash`) and hard NEVER make it impossible to
-read as "compass decides/kills/builds/merges"; the **gating** is strict enough to
-trust it not to cry wolf (Alert-tier only + named-severity bar + per-phase
-frequency dedupe); **secrets are handled by NAME only** (token read from env,
-never echoed; `[project]` prefix; owner-only §12 direction); the `advisor`/
-`analyst` distinction + D8 coupling hold; the north-star schema matches D5. Re-run
-`node tools/lint.mjs`. On APPROVE → per gate policy → P5/S6 (docs + version bump +
-governance eval + `/agentic-workflow:sync`).
+Next up: **the phase-5 checkpoint** — the independent `reviewer` (fresh context)
+re-runs `node tools/lint.mjs` (expect `lint: clean`) and diff-reviews
+`base..head` for phase 5: the master `WORKFLOW.md` §3 governance rows + §4 reflex
+amendment + §9 catalog additions (intake/compass/north-star.md), the north-star
+first-run seed wiring in `compass.md`, the README count bump (20 agents/26
+commands) + governance-hooks note, `plugin.json` 1.39.0, the CHANGELOG entry, and
+the authored `evals/scenarios/plain-request-routing/` (confirm `node --check`
+passes; the **actual eval run is deferred to pre-release**, not this checkpoint).
+Confirm `docs/WORKFLOW.md` was NOT hand-edited (the **`/agentic-workflow:sync` is a
+post-release step** after 1.39.0 installs — noted, deliberately deferred). On
+APPROVE → **mission-end wrap**: a single PR `feat/orchestrator-governance → main`,
+human merge (gate policy: human-merge / stacked-one-merge); then, post-release,
+run `/agentic-workflow:sync` once and the deferred eval run.

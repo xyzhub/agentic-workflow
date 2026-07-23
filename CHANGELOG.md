@@ -6,6 +6,26 @@ has no tags — each version-stamped commit on `main` IS the release.
 
 ## [Unreleased]
 ### Added
+- **Orchestrator governance** — a reflex layer plus two front-door agents that
+  keep the orchestrator on protocol *and* on purpose:
+  - **Three governance hooks** (advisory, never block): the **router** nudges an
+    un-prefixed work request to route through the workflow (hand to `intake`);
+    the **thread-keeper** surfaces the active ledger's phase + `Next up:` + first
+    open beat each turn; the **beat-enforcer** nudges a required-but-unchecked
+    ledger beat (`chronicler` at close, `reviewer` at a checkpoint) at the moment
+    a session tries to close or advance.
+  - **`intake` agent** — the front-door classifier for an un-invoked
+    plain-language request: distinguishes work from chat, classifies altitude
+    (mirroring `/agentic-workflow:next`), shapes the request, and returns the
+    matching `/agentic-workflow:` route for the orchestrator to run. Reads and
+    recommends only — never runs commands, spawns agents, builds, or merges.
+  - **`compass` agent** — holds the venture's *direction*: owns
+    `docs/product/north-star.md`, judges trajectory-vs-purpose at strategic beats,
+    and on a concrete named strategic drift fires ONE gated **Alert-tier §12**
+    owner notification (severity- and frequency-limited, secrets by name only,
+    owner-only). It flags; it never decides, kills, builds, or merges.
+  - **`templates/north-star.md`** — the Purpose (human-owned) + worthy-progress
+    definition + live done-vs-roadmap rollup `compass` seeds and maintains.
 - **`/agentic-workflow:ingest` runs from anywhere** — the commons is
   portfolio-global, so ingest resolves its target registry by `--registry
   <path|remote>` → the registry repo it is run inside (auto-detect, like

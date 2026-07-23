@@ -195,6 +195,9 @@ Shipped by this plugin as hooks. Advisory except where marked:
 | `gh pr merge` | **BLOCKS** unless the §10 **Merge policy** is `agent-may-merge` (fail closed when unset/absent); when delegated, reminds: merge only on a reviewer APPROVE |
 | `gh pr create` | Reminder to have run the gates |
 | `Write`/`Edit` | Reminder to update docs when high-impact files change |
+| Prompt submit | **Router** (governance) — an un-prefixed work request gets a soft "route it through the protocol — hand to `intake`" nudge; silent on plain chat, never blocks |
+| Prompt submit | **Thread-keeper** (governance) — injects the active ledger's phase + `Next up:` + first unchecked beat each turn; silent when no active ledger, never blocks |
+| `git commit` / turn end | **Beat-enforcer** (governance) — nudges a required-but-unchecked ledger beat (`chronicler` at close, `reviewer` at a checkpoint) at the overdue moment; advisory, never blocks |
 
 Blockers exit 2 (hard stop); reminders exit 0. Guardrails catch autopilot
 mistakes; they never replace judgment. Checks evaluate in the command's
@@ -225,6 +228,13 @@ one. Finished early (<15%)? Pull the next same-phase brief (checkpoints always
 end a session). For a long *interactive* session with no natural session end,
 `/agentic-workflow:handoff` writes a fresh-self re-read manifest so the reset stays lossless
 (§6.2) — never lean on the auto-summary.
+
+**Reflex backstops** — two §3 governance hooks keep a session on-protocol without
+being read: the *thread-keeper* surfaces the active ledger's phase + `Next up:` +
+first open beat every turn, and the *beat-enforcer* nudges a required-but-unchecked
+beat (`chronicler` at close, `reviewer` at a checkpoint) at the moment you try to
+close or advance. Both are advisory — they steer the session back to the ledger,
+never block it.
 
 ## 5. Mission lifecycle (multi-session work)
 
@@ -502,14 +512,16 @@ drive the real flow, confirm monitoring is receiving, record the result).
 
 ## 9. How this maps to the plugin
 
-- Agents ship with the plugin: `brainstormer` (V0 idea-shaping, front of the
-  lifecycle), `researcher` (V0 validation), `designer`
+- Agents ship with the plugin: `intake` (front-door classifier — routes an
+  un-invoked plain-language request by altitude), `brainstormer` (V0 idea-shaping,
+  front of the lifecycle), `researcher` (V0 validation), `designer`
   (V1–V2 brand/UX, journeys/IA, V4 usability pass), `architect` (V1
   shape-before-build option memos), `business` (V1/V5/V6 model, pricing,
   business documents), `planner` (mission decomposition), `advisor` (decision
   red-team at the human gates, via `/agentic-workflow:counsel`), `marketing` (V5–V6
   go-to-market), `ops` (V6 operations), `analyst` (measurement engine),
-  `writer` (optional copy craft — owns the copy kit/glossary), `reviewer`,
+  `compass` (holds the venture's direction — owns the north-star, flags strategic
+  drift), `writer` (optional copy craft — owns the copy kit/glossary), `reviewer`,
   `chronicler`, and the specialist implementers `backend`, `frontend`,
   `security`, `devops` (CI/CD, deploy, releases).
 - **Model tuning**: `/agentic-workflow:tune <agent> <model>` shadows a plugin agent with a
@@ -552,7 +564,9 @@ drive the real flow, confirm monitoring is receiving, record the result).
   the publishing pipeline (`publish-queue.md`, `publish-log.md`),
   the `session-handoff.md` re-read manifest,
   the business set (`business-executive-summary.md`, `business-model.md`,
-  `business-pricing.md`), and this protocol live under the plugin's `templates/`.
+  `business-pricing.md`), the `compass`'s `north-star.md` (Purpose +
+  worthy-progress definition + done-vs-roadmap rollup), and this protocol live
+  under the plugin's `templates/`.
 
 ## 10. Project profile (filled by `/agentic-workflow:bootstrap`)
 

@@ -33,6 +33,7 @@ prints its path.
 |---|---|
 | `welcome-onboarding` | `/welcome` leaving a fresh project's artifacts empty, mis-routing it as an adopt, or recommending bare (non-namespaced) commands |
 | `routing-altitude` | over-process: mission ceremony for a typo-class fix |
+| `plain-request-routing` | the governance router reflex: a plain, un-prefixed work request skipping routing (ad-hoc edits, or built straight on the default branch) instead of being classified/routed through the workflow |
 | `guardrail-push-block` | the push-on-default-branch hook not firing, or the agent fighting it |
 |  `bootstrap-profile` | `/bootstrap` leaving §10 placeholders instead of detected gates |
 | `reviewer-checkpoint` | the reviewer trusting handoff claims / missing planted flaws / no scorecard |

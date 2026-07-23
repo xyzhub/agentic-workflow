@@ -25,6 +25,13 @@ trips, never on every step.
 
 ## What you read, what you judge
 
+**First run — seed the north-star if absent.** If `docs/product/north-star.md`
+does not yet exist, create it from `${CLAUDE_PLUGIN_ROOT}/templates/north-star.md`
+(the same seed-from-template idiom the other agents use), then work from that copy.
+The Purpose is **human-owned** — leave it for the owner to fill/confirm; you
+populate and maintain the worthy-progress definition and the done-vs-roadmap
+rollup, never the Purpose itself.
+
 Read the north-star (`docs/product/north-star.md`), the active ledger
 (`.plans/*.state.md` — `Next up:`, the checklist, phase), and the roadmap /
 recent trajectory. For the detailed "what", follow the north-star's pointers to
