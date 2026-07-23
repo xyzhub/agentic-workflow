@@ -6,6 +6,15 @@ has no tags — each version-stamped commit on `main` IS the release.
 
 ## [Unreleased]
 ### Fixed
+- **Beat-enforcer no longer nudges about already-reviewed beats (v1.39.2).** Both
+  beat-enforcers — the `Stop` backstop and the `PreToolUse` closing-action nudge —
+  matched any unchecked `[ ]`/`[~]` checkpoint/reviewer/chronicler row, including a
+  `[~]` checkpoint already marked **APPROVED** and only awaiting a human merge. That
+  fired a spurious "spawn the reviewer" nudge every turn-end for work already done
+  (the residual false-positive left after the v1.39.1 loop fix). Both now exclude
+  beats carrying an approved / awaiting-human marker (`approved`, `pending human`,
+  `merge pending`, `human merge`, `human locks`, `wrap pending`), so only a
+  genuinely-unreviewed beat nudges. Locked by the new hook harness below.
 - **Beat-enforcer `Stop` hook no longer loops (v1.39.1).** The governance Stop
   hook emitted a soft "beat pending" nudge but lacked the `stop_hook_active`
   guard, so Claude Code re-fired it on every stop attempt — an infinite nudge
@@ -14,6 +23,13 @@ has no tags — each version-stamped commit on `main` IS the release.
   It now checks `stop_hook_active` first and exits silently on a re-fire, so it
   nudges once and lets the turn end (still never blocks — `exit 0` only).
 ### Added
+- **Hook dispatch test harness (`tools/hook-test.mjs`) — tier-1.5.** Structural
+  lint proves hook commands *parse* (`bash -n`); it can't prove they *behave* —
+  the v1.39.1 Stop-loop shipped green past a syntax check. The harness pipes
+  fixture stdin through each `hooks.json` command in a throwaway cwd and asserts
+  its exit code + emitted nudge. Wired into `tools/lint.mjs`, so the single gate
+  CI runs now covers hook behavior; regression cases lock the `stop_hook_active`
+  re-fire guard and the approved-beat exclusion so neither bug can silently return.
 - **Orchestrator governance** — a reflex layer plus two front-door agents that
   keep the orchestrator on protocol *and* on purpose:
   - **Three governance hooks** (advisory, never block): the **router** nudges an
