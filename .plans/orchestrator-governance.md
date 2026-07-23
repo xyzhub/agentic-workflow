@@ -106,12 +106,35 @@ evidence invalidates becomes an open question below (unlocking is the human's ca
   nudge) + enforce required beats. Strategic drift → notify the human (their call).
 - **2026-07-23 — Build order.** Reflexes (hooks) → `intake` → `compass`, cheapest/
   safest → hardest/riskiest; each phase felt + reviewed before the next.
-- **2026-07-23 — `compass` earns its interrupt.** It ships in shadow mode (flag,
-  don't notify); promotion to live §12 notification is a separate human go, out of
-  this mission's scope.
+- **2026-07-23 — `compass` notifies live from day one (human override).** The human
+  chose live §12 notifications from the start over shadow-mode-first — matching the
+  original "notify me when something's off" intent. Mitigation kept: strict
+  **Alert-tier only + severity/frequency gating** so it doesn't cry wolf (a muted
+  channel is worse than a quiet one). Beat-enforcer and router stay **soft** (nudge /
+  soft directive, never blocking); a blocking escalation remains a separate future go.
 - **2026-07-23 — Constraints honored.** Fit the plugin (markdown/hooks/agents, no
   heavy infra); token-cost sane (hooks free; agents only at beats/trips, never per
   step); no new ceremony (nudges reduce rework, they don't add a per-turn gate).
+- **2026-07-23 (shape lock — S1 memo → human).** Locked per
+  `docs/product/features/orchestrator-governance/shape-memo.md`:
+  - **D1 drift-signatures** — hooks catch only crisp shell signals (no-slash prefix,
+    `[~]`-while-advancing, unchecked required beat, large read); semantic drift routes
+    to `intake` judgment, not a fragile transcript scan.
+  - **D2 router** — cheap keyword/no-slash prefilter → a **soft** "route via `intake`
+    if this is work" directive; orchestrator decides; **never `exit 2`** (erases the prompt).
+  - **D3 thread-keeper** — active ledger = newest-mtime non-complete `.plans/*.state.md`
+    (branch-name tie-break); inject `Next up:` + the first `[ ]`/`[~]` row; silent if none.
+  - **D4 beat-enforcer** — both, soft: `PreToolUse`-on-commit/phase-advance echo + a
+    non-blocking `Stop` backstop. Blocking escalation deferred.
+  - **D5 north-star** — `docs/product/north-star.md` from a new `templates/north-star.md`;
+    Purpose (human-owned) + worthy-progress definition + live done-vs-roadmap; `compass`
+    maintains the rollup, points at idea.md/PRD for the "what".
+  - **D6 `intake`** — new `agents/intake.md` (a bare chat request needs a subagent, not
+    a command); classification mirrors `/next`'s decision tree.
+  - **D7 `compass`** — standalone `agents/compass.md` that `/operate` also calls;
+    **live §12 notify from day one** (per the override above), Alert-tier + gated.
+  - **D8 `intake`↔`compass`** — independent now; an advisory, non-gating purpose-fit flag
+    later; never a hard gate.
 
 ## Risks
 

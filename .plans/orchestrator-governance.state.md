@@ -17,7 +17,7 @@ each phase branch on APPROVE. Mission started: **2026-07-23**.
 
 _All unchecked at start. Checked only when the work is verified, not merely written._
 
-- [ ] S1 — Architect shape memo (branch `mission/orchestrator-governance-p1`)
+- [x] S1 — Architect shape memo (branch `mission/orchestrator-governance-p1`)
 - [ ] Checkpoint — phase 1: human locks the shape; record locked decisions in the master plan
 - [ ] S2 — Router + thread-keeper hooks (branch `mission/orchestrator-governance-p2`)
 - [ ] S3 — Beat-enforcer hook (branch `mission/orchestrator-governance-p2`)
@@ -60,6 +60,20 @@ _Any departure from a brief — logged here the moment it happens, with why._
 _≤10 lines per entry: what this session did, the verify signal, the branch, and
 what the next session needs. Newest on top; crash-safe by write-ahead._
 
-(none yet)
+- **S1 (2026-07-23, architect)** — Authored `docs/product/features/orchestrator-governance/shape-memo.md`
+  answering all eight (b) questions: (1) drift-signatures — hooks catch the crisp
+  ones, semantic/history drift → `intake`; (2) router — keyword prefilter gates a
+  *soft* route-if-work directive, never `exit 2`; (3) thread-keeper — newest-mtime
+  non-complete ledger (branch tie-break), inject `Next up:` + first `[ ]`/`[~]`
+  row; (4) beat-enforcer — both, soft-first (`PreToolUse`-on-commit echo +
+  non-blocking `Stop` `additionalContext`); (5) north-star — `docs/product/north-star.md`
+  from a new template, Purpose/worthy-progress/done-vs-roadmap; (6) `intake` — new
+  agent, logic mirrored from `/next`; (7) `compass` — standalone, `/operate` also
+  calls, Alert-tier + shadow-mode-first; (8) coupling — independent now, advisory
+  later, never a hard gate. Verify: memo covers all 8 w/ options + reversal cost;
+  `node tools/lint.mjs` clean. Branch: `mission/orchestrator-governance-p1`. Next
+  session (S2) builds the router + thread-keeper hooks from the locked choices.
 
-Next up: S1
+Next up: **P1 checkpoint — the human locks the shape** (records the eight choices
+as dated Locked decisions in `.plans/orchestrator-governance.md`). P2/S2 is gated
+on that lock; do not start the hooks until the shape is locked.
