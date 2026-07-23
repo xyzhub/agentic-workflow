@@ -10,6 +10,26 @@
             "description": "Remind to use a feature branch when on the default branch"
           }
         ]
+      },
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "INPUT=$(cat); PROMPT=$(printf '%s' \"$INPUT\" | jq -r '.prompt // \"\"' 2>/dev/null); case \"$PROMPT\" in /*) exit 0;; esac; if [ ! -f docs/WORKFLOW.md ] && [ ! -d .plans ]; then exit 0; fi; if printf '%s' \"$PROMPT\" | grep -qiE '^[[:space:]]*(what|how|why|who|whom|whose|when|where|which|is|are|am|do|does|did|can|could|should|would|will|explain|tell me|show me|thanks|thank you)([^a-z]|$)'; then exit 0; fi; if printf '%s' \"$PROMPT\" | grep -qiE '(^|[^a-z])(add|build|implement|create|ship|fix|refactor|feature|make|write|scaffold|integrate|set up|rework|redesign|rename|migrate)([^a-z]|$)'; then echo \"↪ This looks like a work request with no command — route it through the workflow (classify altitude → the matching /agentic-workflow: command, or /agentic-workflow:next if unsure; hand a feature request to the intake agent). Don't answer off-protocol.\"; fi; exit 0",
+            "description": "Router (D2): soft-nudge an un-prefixed work request to route through the workflow; silent on slash-commands, plain questions/chat, and non-workflow cwd (no docs/WORKFLOW.md and no .plans/); stdout-inject only, never exit 2"
+          }
+        ]
+      },
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if [ ! -d .plans ]; then exit 0; fi; LEDGER=$(ls -t .plans/*.state.md 2>/dev/null | while IFS= read -r f; do if grep -qE '^- \\[( |~)\\]' \"$f\"; then printf '%s' \"$f\"; break; fi; done); if [ -z \"$LEDGER\" ]; then exit 0; fi; NEXT=$(grep -E '^Next up:' \"$LEDGER\" | tail -1); ROW=$(grep -E '^- \\[( |~)\\]' \"$LEDGER\" | head -1); echo \"🧵 Active thread — $LEDGER\"; if [ -n \"$NEXT\" ]; then echo \"  $NEXT\"; fi; if [ -n \"$ROW\" ]; then echo \"  Next expected beat: $ROW\"; fi; exit 0",
+            "description": "Thread-keeper (D3): inject the active ledger's Next up: line + first open [ ]/[~] beat every turn; active = newest-mtime non-complete .plans/*.state.md; silent when no .plans/ or no active ledger; never blocks"
+          }
+        ]
       }
     ],
     "PreToolUse": [

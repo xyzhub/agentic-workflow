@@ -19,7 +19,7 @@ _All unchecked at start. Checked only when the work is verified, not merely writ
 
 - [x] S1 — Architect shape memo (branch `mission/orchestrator-governance-p1`)
 - [ ] Checkpoint — phase 1: human locks the shape; record locked decisions in the master plan
-- [ ] S2 — Router + thread-keeper hooks (branch `mission/orchestrator-governance-p2`)
+- [x] S2 — Router + thread-keeper hooks (branch `mission/orchestrator-governance-p2`)
 - [ ] S3 — Beat-enforcer hook (branch `mission/orchestrator-governance-p2`)
 - [ ] Checkpoint — phase 2 review (security-lens-forward) + **felt-validation gate**
 - [ ] S4 — `intake` agent + router→intake wiring (branch `mission/orchestrator-governance-p3`)
@@ -60,6 +60,27 @@ _Any departure from a brief — logged here the moment it happens, with why._
 _≤10 lines per entry: what this session did, the verify signal, the branch, and
 what the next session needs. Newest on top; crash-safe by write-ahead._
 
+- **S2 (2026-07-23, backend)** — Added two `UserPromptSubmit` hooks to
+  `plugins/agentic-workflow/hooks/hooks.json` (D2 router + D3 thread-keeper).
+  **Router:** reads the prompt via `INPUT=$(cat) | jq -r '.prompt'`; injects a SOFT
+  route-via-the-workflow directive on an un-prefixed work request (leading/word-boundary
+  work verb: add|build|implement|fix|refactor|…). Scoping guards — silent if the prompt
+  starts with `/`, if it leads with an interrogative (what/how/why/is/do/… or a
+  thanks/tell me/show me), or if the cwd is not a workflow project (no `docs/WORKFLOW.md`
+  and no `.plans/`). Never `exit 2` (stdout-inject only). **Thread-keeper:** picks the
+  newest-mtime `.plans/*.state.md` that still has a `[ ]`/`[~]` row and injects
+  `🧵 Active thread — <file>` + the `Next up:` line + the first open beat; silent when
+  no `.plans/` or no active ledger. Both treat prompt/ledger text as untrusted data —
+  only ever piped through `jq`/`grep`/`case`, never executed; no `eval`; all expansions
+  quoted; regex brackets JSON-double-escaped (`\\[`). Verify: `node tools/lint.mjs` →
+  `lint: clean` (each command passes `bash -n`). Hand-runs (exact deployed strings via
+  `jq`): router — `{"prompt":"add rate limiting to the API"}` → nudges;
+  `{"prompt":"what does this file do?"}` → silent; `{"prompt":"/agentic-workflow:next"}`
+  → silent; `"how do I add caching here?"` → silent (interrogative guard). Thread-keeper
+  — this repo → `🧵 Active thread — .plans/orchestrator-governance.state.md` + correct
+  `Next up:` + first `[ ]` beat; no `.plans/`, all-complete ledger, and non-workflow cwd
+  → all silent. Branch: `mission/orchestrator-governance-p2`. Next (S3) adds the
+  beat-enforcer (`PreToolUse`-on-commit echo + non-blocking `Stop`) to the same file.
 - **S1 (2026-07-23, architect)** — Authored `docs/product/features/orchestrator-governance/shape-memo.md`
   answering all eight (b) questions: (1) drift-signatures — hooks catch the crisp
   ones, semantic/history drift → `intake`; (2) router — keyword prefilter gates a
@@ -74,6 +95,8 @@ what the next session needs. Newest on top; crash-safe by write-ahead._
   `node tools/lint.mjs` clean. Branch: `mission/orchestrator-governance-p1`. Next
   session (S2) builds the router + thread-keeper hooks from the locked choices.
 
-Next up: **P1 checkpoint — the human locks the shape** (records the eight choices
-as dated Locked decisions in `.plans/orchestrator-governance.md`). P2/S2 is gated
-on that lock; do not start the hooks until the shape is locked.
+Next up: **S3 — the beat-enforcer hook** (branch `mission/orchestrator-governance-p2`):
+add a `PreToolUse`/Bash matcher on commit/phase-advance plus a non-blocking `Stop`
+hook that greps the active ledger for a required-but-unchecked beat (chronicler at
+close, reviewer at checkpoint) and nudges softly (`exit 0` echo — never a hard block),
+per D4. Then the phase-2 reviewer checkpoint (security-lens-forward) + felt-validation gate.
