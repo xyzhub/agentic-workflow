@@ -2,7 +2,7 @@
 
 An **agentic operating protocol** that carries any project from a raw idea to
 a launched, viable product — and keeps operating it after launch. Packaged as
-a Claude Code plugin: 17 agents, 25 commands, guardrail hooks, a protocol
+a Claude Code plugin: 20 agents, 26 commands, guardrail hooks, a protocol
 document every project carries, and an eval suite that tests the prompts
 themselves.
 
@@ -77,6 +77,7 @@ as what it does.
 
 | Agent | When | Does | Never |
 |---|---|---|---|
+| `intake` | Front door | Classifies an un-invoked plain-language work request by altitude (raw idea / feature / small fix / unsure), shapes it, and returns the matching `/agentic-workflow:` route for the orchestrator to run | Runs commands; spawns agents; builds; merges |
 | `brainstormer` | V0 (front) | Shapes a raw idea — 2–3 genuinely distinct framings (the bet, who pays, riskiest assumption, case against each) for the human to pick; seeds `idea.md` | Validates with evidence; decides; designs; builds |
 | `researcher` | V0 | Validates the chosen framing — cited evidence for AND against, riskiest assumption, kill criteria; fills `idea.md` | Decides go/no-go; writes product code |
 | `designer` | V1–V2, V4 | Brand directions to choose from; user journeys + IA; design tokens + copy kit; V4 heuristic usability pass | Decides (the owner picks); ships production UI |
@@ -87,6 +88,7 @@ as what it does.
 | `marketing` | V5–V6 | Positioning, landing copy, per-channel announcements, content plan — every claim traces to shipped behavior | Publishes, posts, or sends anything |
 | `ops` | V6 | Error/cost triage ranked by user impact, runbook truth, postmortems → ranked mission candidates | Mutates production (read-only against prod) |
 | `analyst` | V3+ | Tracking plan; cited numbers for funnel/economics/audits; behavioral hypotheses with the cheapest test each | Invents a number (unmeasured stays "unmeasured"); edits code |
+| `compass` | Strategic beats | Owns `docs/product/north-star.md`; judges trajectory-vs-purpose; on a concrete named drift fires ONE gated Alert-tier §12 owner notification (severity + frequency limited) | Decides; kills/greenlights; builds; merges (purpose is the human's call) |
 | `writer` | Optional | Copy kit/glossary owner; convened for copy-heavy slices (landing, UI strings, long-form) | Publishes; defines brand voice; owns positioning |
 | `reviewer` | Checkpoints | Fresh-context review — four pillars + QA + architecture; APPROVE / REQUEST CHANGES + scorecard; re-runs all gates itself | Merges; pushes; edits code; trusts a handoff claim |
 | `chronicler` | Session close | CHANGELOG, the JOURNEY narrative, the live owner status page | Touches product code; re-reads source "to verify" |
@@ -189,6 +191,13 @@ unless the target repo's §10 Merge policy delegates them (fail closed); warns
 on tag pushes that may deploy; reminds on commit format, gates, and doc
 updates for high-impact files. Checks evaluate in the command's **target
 repo** and read pre-execution state.
+
+Three **governance reflexes** (advisory, never block) keep a session on the
+protocol without it being read: the **router** nudges an un-prefixed work request
+to route through the workflow (hand to `intake`); the **thread-keeper** surfaces
+the active ledger's phase + `Next up:` + first open beat each turn; the
+**beat-enforcer** nudges a required-but-unchecked ledger beat (`chronicler` at
+close, `reviewer` at a checkpoint) at the moment you try to close or advance.
 
 ## What the human always owns
 
