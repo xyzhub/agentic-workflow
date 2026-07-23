@@ -10,7 +10,7 @@
 //   [ ] not started → may nudge   ·   [~] parked/in-flight/deferred → silent
 //   [x] done → silent
 
-import { readFileSync, mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
+import { readFileSync, mkdtempSync, mkdirSync, writeFileSync, rmSync, utimesSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -39,8 +39,15 @@ function runHook({ event, desc, input = {}, ledgers }) {
   try {
     if (ledgers) {
       mkdirSync(path.join(dir, '.plans'));
-      for (const [name, content] of Object.entries(ledgers))
-        writeFileSync(path.join(dir, '.plans', name), content);
+      // Write in insertion order and stamp strictly-increasing mtimes so the
+      // hooks' `ls -t` (active = newest ledger) is deterministic regardless of
+      // filesystem timestamp resolution — the LAST entry is always the newest.
+      Object.entries(ledgers).forEach(([name, content], i) => {
+        const p = path.join(dir, '.plans', name);
+        writeFileSync(p, content);
+        const t = 1_000_000_000 + i;
+        utimesSync(p, t, t);
+      });
     }
     const r = spawnSync('bash', ['-c', hookCommand(event, desc)], {
       cwd: dir, input: JSON.stringify(input), encoding: 'utf8',
