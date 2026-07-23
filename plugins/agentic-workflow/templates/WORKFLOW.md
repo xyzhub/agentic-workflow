@@ -309,6 +309,17 @@ pushes the default branch. Reach for them when a session has a clear single-doma
 slice, or when a mission has parallel slices that can run at once; a plain session
 on the main agent is fine for small or cross-cutting work.
 
+**Intake** (`intake`) is the front-door classifier for an un-invoked request:
+when a plain-language work request arrives mid-chat with no command (the router
+hook nudges it), the orchestrator spawns `intake` to classify its altitude
+(mirroring `/agentic-workflow:next`'s tree — raw idea → brainstorm, defined feature → plan →
+mission, small isolated → fix, unsure → next), shape it into a crisp problem
+statement, and RETURN the recommended `/agentic-workflow:` route. It only reads and
+recommends — it never runs commands, spawns agents, builds, or merges; the
+**orchestrator drives** the recommended flow and the human owns every gate. It
+also distinguishes a work request from plain conversation, never command-ifying
+chat.
+
 **Brainstormer** (`brainstormer`) works at the very front of V0, upstream of the
 researcher: it turns a raw, fuzzy idea into 2–3 genuinely distinct framings —
 each with the bet it makes, who it serves and who pays, the core value, and its

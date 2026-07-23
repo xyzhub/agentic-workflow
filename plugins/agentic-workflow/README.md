@@ -77,6 +77,7 @@ as what it does.
 
 | Agent | When | Does | Never |
 |---|---|---|---|
+| `intake` | Front door | Classifies an un-invoked plain-language work request by altitude (raw idea / feature / small fix / unsure), shapes it, and returns the matching `/agentic-workflow:` route for the orchestrator to run | Runs commands; spawns agents; builds; merges |
 | `brainstormer` | V0 (front) | Shapes a raw idea — 2–3 genuinely distinct framings (the bet, who pays, riskiest assumption, case against each) for the human to pick; seeds `idea.md` | Validates with evidence; decides; designs; builds |
 | `researcher` | V0 | Validates the chosen framing — cited evidence for AND against, riskiest assumption, kill criteria; fills `idea.md` | Decides go/no-go; writes product code |
 | `designer` | V1–V2, V4 | Brand directions to choose from; user journeys + IA; design tokens + copy kit; V4 heuristic usability pass | Decides (the owner picks); ships production UI |

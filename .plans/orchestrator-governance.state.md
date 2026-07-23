@@ -22,7 +22,7 @@ _All unchecked at start. Checked only when the work is verified, not merely writ
 - [x] S2 — Router + thread-keeper hooks (branch `mission/orchestrator-governance-p2`)
 - [x] S3 — Beat-enforcer hook (branch `mission/orchestrator-governance-p2`)
 - [ ] Checkpoint — phase 2 review (security-lens-forward) + **felt-validation gate**
-- [ ] S4 — `intake` agent + router→intake wiring (branch `mission/orchestrator-governance-p3`)
+- [x] S4 — `intake` agent + router→intake wiring (branch `mission/orchestrator-governance-p3`)
 - [ ] Checkpoint — phase 3 review + merge per gate policy
 - [ ] S5 — `compass` agent + north-star template + shadow-mode §12 notify (branch `mission/orchestrator-governance-p4`)
 - [ ] Checkpoint — phase 4 review (shadow mode + security lens on notify path)
@@ -69,6 +69,27 @@ _Any departure from a brief — logged here the moment it happens, with why._
 _≤10 lines per entry: what this session did, the verify signal, the branch, and
 what the next session needs. Newest on top; crash-safe by write-ahead._
 
+- **S4 (2026-07-23, backend)** — Authored `plugins/agentic-workflow/agents/intake.md`
+  (D6: new agent, logic mirrored from `/next`; D8: `intake`↔`compass` independent — no
+  compass coupling). Frontmatter: `name: intake`, `tools: Read, Grep, Glob` (no
+  Task/Write/Edit — reads + recommends only), third-person trigger-oriented description
+  with a hard **NEVER** boundary. **Shape:** takes an un-invoked plain-language request →
+  first decides work-vs-chat (never command-ifies chat) → classifies altitude mirroring
+  `/next`'s tree (raw idea → `/agentic-workflow:brainstorm`; defined feature →
+  `/agentic-workflow:plan` → `/agentic-workflow:mission`; small isolated → `/agentic-workflow:fix`;
+  unsure → `/agentic-workflow:next`) → shapes a crisp problem statement → **returns** the
+  route (one command + one-line why + shaped request) in a bounded ≤15-line §6.2 form,
+  explicitly stating the ORCHESTRATOR executes it. **Hard NEVER:** never runs slash
+  commands, spawns agents, builds/edits/migrates, or merges (a subagent can't invoke
+  commands — the orchestrator drives). **Cross-refs (minimal, lint-valid; full role
+  polish is S6):** plugin `README.md` agents table row, root `README.md` agents list,
+  master `WORKFLOW.md` §6 Intake paragraph. **Resolves P2 reviewer finding 1** — the S2
+  router hook's "hand a feature request to the intake agent" now points at a real agent
+  (hook wording unchanged, confirmed still matches). Verify: `node tools/lint.mjs` →
+  `lint: clean` (name=filename; tools known; `intake` named in both READMEs + WORKFLOW;
+  forward `/agentic-workflow:*` refs resolve). Did NOT touch hooks.json / build compass /
+  north-star. Branch: `mission/orchestrator-governance-p3`. Next: phase-3 checkpoint
+  (reviewer, boundary check) → P4/S5.
 - **S3 (2026-07-23, backend)** — Added the beat-enforcer (D4, both, soft-first) to
   `plugins/agentic-workflow/hooks/hooks.json`: a new `PreToolUse`/`Bash` block +
   a new top-level `Stop` event block (alongside `SessionEnd`). **Trigger:** the
@@ -126,10 +147,12 @@ what the next session needs. Newest on top; crash-safe by write-ahead._
   `node tools/lint.mjs` clean. Branch: `mission/orchestrator-governance-p1`. Next
   session (S2) builds the router + thread-keeper hooks from the locked choices.
 
-Next up: **the phase-2 checkpoint** — the independent `reviewer` (fresh context,
-**security lens forward**) re-runs `node tools/lint.mjs` and diff-reviews `base..head`
-of the three P2 hooks (router, thread-keeper, beat-enforcer): confirm inputs are
-quoted, commands fail closed / never `exit 2` where soft-nudge is locked, and ledger/
-prompt text is never executed. This is the **felt-validation gate** — if the nudges
-are demonstrably ignored under context pressure, escalate to the human before P3.
-On APPROVE → P3/S4 (`intake` agent + router→intake wiring).
+Next up: **the phase-3 checkpoint** — the independent `reviewer` (fresh context)
+checks the `intake` agent boundary on `plugins/agentic-workflow/agents/intake.md`:
+confirm the frontmatter (`name: intake`, `tools: Read, Grep, Glob` — no Task/Write/
+Edit) and the hard NEVER make it impossible to read as "intake builds/runs/merges";
+that the body mirrors `/next`'s routing tree and returns (never executes) a bounded
+route; that the 3 minimal cross-refs keep lint green; and that P2 finding-1 is
+resolved (the router hook's "intake agent" now points at a real agent). Re-run
+`node tools/lint.mjs`. On APPROVE → merge per gate policy → P4/S5 (`compass` agent +
+`templates/north-star.md` + shadow-mode §12 notify).
