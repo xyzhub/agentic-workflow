@@ -88,6 +88,7 @@ as what it does.
 | `marketing` | V5–V6 | Positioning, landing copy, per-channel announcements, content plan — every claim traces to shipped behavior | Publishes, posts, or sends anything |
 | `ops` | V6 | Error/cost triage ranked by user impact, runbook truth, postmortems → ranked mission candidates | Mutates production (read-only against prod) |
 | `analyst` | V3+ | Tracking plan; cited numbers for funnel/economics/audits; behavioral hypotheses with the cheapest test each | Invents a number (unmeasured stays "unmeasured"); edits code |
+| `compass` | Strategic beats | Owns `docs/product/north-star.md`; judges trajectory-vs-purpose; on a concrete named drift fires ONE gated Alert-tier §12 owner notification (severity + frequency limited) | Decides; kills/greenlights; builds; merges (purpose is the human's call) |
 | `writer` | Optional | Copy kit/glossary owner; convened for copy-heavy slices (landing, UI strings, long-form) | Publishes; defines brand voice; owns positioning |
 | `reviewer` | Checkpoints | Fresh-context review — four pillars + QA + architecture; APPROVE / REQUEST CHANGES + scorecard; re-runs all gates itself | Merges; pushes; edits code; trusts a handoff claim |
 | `chronicler` | Session close | CHANGELOG, the JOURNEY narrative, the live owner status page | Touches product code; re-reads source "to verify" |

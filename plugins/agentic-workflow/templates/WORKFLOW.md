@@ -423,6 +423,19 @@ one set of measurements instead of three improvised estimates. It specifies
 instrumentation (implementers wire it, with review) and never invents a
 number: unmeasured stays "unmeasured".
 
+**Compass** (`compass`) holds the venture's *direction*: where the hooks keep the
+orchestrator on protocol, `compass` keeps it on **purpose**. It owns
+`docs/product/north-star.md` (human-owned Purpose + worthy-progress definition +
+a live done-vs-roadmap rollup it maintains) and runs at strategic beats — a new
+`intake` request, a phase-end, a periodic `/agentic-workflow:operate` sweep, or
+on demand — judging whether the work in flight advances the end-goal. On a
+concrete, named strategic drift it fires ONE **Alert-tier §12** owner
+notification (severity- and frequency-gated so it never cries wolf, secrets by
+name only, owner-only). It flags; it never decides, kills, builds, or merges —
+purpose-misalignment is the human's call. Distinct from `advisor` (red-teams one
+pending decision) and `analyst` (measures numbers); it runs independently of
+`intake` and is never a hard gate on a route.
+
 ### 6.1 Documentation of record (Chronicler)
 
 Three artifacts kept current so the project's story survives any single session:

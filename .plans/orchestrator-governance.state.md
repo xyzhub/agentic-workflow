@@ -24,7 +24,7 @@ _All unchecked at start. Checked only when the work is verified, not merely writ
 - [ ] Checkpoint — phase 2 review (security-lens-forward) + **felt-validation gate**
 - [x] S4 — `intake` agent + router→intake wiring (branch `mission/orchestrator-governance-p3`)
 - [ ] Checkpoint — phase 3 review + merge per gate policy
-- [ ] S5 — `compass` agent + north-star template + shadow-mode §12 notify (branch `mission/orchestrator-governance-p4`)
+- [x] S5 — `compass` agent + north-star template + **LIVE** gated §12 notify (branch `mission/orchestrator-governance-p4`)
 - [ ] Checkpoint — phase 4 review (shadow mode + security lens on notify path)
 - [ ] S6 — Docs + version bump + governance eval + sync (branch `mission/orchestrator-governance-p5`)
 - [ ] Checkpoint — phase 5 review + eval green; mission-end wrap per gate policy
@@ -74,6 +74,36 @@ _Any departure from a brief — logged here the moment it happens, with why._
 _≤10 lines per entry: what this session did, the verify signal, the branch, and
 what the next session needs. Newest on top; crash-safe by write-ahead._
 
+- **S5 (2026-07-23, backend)** — Authored `plugins/agentic-workflow/templates/north-star.md`
+  + `plugins/agentic-workflow/agents/compass.md`. **North-star schema (D5):** Purpose
+  (human-owned, stable end-goal) + Definition of worthy progress (advances-vs-anti-goals
+  criteria `compass` judges against) + live done-vs-roadmap rollup (shipped / in flight /
+  next / cut) `compass` maintains; points at `idea.md`/PRD for the "what", the ledger for
+  tactical state — seeded into a project as `docs/product/north-star.md`. **Compass:**
+  frontmatter `name: compass`, `tools: Read, Grep, Glob, **Bash**` (Bash required — LIVE
+  mode actually sends), third-person trigger-oriented description with a hard NEVER (holds
+  direction + flags + notifies; never decides/kills/builds/migrates/merges — purpose is the
+  human's call). **Beats:** new `intake` request / phase-end / periodic `/operate` sweep /
+  on demand (never per-step). **Judgment:** reads north-star + ledger + trajectory → does
+  the work advance the Purpose by the worthy-progress definition; refreshes the rollup.
+  **⚠ D7-override applied — LIVE, not shadow:** per the master-plan locked decision the
+  human chose live §12 from day one over the brief's shadow wording; `compass` actually
+  SENDS. **Gating (the mitigation, load-bearing):** Alert-tier only (never Gate/Digest);
+  severity bar (fire only on a concrete NAMED misalignment + reason + cheapest correction —
+  no vague unease); frequency limit (dedupe one alert per distinct drift per phase, ≤1–2 per
+  beat) — so it doesn't cry wolf / get muted. **Secrets by NAME only:** send reuses
+  `/agentic-workflow:connect`'s transport (curl Slack `chat.postMessage`, `$SLACK_BOT_TOKEN`
+  → `$SLACK_OWNER_DM`, `[project]` prefix, owner-only §12 direction), token read from env,
+  value NEVER echoed; best-effort side effect (failed send logged, never blocks). **Boundary
+  + distinction:** distinct from `advisor` (red-teams one pending decision) and `analyst`
+  (measures numbers); D8 coupling — independent of `intake`, a new request is a beat it
+  reacts to in parallel, never a hard gate. **Cross-refs (minimal, lint-valid; full role
+  polish is S6):** plugin `README.md` agent-table row, root `README.md` agents list, master
+  `WORKFLOW.md` §6 Compass paragraph; `templates/north-star.md` resolves via
+  `checkTemplateRefs`. Verify: `node tools/lint.mjs` → `lint: clean` (name=filename; tools
+  valid; `compass` named in both READMEs + WORKFLOW §6; template ref resolves). Did NOT
+  touch hooks.json / intake. Branch: `mission/orchestrator-governance-p4`. Next: the phase-4
+  checkpoint (reviewer, security lens on the LIVE notify path) → P5/S6.
 - **S4 (2026-07-23, backend)** — Authored `plugins/agentic-workflow/agents/intake.md`
   (D6: new agent, logic mirrored from `/next`; D8: `intake`↔`compass` independent — no
   compass coupling). Frontmatter: `name: intake`, `tools: Read, Grep, Glob` (no
@@ -152,12 +182,15 @@ what the next session needs. Newest on top; crash-safe by write-ahead._
   `node tools/lint.mjs` clean. Branch: `mission/orchestrator-governance-p1`. Next
   session (S2) builds the router + thread-keeper hooks from the locked choices.
 
-Next up: **the phase-3 checkpoint** — the independent `reviewer` (fresh context)
-checks the `intake` agent boundary on `plugins/agentic-workflow/agents/intake.md`:
-confirm the frontmatter (`name: intake`, `tools: Read, Grep, Glob` — no Task/Write/
-Edit) and the hard NEVER make it impossible to read as "intake builds/runs/merges";
-that the body mirrors `/next`'s routing tree and returns (never executes) a bounded
-route; that the 3 minimal cross-refs keep lint green; and that P2 finding-1 is
-resolved (the router hook's "intake agent" now points at a real agent). Re-run
-`node tools/lint.mjs`. On APPROVE → merge per gate policy → P4/S5 (`compass` agent +
-`templates/north-star.md` + shadow-mode §12 notify).
+Next up: **the phase-4 checkpoint** — the independent `reviewer` (fresh context,
+**security lens**) checks `plugins/agentic-workflow/agents/compass.md` +
+`plugins/agentic-workflow/templates/north-star.md`: confirm it is unmistakably
+**LIVE** (fires §12, per the D7 override — NOT shadow); the frontmatter (`name:
+compass`, `tools: Read, Grep, Glob, Bash`) and hard NEVER make it impossible to
+read as "compass decides/kills/builds/merges"; the **gating** is strict enough to
+trust it not to cry wolf (Alert-tier only + named-severity bar + per-phase
+frequency dedupe); **secrets are handled by NAME only** (token read from env,
+never echoed; `[project]` prefix; owner-only §12 direction); the `advisor`/
+`analyst` distinction + D8 coupling hold; the north-star schema matches D5. Re-run
+`node tools/lint.mjs`. On APPROVE → per gate policy → P5/S6 (docs + version bump +
+governance eval + `/agentic-workflow:sync`).

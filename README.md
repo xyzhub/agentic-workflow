@@ -29,7 +29,7 @@ tools/lint.mjs                       # tier-1 deterministic lint
 evals/                               # tier-2 scenario evals (see evals/README.md)
 plugins/agentic-workflow/            # the plugin
   .claude-plugin/plugin.json         # plugin manifest
-  agents/    intake.md, brainstormer.md, researcher.md, designer.md, architect.md, business.md, planner.md, advisor.md, marketing.md, ops.md, analyst.md, writer.md, reviewer.md, chronicler.md, backend.md, frontend.md, security.md, devops.md, curator.md
+  agents/    intake.md, brainstormer.md, researcher.md, designer.md, architect.md, business.md, planner.md, advisor.md, marketing.md, ops.md, analyst.md, compass.md, writer.md, reviewer.md, chronicler.md, backend.md, frontend.md, security.md, devops.md, curator.md
   commands/  welcome, brainstorm, bootstrap, adopt, autopilot, plan, mission, counsel, audit, release, verify, operate, publish, sync, ingest, next, doctor, tune, connect, start, check, pr, end, fix, retro, handoff
   hooks/     hooks.json               # guardrails
   skills/    protocol/                # the entry-point skill
