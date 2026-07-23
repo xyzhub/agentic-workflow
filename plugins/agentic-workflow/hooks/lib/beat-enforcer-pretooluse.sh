@@ -31,9 +31,11 @@ esac
 
 [ -d .plans ] || exit 0
 
-# Active ledger: newest-mtime .plans/*.state.md that still has a not-started [ ] beat.
+# Active ledger: newest-mtime .plans/*.state.md that still has an open [ ]/[~] beat
+# (a parked [~] ledger is still the active mission, so it is picked over an older
+# abandoned one — the nudge itself then keys on [ ] only, below).
 LEDGER=$(ls -t .plans/*.state.md 2>/dev/null | while IFS= read -r f; do
-  if grep -qE '^- \[ \]' "$f"; then printf '%s' "$f"; break; fi
+  if grep -qE '^- \[( |~)\]' "$f"; then printf '%s' "$f"; break; fi
 done)
 [ -n "$LEDGER" ] || exit 0
 

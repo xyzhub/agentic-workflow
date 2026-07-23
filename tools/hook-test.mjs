@@ -121,6 +121,22 @@ const NONE_OPEN = ledger('- [x] S1 — build', '- [~] Checkpoint — phase 1 rev
   check('Stop: no .plans/ → silent', r.code === 0 && !nudged(r), `stdout=${JSON.stringify(r.stdout)}`);
 }
 
+// Multi-ledger: the newest ledger is fully parked ([~]/[x]); an older abandoned
+// ledger still holds a not-started [ ]. The active ledger is the newest with ANY
+// open/parked beat, so the parked current mission wins and stays silent — the
+// enforcer must NOT reach back to nag about the abandoned one (regression: F1).
+{
+  const r = runHook({
+    event: 'Stop', desc: STOP, input: { stop_hook_active: false },
+    ledgers: {
+      'old-abandoned.state.md': ['## Checklist', '- [ ] Checkpoint — phase 1 review', ''].join('\n'),
+      'current.state.md': ['## Checklist', '- [x] S1 — build', '- [~] Checkpoint — phase 1 review', ''].join('\n'),
+    },
+  });
+  check('Stop: newest ledger parked, older has [ ] → silent (active = newest)',
+    r.code === 0 && !nudged(r), `stdout=${JSON.stringify(r.stdout)}`);
+}
+
 // ── PreToolUse enforcer (fires only at the closing action) ────────────────
 {
   const r = runHook({ event: 'PreToolUse', desc: PRE, input: commit, ledgers: NOT_STARTED });

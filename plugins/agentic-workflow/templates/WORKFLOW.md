@@ -197,7 +197,7 @@ Shipped by this plugin as hooks. Advisory except where marked:
 | `Write`/`Edit` | Reminder to update docs when high-impact files change |
 | Prompt submit | **Router** (governance) — an un-prefixed work request gets a soft "route it through the protocol — hand to `intake`" nudge; silent on plain chat, never blocks |
 | Prompt submit | **Thread-keeper** (governance) — injects the active ledger's phase + `Next up:` + first unchecked beat each turn; silent when no active ledger, never blocks |
-| `git commit` / turn end | **Beat-enforcer** (governance) — nudges a required-but-unchecked ledger beat (`chronicler` at close, `reviewer` at a checkpoint) at the overdue moment; advisory, never blocks |
+| `git commit` / turn end | **Beat-enforcer** (governance) — nudges a not-started ledger beat (`chronicler` at close, `reviewer` at a checkpoint) at the overdue moment; advisory, never blocks |
 
 Blockers exit 2 (hard stop); reminders exit 0. Guardrails catch autopilot
 mistakes; they never replace judgment. Checks evaluate in the command's
@@ -231,7 +231,7 @@ end a session). For a long *interactive* session with no natural session end,
 
 **Reflex backstops** — two §3 governance hooks keep a session on-protocol without
 being read: the *thread-keeper* surfaces the active ledger's phase + `Next up:` +
-first open beat every turn, and the *beat-enforcer* nudges a required-but-unchecked
+first open beat every turn, and the *beat-enforcer* nudges a not-started
 beat (`chronicler` at close, `reviewer` at a checkpoint) at the moment you try to
 close or advance. Both are advisory — they steer the session back to the ledger,
 never block it.
