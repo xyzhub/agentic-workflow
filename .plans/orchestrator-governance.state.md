@@ -17,17 +17,21 @@ each phase branch on APPROVE. Mission started: **2026-07-23**.
 
 _All unchecked at start. Checked only when the work is verified, not merely written._
 
+**MISSION COMPLETE + MERGED (PR #21, 2026-07-23).** All checkpoints APPROVED (verdicts in
+the handoff log). Post-merge: docs sync done (PR #23); pending human — run the
+`plain-request-routing` eval pre-release.
+
 - [x] S1 — Architect shape memo (branch `mission/orchestrator-governance-p1`)
-- [ ] Checkpoint — phase 1: human locks the shape; record locked decisions in the master plan
+- [x] Checkpoint — phase 1: human locks the shape; record locked decisions in the master plan
 - [x] S2 — Router + thread-keeper hooks (branch `mission/orchestrator-governance-p2`)
 - [x] S3 — Beat-enforcer hook (branch `mission/orchestrator-governance-p2`)
-- [ ] Checkpoint — phase 2 review (security-lens-forward) + **felt-validation gate**
+- [x] Checkpoint — phase 2 review (security-lens-forward) + **felt-validation gate**
 - [x] S4 — `intake` agent + router→intake wiring (branch `mission/orchestrator-governance-p3`)
-- [ ] Checkpoint — phase 3 review + merge per gate policy
+- [x] Checkpoint — phase 3 review + merge per gate policy
 - [x] S5 — `compass` agent + north-star template + **LIVE** gated §12 notify (branch `mission/orchestrator-governance-p4`)
-- [ ] Checkpoint — phase 4 review (LIVE §12 + security lens on notify path)
+- [x] Checkpoint — phase 4 review (LIVE §12 + security lens on notify path)
 - [x] S6 — Docs + version bump + governance eval (sync deferred to post-release) (branch `mission/orchestrator-governance-p5`)
-- [ ] Checkpoint — phase 5 review + eval green; mission-end wrap per gate policy
+- [x] Checkpoint — phase 5 review + eval green; mission-end wrap per gate policy
 
 ## Open questions
 
