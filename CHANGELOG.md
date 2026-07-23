@@ -97,6 +97,17 @@ has no tags — each version-stamped commit on `main` IS the release.
     `/welcome`, `/bootstrap`, and `/adopt` offer to invoke the recommended
     command (SlashCommand) so users don't type or namespace it by hand.
 ### Changed
+- **Ledger `[~]` formalized as the "hands-off" state; beat-enforcers key on the
+  glyph, not prose (v1.40.0).** Three explicit checklist states — `[ ]` not started,
+  `[~]` in-flight / deferred / awaiting owner, `[x]` done — and both beat-enforcers
+  now nudge ONLY on a not-started `[ ]` checkpoint/reviewer/chronicler row; `[~]`
+  and `[x]` are silent. This retires the brittle bold-marker prose-matching
+  (v1.39.2) in favor of an author-controlled glyph: change `[ ]`→`[~]` to park a
+  beat and silence the nudge (the nudge text now says so). The `/agentic-workflow:mission`
+  workflow auto-sets `[~]` when a review is in-flight and `[x]` on APPROVE, so it
+  rarely needs a manual touch. Documented in WORKFLOW.md and the mission-state
+  template; guarded by the hook harness (a plain `[~]`, which used to slip the
+  prose-matching, is now silent).
 - **Beat-enforcer hook bodies extracted to `hooks/lib/*.sh` (v1.39.3).** The two
   beat-enforcers (the `Stop` backstop and the `PreToolUse` closing-action nudge)
   moved from inline JSON one-liners into reviewable, commented scripts invoked via

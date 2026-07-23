@@ -69,7 +69,7 @@
           {
             "type": "command",
             "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/lib/beat-enforcer-pretooluse.sh\"",
-            "description": "beat-enforcer (D4, PreToolUse/Bash): soft-nudge at the closing action — on git commit / gh pr create|merge, if the active .plans/*.state.md ledger has a required-but-unchecked beat (a [ ]/[~] Checkpoint or chronicler/reviewer row, excluding rows bearing a bold approved/awaiting-human status marker like **APPROVED** or **merge pending human**), echo an advisory to spawn it before close/advance; silent when no .plans/ or no active ledger; ledger text is only grepped/echoed, never executed; always exit 0 (never blocks, per locked D4)"
+            "description": "beat-enforcer (D4, PreToolUse/Bash): soft-nudge at the closing action — on git commit / gh pr create|merge, if the active .plans/*.state.md ledger has a NOT-STARTED [ ] Checkpoint or chronicler/reviewer row, echo an advisory to spawn it before close/advance. Keys on the glyph, not prose: [~] (in-flight/deferred/awaiting owner) and [x] (done) rows are silent. Silent when no .plans/ or no such row; ledger text is only grepped/echoed, never executed; always exit 0 (never blocks, per locked D4). Body: hooks/lib/beat-enforcer-pretooluse.sh"
           }
         ]
       }
@@ -93,7 +93,7 @@
           {
             "type": "command",
             "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/lib/beat-enforcer-stop.sh\"",
-            "description": "beat-enforcer backstop (D4, Stop): on turn-end, nudge ONCE about a required-but-unchecked beat then allow the stop. FIRST reads stdin and exits 0 immediately when .stop_hook_active is true (Claude Code's re-fire guard — without it a Stop hook that emits feedback loops on every stop attempt). Otherwise, if the active .plans/*.state.md ledger still has an unchecked [ ]/[~] Checkpoint/chronicler/reviewer row (excluding rows bearing a bold approved/awaiting-human status marker like **APPROVED** or **merge pending human** — those are done or human-gated, not a forgotten spawn), inject a soft reminder via hookSpecificOutput.additionalContext (jq-built so ledger text is JSON-escaped, never executed); silent when no .plans/ or no active ledger; always exit 0 — NEVER exit 2."
+            "description": "beat-enforcer backstop (D4, Stop): on turn-end, nudge ONCE about a NOT-STARTED [ ] Checkpoint/chronicler/reviewer row then allow the stop. FIRST reads stdin and exits 0 immediately when .stop_hook_active is true (Claude Code's re-fire guard — without it a Stop hook that emits feedback loops on every stop attempt). Keys on the glyph, not prose: [~] (in-flight/deferred/awaiting owner) and [x] (done) rows are silent. Emits via hookSpecificOutput.additionalContext (jq-built so ledger text is JSON-escaped, never executed); silent when no .plans/ or no such row; always exit 0 — NEVER exit 2. Body: hooks/lib/beat-enforcer-stop.sh"
           }
         ]
       }

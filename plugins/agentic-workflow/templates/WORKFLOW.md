@@ -197,7 +197,7 @@ Shipped by this plugin as hooks. Advisory except where marked:
 | `Write`/`Edit` | Reminder to update docs when high-impact files change |
 | Prompt submit | **Router** (governance) — an un-prefixed work request gets a soft "route it through the protocol — hand to `intake`" nudge; silent on plain chat, never blocks |
 | Prompt submit | **Thread-keeper** (governance) — injects the active ledger's phase + `Next up:` + first unchecked beat each turn; silent when no active ledger, never blocks |
-| `git commit` / turn end | **Beat-enforcer** (governance) — nudges a required-but-unchecked ledger beat (`chronicler` at close, `reviewer` at a checkpoint) at the overdue moment; advisory, never blocks |
+| `git commit` / turn end | **Beat-enforcer** (governance) — nudges a not-started ledger beat (`chronicler` at close, `reviewer` at a checkpoint) at the overdue moment; advisory, never blocks |
 
 Blockers exit 2 (hard stop); reminders exit 0. Guardrails catch autopilot
 mistakes; they never replace judgment. Checks evaluate in the command's
@@ -231,7 +231,7 @@ end a session). For a long *interactive* session with no natural session end,
 
 **Reflex backstops** — two §3 governance hooks keep a session on-protocol without
 being read: the *thread-keeper* surfaces the active ledger's phase + `Next up:` +
-first open beat every turn, and the *beat-enforcer* nudges a required-but-unchecked
+first open beat every turn, and the *beat-enforcer* nudges a not-started
 beat (`chronicler` at close, `reviewer` at a checkpoint) at the moment you try to
 close or advance. Both are advisory — they steer the session back to the ledger,
 never block it.
@@ -244,7 +244,7 @@ The plan trio, written by a dedicated planning session:
 |---|---|
 | `.plans/<mission>.md` | Master plan: numbered tasks with acceptance criteria, **locked decisions (dated)**, risks, open questions each with a recommendation |
 | `.plans/<mission>.sessions.md` | One brief per session: pre-resolved reads (file → measured line count → anchors), do/verify steps, read budget; phases with named branches |
-| `.plans/<mission>.state.md` | Ledger: checklist, deviations log, handoff log (≤10 lines each, newest first), `Next up:` |
+| `.plans/<mission>.state.md` | Ledger: checklist, deviations log, handoff log (≤10 lines each, newest first), `Next up:`. Checklist glyphs: `[ ]` not started · `[~]` in-flight / deferred / awaiting owner · `[x]` done — the beat-enforcer nudges only on a not-started `[ ]` checkpoint/reviewer/chronicler row, so set `[~]` when a beat is picked up or parked |
 
 Rules: briefs pre-resolve targets so execution sessions never explore; one branch
 per phase, merged at checkpoint per the **gate policy** below; migrations and

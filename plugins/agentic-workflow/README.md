@@ -196,7 +196,7 @@ Three **governance reflexes** (advisory, never block) keep a session on the
 protocol without it being read: the **router** nudges an un-prefixed work request
 to route through the workflow (hand to `intake`); the **thread-keeper** surfaces
 the active ledger's phase + `Next up:` + first open beat each turn; the
-**beat-enforcer** nudges a required-but-unchecked ledger beat (`chronicler` at
+**beat-enforcer** nudges a not-started ledger beat (`chronicler` at
 close, `reviewer` at a checkpoint) at the moment you try to close or advance.
 
 ## What the human always owns

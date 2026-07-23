@@ -12,8 +12,11 @@ start.
 
 ## Checklist
 
-_Every session and checkpoint from the sessions file, all unchecked at start.
-Checked only when the work is verified, not merely written._
+_Every session and checkpoint from the sessions file, all `[ ]` at start.
+Glyphs: `[ ]` not started · `[~]` in-flight / deferred / awaiting owner · `[x]`
+done (verified, not merely written). The beat-enforcer nudges only on a
+not-started `[ ]` checkpoint/reviewer/chronicler row — set `[~]` the moment a beat
+is picked up or parked to keep it quiet; `[x]` only on a verified/APPROVED result._
 
 - [ ] S1 — _session name_ (branch `mission/{{MISSION_NAME}}-p1`)
 - [ ] Checkpoint — phase 1 review + merge per gate policy
