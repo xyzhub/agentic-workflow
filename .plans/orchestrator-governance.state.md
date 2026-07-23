@@ -57,6 +57,15 @@ _Any departure from a brief — logged here the moment it happens, with why._
 
 ## Handoff log (newest first)
 
+- **2026-07-23 · Phase-2 checkpoint (reviewer, security lens)** — **APPROVE**
+  (Security 3/3 · DX 2/3 · QA 3/3). Injected `; rm -rf`/backticks/`&` in prompt AND
+  ledger rows → all echoed inert; every hook exits 0, silent off-workflow; lint clean;
+  all 6 behaviors re-run to spec. **Tuning backlog (non-blocking):** (1) router names
+  `intake` before it ships — S4 resolves; (2) beat regex bare `review` over-matches —
+  tighten in P5; (3) thread-keeper every-turn banner = heed-ability risk (wallpaper) —
+  if felt noisy, dedupe-when-unchanged / work-request-turns only (P5 tuning, not redesign).
+  Stacked policy — no merge now.
+
 _≤10 lines per entry: what this session did, the verify signal, the branch, and
 what the next session needs. Newest on top; crash-safe by write-ahead._
 
