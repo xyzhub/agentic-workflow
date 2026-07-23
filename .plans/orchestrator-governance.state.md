@@ -57,6 +57,11 @@ _Any departure from a brief — logged here the moment it happens, with why._
 
 ## Handoff log (newest first)
 
+- **2026-07-23 · Phase-3 checkpoint (reviewer)** — **APPROVE** (Architecture 3/3 ·
+  DX 3/3 · QA 3/3). `intake` boundary airtight & structurally enforced (`tools: Read,
+  Grep, Glob` → cannot run/spawn/build/merge); routing mirrors `/next`; work-vs-chat
+  gate first-class; router forward-ref (P2 finding-1) resolved; lint clean. No merge (stacked).
+
 - **2026-07-23 · Phase-2 checkpoint (reviewer, security lens)** — **APPROVE**
   (Security 3/3 · DX 2/3 · QA 3/3). Injected `; rm -rf`/backticks/`&` in prompt AND
   ledger rows → all echoed inert; every hook exits 0, silent off-workflow; lint clean;
