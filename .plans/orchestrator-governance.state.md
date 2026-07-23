@@ -57,6 +57,17 @@ _Any departure from a brief — logged here the moment it happens, with why._
 
 ## Handoff log (newest first)
 
+- **2026-07-23 · Phase-5 checkpoint (reviewer) — FINAL** — **APPROVE** (DX 3/3 ·
+  Architecture 3/3 · QA 3/3). Lint clean; counts 20 agents/26 commands correct; v1.39.0;
+  CHANGELOG accurate (no overclaim); north-star wired + §9 catalogued; §3/§4/§6 coherent
+  with what shipped; stamped `docs/WORKFLOW.md` NOT hand-edited (sync deferred); eval
+  well-formed + `node --check` passes (run deferred). **Mission-level: coherent &
+  release-ready.** Two intentional post-mission steps: (1) run the plain-request-routing
+  eval pre-release; (2) `/agentic-workflow:sync` once 1.39.0 installs (docs lags at 1.37.0).
+
+**ALL SIX SESSIONS COMPLETE · all five phase checkpoints APPROVED.** Mission-end wrap
+is the human's: review + merge the single PR `feat/orchestrator-governance → main`.
+
 - **2026-07-23 · Phase-4 checkpoint (reviewer, security lens)** — **APPROVE**
   (Security 3/3 · Architecture 2/3 · DX 2/3 · QA 3/3). LIVE §12 compass safe: token by
   env-NAME only (`curl -sS`, no value in transcript), drift text `jq --arg` data-quoted,
