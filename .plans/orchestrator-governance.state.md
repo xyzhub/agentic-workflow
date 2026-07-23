@@ -25,7 +25,7 @@ _All unchecked at start. Checked only when the work is verified, not merely writ
 - [x] S4 — `intake` agent + router→intake wiring (branch `mission/orchestrator-governance-p3`)
 - [ ] Checkpoint — phase 3 review + merge per gate policy
 - [x] S5 — `compass` agent + north-star template + **LIVE** gated §12 notify (branch `mission/orchestrator-governance-p4`)
-- [ ] Checkpoint — phase 4 review (shadow mode + security lens on notify path)
+- [ ] Checkpoint — phase 4 review (LIVE §12 + security lens on notify path)
 - [ ] S6 — Docs + version bump + governance eval + sync (branch `mission/orchestrator-governance-p5`)
 - [ ] Checkpoint — phase 5 review + eval green; mission-end wrap per gate policy
 
@@ -56,6 +56,16 @@ _Any departure from a brief — logged here the moment it happens, with why._
 (none)
 
 ## Handoff log (newest first)
+
+- **2026-07-23 · Phase-4 checkpoint (reviewer, security lens)** — **APPROVE**
+  (Security 3/3 · Architecture 2/3 · DX 2/3 · QA 3/3). LIVE §12 compass safe: token by
+  env-NAME only (`curl -sS`, no value in transcript), drift text `jq --arg` data-quoted,
+  owner-only, fail-safe; gating strict ("can't name the drift + cheapest fix → don't
+  send"); boundary airtight. **Finding-1 FIXED in-phase**: added `Write, Edit` to compass
+  (maintains its own north-star.md record, chronicler-style; never edits product code) +
+  boundary clarified; lint clean. **Finding-2 → S6**: master §9 catalog omits `intake`,
+  `compass`, and `north-star.md` (template currently orphaned — S6 wires + catalogs it).
+  Finding-3 (stale "shadow mode" line) fixed. No merge (stacked).
 
 - **2026-07-23 · Phase-3 checkpoint (reviewer)** — **APPROVE** (Architecture 3/3 ·
   DX 3/3 · QA 3/3). `intake` boundary airtight & structurally enforced (`tools: Read,
