@@ -34,7 +34,7 @@ verified/APPROVED result._
 **Phase 3 — [STRICT] living wiring** (branch `mission/sales-doc-architecture-p3`)
 - [x] S5 — chronicler + marketing living wiring
 - [x] S6 — marker-only-mutation fixture + lint gate + compass stamp
-- [ ] **Checkpoint [STRICT]** — Phase 3 review + merge to integration; fresh reviewer re-runs the FULL gate incl. marker fixture; no merge until fixture green (D2, D4 "living" half)
+- [x] **Checkpoint [STRICT]** — Phase 3 review **APPROVED** (6/6 lenses 3·3·3; reviewer's own rogue probes each FAIL on the right invariant; NUL byte + half-covered fixture + contract contradiction all fixed across 2 correctives) + merged to integration — **D4 "living" half DONE**
 
 **Phase 4 — engineering folder + /sync + de-dup** (branch `mission/sales-doc-architecture-p4`)
 - [ ] S7 — `/sync` docs-layout migration + deployed engineering paths
@@ -167,4 +167,4 @@ what the next session needs._
   frozen-rule message, reverted → green.
 - Next: Phase 0 checkpoint (fresh reviewer re-runs the gate + diff-reviews `base..head`).
 
-Next up: **Checkpoint [STRICT]** — Phase 3 review; fresh reviewer re-runs the FULL gate (incl. the new `tools/marker-test.mjs` fixture), diff-reviews `base..head` with extra scrutiny on the chronicler auto-write contract (confirm no auto-authored-claim path exists), then merges to integration only after the fixture is green (D2, D4 "living" half)
+Next up: S7 — `/sync` docs-layout migration + deployed engineering paths (Phase 4)
