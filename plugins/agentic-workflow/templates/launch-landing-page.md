@@ -7,8 +7,9 @@ refresh-trigger: event
 # {{PROJECT_NAME}} — Landing Page (V5)
 
 Outline + copy for the `frontend` agent to build with the chosen design
-tokens. Copy inherits `positioning.md`; promise nothing the current version
-doesn't do.
+tokens. Copy inherits its claims from `positioning.md`; any price shown
+references `business/pricing.md` (the single price source) — never restate the
+tiers. Promise nothing the current version doesn't do.
 
 ## Hero
 _Headline (the sharpest messaging pillar), subline, primary action._
