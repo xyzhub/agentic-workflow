@@ -32,7 +32,7 @@ verified/APPROVED result._
 - [x] Checkpoint — Phase 2 review **APPROVED** (Usability 3/3; F1 ownership-prose drift fixed; cadence divergence ruled S4-correct) + merged to integration — **D4 "usable" half DONE**
 
 **Phase 3 — [STRICT] living wiring** (branch `mission/sales-doc-architecture-p3`)
-- [ ] S5 — chronicler + marketing living wiring
+- [x] S5 — chronicler + marketing living wiring
 - [ ] S6 — marker-only-mutation fixture + lint gate + compass stamp
 - [ ] **Checkpoint [STRICT]** — Phase 3 review + merge to integration; fresh reviewer re-runs the FULL gate incl. marker fixture; no merge until fixture green (D2, D4 "living" half)
 
@@ -66,6 +66,20 @@ _Any departure from a brief — logged the moment it happens, with why._
 
 _≤10 lines per entry: what this session did, the verify signal, the branch, and
 what the next session needs._
+
+**S5 — Phase 3 [STRICT] chronicler + marketing living wiring** (2026-07-25, branch `mission/sales-doc-architecture-p3`, commit `ca6840c`)
+- `chronicler.md`: added **Artifact 4 — sales kit's living fact regions**. Every ship it edits ONLY
+  inside markers — catalog `data:capabilities` (append-only, only GAINS rows from merged PRs),
+  sell-sheet `data:top-benefits`/`data:whats-new` (refresh) — PR-cited, benefit column literally
+  `_unwritten_`; **NEVER authors a claim/benefit/positioning line**; mirrors overview.html marker
+  discipline ("bytes outside the markers are never yours to touch"). Invocation contract now names
+  the `_unwritten_` count + `marketing` hand-off in the ≤10-line return. Description updated.
+- `marketing.md`: extended the benefit-fill beat to consume the chronicler's every-ship queue across
+  BOTH catalog outcome column and sell-sheet benefit/whats-new `_unwritten_` slots; fills only the
+  `_unwritten_` slots, never the fact columns/rows/marker structure the chronicler owns; claims from
+  `positioning.md`, evidence-gated. Prose-only, no code/fixture (that's S6).
+- Verify: `node tools/lint.mjs` clean (exit 0). Both `templates/sales-*.md` deployed refs resolve.
+- Next: S6 — `tools/marker-test.mjs` fixture + `checkMarkerMutation` lint gate + compass staleness stamp.
 
 **S4 — Phase 2 objections-faq · battlecard · discovery-guide · demo-script · proof-points** (2026-07-25, branch `mission/sales-doc-architecture-p2`, commit `871ae6a`)
 - Created 5 flat `sales-*.md` templates completing the usable-half kit (D4): objections-faq
@@ -120,4 +134,4 @@ what the next session needs._
   frozen-rule message, reverted → green.
 - Next: Phase 0 checkpoint (fresh reviewer re-runs the gate + diff-reviews `base..head`).
 
-Next up: S5 — chronicler + marketing living wiring (Phase 3 [STRICT])
+Next up: S6 — marker-only-mutation fixture (`tools/marker-test.mjs`) + `checkMarkerMutation` lint gate + compass staleness stamp (Phase 3 [STRICT])
