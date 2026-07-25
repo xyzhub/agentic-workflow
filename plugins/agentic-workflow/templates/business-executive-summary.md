@@ -13,8 +13,9 @@ transition; states stage and traction as they ARE.
 **Stage**: _(V0–V6)_ · **Last refreshed**: _(YYYY-MM-DD)_
 
 ## The problem
-_Who has it, how painful, how they cope today. One paragraph, from the V0
-evidence._
+_The problem this venture addresses — from `docs/product/idea.md` (the single
+source of the problem statement). Cite it; don't re-paraphrase it into a second
+version here that can drift from the original._
 
 ## The solution
 _What {{PROJECT_NAME}} does about it, in this version. No deferred features._

@@ -13,9 +13,12 @@ defines success, the `business` agent supplies the model. The exit gate is a
 human approval of scope — no implementation without acceptance criteria (§0)._
 
 ## Problem recap
-_Carried from `docs/product/idea.md`, tightened: who has the problem, who pays,
-and the one-paragraph shape of the solution. Don't restate the whole idea doc —
-link it and summarize what V1 commits to._
+_The problem and who-pays live once in `docs/product/idea.md` (the single source)
+— cite it, don't re-paraphrase the problem statement here where it can drift. This
+section carries only what V1 commits to: the one-paragraph shape of the solution
+the MVP scope below delivers._
+
+→ _`docs/product/idea.md`_
 
 ## MVP scope
 _The smallest set of capabilities that delivers the core value. Each is a

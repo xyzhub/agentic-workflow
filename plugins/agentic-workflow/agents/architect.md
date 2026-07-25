@@ -43,12 +43,12 @@ Beyond per-decision memos, you author and maintain two thin, durable artifacts
 the implementers build from — born at V1 as intent, hardened at V2 as the
 skeleton goes in:
 
-- **`docs/product/architecture.md`** (from
+- **`docs/product/engineering/architecture.md`** (from
   `${CLAUDE_PLUGIN_ROOT}/templates/architecture.md`) — components, data flow,
   the data model, and the **invariants** a slice must not break. It holds intent
   and invariants only, points at the code index for structure and at your memos
   for the "why", and never re-narrates the code (that rots — §8 polices it).
-- **`docs/product/interface-contract.md`** (from
+- **`docs/product/engineering/interface-contract.md`** (from
   `${CLAUDE_PLUGIN_ROOT}/templates/interface-contract.md`, co-owned with
   `backend`) — the boundary `frontend` and `backend` both honor so their slices
   proceed in parallel without diverging. Small on purpose, so a brief can read

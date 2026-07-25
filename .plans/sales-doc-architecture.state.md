@@ -37,9 +37,9 @@ verified/APPROVED result._
 - [x] **Checkpoint [STRICT]** — Phase 3 review **APPROVED** (6/6 lenses 3·3·3; reviewer's own rogue probes each FAIL on the right invariant; NUL byte + half-covered fixture + contract contradiction all fixed across 2 correctives) + merged to integration — **D4 "living" half DONE**
 
 **Phase 4 — engineering folder + /sync + de-dup** (branch `mission/sales-doc-architecture-p4`)
-- [ ] S7 — `/sync` docs-layout migration + deployed engineering paths
-- [ ] S8 — de-dup single-sourcing
-- [ ] Checkpoint — Phase 4 review + merge to integration
+- [x] S7 — `/sync` docs-layout migration + deployed engineering paths
+- [x] S8 — de-dup single-sourcing
+- [x] Checkpoint — Phase 4 review **APPROVED** (Arch/DX 3·3; idempotent /sync migration verified, single-sourcing clean, ref miscount 8→10 fixed) + merged to integration
 
 **Phase 5 — runbook + tracking-plan** (branch `mission/sales-doc-architecture-p5`)
 - [ ] S9 — `engineering-runbook.md` + `engineering-tracking-plan.md`
@@ -64,8 +64,36 @@ _Any departure from a brief — logged the moment it happens, with why._
 
 ## Handoff log (newest first)
 
+**S8 — Phase 4 de-dup single-sourcing** (2026-07-25, branch `mission/sales-doc-architecture-p4`, commit `0d6c3a7`)
+- **Claims → `launch/positioning.md`:** business-model.md §Value proposition — replaced the "Must agree
+  with launch/positioning.md" agreement-by-convention obligation with a reference naming positioning as the
+  single claims source (restatement → pointer; constraint kept, not deleted).
+- **Problem → `idea.md`:** business-executive-summary.md §The problem + prd.md §Problem recap both now
+  CITE `docs/product/idea.md` (the single source) instead of re-paraphrasing it; PRD keeps only "what V1
+  commits to" and adds the `→ docs/product/idea.md` link idiom.
+- **Pricing → `business/pricing.md`:** landing-page.md now points any price shown at `business/pricing.md`
+  (never restate tiers). exec-summary §Pricing already referenced pricing.md — verified, left as-is. Sales
+  kit already single-sources (untouched per brief).
+- Verify: `node tools/lint.mjs` clean (exit 0); `grep "must agree with"` → none; refs use deployed/plain
+  doc names (not `templates/…`), so `checkTemplateRefs` unaffected. Next: Phase 4 checkpoint review + merge.
+
+
 _≤10 lines per entry: what this session did, the verify signal, the branch, and
 what the next session needs._
+
+**S7 — Phase 4 engineering/ folder + idempotent /sync migration** (2026-07-25, branch `mission/sales-doc-architecture-p4`, commit `28ea2e9`)
+- `commands/sync.md`: new **§3.5** — idempotent, HITL-staged docs-layout reconciliation. Detects flat
+  `docs/product/architecture.md` + `interface-contract.md`; already-foldered/absent → **skip silently
+  (no-op)**; flat found → `git mv` into `docs/product/engineering/` (filenames unchanged), fix intra-doc
+  links, **report each move + link rewrite and leave staged/uncommitted for HITL — never move silently**.
+  Re-run after move = no-op (idempotent). ≤2 files/repo.
+- `commands/bootstrap.md`: new/adopted projects now deploy architecture.md + interface-contract.md into
+  `docs/product/engineering/`. `adopt.md` untouched (it deploys via bootstrap's procedure).
+- Repointed **10 references** to `docs/product/engineering/…`: architect.md (2), backend.md (2),
+  frontend.md (1), bootstrap.md (2 deploy paths), templates/architecture.md intra-doc link (1),
+  WORKFLOW.md §5 architect role (2). Template SOURCES stay FLAT (SD4) — no file renamed; no sales kit touched.
+- Verify: `node tools/lint.mjs` clean (path edits don't touch `checkTemplateRefs`, which only polices
+  `templates/…`). Next: S8 — de-dup single-sourcing (depends on the engineering paths S7 landed).
 
 **S6-fix — Phase 3 [STRICT] corrective pass (reviewer REQUEST CHANGES, 5 findings)** (2026-07-25, branch `mission/sales-doc-architecture-p3`)
 - **F2 (contract, LOCKED split):** chronicler.md Artifact 4 now writes ONLY catalog `data:capabilities`
@@ -167,4 +195,4 @@ what the next session needs._
   frozen-rule message, reverted → green.
 - Next: Phase 0 checkpoint (fresh reviewer re-runs the gate + diff-reviews `base..head`).
 
-Next up: S7 — `/sync` docs-layout migration + deployed engineering paths (Phase 4)
+Next up: S9 — `engineering-runbook.md` + `engineering-tracking-plan.md` (Phase 5, final)

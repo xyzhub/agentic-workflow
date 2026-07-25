@@ -42,6 +42,30 @@ If the new master has §13 and the machine has a registry repo, offer
 registration (the `/agentic-workflow:adopt` 1.5 procedure) rather than leaving the Portfolio
 row `TBD`.
 
+## 3.5 Reconcile the docs layout (engineering/ folder)
+
+A small, idempotent docs-layout reconciliation — at most 2 files/repo. The
+deployed venture docs are already foldered (`business/`, `launch/`,
+`decisions/`); only `architecture.md` + `interface-contract.md` may still sit
+flat under `docs/product/` from a pre-`engineering/` adoption.
+
+- **Detect**: check for a flat `docs/product/architecture.md` and/or
+  `docs/product/interface-contract.md`.
+- **Already foldered** (both live under `docs/product/engineering/`, or neither
+  file exists) → **skip silently**: this step is a no-op, emit nothing.
+- **Flat copies found** → for each, `git mv docs/product/<file>
+  docs/product/engineering/<file>` (create `docs/product/engineering/` first;
+  filenames do NOT change), then fix intra-doc links — rewrite any in-repo
+  reference to the old flat path (`docs/product/architecture.md`,
+  `docs/product/interface-contract.md`) to its `docs/product/engineering/…`
+  equivalent, including the cross-link inside `architecture.md` itself.
+- **Report the move explicitly and stage for HITL** — never move silently: list
+  each `git mv` and every link rewrite in the step-4 report, and leave the moves
+  **staged and uncommitted** for the human to review and commit.
+
+Because the already-foldered case is a no-op, re-running `/agentic-workflow:sync`
+after the move changes nothing (idempotent).
+
 ## 4. Review & hand off
 
 Summarize what changed in the protocol between the two versions (new/changed
