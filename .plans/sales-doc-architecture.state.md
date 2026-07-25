@@ -19,7 +19,7 @@ picked up or parked to keep the beat-enforcer quiet; `[x]` only on a
 verified/APPROVED result._
 
 **Phase 0 — frontmatter + lint** (branch `mission/sales-doc-architecture-p0`)
-- [ ] S1 — frontmatter on all 24 templates + `checkTemplateFrontmatter`
+- [x] S1 — frontmatter on all 24 templates + `checkTemplateFrontmatter`
 - [ ] Checkpoint — Phase 0 review + merge to integration
 
 **Phase 1 — feature→benefit catalog** (branch `mission/sales-doc-architecture-p1`)
@@ -67,6 +67,14 @@ _Any departure from a brief — logged the moment it happens, with why._
 _≤10 lines per entry: what this session did, the verify signal, the branch, and
 what the next session needs._
 
-(none yet)
+**S1 — Phase 0 frontmatter + lint** (2026-07-25, branch `mission/sales-doc-architecture-p0`, commit `ab99cfc`)
+- Added `{status, owner-agent, refresh-trigger}` frontmatter (fence above `#`) to all 24
+  non-excluded `templates/*.md`; `WORKFLOW.md` + `overview.html` exempt per OQ1. Values from
+  the sessions-file mapping table verbatim — no tier deviations.
+- Added `checkTemplateFrontmatter()` to `tools/lint.mjs` (presence + enum + owner-agent ∈
+  agents set + fail-closed `frozen ⇒ never`); wired into the checks array.
+- Verify: `node tools/lint.mjs` green; negative case (frozen+release) fails with the
+  frozen-rule message, reverted → green.
+- Next: Phase 0 checkpoint (fresh reviewer re-runs the gate + diff-reviews `base..head`).
 
-Next up: S1
+Next up: Phase 0 checkpoint — reviewer + merge to integration
