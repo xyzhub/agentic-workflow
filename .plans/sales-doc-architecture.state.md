@@ -27,7 +27,7 @@ verified/APPROVED result._
 - [x] Checkpoint — Phase 1 review **APPROVED** (3·3·3; owner-agent=chronicler pattern confirmed) + merged to integration
 
 **Phase 2 — sales kit, usable half** (branch `mission/sales-doc-architecture-p2`)
-- [ ] S3 — playbook + sell-sheet + sales-kit index + marketing ownership
+- [x] S3 — playbook + sell-sheet + sales-kit index + marketing ownership
 - [ ] S4 — objections-faq · battlecard · discovery-guide · demo-script · proof-points
 - [ ] Checkpoint — Phase 2 review + merge to integration (D4 "usable" half)
 
@@ -67,6 +67,18 @@ _Any departure from a brief — logged the moment it happens, with why._
 _≤10 lines per entry: what this session did, the verify signal, the branch, and
 what the next session needs._
 
+**S3 — Phase 2 playbook + sell-sheet + kit index + marketing ownership** (2026-07-25, branch `mission/sales-doc-architecture-p2`)
+- Created 3 templates: `sales-playbook.md` (`semi-static / marketing / release`, full §1–§9 incl.
+  §4 `data:top-capabilities` + §9 `data:whats-new` STATIC regions; §8 extends writer's §0.2
+  anti-manipulation rule to the spoken pitch), `sales-sell-sheet.md` (`living / chronicler /
+  every-ship`, `data:top-benefits` + `data:whats-new` regions), `sales-kit.md`
+  (`semi-static / marketing / release`, index by DEPLOYED doc names — no `templates/` paths, lists S4 docs too).
+- Extended `agents/marketing.md`: new "The sales kit (docs/product/sales/)" block — owns `sales/`,
+  references the 4 `templates/sales-*.md` sources (atomic-commit invariant), fills `_unwritten_` catalog outcomes at its beat.
+- Tiers per Phase-1 CADENCE-owner pattern & sessions brief — no owner-agent judgment deviations.
+- Verify: `node tools/lint.mjs` clean; all `data:*` marker pairs balanced; kit uses deployed names (0 template refs).
+- Next: S4 — objections-faq · battlecard · discovery-guide · demo-script · proof-points (extends this marketing block + kit index; run sequentially after S3).
+
 **S2 — Phase 1 feature→benefit catalog** (2026-07-25, branch `mission/sales-doc-architecture-p1`, commit `bddd8e7`)
 - Created `templates/sales-feature-benefit-catalog.md` (static living substrate): frontmatter
   `living / chronicler / every-ship`; append-only `data:capabilities` region with the 6-column
@@ -94,4 +106,4 @@ what the next session needs._
   frozen-rule message, reverted → green.
 - Next: Phase 0 checkpoint (fresh reviewer re-runs the gate + diff-reviews `base..head`).
 
-Next up: S3 — playbook + sell-sheet + sales-kit index + marketing owns `sales/` (Phase 2, usable half)
+Next up: S4 — objections-faq · battlecard · discovery-guide · demo-script · proof-points (Phase 2; extends the marketing sales block + kit index — run after S3)
