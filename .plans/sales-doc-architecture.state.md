@@ -38,7 +38,7 @@ verified/APPROVED result._
 
 **Phase 4 — engineering folder + /sync + de-dup** (branch `mission/sales-doc-architecture-p4`)
 - [x] S7 — `/sync` docs-layout migration + deployed engineering paths
-- [ ] S8 — de-dup single-sourcing
+- [x] S8 — de-dup single-sourcing
 - [ ] Checkpoint — Phase 4 review + merge to integration
 
 **Phase 5 — runbook + tracking-plan** (branch `mission/sales-doc-architecture-p5`)
@@ -63,6 +63,20 @@ _Any departure from a brief — logged the moment it happens, with why._
 (none)
 
 ## Handoff log (newest first)
+
+**S8 — Phase 4 de-dup single-sourcing** (2026-07-25, branch `mission/sales-doc-architecture-p4`, commit `0d6c3a7`)
+- **Claims → `launch/positioning.md`:** business-model.md §Value proposition — replaced the "Must agree
+  with launch/positioning.md" agreement-by-convention obligation with a reference naming positioning as the
+  single claims source (restatement → pointer; constraint kept, not deleted).
+- **Problem → `idea.md`:** business-executive-summary.md §The problem + prd.md §Problem recap both now
+  CITE `docs/product/idea.md` (the single source) instead of re-paraphrasing it; PRD keeps only "what V1
+  commits to" and adds the `→ docs/product/idea.md` link idiom.
+- **Pricing → `business/pricing.md`:** landing-page.md now points any price shown at `business/pricing.md`
+  (never restate tiers). exec-summary §Pricing already referenced pricing.md — verified, left as-is. Sales
+  kit already single-sources (untouched per brief).
+- Verify: `node tools/lint.mjs` clean (exit 0); `grep "must agree with"` → none; refs use deployed/plain
+  doc names (not `templates/…`), so `checkTemplateRefs` unaffected. Next: Phase 4 checkpoint review + merge.
+
 
 _≤10 lines per entry: what this session did, the verify signal, the branch, and
 what the next session needs._
@@ -181,4 +195,4 @@ what the next session needs._
   frozen-rule message, reverted → green.
 - Next: Phase 0 checkpoint (fresh reviewer re-runs the gate + diff-reviews `base..head`).
 
-Next up: S8 — de-dup single-sourcing (pricing→business/pricing.md, problem→idea.md, claims→positioning.md; replace "must agree with X" prose with references) (Phase 4)
+Next up: Phase 4 checkpoint — fresh reviewer diff-reviews S7+S8 on `mission/sales-doc-architecture-p4`, then merge to `mission/sales-doc-architecture-integration` (batch policy)
