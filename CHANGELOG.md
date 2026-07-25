@@ -32,7 +32,9 @@ has no tags — each version-stamped commit on `main` IS the release.
     no-op when already foldered); new `runbook` (V4) + `tracking-plan` (V3) templates fill
     protocol-named gaps; pricing/problem/claims are single-sourced (references, not
     restatements). Template *sources* stay flat-prefixed; the deployed folder tree comes
-    from the writing agents' paths.
+    from the writing agents' paths. `/agentic-workflow:adopt fill`, the stage-gap audit,
+    and `/agentic-workflow:next` recognize the new deliverables (sales kit V3+, runbook
+    V4+, tracking-plan V3+) so existing projects can discover and back-fill them.
 ### Fixed
 - **Beat-enforcer no longer nudges about already-reviewed beats (v1.39.2).** Both
   beat-enforcers — the `Stop` backstop and the `PreToolUse` closing-action nudge —
