@@ -1,6 +1,6 @@
 ---
 status: semi-static
-owner-agent: backend
+owner-agent: architect
 refresh-trigger: event
 ---
 

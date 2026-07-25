@@ -40,14 +40,14 @@ master), `overview.html` (HTML). The 24 `.md` files below all take frontmatter.
 
 | Template | Lines | status | owner-agent | refresh-trigger |
 |---|---|---|---|---|
-| architecture.md | 49 | semi-static | backend | event |
+| architecture.md | 49 | semi-static | architect | event |
 | business-executive-summary.md | 31 | semi-static | business | stage-transition |
 | business-model.md | 32 | semi-static | business | event |
 | business-pricing.md | 28 | semi-static | business | event |
 | decision-log.md | 9 | frozen | curator | never |
 | decision-memo.md | 51 | frozen | architect | never |
 | flight-plan.md | 51 | semi-static | planner | event |
-| idea.md | 34 | semi-static | researcher | event |
+| idea.md | 34 | frozen | researcher | never |
 | interface-contract.md | 41 | semi-static | backend | event |
 | launch-announcement.md | 16 | semi-static | marketing | event |
 | launch-content-plan.md | 25 | semi-static | marketing | release |

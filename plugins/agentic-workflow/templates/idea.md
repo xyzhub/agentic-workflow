@@ -1,7 +1,7 @@
 ---
-status: semi-static
+status: frozen
 owner-agent: researcher
-refresh-trigger: event
+refresh-trigger: never
 ---
 
 # {{PROJECT_NAME}} — Idea & Validation (V0)
