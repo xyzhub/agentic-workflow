@@ -28,7 +28,7 @@ verified/APPROVED result._
 
 **Phase 2 — sales kit, usable half** (branch `mission/sales-doc-architecture-p2`)
 - [x] S3 — playbook + sell-sheet + sales-kit index + marketing ownership
-- [ ] S4 — objections-faq · battlecard · discovery-guide · demo-script · proof-points
+- [x] S4 — objections-faq · battlecard · discovery-guide · demo-script · proof-points
 - [ ] Checkpoint — Phase 2 review + merge to integration (D4 "usable" half)
 
 **Phase 3 — [STRICT] living wiring** (branch `mission/sales-doc-architecture-p3`)
@@ -66,6 +66,20 @@ _Any departure from a brief — logged the moment it happens, with why._
 
 _≤10 lines per entry: what this session did, the verify signal, the branch, and
 what the next session needs._
+
+**S4 — Phase 2 objections-faq · battlecard · discovery-guide · demo-script · proof-points** (2026-07-25, branch `mission/sales-doc-architecture-p2`, commit `871ae6a`)
+- Created 5 flat `sales-*.md` templates completing the usable-half kit (D4): objections-faq
+  (concede→evidence→pivot), battlecard (status-quo/DIY/named cards from `idea.md`), discovery-guide
+  (ICP fit · BANT · 10 pillar-mapped questions · disqualify-fast), demo-script (PRD-journey golden
+  path, re-validated-each-release note), proof-points (analyst-owned; `_unmeasured_` discipline; case
+  studies claim-gated + deferred). Added all five to `sales-kit.md` index + `marketing.md` sales block.
+- Tiers: objections-faq/demo-script `semi-static/marketing/release`; battlecard/discovery-guide
+  `semi-static/marketing/event`; proof-points `semi-static/analyst/release`. **Flagged**: these follow
+  the orchestrator brief's per-doc list, which DIVERGES from sessions-brief L176 (battlecard/discovery
+  `release`, proof-points `event`) — reviewer to confirm the refresh cadences.
+- Verify: `node tools/lint.mjs` clean (all 5 pass `checkTemplateFrontmatter`; `data:metrics` pair
+  balanced; sibling refs use deployed names, SD4). Claims→`positioning.md`, prices→`business/pricing.md`.
+- Next: Phase 2 checkpoint — fresh reviewer + merge to integration (D4 "usable" half complete).
 
 **S3 — Phase 2 playbook + sell-sheet + kit index + marketing ownership** (2026-07-25, branch `mission/sales-doc-architecture-p2`)
 - Created 3 templates: `sales-playbook.md` (`semi-static / marketing / release`, full §1–§9 incl.
@@ -106,4 +120,4 @@ what the next session needs._
   frozen-rule message, reverted → green.
 - Next: Phase 0 checkpoint (fresh reviewer re-runs the gate + diff-reviews `base..head`).
 
-Next up: S4 — objections-faq · battlecard · discovery-guide · demo-script · proof-points (Phase 2; extends the marketing sales block + kit index — run after S3)
+Next up: Phase 2 checkpoint — fresh `reviewer` diff-reviews `base..head`, re-runs the gate, merges `mission/sales-doc-architecture-p2` to integration (D4 "usable" half complete)
