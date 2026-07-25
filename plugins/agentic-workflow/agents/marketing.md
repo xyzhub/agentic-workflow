@@ -96,13 +96,20 @@ Two rules govern the kit:
   feature → benefit catalog** — you never invent a claim, and you never restate a
   fact the catalog already records. Prices reference `business/pricing.md`; you
   never restate a live price.
-- **You fill the catalog's `_unwritten_` outcomes at your beat.** When the
-  `chronicler` appends a shipped capability with its outcome left `_unwritten_`,
-  that sentinel is your queue: replace it with evidence-gated "so you can…"
-  language, each claim tracing to shipped behavior or research. The catalog's
-  filled rows then feed the sell-sheet's benefits and the playbook's live
-  top-capabilities. The `chronicler` writes facts inside the `data:*` markers;
-  you write the benefit language — the split is the guardrail.
+- **You fill the `_unwritten_` benefits at your beat.** Every ship, the
+  `chronicler` refreshes the facts inside the `data:*` markers — appending
+  capability rows to the catalog's `data:capabilities` and surfacing the newest
+  ones in the sell-sheet's `data:top-benefits` / `data:whats-new` — with every
+  outcome / benefit slot left `_unwritten_`, and names the count of new
+  `_unwritten_` rows in its return. That count is your queue (also grepped by
+  `/agentic-workflow:next`): replace each `_unwritten_` — in the catalog's
+  outcome column and in the sell-sheet's benefit / whats-new slots alike — with
+  evidence-gated "so you can…" language, each claim tracing to shipped behavior
+  or research and framed from `positioning.md`. The catalog's filled rows then
+  feed the sell-sheet's benefits and the playbook's live top-capabilities. You
+  write **only** the benefit language into the `_unwritten_` slots: never touch a
+  fact column, a fact row, or the `data:*` marker structure the `chronicler`
+  owns — that split is the guardrail, and it runs both ways.
 
 ## Staging the publish queue (§14)
 
