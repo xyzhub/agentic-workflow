@@ -5,6 +5,34 @@ here, in [Keep a Changelog](https://keepachangelog.com/) format. This repo
 has no tags — each version-stamped commit on `main` IS the release.
 
 ## [Unreleased]
+### Added
+- **Sales-enablement kit + living-document architecture (v1.41.0)** — a client-closing
+  sales kit and the machinery to keep it current as the product ships (planned via
+  `/agentic-workflow:plan` → a 6-phase mission; a 4-expert council + architect shaped it):
+  - **The sales kit** (`docs/product/sales/`, 9 templates): a `feature-benefit-catalog`
+    (the living substrate), a `playbook` — the "how to present the product" coaching doc
+    (talk track, discovery questions, demo choreography, objection handling, tone) — a
+    `sell-sheet` (client leave-behind), plus `objections-faq`, `battlecard`,
+    `discovery-guide`, `demo-script`, `proof-points`, and a `sales-kit` index. `marketing`
+    owns `sales/`; every claim traces to `positioning.md`, prices only reference
+    `business/pricing.md`, and `proof-points` never invents a number.
+  - **Living-doc mechanism (facts auto-flow, claims stay gated).** Docs carry
+    `<!-- data:X -->` marker regions; the `chronicler` rewrites ONLY inside them every ship
+    from CHANGELOG/ledger (facts, PR-cited, benefit column left `_unwritten_` — it never
+    authors a claim); `marketing` fills the benefits at its evidence-gated beat. A new
+    `tools/marker-test.mjs` fixture, wired into the lint gate, makes "wrote a claim" or
+    "touched bytes outside a marker" a **failing test** — the client-facing sell-sheet can
+    never ship a raw `_unwritten_` sentinel.
+  - **Template frontmatter convention** — every template carries `{status, owner-agent,
+    refresh-trigger}` (living / semi-static / frozen), enforced by a new
+    `checkTemplateFrontmatter` lint (incl. the fail-closed `frozen ⇒ never` rule). Records
+    (`idea.md`'s original bet, the decision log) stay **frozen** — never auto-rewritten.
+  - **docs/ reorg + gap-fills** — engineering docs move to `docs/product/engineering/` via
+    an **idempotent `/agentic-workflow:sync` migration** (reported + HITL-staged, silent
+    no-op when already foldered); new `runbook` (V4) + `tracking-plan` (V3) templates fill
+    protocol-named gaps; pricing/problem/claims are single-sourced (references, not
+    restatements). Template *sources* stay flat-prefixed; the deployed folder tree comes
+    from the writing agents' paths.
 ### Fixed
 - **Beat-enforcer no longer nudges about already-reviewed beats (v1.39.2).** Both
   beat-enforcers — the `Stop` backstop and the `PreToolUse` closing-action nudge —
