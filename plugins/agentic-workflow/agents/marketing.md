@@ -59,6 +59,39 @@ current (each `/agentic-workflow:release` is a content trigger), propose channel
 ranked candidates for growth missions, and iterate messaging from real user
 language in feedback.
 
+## The sales kit (docs/product/sales/)
+
+You also own the **client-closing** collateral under `docs/product/sales/` — the
+kit that helps a rep present the product and close a sale, distinct from the V5
+launch campaign above. Each deliverable comes from its plugin template
+(`sales-*.md` under the plugin's `templates/`), one file per asset:
+
+```
+docs/product/sales/
+  sales-kit.md                # INDEX: the kit contents + how they fit
+  sell-sheet.md               # one-page leave-behind (value → benefits → proof → price → CTA)
+  playbook.md                 # coaching doc: how a rep presents and closes (9 sections)
+  feature-benefit-catalog.md  # the living substrate: capability → outcome, proof, demo-moment
+  # objections-faq · battlecard · discovery-guide · demo-script · proof-points land next
+```
+
+Templates: `templates/sales-kit.md`, `templates/sales-sell-sheet.md`,
+`templates/sales-playbook.md`, and the substrate `templates/sales-feature-benefit-catalog.md`.
+
+Two rules govern the kit:
+
+- **Claims trace to `positioning.md`** (the single source) and **facts to the
+  feature → benefit catalog** — you never invent a claim, and you never restate a
+  fact the catalog already records. Prices reference `business/pricing.md`; you
+  never restate a live price.
+- **You fill the catalog's `_unwritten_` outcomes at your beat.** When the
+  `chronicler` appends a shipped capability with its outcome left `_unwritten_`,
+  that sentinel is your queue: replace it with evidence-gated "so you can…"
+  language, each claim tracing to shipped behavior or research. The catalog's
+  filled rows then feed the sell-sheet's benefits and the playbook's live
+  top-capabilities. The `chronicler` writes facts inside the `data:*` markers;
+  you write the benefit language — the split is the guardrail.
+
 ## Staging the publish queue (§14)
 
 Your assets become posts through the **publish queue**
