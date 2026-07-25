@@ -329,7 +329,29 @@ function checkHookBehavior() {
   }
 }
 
-for (const check of [checkManifests, checkAgents, checkCommands, checkCrossRefs, checkTemplateRefs, checkSections, checkFrontmatterYaml, checkTemplateFrontmatter, checkHooks, checkObfuscation, checkHookBehavior]) {
+// ── 9. Marker-only mutation (tier-1.5, Phase-3 [STRICT]) ─────────────────
+// The chronicler auto-writes the sales kit's `data:*` regions every ship. Lint
+// proves those templates parse; it can't prove an auto-write STAYS inside the
+// markers, appends rather than rewrites, and never authors a claim. Delegate to
+// the fixture harness, which applies a simulated chronicler update and asserts
+// the three invariants (chronicler.md Artifact 4). Fail-closed: a MISSING harness
+// fails the gate (never a silent skip) — this is the guard the STRICT checkpoint
+// hinges on.
+function checkMarkerMutation() {
+  const runner = path.join(ROOT, 'tools/marker-test.mjs');
+  if (!existsSync(runner)) {
+    fail(runner, null, 'marker-mutation harness missing — tools/marker-test.mjs must exist so the gate proves the chronicler auto-write stays marker-only, append-only, and claim-free (do not silently drop the check)');
+    return;
+  }
+  const res = spawnSync('node', [runner], { encoding: 'utf8' });
+  if (res.status !== 0) {
+    const detail = `${res.stdout ?? ''}${res.stderr ?? ''}`
+      .split('\n').filter((l) => /FAIL|failure|Error/.test(l)).join(' | ');
+    fail(runner, null, `marker-mutation test failed — run \`node tools/marker-test.mjs\`: ${detail || '(no detail)'}`);
+  }
+}
+
+for (const check of [checkManifests, checkAgents, checkCommands, checkCrossRefs, checkTemplateRefs, checkSections, checkFrontmatterYaml, checkTemplateFrontmatter, checkHooks, checkObfuscation, checkHookBehavior, checkMarkerMutation]) {
   check();
 }
 

@@ -14,6 +14,9 @@ every client-facing action.
 
 Docs are listed by their **deployed name** under `docs/product/sales/`.
 
+> **Last refreshed**: _(YYYY-MM-DD)_ · **Refresh trigger**: release. Semi-static —
+> watched for staleness, never auto-rewritten. Bump the date when you refresh.
+
 ## Kit contents
 
 | Doc | What it's for | Tier |

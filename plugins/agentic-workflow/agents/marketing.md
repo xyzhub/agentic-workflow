@@ -85,10 +85,12 @@ and `templates/sales-objections-faq.md`, `templates/sales-battlecard.md`,
 `templates/sales-discovery-guide.md`, `templates/sales-demo-script.md`,
 `templates/sales-proof-points.md`. You own these **except**: `proof-points.md` is
 the `analyst`'s (the measured numbers) — you cite its filled figures but never write
-a number into it; and the two `living` docs (`sales-feature-benefit-catalog.md`,
-`sales-sell-sheet.md`) are `chronicler`-owned for the `data:*` fact rows — you fill
-their benefit/claim language but never hand-edit the fact rows the chronicler
-refreshes every ship.
+a number into it. The two `living` docs (`sales-feature-benefit-catalog.md`,
+`sales-sell-sheet.md`) carry a per-region split: the `chronicler` refreshes the
+**fact** regions every ship — the catalog's `data:capabilities` and the sell-sheet's
+`data:whats-new` — and you never hand-edit those. **You own the sell-sheet's
+`data:top-benefits`** (curated from filled catalog rows, below) and the catalog's
+outcome column; the chronicler never touches either.
 
 Two rules govern the kit:
 
@@ -96,13 +98,22 @@ Two rules govern the kit:
   feature → benefit catalog** — you never invent a claim, and you never restate a
   fact the catalog already records. Prices reference `business/pricing.md`; you
   never restate a live price.
-- **You fill the catalog's `_unwritten_` outcomes at your beat.** When the
-  `chronicler` appends a shipped capability with its outcome left `_unwritten_`,
-  that sentinel is your queue: replace it with evidence-gated "so you can…"
-  language, each claim tracing to shipped behavior or research. The catalog's
-  filled rows then feed the sell-sheet's benefits and the playbook's live
-  top-capabilities. The `chronicler` writes facts inside the `data:*` markers;
-  you write the benefit language — the split is the guardrail.
+- **You fill the `_unwritten_` outcomes, then curate the sell-sheet's benefits.**
+  Every ship, the `chronicler` appends capability rows to the catalog's
+  `data:capabilities` with the outcome column left `_unwritten_`, and names the
+  count of new `_unwritten_` rows in its return. That count is your queue (also
+  grepped by `/agentic-workflow:next`, which greps `_unwritten_` across
+  `docs/product/sales/`): replace each `_unwritten_` **in the catalog's outcome
+  column** with evidence-gated "so you can…" language, each claim tracing to
+  shipped behavior or research and framed from `positioning.md`. Then, from those
+  now-*filled* catalog rows, curate the top three into the sell-sheet's
+  **`data:top-benefits`** — the region you own. Because it is drawn only from
+  filled rows, `data:top-benefits` **never shows an `_unwritten_`**: the sell-sheet
+  is a client-facing leave-behind, and a sentinel must never reach a client. You do
+  **not** write the sell-sheet's `data:whats-new` — that is the chronicler's
+  release fact. Never touch a fact column, a fact row, `data:whats-new`, or the
+  `data:*` marker structure the `chronicler` owns — that split is the guardrail,
+  and it runs both ways.
 
 ## Staging the publish queue (§14)
 

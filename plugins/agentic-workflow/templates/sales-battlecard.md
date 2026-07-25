@@ -14,6 +14,9 @@ table in `idea.md`; claims trace to `positioning.md`. This is an internal
 enablement doc — it is honest about where a competitor is genuinely better, never
 a hit piece.
 
+> **Last refreshed**: _(YYYY-MM-DD)_ · **Refresh trigger**: event. Semi-static —
+> watched for staleness, never auto-rewritten. Bump the date when you refresh.
+
 ## How to read a card
 
 - **They win when** — the buyer situations where the honest recommendation is the

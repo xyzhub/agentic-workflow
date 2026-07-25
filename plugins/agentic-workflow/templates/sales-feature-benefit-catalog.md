@@ -20,15 +20,15 @@ Two hands write this file, and the split is the whole point:
   chronicler appends one row inside the `data:capabilities` markers — sourced
   from the CHANGELOG/ledger and cited to the merged PR — with the **client
   outcome left `_unwritten_`**. It records *what shipped and the proof*; it
-  **never authors a benefit claim**. (The wiring that does this lands in Phase 3
-  — this template is the static substrate it will write into.)
+  **never authors a benefit claim**. (This is live: the chronicler refreshes this
+  region on every ship, guarded by the marker-only-mutation fixture in lint.)
 - **Marketing fills the outcomes, at its own beat.** Every `_unwritten_` in the
   outcome column is marketing's queue: it replaces the sentinel with
   evidence-gated "so you can…" language, each claim tracing to shipped behavior
   or research, and derives the framing from `launch-positioning.md` (the single
   source of claims). No separate state file — the `_unwritten_` sentinel *is* the
-  hand-off marker, grepped by `/agentic-workflow:next` and named in the
-  chronicler's return.
+  hand-off marker, grepped across `docs/product/sales/` by `/agentic-workflow:next`
+  and named in the chronicler's return.
 
 Two invariants keep it honest:
 

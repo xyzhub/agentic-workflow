@@ -32,9 +32,9 @@ verified/APPROVED result._
 - [x] Checkpoint — Phase 2 review **APPROVED** (Usability 3/3; F1 ownership-prose drift fixed; cadence divergence ruled S4-correct) + merged to integration — **D4 "usable" half DONE**
 
 **Phase 3 — [STRICT] living wiring** (branch `mission/sales-doc-architecture-p3`)
-- [ ] S5 — chronicler + marketing living wiring
-- [ ] S6 — marker-only-mutation fixture + lint gate + compass stamp
-- [ ] **Checkpoint [STRICT]** — Phase 3 review + merge to integration; fresh reviewer re-runs the FULL gate incl. marker fixture; no merge until fixture green (D2, D4 "living" half)
+- [x] S5 — chronicler + marketing living wiring
+- [x] S6 — marker-only-mutation fixture + lint gate + compass stamp
+- [x] **Checkpoint [STRICT]** — Phase 3 review **APPROVED** (6/6 lenses 3·3·3; reviewer's own rogue probes each FAIL on the right invariant; NUL byte + half-covered fixture + contract contradiction all fixed across 2 correctives) + merged to integration — **D4 "living" half DONE**
 
 **Phase 4 — engineering folder + /sync + de-dup** (branch `mission/sales-doc-architecture-p4`)
 - [ ] S7 — `/sync` docs-layout migration + deployed engineering paths
@@ -66,6 +66,53 @@ _Any departure from a brief — logged the moment it happens, with why._
 
 _≤10 lines per entry: what this session did, the verify signal, the branch, and
 what the next session needs._
+
+**S6-fix — Phase 3 [STRICT] corrective pass (reviewer REQUEST CHANGES, 5 findings)** (2026-07-25, branch `mission/sales-doc-architecture-p3`)
+- **F2 (contract, LOCKED split):** chronicler.md Artifact 4 now writes ONLY catalog `data:capabilities`
+  (append-only, outcome `_unwritten_`) + sell-sheet `data:whats-new` (facts) — never `data:top-benefits`.
+  marketing.md now OWNS `data:top-benefits` (curates top-3 from FILLED catalog rows, never `_unwritten_`).
+  sales-sell-sheet.md states the per-region split; the `_unwritten_`-never-shown wording is now consistent.
+- **F1/F5 (blocking, `tools/marker-test.mjs`):** simulated update now ALSO refreshes `data:whats-new`;
+  added invariants (d) capabilities appended lines ALL rows [F5], (e) whats-new facts-only, (f) top-benefits
+  untouched — +3 negatives. 13 checks (kept 3 invariants + 4 negatives). Fail-closed re-proven on all 3 new
+  invariants (exit 1 each). No raw NUL.
+- **F3:** added an Inspect step to commands/next.md grepping `_unwritten_` across `docs/product/sales/` —
+  the "grepped by `/agentic-workflow:next`" claim in chronicler/marketing/catalog now holds.
+- **F4:** un-staled the Phase-3-wiring notes in sales-sell-sheet.md + sales-feature-benefit-catalog.md
+  (now describe live behavior); sales-playbook.md left static (correct — Artifact 4 excludes it).
+- Verify: `node tools/marker-test.mjs` green (13); `node tools/lint.mjs` clean. Next: STRICT re-review + merge.
+
+**S6 — Phase 3 [STRICT] marker fixture + lint gate + staleness stamp** (2026-07-25, branch `mission/sales-doc-architecture-p3`, commit `62217ff`)
+- `tools/marker-test.mjs` (clones hook-test.mjs shape): builds a catalog fixture (`data:capabilities`
+  + `data:top-benefits` regions, prose OUTSIDE both) on a throwaway dir, applies a deterministic
+  simulated chronicler update (appends CHANGELOG rows INSIDE `data:capabilities`, outcome `_unwritten_`),
+  asserts (a) outside-marker bytes byte-identical, (b) `data:capabilities` append-only (old interior is
+  exact prefix), (c) appended outcome column is literal `_unwritten_`, never prose. 4 self-contained
+  negative checks prove each guard fires (outside edit / row rewrite / row removal / rogue claim).
+- `tools/lint.mjs`: added `checkMarkerMutation()` delegating to the harness like `checkHookBehavior`;
+  registered in the checks array. Missing harness FAILS the gate (fail-closed, no silent skip).
+- Staleness stamp (`Last refreshed` + refresh-trigger, existing exec-summary idiom) added to the 7
+  SEMI-STATIC sales docs: battlecard, demo-script, discovery-guide, kit, objections-faq, playbook,
+  proof-points. Living docs (catalog, sell-sheet) intentionally NOT stamped.
+- Verify: `node tools/marker-test.mjs` exit 0; `node tools/lint.mjs` clean incl. new gate. Fail-closed
+  proven twice: (1) harness removed → lint FAILS with clear message → restored → clean; (2) patched copy
+  tampering an outside-marker byte → assertion (a) FAILS exit 1 → unmodified fixture clean.
+- Next: Phase 3 STRICT checkpoint — fresh reviewer re-runs FULL gate incl. marker fixture, extra scrutiny
+  on the chronicler auto-write path (no auto-authored claim), then merge to integration (D2).
+
+**S5 — Phase 3 [STRICT] chronicler + marketing living wiring** (2026-07-25, branch `mission/sales-doc-architecture-p3`, commit `ca6840c`)
+- `chronicler.md`: added **Artifact 4 — sales kit's living fact regions**. Every ship it edits ONLY
+  inside markers — catalog `data:capabilities` (append-only, only GAINS rows from merged PRs),
+  sell-sheet `data:top-benefits`/`data:whats-new` (refresh) — PR-cited, benefit column literally
+  `_unwritten_`; **NEVER authors a claim/benefit/positioning line**; mirrors overview.html marker
+  discipline ("bytes outside the markers are never yours to touch"). Invocation contract now names
+  the `_unwritten_` count + `marketing` hand-off in the ≤10-line return. Description updated.
+- `marketing.md`: extended the benefit-fill beat to consume the chronicler's every-ship queue across
+  BOTH catalog outcome column and sell-sheet benefit/whats-new `_unwritten_` slots; fills only the
+  `_unwritten_` slots, never the fact columns/rows/marker structure the chronicler owns; claims from
+  `positioning.md`, evidence-gated. Prose-only, no code/fixture (that's S6).
+- Verify: `node tools/lint.mjs` clean (exit 0). Both `templates/sales-*.md` deployed refs resolve.
+- Next: S6 — `tools/marker-test.mjs` fixture + `checkMarkerMutation` lint gate + compass staleness stamp.
 
 **S4 — Phase 2 objections-faq · battlecard · discovery-guide · demo-script · proof-points** (2026-07-25, branch `mission/sales-doc-architecture-p2`, commit `871ae6a`)
 - Created 5 flat `sales-*.md` templates completing the usable-half kit (D4): objections-faq
@@ -120,4 +167,4 @@ what the next session needs._
   frozen-rule message, reverted → green.
 - Next: Phase 0 checkpoint (fresh reviewer re-runs the gate + diff-reviews `base..head`).
 
-Next up: S5 — chronicler + marketing living wiring (Phase 3 [STRICT])
+Next up: S7 — `/sync` docs-layout migration + deployed engineering paths (Phase 4)

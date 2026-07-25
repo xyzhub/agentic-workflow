@@ -13,6 +13,9 @@ buyer talking is a buyer qualifying themselves. ICP and pillars trace to
 `positioning.md`. When the signals say disqualify, disqualify fast — a bad-fit
 deal costs both sides.
 
+> **Last refreshed**: _(YYYY-MM-DD)_ · **Refresh trigger**: event. Semi-static —
+> watched for staleness, never auto-rewritten. Bump the date when you refresh.
+
 ## ICP fit criteria
 
 The concrete first audience from `positioning.md` — score the account against it
