@@ -1,3 +1,9 @@
+---
+status: living
+owner-agent: curator
+refresh-trigger: every-ship
+---
+
 # Portfolio registry
 
 One row per venture (Agentic Workflow §13). The registry is the record —

@@ -1,3 +1,9 @@
+---
+status: frozen
+owner-agent: researcher
+refresh-trigger: never
+---
+
 # {{PROJECT_NAME}} — Idea & Validation (V0)
 
 The cheapest place to kill a bad idea is here, in prose. Fill this before writing

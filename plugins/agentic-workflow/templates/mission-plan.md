@@ -1,3 +1,9 @@
+---
+status: semi-static
+owner-agent: planner
+refresh-trigger: event
+---
+
 # Mission: {{MISSION_NAME}} — master plan
 
 _The strategic view of one mission: what gets done, what's already decided, and

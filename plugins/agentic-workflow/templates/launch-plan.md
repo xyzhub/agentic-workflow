@@ -1,3 +1,9 @@
+---
+status: semi-static
+owner-agent: marketing
+refresh-trigger: event
+---
+
 # {{PROJECT_NAME}} — Launch Plan (V5 index)
 
 The index of all launch deliverables under `docs/product/launch/`, drafted by

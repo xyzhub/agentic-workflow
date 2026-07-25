@@ -59,10 +59,12 @@ basics every stage inherits, checking mechanically where possible:
   validation; README quickstart; `.env.example`; seed/reset path; a code
   index for non-trivial repos (DX — recommend, never auto-install).
 - **Build (V3-level)** — tests that assert behavior; acceptance criteria
-  traceable for recent features; eval suite if the product is AI-driven.
+  traceable for recent features; eval suite if the product is AI-driven; the
+  tracking plan (`docs/product/engineering/tracking-plan.md`) for a measured product.
 - **Hardening/Launch (V4–V5, only if the stage claims them)** — the four
-  pillar audits' artifacts, monitoring, rollback story, launch assets
-  (`docs/product/launch/`), business docs (`docs/product/business/`).
+  pillar audits' artifacts, monitoring, rollback story, the operational runbook
+  (`docs/product/engineering/runbook.md`), launch assets (`docs/product/launch/`),
+  the client sales kit (`docs/product/sales/`), business docs (`docs/product/business/`).
 
 ## 4. Fill mode (opt-in: `/agentic-workflow:adopt fill`)
 
@@ -78,6 +80,15 @@ stage actually claims:
   executive summary from what exists; every decision marked pending human.
 - Stage V4+ and no `docs/product/launch/` → `marketing` drafts the launch
   assets (voice will be a best guess if no flight plan exists — flag it).
+- Stage V3+ and no `docs/product/sales/` → `marketing` drafts the client sales
+  kit (feature→benefit catalog, playbook, sell-sheet, and the rest), lifting
+  claims from `docs/product/launch/positioning.md` and leaving
+  `_unwritten_`/`_unmeasured_` where the evidence isn't there yet — skeletal and
+  flagged if positioning is absent.
+- Stage V3+ and no `docs/product/engineering/tracking-plan.md` → `analyst` drafts
+  the tracking plan (each event, the question it answers, baseline, the "done" number).
+- Stage V4+ and no `docs/product/engineering/runbook.md` → `ops` drafts the runbook
+  (services/deps, health checks, alerts→response, restart/rollback, escalation).
 
 Fill mode drafts **documents only**. Engineering gaps (missing CI gates, no
 env guard, no tests) are never auto-filled — those are real code changes that

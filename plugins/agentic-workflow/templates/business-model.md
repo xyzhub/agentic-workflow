@@ -1,3 +1,9 @@
+---
+status: semi-static
+owner-agent: business
+refresh-trigger: event
+---
+
 # {{PROJECT_NAME}} — Business Model
 
 Drafted first — the executive summary and pricing derive from this. Every
@@ -5,8 +11,9 @@ claim traces to the V0 evidence (idea.md) or measured reality; label
 assumptions as assumptions.
 
 ## Value proposition
-_The value delivered, for whom, against which alternative. Must agree with
-launch/positioning.md once that exists._
+_The value delivered, for whom, against which alternative. `launch/positioning.md`
+is the single source of positioning claims (from V5) — reference it for the claim
+wording rather than restating claims here, so the two never drift apart._
 
 ## Value metric
 _What usage scales with the value received (seats, documents, requests…) — the

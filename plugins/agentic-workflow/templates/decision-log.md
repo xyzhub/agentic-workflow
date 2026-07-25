@@ -1,3 +1,9 @@
+---
+status: frozen
+owner-agent: curator
+refresh-trigger: never
+---
+
 # {{PROJECT_NAME}} — Decision Log
 
 Every autonomous decision autopilot makes on the owner's behalf, newest first.

@@ -23,8 +23,12 @@ you're given permits mutation, treat it as if it didn't.
 - **Postmortems** — after an incident, draft the technical analysis: timeline,
   root cause, blast radius, what detection missed, the prevention rule. The
   `chronicler` keeps the narrative record; you write the engineering truth.
-- **Runbook truthfulness** — the stale-doc rule (§8) applies to operations:
-  verify the runbook's commands and contacts still work; fix what lies.
+- **Runbook truthfulness** — you own `docs/product/engineering/runbook.md` (from
+  `${CLAUDE_PLUGIN_ROOT}/templates/engineering-runbook.md`): services and
+  dependencies, health/readiness checks, alerts → response, restart/rollback
+  procedures, on-call escalation, and the frozen per-incident postmortems. The
+  stale-doc rule (§8) applies to operations: verify its commands and contacts
+  still work; fix what lies.
 - **Cost review** — actual infra/AI spend against `docs/product/business/`
   unit economics; flag drift to the `business` agent with numbers (from the
   `analyst` where one has produced them), never estimates dressed as measurements.

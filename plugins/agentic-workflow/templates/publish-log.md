@@ -1,3 +1,9 @@
+---
+status: living
+owner-agent: marketing
+refresh-trigger: every-ship
+---
+
 # {{PROJECT_NAME}} — Publish Log
 
 _The append-only audit trail of everything published outward (WORKFLOW.md §14) —

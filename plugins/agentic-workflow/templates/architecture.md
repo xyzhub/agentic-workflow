@@ -1,3 +1,9 @@
+---
+status: semi-static
+owner-agent: architect
+refresh-trigger: event
+---
+
 # {{PROJECT_NAME}} — System Architecture
 
 _What the `backend` and `frontend` implementers need to understand the system
@@ -40,7 +46,7 @@ is one hop away without being copied (and going stale) here._
 
 ## The seams
 _Where the system is deliberately cut for parallel work, and where the contract
-between the two sides lives — see `docs/product/interface-contract.md`._
+between the two sides lives — see `docs/product/engineering/interface-contract.md`._
 
 ---
 _The `architect` authors and maintains this; implementers read it before

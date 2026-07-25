@@ -1,3 +1,9 @@
+---
+status: semi-static
+owner-agent: planner
+refresh-trigger: event
+---
+
 # {{PROJECT_NAME}} — Flight Plan (autopilot standing authorization)
 
 The one upfront ask before `/agentic-workflow:autopilot` flies. Every field accepts "you decide";
