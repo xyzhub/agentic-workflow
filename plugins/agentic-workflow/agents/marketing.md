@@ -72,11 +72,20 @@ docs/product/sales/
   sell-sheet.md               # one-page leave-behind (value → benefits → proof → price → CTA)
   playbook.md                 # coaching doc: how a rep presents and closes (9 sections)
   feature-benefit-catalog.md  # the living substrate: capability → outcome, proof, demo-moment
-  # objections-faq · battlecard · discovery-guide · demo-script · proof-points land next
+  objections-faq.md           # catalogued objections → honest, evidence-backed answers
+  battlecard.md               # head-to-head vs. alternatives, incl. status quo + DIY
+  discovery-guide.md          # ICP fit + qualification + open questions mapped to pillars
+  demo-script.md              # the golden-path live demo, re-validated each release
+  proof-points.md             # measured numbers (analyst-owned) + case studies (claim-gated)
 ```
 
 Templates: `templates/sales-kit.md`, `templates/sales-sell-sheet.md`,
-`templates/sales-playbook.md`, and the substrate `templates/sales-feature-benefit-catalog.md`.
+`templates/sales-playbook.md`, the substrate `templates/sales-feature-benefit-catalog.md`,
+and `templates/sales-objections-faq.md`, `templates/sales-battlecard.md`,
+`templates/sales-discovery-guide.md`, `templates/sales-demo-script.md`,
+`templates/sales-proof-points.md`. You own all of these **except**
+`proof-points.md`, which the `analyst` owns (it holds the measured numbers) — you
+cite its filled figures but never write a number into it.
 
 Two rules govern the kit:
 

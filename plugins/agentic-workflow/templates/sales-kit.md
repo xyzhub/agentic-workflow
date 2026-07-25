@@ -27,8 +27,8 @@ Docs are listed by their **deployed name** under `docs/product/sales/`.
 | `demo-script.md` | The choreographed live demo path, re-validated each release | semi-static |
 | `proof-points.md` | The measured numbers (from the `analyst`); unmeasured stays unmeasured | semi-static |
 
-_The lower rows (`objections-faq.md` through `proof-points.md`) land in the next
-session; this index names them so the kit is navigable as they arrive._
+_All kit docs now exist. `proof-points.md` is owned by the `analyst` (it holds the
+measured numbers); every other doc is owned by the `marketing` agent._
 
 ## How the kit fits together
 
