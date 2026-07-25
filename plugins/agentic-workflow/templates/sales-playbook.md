@@ -12,6 +12,9 @@ order, and where to let the product do the talking. Claims trace to
 `positioning.md` (the single source); facts trace to the feature → benefit
 catalog. The rep adds delivery, never new claims.
 
+> **Last refreshed**: _(YYYY-MM-DD)_ · **Refresh trigger**: release. Semi-static —
+> watched for staleness, never auto-rewritten. Bump the date when you refresh.
+
 > Live regions marked `<!-- data:* -->` are STATIC placeholders in this version —
 > the chronicler wires them to the catalog in a later phase. Until then, fill
 > them by hand from the catalog's filled rows.

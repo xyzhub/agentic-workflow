@@ -12,6 +12,9 @@ agent does not fill with claims**: every number here comes from the `analyst`, a
 an unmeasured value stays `_unmeasured_`. The discipline is the whole point — a
 fabricated proof point is worse than none, because it's the number a buyer checks.
 
+> **Last refreshed**: _(YYYY-MM-DD)_ · **Refresh trigger**: release. Semi-static —
+> watched for staleness, never auto-rewritten. Bump the date when you refresh.
+
 ## The no-fabrication rule (read before editing)
 
 - **Numbers come ONLY from the `analyst`.** The `analyst` reads the tracking plan

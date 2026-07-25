@@ -13,6 +13,9 @@ live, not a feature tour. Every capability shown traces to a filled row in
 `feature-benefit-catalog.md`; nothing `_unwritten_` is demoed. Show the outcome,
 not the surface.
 
+> **Last refreshed**: _(YYYY-MM-DD)_ · **Refresh trigger**: release. Semi-static —
+> watched for staleness, never auto-rewritten. Bump the date when you refresh.
+
 > **Design note — re-validate each release.** Product moves; a demo path that
 > worked last release can break silently. Before every demo cycle, run this
 > script end-to-end against the live build. The `refresh-trigger: release` cadence

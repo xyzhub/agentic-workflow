@@ -13,6 +13,9 @@ pushes, spins, or claims past what the product does. Claims trace to
 reference `business/pricing.md`. If the honest answer is "not yet", say so — a
 deferred capability is named as deferred, never dressed up.
 
+> **Last refreshed**: _(YYYY-MM-DD)_ · **Refresh trigger**: release. Semi-static —
+> watched for staleness, never auto-rewritten. Bump the date when you refresh.
+
 ## How to use this doc
 
 Each row is a four-part move: the **objection** in the buyer's words, the
