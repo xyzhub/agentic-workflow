@@ -80,21 +80,27 @@ markers are never yours to touch.
   existing row (a correction is a new row, never a rewrite). You fill Capability
   / Shipped-ref / Proof / Demo-moment / Since-version from the record; the
   outcome stays `_unwritten_`.
-- `docs/product/sales/sell-sheet.md` → `data:top-benefits` and `data:whats-new`
-  (refresh, not append-only). Surface the newest / most-material shipped
-  capabilities as rows sourced from the catalog and CHANGELOG (PR-cited),
-  leaving every benefit / "so you can…" slot literally `_unwritten_`.
-  `data:whats-new` gets the one-line *fact* of this release's newest capability;
-  its benefit phrasing stays `_unwritten_`.
+- `docs/product/sales/sell-sheet.md` → `data:whats-new` **only** (refresh, not
+  append-only). Write the one-line *fact* of this release's newest capability — a
+  release/version line ("shipped X in vY", PR-cited), no benefit phrasing, no
+  "so you can…". The sell-sheet is a client-facing leave-behind: it must never
+  display an `_unwritten_` sentinel, so this region carries a finished fact, not a
+  placeholder awaiting marketing.
+- The sell-sheet's `data:top-benefits` is **`marketing`'s, not yours** — it curates
+  the top three from the catalog's already-*filled* rows. **You never write, refresh,
+  or place an `_unwritten_` into `data:top-benefits`.** Your only sell-sheet surface
+  is `data:whats-new`.
 
-**You NEVER author a claim, benefit, outcome, or positioning line** — not in the
-catalog, not in the sell-sheet, not anywhere. The outcome / benefit column is
-`marketing`'s alone, evidence-gated and traced to `positioning.md`; a row resting
-with an `_unwritten_` outcome is the correct, expected hand-off state, not a gap
-for you to fill. If you cannot cite a merged PR for a capability, you do not
-record it. Everything you write here is a fact from the record with a PR behind
-it — the moment a line would read as a benefit or a pitch, it is out of scope and
-belongs to `marketing`.
+So your every-ship write surface is exactly two regions: the catalog's
+`data:capabilities` (append-only, outcome `_unwritten_`) and the sell-sheet's
+`data:whats-new` (facts). **You NEVER author a claim, benefit, outcome, or
+positioning line** — not in the catalog, not in the sell-sheet, not anywhere. The
+catalog's outcome column is `marketing`'s alone (evidence-gated, traced to
+`positioning.md`); a catalog row resting with an `_unwritten_` outcome is the
+correct hand-off state. If you cannot cite a merged PR for a capability, you do not
+record it. Everything you write is a fact from the record with a PR behind it — the
+moment a line would read as a benefit or a pitch, it is out of scope and belongs to
+`marketing`.
 
 ## Invocation contract
 

@@ -67,6 +67,21 @@ _Any departure from a brief — logged the moment it happens, with why._
 _≤10 lines per entry: what this session did, the verify signal, the branch, and
 what the next session needs._
 
+**S6-fix — Phase 3 [STRICT] corrective pass (reviewer REQUEST CHANGES, 5 findings)** (2026-07-25, branch `mission/sales-doc-architecture-p3`)
+- **F2 (contract, LOCKED split):** chronicler.md Artifact 4 now writes ONLY catalog `data:capabilities`
+  (append-only, outcome `_unwritten_`) + sell-sheet `data:whats-new` (facts) — never `data:top-benefits`.
+  marketing.md now OWNS `data:top-benefits` (curates top-3 from FILLED catalog rows, never `_unwritten_`).
+  sales-sell-sheet.md states the per-region split; the `_unwritten_`-never-shown wording is now consistent.
+- **F1/F5 (blocking, `tools/marker-test.mjs`):** simulated update now ALSO refreshes `data:whats-new`;
+  added invariants (d) capabilities appended lines ALL rows [F5], (e) whats-new facts-only, (f) top-benefits
+  untouched — +3 negatives. 13 checks (kept 3 invariants + 4 negatives). Fail-closed re-proven on all 3 new
+  invariants (exit 1 each). No raw NUL.
+- **F3:** added an Inspect step to commands/next.md grepping `_unwritten_` across `docs/product/sales/` —
+  the "grepped by `/agentic-workflow:next`" claim in chronicler/marketing/catalog now holds.
+- **F4:** un-staled the Phase-3-wiring notes in sales-sell-sheet.md + sales-feature-benefit-catalog.md
+  (now describe live behavior); sales-playbook.md left static (correct — Artifact 4 excludes it).
+- Verify: `node tools/marker-test.mjs` green (13); `node tools/lint.mjs` clean. Next: STRICT re-review + merge.
+
 **S6 — Phase 3 [STRICT] marker fixture + lint gate + staleness stamp** (2026-07-25, branch `mission/sales-doc-architecture-p3`, commit `62217ff`)
 - `tools/marker-test.mjs` (clones hook-test.mjs shape): builds a catalog fixture (`data:capabilities`
   + `data:top-benefits` regions, prose OUTSIDE both) on a throwaway dir, applies a deterministic

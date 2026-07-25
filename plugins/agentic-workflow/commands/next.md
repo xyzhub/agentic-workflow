@@ -15,6 +15,11 @@ Inspect fast, decide, recommend — total output under 12 lines. No lectures;
   `docs/product/launch/`, `docs/product/business/`.
 - In-flight work: `.plans/*.state.md` → `Next up:`; git branch, uncommitted
   changes, unpushed commits; open PRs (`gh`, if available).
+- Sales fill queue: `grep -rn '_unwritten_' docs/product/sales/` (if that folder
+  exists) — every `_unwritten_` is a capability the chronicler recorded whose
+  benefit language marketing hasn't filled yet. A non-empty count is a pending
+  `marketing` fill beat; surface it as the recommended move when nothing higher
+  in the priority order is in flight.
 - Red flags: protocol stamp older than the plugin, ledger contradicting git.
 
 ## Decide (priority order — first match wins)
