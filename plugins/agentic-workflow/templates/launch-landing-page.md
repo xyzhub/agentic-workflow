@@ -1,3 +1,9 @@
+---
+status: semi-static
+owner-agent: marketing
+refresh-trigger: event
+---
+
 # {{PROJECT_NAME}} — Landing Page (V5)
 
 Outline + copy for the `frontend` agent to build with the chosen design

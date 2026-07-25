@@ -1,3 +1,9 @@
+---
+status: semi-static
+owner-agent: planner
+refresh-trigger: event
+---
+
 # {{PROJECT_NAME}} — Session Handoff
 
 _A **re-read manifest**, not a summary. Written by `/agentic-workflow:handoff` when the main

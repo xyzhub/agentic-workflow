@@ -1,3 +1,9 @@
+---
+status: semi-static
+owner-agent: backend
+refresh-trigger: event
+---
+
 # {{PROJECT_NAME}} — Interface Contract
 
 _The boundary the `backend` and `frontend` both honor — the one artifact that

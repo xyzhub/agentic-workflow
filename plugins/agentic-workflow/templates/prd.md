@@ -1,3 +1,9 @@
+---
+status: semi-static
+owner-agent: business
+refresh-trigger: stage-transition
+---
+
 # {{PROJECT_NAME}} — Product Requirements (V1)
 
 _What the MVP is — and, just as load-bearing, what it deliberately is NOT. The

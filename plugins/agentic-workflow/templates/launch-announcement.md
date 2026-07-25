@@ -1,3 +1,9 @@
+---
+status: semi-static
+owner-agent: marketing
+refresh-trigger: event
+---
+
 # Announcement — {{CHANNEL}}
 
 One file per channel under `docs/product/launch/announcements/`, named for the

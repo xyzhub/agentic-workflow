@@ -1,3 +1,9 @@
+---
+status: semi-static
+owner-agent: planner
+refresh-trigger: event
+---
+
 # Mission: {{MISSION_NAME}} — session briefs
 
 _The execution view: one brief per session, each pre-resolved so an execution

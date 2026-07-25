@@ -1,3 +1,9 @@
+---
+status: semi-static
+owner-agent: marketing
+refresh-trigger: event
+---
+
 # {{PROJECT_NAME}} — Positioning (V5)
 
 Every other launch asset derives from this file. Claims must trace to the V0

@@ -1,3 +1,9 @@
+---
+status: semi-static
+owner-agent: business
+refresh-trigger: event
+---
+
 # {{PROJECT_NAME}} — Pricing Strategy
 
 Proposed by the `business` agent; **the human sets live prices**. Rationale
