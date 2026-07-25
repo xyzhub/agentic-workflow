@@ -229,6 +229,30 @@ function checkFrontmatterYaml() {
   }
 }
 
+// ── 6.6 Template frontmatter (SD2) ───────────────────────────────────────
+// Every templates/*.md carries {status, owner-agent, refresh-trigger}. Two are
+// exempt (OQ1): WORKFLOW.md (protocol master) and overview.html (HTML, skipped
+// by the .md filter). Validate presence + enum membership, owner-agent against
+// the agents set, and the fail-closed rule `frozen ⇒ refresh-trigger: never`.
+function checkTemplateFrontmatter() {
+  const STATUS = new Set(['living', 'semi-static', 'frozen']);
+  const TRIGGER = new Set(['every-ship', 'stage-transition', 'release', 'event', 'never']);
+  const agents = new Set(mdFiles(path.join(PLUGIN, 'agents')).map((f) => path.basename(f, '.md')));
+  for (const file of mdFiles(path.join(PLUGIN, 'templates'))) {
+    if (path.basename(file) === 'WORKFLOW.md') continue; // OQ1 exemption
+    const fm = frontmatter(file);
+    if (!fm) { fail(file, 1, 'missing template frontmatter (status/owner-agent/refresh-trigger)'); continue; }
+    if (!fm.status) fail(file, 1, 'missing frontmatter "status"');
+    else if (!STATUS.has(fm.status)) fail(file, 1, `status "${fm.status}" not in {living, semi-static, frozen}`);
+    if (!fm['owner-agent']) fail(file, 1, 'missing frontmatter "owner-agent"');
+    else if (!agents.has(fm['owner-agent'])) fail(file, 1, `owner-agent "${fm['owner-agent']}" is not a real agent stem`);
+    if (!fm['refresh-trigger']) fail(file, 1, 'missing frontmatter "refresh-trigger"');
+    else if (!TRIGGER.has(fm['refresh-trigger'])) fail(file, 1, `refresh-trigger "${fm['refresh-trigger']}" not in {every-ship, stage-transition, release, event, never}`);
+    if (fm.status === 'frozen' && fm['refresh-trigger'] && fm['refresh-trigger'] !== 'never')
+      fail(file, 1, `frozen template must have refresh-trigger: never (has "${fm['refresh-trigger']}")`);
+  }
+}
+
 // ── 7. hooks.json ────────────────────────────────────────────────────────
 function checkHooks() {
   const file = path.join(PLUGIN, 'hooks/hooks.json');
@@ -305,7 +329,7 @@ function checkHookBehavior() {
   }
 }
 
-for (const check of [checkManifests, checkAgents, checkCommands, checkCrossRefs, checkTemplateRefs, checkSections, checkFrontmatterYaml, checkHooks, checkObfuscation, checkHookBehavior]) {
+for (const check of [checkManifests, checkAgents, checkCommands, checkCrossRefs, checkTemplateRefs, checkSections, checkFrontmatterYaml, checkTemplateFrontmatter, checkHooks, checkObfuscation, checkHookBehavior]) {
   check();
 }
 

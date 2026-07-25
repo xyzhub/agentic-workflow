@@ -1,3 +1,9 @@
+---
+status: semi-static
+owner-agent: business
+refresh-trigger: stage-transition
+---
+
 # {{PROJECT_NAME}} — Executive Summary
 
 One page, current, honest. The venture at a glance for the owner — and for

@@ -1,3 +1,9 @@
+---
+status: frozen
+owner-agent: architect
+refresh-trigger: never
+---
+
 # {{PROJECT_NAME}} — Decision memo: {{DECISION_SLUG}}
 
 _A shape-before-build decision, digested so the human chooses between options

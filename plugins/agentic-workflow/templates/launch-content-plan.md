@@ -1,3 +1,9 @@
+---
+status: semi-static
+owner-agent: marketing
+refresh-trigger: release
+---
+
 # {{PROJECT_NAME}} — Post-Launch Content Plan (V5 → V6)
 
 What gets published in the weeks AFTER launch day, so the launch is a ramp,

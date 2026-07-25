@@ -1,3 +1,9 @@
+---
+status: semi-static
+owner-agent: architect
+refresh-trigger: event
+---
+
 # {{PROJECT_NAME}} — System Architecture
 
 _What the `backend` and `frontend` implementers need to understand the system

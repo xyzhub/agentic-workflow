@@ -1,3 +1,9 @@
+---
+status: semi-static
+owner-agent: designer
+refresh-trigger: event
+---
+
 # {{PROJECT_NAME}} — UX Brief (V1)
 
 _What a designer (and the `frontend` implementer) needs to build the RIGHT

@@ -1,3 +1,9 @@
+---
+status: living
+owner-agent: planner
+refresh-trigger: every-ship
+---
+
 # Mission: {{MISSION_NAME}} — ledger
 
 _The durable state that outlives any transcript (WORKFLOW.md §2, principle 1): a

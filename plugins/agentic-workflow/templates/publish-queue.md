@@ -1,3 +1,9 @@
+---
+status: living
+owner-agent: marketing
+refresh-trigger: every-ship
+---
+
 # {{PROJECT_NAME}} — Publish Queue
 
 _The staging surface for outward publishing (WORKFLOW.md §14). The `marketing`

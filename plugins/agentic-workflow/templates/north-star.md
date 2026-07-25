@@ -1,3 +1,9 @@
+---
+status: living
+owner-agent: compass
+refresh-trigger: every-ship
+---
+
 # {{PROJECT_NAME}} — North star
 
 The one durable statement of **where this is going and why**, so work can be

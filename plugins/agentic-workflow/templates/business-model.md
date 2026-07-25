@@ -1,3 +1,9 @@
+---
+status: semi-static
+owner-agent: business
+refresh-trigger: event
+---
+
 # {{PROJECT_NAME}} — Business Model
 
 Drafted first — the executive summary and pricing derive from this. Every
