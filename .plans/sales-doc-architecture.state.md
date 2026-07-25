@@ -20,7 +20,7 @@ verified/APPROVED result._
 
 **Phase 0 — frontmatter + lint** (branch `mission/sales-doc-architecture-p0`)
 - [x] S1 — frontmatter on all 24 templates + `checkTemplateFrontmatter`
-- [ ] Checkpoint — Phase 0 review + merge to integration
+- [x] Checkpoint — Phase 0 review **APPROVED** (DX/Arch/Sec 3·3·3; F1 idea→frozen + F2 architecture→architect fixed in S1-fix) + merged to integration
 
 **Phase 1 — feature→benefit catalog** (branch `mission/sales-doc-architecture-p1`)
 - [ ] S2 — `sales-feature-benefit-catalog.md` (living substrate)
@@ -67,6 +67,12 @@ _Any departure from a brief — logged the moment it happens, with why._
 _≤10 lines per entry: what this session did, the verify signal, the branch, and
 what the next session needs._
 
+**Phase 0 checkpoint — APPROVED + merged** (2026-07-25, `8453564` → integration)
+- Reviewer APPROVE (DX/Arch/Sec 3·3·3). Caught 2 real tier bugs (F1 idea→frozen/never,
+  F2 architecture owner→architect); fixed in S1-fix, re-verified, lint green.
+- p0 merged into `mission/sales-doc-architecture-integration` (batch — not main).
+- Next: Phase 1 / S2 — the living substrate catalog.
+
 **S1 — Phase 0 frontmatter + lint** (2026-07-25, branch `mission/sales-doc-architecture-p0`, commit `ab99cfc`)
 - Added `{status, owner-agent, refresh-trigger}` frontmatter (fence above `#`) to all 24
   non-excluded `templates/*.md`; `WORKFLOW.md` + `overview.html` exempt per OQ1. Values from
@@ -77,4 +83,4 @@ what the next session needs._
   frozen-rule message, reverted → green.
 - Next: Phase 0 checkpoint (fresh reviewer re-runs the gate + diff-reviews `base..head`).
 
-Next up: Phase 0 checkpoint — reviewer + merge to integration
+Next up: S2 — sales-feature-benefit-catalog.md (Phase 1, the living substrate)
