@@ -83,9 +83,12 @@ Templates: `templates/sales-kit.md`, `templates/sales-sell-sheet.md`,
 `templates/sales-playbook.md`, the substrate `templates/sales-feature-benefit-catalog.md`,
 and `templates/sales-objections-faq.md`, `templates/sales-battlecard.md`,
 `templates/sales-discovery-guide.md`, `templates/sales-demo-script.md`,
-`templates/sales-proof-points.md`. You own all of these **except**
-`proof-points.md`, which the `analyst` owns (it holds the measured numbers) — you
-cite its filled figures but never write a number into it.
+`templates/sales-proof-points.md`. You own these **except**: `proof-points.md` is
+the `analyst`'s (the measured numbers) — you cite its filled figures but never write
+a number into it; and the two `living` docs (`sales-feature-benefit-catalog.md`,
+`sales-sell-sheet.md`) are `chronicler`-owned for the `data:*` fact rows — you fill
+their benefit/claim language but never hand-edit the fact rows the chronicler
+refreshes every ship.
 
 Two rules govern the kit:
 

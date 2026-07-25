@@ -29,7 +29,7 @@ verified/APPROVED result._
 **Phase 2 — sales kit, usable half** (branch `mission/sales-doc-architecture-p2`)
 - [x] S3 — playbook + sell-sheet + sales-kit index + marketing ownership
 - [x] S4 — objections-faq · battlecard · discovery-guide · demo-script · proof-points
-- [ ] Checkpoint — Phase 2 review + merge to integration (D4 "usable" half)
+- [x] Checkpoint — Phase 2 review **APPROVED** (Usability 3/3; F1 ownership-prose drift fixed; cadence divergence ruled S4-correct) + merged to integration — **D4 "usable" half DONE**
 
 **Phase 3 — [STRICT] living wiring** (branch `mission/sales-doc-architecture-p3`)
 - [ ] S5 — chronicler + marketing living wiring
@@ -120,4 +120,4 @@ what the next session needs._
   frozen-rule message, reverted → green.
 - Next: Phase 0 checkpoint (fresh reviewer re-runs the gate + diff-reviews `base..head`).
 
-Next up: Phase 2 checkpoint — fresh `reviewer` diff-reviews `base..head`, re-runs the gate, merges `mission/sales-doc-architecture-p2` to integration (D4 "usable" half complete)
+Next up: S5 — chronicler + marketing living wiring (Phase 3 [STRICT])

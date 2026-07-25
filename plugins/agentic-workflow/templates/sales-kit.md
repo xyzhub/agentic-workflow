@@ -27,8 +27,11 @@ Docs are listed by their **deployed name** under `docs/product/sales/`.
 | `demo-script.md` | The choreographed live demo path, re-validated each release | semi-static |
 | `proof-points.md` | The measured numbers (from the `analyst`); unmeasured stays unmeasured | semi-static |
 
-_All kit docs now exist. `proof-points.md` is owned by the `analyst` (it holds the
-measured numbers); every other doc is owned by the `marketing` agent._
+_All kit docs now exist. Ownership matches each doc's `owner-agent` frontmatter: the
+two **`living`** docs (`feature-benefit-catalog.md`, `sell-sheet.md`) are
+**`chronicler`**-refreshed inside their `data:*` markers, with `marketing` filling
+the benefit language; `proof-points.md` is the **`analyst`**'s (the measured
+numbers); every other doc is the **`marketing`** agent's._
 
 ## How the kit fits together
 
