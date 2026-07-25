@@ -42,7 +42,7 @@ verified/APPROVED result._
 - [x] Checkpoint — Phase 4 review **APPROVED** (Arch/DX 3·3; idempotent /sync migration verified, single-sourcing clean, ref miscount 8→10 fixed) + merged to integration
 
 **Phase 5 — runbook + tracking-plan** (branch `mission/sales-doc-architecture-p5`)
-- [ ] S9 — `engineering-runbook.md` + `engineering-tracking-plan.md`
+- [x] S9 — `engineering-runbook.md` + `engineering-tracking-plan.md`
 - [ ] Checkpoint — Phase 5 review + merge to integration (mission complete)
 
 ## Open questions
@@ -63,6 +63,20 @@ _Any departure from a brief — logged the moment it happens, with why._
 (none)
 
 ## Handoff log (newest first)
+
+**S9 — Phase 5 runbook + tracking-plan templates** (2026-07-25, branch `mission/sales-doc-architecture-p5`)
+- Created two flat V-gap templates: `templates/engineering-runbook.md` (`semi-static / ops / event`; V4
+  exit-gate deliverable — services/deps, health+readiness checks, alerts→response, restart/rollback, on-call
+  escalation, **frozen per-incident postmortem** appends) and `templates/engineering-tracking-plan.md`
+  (`semi-static / analyst / event`; V3 — success definitions w/ baseline + "done" number, event rows
+  w/ properties + question-answered + instrumentation status, honesty rule "unmeasured stays unmeasured").
+- Wired (SD4 atomic — template + `templates/…` ref in one commit): `ops.md` Runbook-truthfulness bullet →
+  `docs/product/engineering/runbook.md` (from `…/templates/engineering-runbook.md`); `analyst.md` Own-the-
+  tracking-plan body + description → `docs/product/engineering/tracking-plan.md` (from `…/engineering-
+  tracking-plan.md`) — moved off the old flat `docs/product/tracking-plan.md` to the engineering/ folder.
+- Verify: `node tools/lint.mjs` clean (exit 0) — both templates pass `checkTemplateFrontmatter`,
+  both `templates/engineering-*.md` refs resolve via `checkTemplateRefs`; no stray flat tracking-plan path.
+- Next: Phase 5 checkpoint — fresh reviewer + merge to integration = **mission complete** (D4 both halves hold).
 
 **S8 — Phase 4 de-dup single-sourcing** (2026-07-25, branch `mission/sales-doc-architecture-p4`, commit `0d6c3a7`)
 - **Claims → `launch/positioning.md`:** business-model.md §Value proposition — replaced the "Must agree
@@ -195,4 +209,4 @@ what the next session needs._
   frozen-rule message, reverted → green.
 - Next: Phase 0 checkpoint (fresh reviewer re-runs the gate + diff-reviews `base..head`).
 
-Next up: S9 — `engineering-runbook.md` + `engineering-tracking-plan.md` (Phase 5, final)
+Next up: Phase 5 checkpoint — fresh reviewer re-runs the gate + diff-reviews `base..head`, then merge to `mission/sales-doc-architecture-integration` = **mission complete** (D4 both-halves: usable kit + living mechanism, full architecture in place)
