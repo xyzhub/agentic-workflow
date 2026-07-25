@@ -24,7 +24,7 @@ verified/APPROVED result._
 
 **Phase 1 — feature→benefit catalog** (branch `mission/sales-doc-architecture-p1`)
 - [x] S2 — `sales-feature-benefit-catalog.md` (living substrate)
-- [ ] Checkpoint — Phase 1 review + merge to integration
+- [x] Checkpoint — Phase 1 review **APPROVED** (3·3·3; owner-agent=chronicler pattern confirmed) + merged to integration
 
 **Phase 2 — sales kit, usable half** (branch `mission/sales-doc-architecture-p2`)
 - [ ] S3 — playbook + sell-sheet + sales-kit index + marketing ownership
@@ -94,4 +94,4 @@ what the next session needs._
   frozen-rule message, reverted → green.
 - Next: Phase 0 checkpoint (fresh reviewer re-runs the gate + diff-reviews `base..head`).
 
-Next up: Phase 1 checkpoint — fresh reviewer diff-reviews `base..head`, re-runs the gate, merge to integration
+Next up: S3 — playbook + sell-sheet + sales-kit index + marketing owns `sales/` (Phase 2, usable half)
