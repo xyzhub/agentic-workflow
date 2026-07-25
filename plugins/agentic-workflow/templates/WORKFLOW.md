@@ -357,8 +357,8 @@ decisions. At V1 it authors the stack decision and data-model sketch as option
 memos — 2–3 options, tradeoffs, reversal cost, a recommendation — under
 `docs/product/decisions/`; during missions it digests technical open questions
 into decision-ready memos. It also authors and maintains the two living system
-docs the implementers build from — `docs/product/architecture.md` (components,
-data model, invariants) and `docs/product/interface-contract.md` (the
+docs the implementers build from — `docs/product/engineering/architecture.md` (components,
+data model, invariants) and `docs/product/engineering/interface-contract.md` (the
 frontend/backend boundary that keeps parallel slices from diverging) — thin,
 intent-and-contract only, pointing at the code index rather than re-narrating
 code. It consults; the human decides (dated locked

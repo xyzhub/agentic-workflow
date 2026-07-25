@@ -13,7 +13,7 @@ Read the project's conventions file and `docs/WORKFLOW.md` **§10** (a ranged
 read, not the whole protocol; note the code index if one is recorded). Where they
 exist, read the two artifacts that tell you WHAT to build and against what
 boundary: `docs/product/ux-brief.md` (the personas, journeys, and states this
-slice must satisfy) and `docs/product/interface-contract.md` (the API shape to
+slice must satisfy) and `docs/product/engineering/interface-contract.md` (the API shape to
 build against before `backend` finishes it — in parallel, without divergence).
 Then — before writing any component or CSS — find the existing design system:
 tokens/theme file, component library, established patterns. Apply it; never introduce a

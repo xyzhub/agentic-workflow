@@ -85,8 +85,8 @@ bundled one.
   acceptance criteria, memo pointers, success metrics), the `designer`'s
   `docs/product/ux-brief.md` (`${CLAUDE_PLUGIN_ROOT}/templates/ux-brief.md` —
   personas, journeys, IA), and the `architect`'s
-  `docs/product/architecture.md` (`${CLAUDE_PLUGIN_ROOT}/templates/architecture.md`)
-  and `docs/product/interface-contract.md`
+  `docs/product/engineering/architecture.md` (`${CLAUDE_PLUGIN_ROOT}/templates/architecture.md`)
+  and `docs/product/engineering/interface-contract.md`
   (`${CLAUDE_PLUGIN_ROOT}/templates/interface-contract.md`). The
   `designer`/`architect`/`analyst` fill them; adoption `fill` mode drafts them.
 
