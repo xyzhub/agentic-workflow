@@ -39,7 +39,7 @@ verified/APPROVED result._
 **Phase 4 — engineering folder + /sync + de-dup** (branch `mission/sales-doc-architecture-p4`)
 - [x] S7 — `/sync` docs-layout migration + deployed engineering paths
 - [x] S8 — de-dup single-sourcing
-- [ ] Checkpoint — Phase 4 review + merge to integration
+- [x] Checkpoint — Phase 4 review **APPROVED** (Arch/DX 3·3; idempotent /sync migration verified, single-sourcing clean, ref miscount 8→10 fixed) + merged to integration
 
 **Phase 5 — runbook + tracking-plan** (branch `mission/sales-doc-architecture-p5`)
 - [ ] S9 — `engineering-runbook.md` + `engineering-tracking-plan.md`
@@ -89,7 +89,7 @@ what the next session needs._
   Re-run after move = no-op (idempotent). ≤2 files/repo.
 - `commands/bootstrap.md`: new/adopted projects now deploy architecture.md + interface-contract.md into
   `docs/product/engineering/`. `adopt.md` untouched (it deploys via bootstrap's procedure).
-- Repointed **8 references** to `docs/product/engineering/…`: architect.md (2), backend.md (2),
+- Repointed **10 references** to `docs/product/engineering/…`: architect.md (2), backend.md (2),
   frontend.md (1), bootstrap.md (2 deploy paths), templates/architecture.md intra-doc link (1),
   WORKFLOW.md §5 architect role (2). Template SOURCES stay FLAT (SD4) — no file renamed; no sales kit touched.
 - Verify: `node tools/lint.mjs` clean (path edits don't touch `checkTemplateRefs`, which only polices
@@ -195,4 +195,4 @@ what the next session needs._
   frozen-rule message, reverted → green.
 - Next: Phase 0 checkpoint (fresh reviewer re-runs the gate + diff-reviews `base..head`).
 
-Next up: Phase 4 checkpoint — fresh reviewer diff-reviews S7+S8 on `mission/sales-doc-architecture-p4`, then merge to `mission/sales-doc-architecture-integration` (batch policy)
+Next up: S9 — `engineering-runbook.md` + `engineering-tracking-plan.md` (Phase 5, final)
