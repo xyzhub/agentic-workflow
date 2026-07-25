@@ -33,7 +33,7 @@ verified/APPROVED result._
 
 **Phase 3 — [STRICT] living wiring** (branch `mission/sales-doc-architecture-p3`)
 - [x] S5 — chronicler + marketing living wiring
-- [ ] S6 — marker-only-mutation fixture + lint gate + compass stamp
+- [x] S6 — marker-only-mutation fixture + lint gate + compass stamp
 - [ ] **Checkpoint [STRICT]** — Phase 3 review + merge to integration; fresh reviewer re-runs the FULL gate incl. marker fixture; no merge until fixture green (D2, D4 "living" half)
 
 **Phase 4 — engineering folder + /sync + de-dup** (branch `mission/sales-doc-architecture-p4`)
@@ -66,6 +66,24 @@ _Any departure from a brief — logged the moment it happens, with why._
 
 _≤10 lines per entry: what this session did, the verify signal, the branch, and
 what the next session needs._
+
+**S6 — Phase 3 [STRICT] marker fixture + lint gate + staleness stamp** (2026-07-25, branch `mission/sales-doc-architecture-p3`, commit `62217ff`)
+- `tools/marker-test.mjs` (clones hook-test.mjs shape): builds a catalog fixture (`data:capabilities`
+  + `data:top-benefits` regions, prose OUTSIDE both) on a throwaway dir, applies a deterministic
+  simulated chronicler update (appends CHANGELOG rows INSIDE `data:capabilities`, outcome `_unwritten_`),
+  asserts (a) outside-marker bytes byte-identical, (b) `data:capabilities` append-only (old interior is
+  exact prefix), (c) appended outcome column is literal `_unwritten_`, never prose. 4 self-contained
+  negative checks prove each guard fires (outside edit / row rewrite / row removal / rogue claim).
+- `tools/lint.mjs`: added `checkMarkerMutation()` delegating to the harness like `checkHookBehavior`;
+  registered in the checks array. Missing harness FAILS the gate (fail-closed, no silent skip).
+- Staleness stamp (`Last refreshed` + refresh-trigger, existing exec-summary idiom) added to the 7
+  SEMI-STATIC sales docs: battlecard, demo-script, discovery-guide, kit, objections-faq, playbook,
+  proof-points. Living docs (catalog, sell-sheet) intentionally NOT stamped.
+- Verify: `node tools/marker-test.mjs` exit 0; `node tools/lint.mjs` clean incl. new gate. Fail-closed
+  proven twice: (1) harness removed → lint FAILS with clear message → restored → clean; (2) patched copy
+  tampering an outside-marker byte → assertion (a) FAILS exit 1 → unmodified fixture clean.
+- Next: Phase 3 STRICT checkpoint — fresh reviewer re-runs FULL gate incl. marker fixture, extra scrutiny
+  on the chronicler auto-write path (no auto-authored claim), then merge to integration (D2).
 
 **S5 — Phase 3 [STRICT] chronicler + marketing living wiring** (2026-07-25, branch `mission/sales-doc-architecture-p3`, commit `ca6840c`)
 - `chronicler.md`: added **Artifact 4 — sales kit's living fact regions**. Every ship it edits ONLY
@@ -134,4 +152,4 @@ what the next session needs._
   frozen-rule message, reverted → green.
 - Next: Phase 0 checkpoint (fresh reviewer re-runs the gate + diff-reviews `base..head`).
 
-Next up: S6 — marker-only-mutation fixture (`tools/marker-test.mjs`) + `checkMarkerMutation` lint gate + compass staleness stamp (Phase 3 [STRICT])
+Next up: **Checkpoint [STRICT]** — Phase 3 review; fresh reviewer re-runs the FULL gate (incl. the new `tools/marker-test.mjs` fixture), diff-reviews `base..head` with extra scrutiny on the chronicler auto-write contract (confirm no auto-authored-claim path exists), then merges to integration only after the fixture is green (D2, D4 "living" half)
