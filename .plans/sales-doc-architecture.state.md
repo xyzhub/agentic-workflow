@@ -43,7 +43,7 @@ verified/APPROVED result._
 
 **Phase 5 — runbook + tracking-plan** (branch `mission/sales-doc-architecture-p5`)
 - [x] S9 — `engineering-runbook.md` + `engineering-tracking-plan.md`
-- [ ] Checkpoint — Phase 5 review + merge to integration (mission complete)
+- [x] Checkpoint — Phase 5 review **APPROVED** (3/3; mission-complete sanity passed) + merged to integration — **MISSION COMPLETE**
 
 ## Open questions
 
@@ -209,4 +209,4 @@ what the next session needs._
   frozen-rule message, reverted → green.
 - Next: Phase 0 checkpoint (fresh reviewer re-runs the gate + diff-reviews `base..head`).
 
-Next up: Phase 5 checkpoint — fresh reviewer re-runs the gate + diff-reviews `base..head`, then merge to `mission/sales-doc-architecture-integration` = **mission complete** (D4 both-halves: usable kit + living mechanism, full architecture in place)
+Next up: **MISSION COMPLETE** — all 6 phases merged to integration; mission-end wrap = version bump 1.40.0→1.41.0 + CHANGELOG, then the single `mission/sales-doc-architecture-integration → main` PR for the human to review + merge (batch gate).
