@@ -23,7 +23,7 @@ verified/APPROVED result._
 - [x] Checkpoint — Phase 0 review **APPROVED** (DX/Arch/Sec 3·3·3; F1 idea→frozen + F2 architecture→architect fixed in S1-fix) + merged to integration
 
 **Phase 1 — feature→benefit catalog** (branch `mission/sales-doc-architecture-p1`)
-- [ ] S2 — `sales-feature-benefit-catalog.md` (living substrate)
+- [x] S2 — `sales-feature-benefit-catalog.md` (living substrate)
 - [ ] Checkpoint — Phase 1 review + merge to integration
 
 **Phase 2 — sales kit, usable half** (branch `mission/sales-doc-architecture-p2`)
@@ -67,6 +67,17 @@ _Any departure from a brief — logged the moment it happens, with why._
 _≤10 lines per entry: what this session did, the verify signal, the branch, and
 what the next session needs._
 
+**S2 — Phase 1 feature→benefit catalog** (2026-07-25, branch `mission/sales-doc-architecture-p1`, commit `bddd8e7`)
+- Created `templates/sales-feature-benefit-catalog.md` (static living substrate): frontmatter
+  `living / chronicler / every-ship`; append-only `data:capabilities` region with the 6-column
+  table (capability│shipped-ref│outcome│proof│demo-moment│since-version); 2 illustrative seed
+  rows, one showing the `_unwritten_` sentinel; substrate-contract prose (chronicler appends
+  facts PR-cited/outcome `_unwritten_`, marketing fills claims, append-only, never a claim).
+- owner-agent = **chronicler** (sessions-brief value; every-ship refresh owner) — co-ownership
+  tension with marketing noted in-doc; single-valued field, chronicler chosen per spec.
+- Verify: `node tools/lint.mjs` clean; marker pair balanced; NO Phase-3 wiring (static only).
+- Next: Phase 1 checkpoint (fresh reviewer + merge to integration).
+
 **Phase 0 checkpoint — APPROVED + merged** (2026-07-25, `8453564` → integration)
 - Reviewer APPROVE (DX/Arch/Sec 3·3·3). Caught 2 real tier bugs (F1 idea→frozen/never,
   F2 architecture owner→architect); fixed in S1-fix, re-verified, lint green.
@@ -83,4 +94,4 @@ what the next session needs._
   frozen-rule message, reverted → green.
 - Next: Phase 0 checkpoint (fresh reviewer re-runs the gate + diff-reviews `base..head`).
 
-Next up: S2 — sales-feature-benefit-catalog.md (Phase 1, the living substrate)
+Next up: Phase 1 checkpoint — fresh reviewer diff-reviews `base..head`, re-runs the gate, merge to integration
