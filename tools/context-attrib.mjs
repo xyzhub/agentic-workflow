@@ -13,9 +13,11 @@
 //           input + cache_creation + cache_read; the delta against the previous
 //           request is what that turn ADDED to context. Summed, that is the
 //           session's context occupancy — what it paid to accumulate.
-// ratio   = Σ delta ÷ Σ chars-appended, DERIVED PER TRANSCRIPT (landmine 4). The
-//           folk "4 chars/token" is ~2x wrong for this workload (measured ≈2.0),
-//           so nothing here divides by a constant. The FIRST window is excluded
+// ratio   = Σ chars-appended ÷ Σ delta — CHARS PER TOKEN, DERIVED PER TRANSCRIPT
+//           (landmine 4); `category chars ÷ ratio` is then dimensionally sound. The
+//           folk "4 chars/token" is wrong for this workload (this repo's baseline
+//           derives ≈1.25, itself sub-plausible — see the D1 pause package), so
+//           nothing here divides by a constant. The FIRST window is excluded
 //           from calibration: prompt_0 carries the system prompt + tool defs +
 //           CLAUDE.md, none of which appear in the transcript, so including it
 //           would skew the ratio. Its tokens still count toward TOTAL and land,
@@ -250,7 +252,9 @@ function report(r) {
   console.log(`  requests ${n0(r.requests)} unique · ${n0(r.duplicateUsageLines)} duplicate usage line(s) deduped by requestId`);
   console.log(`  TOTAL context tokens (Σ prompt-delta) ${n0(r.total)}   [naive per-line sum would report ${n0(r.naiveTotal)}${r.total > 0 ? ` — ${(r.naiveTotal / r.total).toFixed(1)}x` : ''}]`);
   console.log(r.ratio
-    ? `  calibration ${r.ratio.toFixed(2)} chars/token — DERIVED (${n0(r.calDelta)} tokens ÷ ${n0(r.calChars)} chars, first window excluded); the /4 rule is not used`
+    // Print the derivation in the SAME order it is computed (chars ÷ tokens), so a
+    // human re-deriving it by hand lands on this number and not on its reciprocal.
+    ? `  calibration ${r.ratio.toFixed(2)} chars/token — DERIVED (${n0(r.calChars)} chars ÷ ${n0(r.calDelta)} tokens, first window excluded); the /4 rule is not used`
     : '  calibration: unavailable (no usable window) — token columns suppressed');
   console.log('');
 
@@ -281,6 +285,11 @@ function report(r) {
     console.log(`  output-side coverage: Σ output ${n0(r.outputTokens)} tok · persisted assistant text ≈ ${n0(persisted)} tok · ${missing > 0
       ? `~${(missing * 100).toFixed(0)}% has no persisted text (thinking is not written to the transcript)`
       : 'n/a — attributed text exceeds output tokens (calibration slack; treat this line as unusable for this transcript)'}`);
+    // Both error terms push the same way, so the unpersisted % is a FLOOR, not a
+    // measurement: `persisted` counts serialized tool_use JSON as assistant text
+    // (over-stating it), and it divides by the derived ratio, so if the ratio is
+    // under-derived the persisted side is over-stated again.
+    if (missing > 0) console.log('    (a FLOOR, not a measurement: persisted includes serialized tool_use JSON, and rides the derived ratio — both inflate the persisted side)');
     console.log('');
   }
 
@@ -313,6 +322,10 @@ function report(r) {
   if (r.attachFallbackSized) {
     const share = pct(r.attachFallbackChars, r.charsSeen);
     console.log(`  warn: ${n0(r.attachFallbackSized)} attachment(s) had no stdout/content/text/output field — sized on the record minus \`type\`, affecting ${n0(r.attachFallbackChars)} chars (${share} of all appended chars)`);
+    // Name the casualty: unknown kinds land in `attach: other`, so that row is the one
+    // this failure invalidates. Sizing the whole record over-counts (ids/metadata the
+    // model never sees), so the row is likely OVER-stated, not under.
+    console.log('        → the field-order guess did not hold; `attach: other` (where unknown kinds land) is the category this invalidates, and it is likely OVER-stated. Dump one real record key set before acting on that row.');
   }
 }
 
@@ -363,8 +376,15 @@ function buildFixture(dir) {
   return p;
 }
 
-// Fixture payloads, sized so the true chars/token ratio is deliberately ≈1, far
-// from the folk 4.0 — a hardcoded `/4` cannot reproduce these numbers.
+// Fixture payloads. TWO sizing constraints, both load-bearing:
+//   (1) the true chars/token ratio is far from the folk 4.0, so a hardcoded `/4`
+//       cannot reproduce these numbers;
+//   (2) calChars ≈ 3 × calDelta (ratio ≈ 2.8, carried by `writeBody`). A ratio near
+//       1 makes an inversion a near-no-op — which is exactly how the S2 fixture let
+//       the tokens-per-char bug ship. At ≈2.8 an inverted ratio inflates attributed
+//       tokens by ratio² ≈ 7.8× and drives the residual NEGATIVE, so the residual
+//       guard below fails on its own, without leaning on the formula-mirror case.
+// Changing `writeBody`'s size moves the ratio; keep it ≳2× and >1 away from 4.0.
 const F = {
   steer1: 'S'.repeat(60),
   steer2: 'T'.repeat(40),
@@ -372,7 +392,7 @@ const F = {
   prose2: 'Q'.repeat(70),
   prose3: 'R'.repeat(30),
   bashCmd: 'B'.repeat(90),
-  writeBody: 'W'.repeat(200),
+  writeBody: 'W'.repeat(2200),   // sets the fixture ratio (see constraint 2 above)
   toolResult1: 'L'.repeat(300),
   toolResult2: 'M'.repeat(120),
   skills: 'K'.repeat(150),
@@ -412,12 +432,15 @@ async function selftest() {
     check('calibration: fixture ratio is far from the folk 4.0',
       Math.abs(r.ratio - 4) > 1,
       `ratio=${r.ratio}`);
-    // Dimensional guard. Case 3 pins the FORMULA; this pins its CONSEQUENCE —
-    // attributed tokens can never exceed TOTAL. An upside-down ratio (tokens per
-    // char) inflates every category by 1/ratio^2 and drives the residual negative,
-    // which is how the real-transcript run surfaced the defect. Note this case is
-    // degenerate on a fixture whose ratio ≈ 1: it is a real-data invariant, kept
-    // here so the property is stated where the model is asserted.
+    // Dimensional guard, INDEPENDENT of case 3. Case 3 pins the FORMULA (a mirror of
+    // the implementation — self-consistent, and therefore blind to a mirrored bug);
+    // this pins its CONSEQUENCE — attributed tokens can never exceed TOTAL. An
+    // upside-down ratio (tokens per char) inflates every category by 1/ratio² and
+    // drives the residual negative, which is how the real-transcript run surfaced the
+    // defect. Verified by mutation (S3-fix): with ratio := calDelta/calChars this case
+    // FAILS on its own — attributed 10,229 vs TOTAL 2,600, residual −7,629 — including
+    // with case 3 neutered, because the fixture ratio is ≈2.8, not ≈1. Do not flatten
+    // the fixture ratio: at ≈1 an inversion is a no-op and this guard goes blind.
     check('residual: attributed never exceeds TOTAL (negative residual = broken model)',
       r.unattributed >= 0 && r.attributed <= r.total,
       `attributed=${r.attributed} total=${r.total} unattributed=${r.unattributed}`);
@@ -450,8 +473,14 @@ async function selftest() {
       cat('subagent returns') === F.reviewReturn.length, `${cat('subagent returns')}`);
 
     // Hygiene: taxonomy boundaries that would silently corrupt a split.
+    // Named, not size-inferred: the sidechain record's 500-char text block would land
+    // in `orchestrator prose` if it leaked, and its 5,000 cache_read tokens in TOTAL.
+    // (The old "no row ≥ 500 chars" proxy silently coupled this case to payload sizes.)
     check('sidechain records excluded (subagent internals cost the orchestrator nothing)',
-      r.sidechain === 1 && !r.rows.some((x) => x.chars >= 500), `sidechain=${r.sidechain}`);
+      r.sidechain === 1
+      && cat('orchestrator prose') === F.prose1.length + F.prose2.length + F.prose3.length
+      && r.total === 2600,
+      `sidechain=${r.sidechain} prose=${cat('orchestrator prose')} total=${r.total}`);
     check('human steers counted; unparsable lines counted, not fatal',
       cat('human steers') === F.steer1.length + F.steer2.length && r.badJson === 1,
       `steers=${cat('human steers')} badJson=${r.badJson}`);
