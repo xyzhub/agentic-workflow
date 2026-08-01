@@ -85,7 +85,7 @@ export async function analyze(file) {
 
   let lines = 0, badJson = 0, sidechain = 0;
   let requests = 0, duplicateUsageLines = 0, naiveTotal = 0, outputTokens = 0;
-  let attachFallbackSized = 0, taskBlocks = 0;
+  let attachFallbackSized = 0, attachFallbackChars = 0, taskBlocks = 0;
   let assistantChars = 0;              // persisted assistant-authored chars (output-side coverage)
   let prevPrompt = null, winChars = 0;
   const seen = new Set();
@@ -106,8 +106,12 @@ export async function analyze(file) {
     for (const k of ['stdout', 'content', 'text', 'output']) {
       if (att[k] != null) { injected = att[k]; break; }
     }
-    if (injected == null) { const { type, ...rest } = att; injected = rest; attachFallbackSized++; }
+    const fellBack = injected == null;
+    if (fellBack) { const { type, ...rest } = att; injected = rest; attachFallbackSized++; }
     const n = textSize(injected);
+    // The field-picker order is an ASSUMPTION about the attachment schema; report the
+    // MASS it mis-sizes, not just the count, so its blast radius is judgeable.
+    if (fellBack) attachFallbackChars += n;
     add(kind === 'skill_listing' ? 'attach: skill_listing'
       : kind === 'hook_success' ? 'attach: hook_success'
         : 'attach: other', n);
@@ -209,7 +213,10 @@ export async function analyze(file) {
   const cal = windows.filter((w) => !w.first && w.chars > 0);
   const calDelta = cal.reduce((n, w) => n + w.delta, 0);
   const calChars = cal.reduce((n, w) => n + w.chars, 0);
-  const ratio = calChars > 0 && calDelta > 0 ? calDelta / calChars : null;
+  // chars PER TOKEN (so `chars / ratio` below is dimensionally sound). Deriving
+  // it as calDelta/calChars would yield tokens-per-char and, divided into chars,
+  // inflate every category by 1/ratio^2 — invisible in a fixture whose ratio ≈ 1.
+  const ratio = calChars > 0 && calDelta > 0 ? calChars / calDelta : null;
 
   const charsSeen = [...cats.values()].reduce((a, b) => a + b, 0)
     + [...residual.values()].reduce((a, b) => a + b, 0);
@@ -223,7 +230,7 @@ export async function analyze(file) {
 
   return {
     file, lines, badJson, sidechain, requests, duplicateUsageLines, naiveTotal,
-    outputTokens, assistantChars, attachFallbackSized, taskBlocks,
+    outputTokens, assistantChars, attachFallbackSized, attachFallbackChars, taskBlocks,
     windows, total, preamble, calDelta, calChars, ratio, trailingChars: winChars,
     charsSeen, rows, attributed, unattributed,
     cats, residual, attachKinds, agents,
@@ -282,23 +289,31 @@ function report(r) {
   const rowsA = [...r.agents.entries()].sort((a, b) => b[1].returnChars - a[1].returnChars);
   if (!rowsA.length) console.log('    (no Agent tool_use blocks in this transcript)');
   else {
-    console.log(`    ${pad('subagent_type', 20)}${lpad('spawns', 8)}${lpad('spawn chars', 13)}${lpad('returns', 9)}${lpad('return chars', 14)}${lpad('return tok', 12)}${lpad('share', 8)}`);
+    console.log(`    ${pad('subagent_type', 30)}${lpad('spawns', 8)}${lpad('spawn chars', 13)}${lpad('returns', 9)}${lpad('return chars', 14)}${lpad('return tok', 12)}${lpad('share', 8)}`);
     for (const [t, a] of rowsA) {
       const tok = r.ratio ? Math.round(a.returnChars / r.ratio) : null;
-      console.log(`    ${pad(t, 20)}${lpad(n0(a.spawns), 8)}${lpad(n0(a.spawnChars), 13)}${lpad(n0(a.returns), 9)}${lpad(n0(a.returnChars), 14)}${lpad(tok == null ? '—' : n0(tok), 12)}${lpad(pct(tok || 0, r.total), 8)}`);
+      console.log(`    ${pad(t, 30)}${lpad(n0(a.spawns), 8)}${lpad(n0(a.spawnChars), 13)}${lpad(n0(a.returns), 9)}${lpad(n0(a.returnChars), 14)}${lpad(tok == null ? '—' : n0(tok), 12)}${lpad(pct(tok || 0, r.total), 8)}`);
     }
   }
-  const rev = r.agents.get('reviewer');
-  if (!rev) console.log('    reviewer: no Agent blocks — D7 reopen test not exercised by this transcript');
+  // subagent_type is plugin-NAMESPACED in real transcripts (`agentic-workflow:reviewer`);
+  // an exact 'reviewer' lookup silently reports "not exercised" and suppresses the D7
+  // verdict. Match on the final segment, and aggregate every namespace that ends in it.
+  const revChars = [...r.agents.entries()]
+    .filter(([t]) => String(t).split(':').pop() === 'reviewer')
+    .reduce((n, [, a]) => n + a.returnChars, 0);
+  if (revChars === 0) console.log('    reviewer: no Agent blocks — D7 reopen test not exercised by this transcript');
   else {
-    const tok = r.ratio ? Math.round(rev.returnChars / r.ratio) : 0;
+    const tok = r.ratio ? Math.round(revChars / r.ratio) : 0;
     const share = r.total > 0 ? (tok / r.total) * 100 : 0;
     console.log(`    reviewer return share = ${share.toFixed(1)}% — ${share > 3
       ? 'EXCEEDS 3% → REOPENS decision D7 (reviewer untouched in v1)'
       : 'at or under 3% → D7 stands (reviewer untouched in v1)'}`);
   }
   if (r.taskBlocks) console.log(`  warn: ${n0(r.taskBlocks)} \`Task\` tool_use block(s) seen — the spawn tool is \`Agent\`; taxonomy may have drifted`);
-  if (r.attachFallbackSized) console.log(`  warn: ${n0(r.attachFallbackSized)} attachment(s) had no stdout/content/text/output field — sized on the record minus \`type\``);
+  if (r.attachFallbackSized) {
+    const share = pct(r.attachFallbackChars, r.charsSeen);
+    console.log(`  warn: ${n0(r.attachFallbackSized)} attachment(s) had no stdout/content/text/output field — sized on the record minus \`type\`, affecting ${n0(r.attachFallbackChars)} chars (${share} of all appended chars)`);
+  }
 }
 
 // ── Selftest ─────────────────────────────────────────────────────────────
@@ -332,7 +347,9 @@ function buildFixture(dir) {
     A('req-2', [
       { type: 'thinking', thinking: F.think },
       { type: 'text', text: F.prose2 },
-      { type: 'tool_use', id: 't3', name: 'Agent', input: { subagent_type: 'reviewer', description: 'review', prompt: F.spawnPrompt } },
+      // NAMESPACED, as real transcripts emit it — a bare 'reviewer' here would let a
+      // namespace-blind D7 lookup pass the selftest while suppressing the real verdict.
+      { type: 'tool_use', id: 't3', name: 'Agent', input: { subagent_type: 'agentic-workflow:reviewer', description: 'review', prompt: F.spawnPrompt } },
     ], usage(0, 800, 1200, 400)),
     U([{ type: 'tool_result', tool_use_id: 't3', content: [{ type: 'text', text: F.reviewReturn }] }]),
     U([{ type: 'tool_result', tool_use_id: 'orphan-id', content: F.toolResult2 }]),
@@ -389,12 +406,21 @@ async function selftest() {
       `unattributed=${r.unattributed} preamble=${r.preamble}`);
 
     // 3. Landmine 3 — the ratio is DERIVED per transcript, never hardcoded /4.
-    check('calibration: ratio === Σcal-delta ÷ Σcal-chars (derived)',
-      r.ratio === r.calDelta / r.calChars && r.calDelta === 1400,
+    check('calibration: ratio === Σcal-chars ÷ Σcal-delta (derived, CHARS per token)',
+      r.ratio === r.calChars / r.calDelta && r.calDelta === 1400,
       `ratio=${r.ratio} calDelta=${r.calDelta} calChars=${r.calChars}`);
     check('calibration: fixture ratio is far from the folk 4.0',
       Math.abs(r.ratio - 4) > 1,
       `ratio=${r.ratio}`);
+    // Dimensional guard. Case 3 pins the FORMULA; this pins its CONSEQUENCE —
+    // attributed tokens can never exceed TOTAL. An upside-down ratio (tokens per
+    // char) inflates every category by 1/ratio^2 and drives the residual negative,
+    // which is how the real-transcript run surfaced the defect. Note this case is
+    // degenerate on a fixture whose ratio ≈ 1: it is a real-data invariant, kept
+    // here so the property is stated where the model is asserted.
+    check('residual: attributed never exceeds TOTAL (negative residual = broken model)',
+      r.unattributed >= 0 && r.attributed <= r.total,
+      `attributed=${r.attributed} total=${r.total} unattributed=${r.unattributed}`);
     const bash = r.rows.find((x) => x.name === 'authored: Bash commands');
     check('calibration: category tokens use the derived ratio, not /4',
       bash.tokens === Math.round(bash.chars / r.ratio) && bash.tokens !== Math.round(bash.chars / 4),
@@ -412,10 +438,14 @@ async function selftest() {
       cat('attach: other') === F.otherAtt.length, `${cat('attach: other')}`);
 
     // 5. D9 — an Agent result lands under its subagent_type (spawn tool = Agent).
-    const rev = r.agents.get('reviewer');
-    check('D9: Agent result attributed to its subagent_type',
+    const rev = r.agents.get('agentic-workflow:reviewer');
+    check('D9: Agent result attributed to its (namespaced) subagent_type',
       !!rev && rev.returnChars === F.reviewReturn.length && rev.spawns === 1 && rev.spawnChars > 0,
       rev ? `returnChars=${rev.returnChars} spawns=${rev.spawns}` : 'no reviewer row');
+    // D7 gate: the verdict must resolve through the namespace, not report "not exercised".
+    check('D9/D7: reviewer verdict resolves a namespaced subagent_type',
+      [...r.agents.keys()].some((t) => String(t).split(':').pop() === 'reviewer'),
+      `agent keys=${[...r.agents.keys()].join(',')}`);
     check('D9: the same bytes also form the `subagent returns` category',
       cat('subagent returns') === F.reviewReturn.length, `${cat('subagent returns')}`);
 
