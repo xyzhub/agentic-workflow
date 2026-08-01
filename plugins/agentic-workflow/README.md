@@ -217,11 +217,15 @@ any one stack is baked in.
 
 ## Loop-drivable by design
 
-The ledger is the state, so long work runs as recurring fresh-context ticks:
+The ledger is the state, so long work runs as recurring ticks:
 `/loop /mission "<name>" continue`, `/loop /autopilot continue`, or a weekly
-scheduled agent running `/agentic-workflow:operate`. One brief or stage boundary per tick — no
-transcript bloat, crash-safe by construction, gates reaching your phone
-instead of blocking silently.
+scheduled agent running `/agentic-workflow:operate`. One brief or stage boundary per tick —
+crash-safe by construction, gates reaching your phone instead of blocking
+silently. A `/loop` tick does *not* reset the context window: `/loop` is
+session-scoped, and ticks accrete in the same transcript; genuine fresh
+context requires `/clear`, a new session, or a scripted `claude -p`. What
+makes loop mode safe is that state lives in files — any tick can be run from
+a fresh context without losing anything.
 
 ## Install
 

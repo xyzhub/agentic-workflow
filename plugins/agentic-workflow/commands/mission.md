@@ -93,8 +93,12 @@ re-reads `Next up:` and proceeds, losing nothing across interruptions.
 **Loop mode**: long missions run well as a recurring loop —
 `/loop /mission "<name>" continue`, or a scheduled agent. When invoked as a
 loop tick, execute exactly ONE brief or checkpoint, update the ledger, and
-end; don't try to finish the mission in a tick. Fresh context per tick means
-the transcript never bloats and a crashed tick loses nothing.
+end; don't try to finish the mission in a tick. A `/loop` tick does NOT reset
+the context window — `/loop` is session-scoped, and ticks accrete in the same
+transcript; genuine fresh context requires `/clear`, a new session, or a
+scripted `claude -p`. What makes loop mode safe is that **state lives in
+files**: any tick can be run from a fresh context without losing anything, and
+a crashed tick loses nothing.
 
 ## Output
 

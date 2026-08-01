@@ -29,10 +29,10 @@ _Glyphs: `[ ]` not started · `[~]` in-flight / deferred / awaiting owner · `[x
 (verified, not merely written). The beat-enforcer nudges only on a not-started `[ ]`
 checkpoint/reviewer/chronicler row — set `[~]` the moment a beat is picked up or parked._
 
-- [ ] S1 — doc-defect sweep: kill "fresh context per tick" (branch `mission/context-economy-p0`)
+- [x] S1 — doc-defect sweep: kill "fresh context per tick" (branch `mission/context-economy-p0`)
 - [ ] S2 — build `tools/context-attrib.mjs` + `--selftest` + lint delegation (branch `mission/context-economy-p0`)
 - [ ] S3 — run the baseline measurement, record split + D9 table + sanity check (branch `mission/context-economy-p0`)
-- [~] Checkpoint `ckpt-p0` — phase 0 review + merge into `mission/context-economy-integration` — **DEFERRED: mission parked before S1** (owner chose to run it in a fresh session, 2026-08-01); flip to `[ ]` when execution starts
+- [ ] Checkpoint `ckpt-p0` — phase 0 review + merge into `mission/context-economy-integration`
 - [ ] ⛔ **D1 HARD PAUSE — mission STOPS. Human re-scopes P1–P4 with the real numbers before any later phase is spawned. Do not proceed on agent judgment.**
 - [ ] S4 — write firewall: extend the 30% rule to writes; no tool-list change anywhere, per D7 (branch `mission/context-economy-p1`)
 - [ ] Checkpoint `ckpt-p1` — phase 1 review + merge into integration
@@ -79,19 +79,35 @@ _Human steers captured **verbatim** at checkpoints only, never mid-brief. Gramma
 _Any departure from a brief — logged here the moment it happens, with why. Deviating is
 allowed; deviating silently is not (§4)._
 
-(none)
+- 2026-08-01 (S1) — routed to `backend` rather than the brief's "main session / writer":
+  the session's own verify gate needs Bash (`node tools/lint.mjs`), which the `writer`
+  agent does not have. No change to the work itself.
 
 ## Handoff log (newest first)
 
 _≤10 lines per entry: what this session did, the verify signal, the branch, and what the
 next session needs. Newest on top; crash-safe by write-ahead._
 
+- _2026-08-01 S1 (`backend`, branch `mission/context-economy-p0`): corrected the false
+  "fresh context per tick" claim at all 12 sites with one consistent wording — `/loop` is
+  session-scoped, ticks accrete in the same transcript, genuine fresh context needs
+  `/clear` / new session / scripted `claude -p`; what makes loop mode safe is that state
+  lives in files. Sites: `commands/mission.md`, `commands/autopilot.md`, plugin `README.md`,
+  `templates/WORKFLOW.md` ×3, `docs/WORKFLOW.md` ×3 (OQ1, version stamp untouched), launch
+  copy ×3 (OQ2, plain correction). One extra site fixed beyond the brief:
+  `docs/product/features/orchestrator-governance/idea.md:45` ("fresh context each turn" →
+  "re-injected every turn"), covered by the brief's turn-end exit criterion. Verified:
+  `node tools/lint.mjs` clean + full `fresh context` grep sweep — every surviving hit is a
+  reviewer/subagent reference or the new corrective text. Next: S2 builds
+  `tools/context-attrib.mjs` on the same branch._
+
 - _2026-08-01 planning: trio authored on `plan/orchestrator-context-economy` from the
   2026-08-01 brief (D1–D9 locked, not re-opened). 8 sessions / 5 phases / 5 checkpoints.
   Baseline transcript identified and field-verified by grep (never read). Uncommitted,
   awaiting HITL review of OQ1–OQ5._
 
-Next up: **S1 — doc-defect sweep** (branch `mission/context-economy-p0`). OQ1–OQ5 are all
+Next up: **S2 — build `tools/context-attrib.mjs` + `--selftest` + lint delegation**
+(same branch `mission/context-economy-p0`). OQ1–OQ5 are all
 RESOLVED; execution is unblocked. Resume with `/agentic-workflow:mission "context-economy" continue`
 in a FRESH session (deliberate: starting a context-economy mission inside a 400k-token
 session is the anti-pattern it exists to fix). Phase 0 ends
