@@ -351,7 +351,32 @@ function checkMarkerMutation() {
   }
 }
 
-for (const check of [checkManifests, checkAgents, checkCommands, checkCrossRefs, checkTemplateRefs, checkSections, checkFrontmatterYaml, checkTemplateFrontmatter, checkHooks, checkObfuscation, checkHookBehavior, checkMarkerMutation]) {
+// ── 10. Context-attribution instrument (tier-1.5, context-economy Phase 0) ──
+// tools/context-attrib.mjs measures where a session's context goes, and the
+// mission's decisions (the write firewall, D7's reviewer test) are argued from
+// its numbers — so a silently-broken instrument would ship a false split. Lint
+// can't check it against a transcript (CI has none, and they are 3-12 MB), so it
+// delegates to the script's own synthetic-fixture selftest, which asserts the
+// four measured landmines: usage deduped by requestId, categories + residual
+// summing exactly, a DERIVED chars/token ratio (never `/4`), and attachments
+// sized on the injected field. Fail-closed: a MISSING instrument fails the gate.
+function checkContextAttrib() {
+  const runner = path.join(ROOT, 'tools/context-attrib.mjs');
+  if (!existsSync(runner)) {
+    fail(runner, null, 'context-attribution harness missing — tools/context-attrib.mjs must exist so the gate proves the measurement instrument dedups usage, balances its residual, derives its chars/token ratio, and sizes attachments on the injected field (do not silently drop the check)');
+    return;
+  }
+  // --selftest only: it builds its own throwaway fixture and must never need a
+  // real transcript (CI has none).
+  const res = spawnSync('node', [runner, '--selftest'], { encoding: 'utf8' });
+  if (res.status !== 0) {
+    const detail = `${res.stdout ?? ''}${res.stderr ?? ''}`
+      .split('\n').filter((l) => /FAIL|failure|Error/.test(l)).join(' | ');
+    fail(runner, null, `context-attribution selftest failed — run \`node tools/context-attrib.mjs --selftest\`: ${detail || '(no detail)'}`);
+  }
+}
+
+for (const check of [checkManifests, checkAgents, checkCommands, checkCrossRefs, checkTemplateRefs, checkSections, checkFrontmatterYaml, checkTemplateFrontmatter, checkHooks, checkObfuscation, checkHookBehavior, checkMarkerMutation, checkContextAttrib]) {
   check();
 }
 

@@ -30,7 +30,7 @@ _Glyphs: `[ ]` not started · `[~]` in-flight / deferred / awaiting owner · `[x
 checkpoint/reviewer/chronicler row — set `[~]` the moment a beat is picked up or parked._
 
 - [x] S1 — doc-defect sweep: kill "fresh context per tick" (branch `mission/context-economy-p0`)
-- [ ] S2 — build `tools/context-attrib.mjs` + `--selftest` + lint delegation (branch `mission/context-economy-p0`)
+- [x] S2 — build `tools/context-attrib.mjs` + `--selftest` + lint delegation (branch `mission/context-economy-p0`)
 - [ ] S3 — run the baseline measurement, record split + D9 table + sanity check (branch `mission/context-economy-p0`)
 - [ ] Checkpoint `ckpt-p0` — phase 0 review + merge into `mission/context-economy-integration`
 - [ ] ⛔ **D1 HARD PAUSE — mission STOPS. Human re-scopes P1–P4 with the real numbers before any later phase is spawned. Do not proceed on agent judgment.**
@@ -79,6 +79,19 @@ _Human steers captured **verbatim** at checkpoints only, never mid-brief. Gramma
 _Any departure from a brief — logged here the moment it happens, with why. Deviating is
 allowed; deviating silently is not (§4)._
 
+- 2026-08-01 (S2) — D9 is emitted **unconditionally**, not behind "one flag on the script"
+  (brief L107). It is a required Phase-0 output, so a flag only adds a way for S3 to forget
+  it. No other CLI form exists beyond `<transcript.jsonl>` and `--selftest`.
+- 2026-08-01 (S2) — three modeling choices the brief left open, all printed by the tool so
+  S3/the reviewer can re-derive them: (a) TOTAL = Σ prompt-delta over unique requestIds
+  (context *occupancy*), not Σ per-line usage; (b) the **first** window is excluded from the
+  chars/token calibration — prompt_0 is system prompt + tool defs + CLAUDE.md, which never
+  appear in the transcript; its tokens still count in TOTAL and land in UNATTRIBUTED, broken
+  out as "session preamble"; (c) tool inputs that are neither Write/Edit nor Bash (Read,
+  Grep, **Agent spawn prompts**) are left in UNATTRIBUTED rather than smeared into a named
+  category — the residual-composition breakdown names them, and the D9 table sizes the Agent
+  slice separately (so D9 spawn chars are a cross-cut, not a tenth category).
+
 - 2026-08-01 (S1) — routed to `backend` rather than the brief's "main session / writer":
   the session's own verify gate needs Bash (`node tools/lint.mjs`), which the `writer`
   agent does not have. No change to the work itself.
@@ -87,6 +100,19 @@ allowed; deviating silently is not (§4)._
 
 _≤10 lines per entry: what this session did, the verify signal, the branch, and what the
 next session needs. Newest on top; crash-safe by write-ahead._
+
+- _2026-08-01 S2 (`backend`, branch `mission/context-economy-p0`): built
+  `tools/context-attrib.mjs` — zero-dep, `readline`-streamed (never loads or prints
+  transcript content) — plus a 15-case `--selftest` over a synthetic fixture in a throwaway
+  tmpdir, and fail-closed `checkContextAttrib()` in `tools/lint.mjs` (shape of
+  `checkMarkerMutation`; `--selftest` only, never a real transcript). All four landmines
+  covered (usage deduped by `requestId`; UNATTRIBUTED printed, never redistributed;
+  chars/token DERIVED per transcript, no `/4`; attachments sized on the injected field) and
+  the D9 per-`subagent_type` table is always emitted with a reviewer >3% → reopen-D7 callout.
+  Verified: `--selftest` exit 0 (15 ok); `node tools/lint.mjs` clean; NEGATIVE CHECK — script
+  moved away ⇒ lint FAILS "context-attribution harness missing", restored ⇒ clean. S3: run
+  `node tools/context-attrib.mjs <transcript.jsonl>` (only two invocation forms exist, that
+  and `--selftest`; D9 needs no flag) and read the printed table — never the transcript._
 
 - _2026-08-01 S1 (`backend`, branch `mission/context-economy-p0`): corrected the false
   "fresh context per tick" claim at all 12 sites with one consistent wording — `/loop` is
@@ -106,8 +132,10 @@ next session needs. Newest on top; crash-safe by write-ahead._
   Baseline transcript identified and field-verified by grep (never read). Uncommitted,
   awaiting HITL review of OQ1–OQ5._
 
-Next up: **S2 — build `tools/context-attrib.mjs` + `--selftest` + lint delegation**
-(same branch `mission/context-economy-p0`). OQ1–OQ5 are all
+Next up: **S3 — run the baseline measurement, record split + D9 table + sanity check**
+(same branch `mission/context-economy-p0`). The instrument is built and gated; S3 only runs
+`node tools/context-attrib.mjs <transcript.jsonl>` and records the numbers — it must NEVER
+`Read` the transcript itself. OQ1–OQ5 are all
 RESOLVED; execution is unblocked. Resume with `/agentic-workflow:mission "context-economy" continue`
 in a FRESH session (deliberate: starting a context-economy mission inside a 400k-token
 session is the anti-pattern it exists to fix). Phase 0 ends
