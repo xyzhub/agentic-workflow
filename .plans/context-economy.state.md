@@ -34,7 +34,7 @@ checkpoint/reviewer/chronicler row — set `[~]` the moment a beat is picked up 
 - [ ] S3 — run the baseline measurement, record split + D9 table + sanity check (branch `mission/context-economy-p0`)
 - [~] Checkpoint `ckpt-p0` — phase 0 review + merge into `mission/context-economy-integration` — **DEFERRED: mission parked before S1** (owner chose to run it in a fresh session, 2026-08-01); flip to `[ ]` when execution starts
 - [ ] ⛔ **D1 HARD PAUSE — mission STOPS. Human re-scopes P1–P4 with the real numbers before any later phase is spawned. Do not proceed on agent judgment.**
-- [ ] S4 — write firewall: extend the 30% rule to writes; reviewer untouched (branch `mission/context-economy-p1`)
+- [ ] S4 — write firewall: extend the 30% rule to writes; no tool-list change anywhere, per D7 (branch `mission/context-economy-p1`)
 - [ ] Checkpoint `ckpt-p1` — phase 1 review + merge into integration
 - [ ] S5 — standing steers: ledger block + §3-only append + lint grammar check (branch `mission/context-economy-p2`)
 - [ ] Checkpoint `ckpt-p2` — phase 2 review + merge into integration
