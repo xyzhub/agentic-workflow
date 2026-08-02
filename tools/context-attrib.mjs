@@ -23,6 +23,15 @@
 //           would skew the ratio. Its tokens still count toward TOTAL and land,
 //           correctly, in UNATTRIBUTED (reported separately as "preamble").
 // category tokens = category chars ÷ ratio.
+// degenerate usage = a request whose prompt (input+creation+read) is 0 is NOT an
+//           observation that context is empty — it is a request carrying no usable
+//           usage data. It is skipped as a prompt observation (no window, no
+//           `prevPrompt` overwrite) and counted in `degenerateUsage`, which is
+//           always printed. See the guard's comment for the 24.4% it manufactured.
+// collapses = every request where prompt < previous prompt. Ledgered (index, line,
+//           before, after, drop) with Σ collapse mass, because TOTAL is Σ POSITIVE
+//           deltas only: `TOTAL − Σ collapse mass = final prompt` exactly, and that
+//           ratchet identity is printed with a PASS/FAIL as a model self-check.
 // UNATTRIBUTED    = TOTAL − Σ category tokens. Printed, never redistributed
 //           (landmine 2). It holds the untranscribed preamble, unpersisted
 //           thinking, and every char this taxonomy has no bucket for. A residual-
@@ -84,11 +93,15 @@ export async function analyze(file) {
   const toolById = new Map();          // tool_use_id -> { name, subagent_type }
   const agents = new Map();            // subagent_type -> { spawns, spawnChars, returns, returnChars }
   const windows = [];                  // { delta, chars, first }
+  const collapses = [];                // { idx, line, before, after, drop, compactAdjacent }
 
   let lines = 0, badJson = 0, sidechain = 0;
   let requests = 0, duplicateUsageLines = 0, naiveTotal = 0, outputTokens = 0;
   let attachFallbackSized = 0, attachFallbackChars = 0, taskBlocks = 0;
   let assistantChars = 0;              // persisted assistant-authored chars (output-side coverage)
+  let degenerateUsage = 0;             // unique requests whose usage carried prompt = 0
+  let compactSummaryRecords = 0;       // records with isCompactSummary === true (any type)
+  let compactSincePrev = false;        // a compact summary sits between the last request and this one
   let prevPrompt = null, winChars = 0;
   const seen = new Set();
 
@@ -139,6 +152,9 @@ export async function analyze(file) {
     try { rec = JSON.parse(line); } catch { badJson++; continue; }
     if (!rec || typeof rec !== 'object') { badJson++; continue; }
     if (rec.isSidechain === true) { sidechain++; continue; }
+    // Adjacency only — NOT a model of why a collapse happened. Used solely to mark
+    // collapses that have no compact summary in front of them as unexplained.
+    if (rec.isCompactSummary === true) { compactSummaryRecords++; compactSincePrev = true; }
 
     // Attachment records (and attachments hung off any record).
     if (rec.type === 'attachment') countAttachment(rec.attachment || rec);
@@ -152,15 +168,36 @@ export async function analyze(file) {
         const rid = rec.requestId || rec.message?.id || null;
         if (rid && seen.has(rid)) {
           duplicateUsageLines++;             // Landmine 1: same request, later line — usage already counted.
+        } else if (p === 0) {
+          // FAIL CLOSED BY SHAPE. prompt = 0 is not "the context is empty"; it is a
+          // usage block with no usable prompt data. Treating it as an observation
+          // zeroes `prevPrompt`, so the ENTIRE resident context is re-billed as fresh
+          // churn by the next real request: on this repo's baseline that manufactured
+          // 513,634 tok = 24.4% of TOTAL (memo M2 row 5, 2026-08-02 D1 re-scope memo).
+          // So: no window, no `prevPrompt` overwrite, and the open window's chars keep
+          // accumulating into the next real request, which is the request that actually
+          // paid for them. The rid IS marked seen, so a repeated line of the same
+          // degenerate response counts as a duplicate, not as a second degenerate.
+          if (rid) seen.add(rid);
+          degenerateUsage++;
         } else {
           if (rid) seen.add(rid);
           requests++;
           outputTokens += u.output_tokens || 0;
+          // TOTAL is Σ POSITIVE deltas: a shrinking prompt contributes 0, never a
+          // negative. Ledger the shrink so the ratchet is auditable rather than silent.
+          if (prevPrompt != null && p < prevPrompt) {
+            collapses.push({
+              idx: requests, line: lines, before: prevPrompt, after: p,
+              drop: prevPrompt - p, compactAdjacent: compactSincePrev,
+            });
+          }
           // Close the window: chars appended since the previous request are what
           // this request's prompt delta paid for.
           windows.push({ delta: prevPrompt == null ? p : Math.max(0, p - prevPrompt), chars: winChars, first: prevPrompt == null });
           prevPrompt = p;
           winChars = 0;
+          compactSincePrev = false;
         }
       }
       // Content is NOT duplicated across a request's lines — always count it.
@@ -212,6 +249,13 @@ export async function analyze(file) {
   // ── Derive, don't assume (landmine 3/4) ────────────────────────────────
   const total = windows.reduce((n, w) => n + w.delta, 0);
   const preamble = windows.length && windows[0].first ? windows[0].delta : 0;
+  // The ratchet identity (memo M3). The prompt series starts at 0 and every step is
+  // either a positive delta (billed into TOTAL) or a collapse (billed into
+  // collapseMass), so this is EXACT by construction. A FAIL means the model drifted.
+  const collapseMass = collapses.reduce((n, c) => n + c.drop, 0);
+  const finalPrompt = prevPrompt == null ? 0 : prevPrompt;
+  const ratchetOk = total - collapseMass === finalPrompt;
+  const unexplainedCollapses = collapses.filter((c) => !c.compactAdjacent);
   const cal = windows.filter((w) => !w.first && w.chars > 0);
   const calDelta = cal.reduce((n, w) => n + w.delta, 0);
   const calChars = cal.reduce((n, w) => n + w.chars, 0);
@@ -234,6 +278,8 @@ export async function analyze(file) {
     file, lines, badJson, sidechain, requests, duplicateUsageLines, naiveTotal,
     outputTokens, assistantChars, attachFallbackSized, attachFallbackChars, taskBlocks,
     windows, total, preamble, calDelta, calChars, ratio, trailingChars: winChars,
+    degenerateUsage, compactSummaryRecords,
+    collapses, collapseMass, finalPrompt, ratchetOk, unexplainedCollapses,
     charsSeen, rows, attributed, unattributed,
     cats, residual, attachKinds, agents,
   };
@@ -250,12 +296,33 @@ function report(r) {
   console.log(`context-attrib: ${name}`);
   console.log(`  lines ${n0(r.lines)} · unparsable ${n0(r.badJson)} · sidechain excluded ${n0(r.sidechain)}`);
   console.log(`  requests ${n0(r.requests)} unique · ${n0(r.duplicateUsageLines)} duplicate usage line(s) deduped by requestId`);
+  // Always printed, including the 0 case: a silently skipped record is the same
+  // failure class as a suppressed verdict.
+  console.log(`  degenerate usage records skipped ${n0(r.degenerateUsage)} (prompt = 0 → no usable prompt observation; not billed, does not reset the series)`);
   console.log(`  TOTAL context tokens (Σ prompt-delta) ${n0(r.total)}   [naive per-line sum would report ${n0(r.naiveTotal)}${r.total > 0 ? ` — ${(r.naiveTotal / r.total).toFixed(1)}x` : ''}]`);
   console.log(r.ratio
     // Print the derivation in the SAME order it is computed (chars ÷ tokens), so a
     // human re-deriving it by hand lands on this number and not on its reciprocal.
     ? `  calibration ${r.ratio.toFixed(2)} chars/token — DERIVED (${n0(r.calChars)} chars ÷ ${n0(r.calDelta)} tokens, first window excluded); the /4 rule is not used`
     : '  calibration: unavailable (no usable window) — token columns suppressed');
+  console.log('');
+
+  // ── Collapse ledger + ratchet identity ────────────────────────────────
+  console.log(`  collapse ledger — requests where prompt SHRANK (${n0(r.collapses.length)} collapse(s) · Σ collapse mass ${n0(r.collapseMass)} tok)`);
+  console.log(`    ${pad('#', 4)}${lpad('req idx', 9)}${lpad('line', 9)}${lpad('before', 12)}${lpad('after', 12)}${lpad('drop', 12)}  compact summary before it?`);
+  if (!r.collapses.length) console.log('    (none — the prompt series never shrank)');
+  r.collapses.forEach((c, i) => {
+    console.log(`    ${pad(i + 1, 4)}${lpad(n0(c.idx), 9)}${lpad(n0(c.line), 9)}${lpad(n0(c.before), 12)}${lpad(n0(c.after), 12)}${lpad(n0(c.drop), 12)}  ${c.compactAdjacent ? 'yes' : 'NO — unexplained'}`);
+  });
+  console.log('    (req idx = 1-based index over unique requests with usable usage; line = non-blank transcript line)');
+  if (r.unexplainedCollapses.length) {
+    // Reported, NOT modelled: root-causing one needs single-record schema inspection,
+    // which is not measurement. Tracked as a non-blocking item in the mission ledger.
+    console.log(`    note: ${n0(r.unexplainedCollapses.length)} collapse(s) have no compact-summary record between them and the previous request — UNEXPLAINED by this instrument, and deliberately not modelled here (tracked, non-blocking).`);
+  }
+  console.log(`    compact-summary records seen: ${n0(r.compactSummaryRecords)} (isCompactSummary === true; a grep for the bare string over-counts)`);
+  console.log(`  ratchet identity: Σ positive deltas ${n0(r.total)} − Σ collapse mass ${n0(r.collapseMass)} = ${n0(r.total - r.collapseMass)} vs final prompt ${n0(r.finalPrompt)} — ${r.ratchetOk ? 'PASS' : 'FAIL (the accounting model has drifted — do not trust TOTAL)'}`);
+  console.log(`  ratchet ${r.finalPrompt > 0 ? `${(r.total / r.finalPrompt).toFixed(3)}x` : 'n/a'} — TOTAL is CHURN (what accumulation cost), not occupancy (what sits in the window at the end)`);
   console.log('');
 
   const W = 30;
@@ -368,6 +435,19 @@ function buildFixture(dir) {
     U([{ type: 'tool_result', tool_use_id: 'orphan-id', content: F.toolResult2 }]),
     { type: 'assistant', isSidechain: true, requestId: 'side-1', message: { role: 'assistant', content: [{ type: 'text', text: 'X'.repeat(500) }], usage: usage(0, 0, 5000, 100) } },
     A('req-3', [{ type: 'text', text: F.prose3 }], usage(0, 600, 2000, 40)),
+    // The prompt=0 trio. All three carry EMPTY content and sit back-to-back, so no
+    // chars accumulate into their windows: the calibration ratio, every category and
+    // TOTAL are untouched by their presence *when the guard holds*.
+    //   req-4: a GENUINE collapse (2600 -> 1000, drop 1600) — the ledger must list it.
+    //   req-5: the degenerate record (prompt = 0) — skipped, never ledgered.
+    //   req-6: the next real request. WITH the guard it is billed against 1000 (delta 0,
+    //          TOTAL stays 2600); WITHOUT it, against the poisoned 0 — re-billing the
+    //          whole resident context and pushing TOTAL to 3600. That follow-on request
+    //          is what makes this fixture able to fail; a degenerate record with nothing
+    //          after it costs nothing and would prove nothing.
+    A('req-4', [], usage(1000, 0, 0, 10)),
+    A('req-5', [], usage(0, 0, 0, 25)),
+    A('req-6', [], usage(1000, 0, 0, 10)),
     U(F.steer2),
     { type: 'summary', summary: 'a compacted summary record' },
   ];
@@ -410,11 +490,39 @@ async function selftest() {
 
     // 1. Landmine 1 — a repeated `usage` block is counted ONCE.
     check('dedup: duplicate requestId usage counted once',
-      r.requests === 3 && r.duplicateUsageLines === 1 && r.total === 2600,
-      `requests=${r.requests} dup=${r.duplicateUsageLines} total=${r.total} (expected 3/1/2600)`);
+      r.requests === 5 && r.duplicateUsageLines === 1 && r.total === 2600,
+      `requests=${r.requests} dup=${r.duplicateUsageLines} total=${r.total} (expected 5/1/2600)`);
     check('dedup: the naive per-line sum is strictly larger (the trap is real)',
-      r.naiveTotal === 7000 && r.naiveTotal > r.total,
+      r.naiveTotal === 9000 && r.naiveTotal > r.total,
       `naive=${r.naiveTotal} total=${r.total}`);
+
+    // 1b. The `prompt = 0` phantom-churn guard (D10a). VERIFIED BY MUTATION 2026-08-02:
+    // delete the `else if (p === 0)` branch in `analyze` and 7 cases FAIL — the four
+    // below (TOTAL 3,600 vs 2,600 · degenerateUsage 0 · 2 collapses, one of them to 0 ·
+    // 2 unexplained) plus the two pre-existing cases that pin `total === 2600`. Restore
+    // it and all 22 pass. NOTE on the ratchet case: the identity itself
+    // (`total − collapseMass === finalPrompt`) is exact by construction and holds in
+    // BOTH states — 3,600 − 2,600 = 1,000 unguarded — so it is a model self-check, not
+    // a guard; what makes that case mutation-sensitive is the `collapseMass === 1600`
+    // constant beside it. Do not remove req-6 from the fixture: without a real request
+    // after the degenerate one the poisoned `prevPrompt` has nothing to re-bill, and
+    // the TOTAL case goes blind.
+    check('prompt=0: a degenerate record does not manufacture churn (TOTAL unchanged)',
+      r.total === 2600 && r.finalPrompt === 1000,
+      `total=${r.total} finalPrompt=${r.finalPrompt} (expected 2600/1000; unguarded gives 3600)`);
+    check('prompt=0: the skipped record is COUNTED and reported, never silently dropped',
+      r.degenerateUsage === 1,
+      `degenerateUsage=${r.degenerateUsage}`);
+    check('prompt=0: the collapse ledger lists the genuine collapse and NOT the degenerate record',
+      r.collapses.length === 1 && r.collapses[0].before === 2600 && r.collapses[0].after === 1000
+      && r.collapses[0].drop === 1600 && !r.collapses.some((c) => c.after === 0),
+      `collapses=${JSON.stringify(r.collapses.map((c) => [c.before, c.after]))}`);
+    check('ratchet identity: Σ positive deltas − Σ collapse mass === final prompt',
+      r.ratchetOk && r.collapseMass === 1600 && r.total - r.collapseMass === r.finalPrompt,
+      `total=${r.total} collapseMass=${r.collapseMass} final=${r.finalPrompt}`);
+    check('collapse with no adjacent compact summary is flagged unexplained (not modelled)',
+      r.unexplainedCollapses.length === 1 && r.compactSummaryRecords === 0,
+      `unexplained=${r.unexplainedCollapses.length} compactRecords=${r.compactSummaryRecords}`);
 
     // 2. Landmine 2 — the books balance EXACTLY, with the residual printed.
     const sum = r.rows.reduce((n, x) => n + x.tokens, 0);

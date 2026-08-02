@@ -22,8 +22,9 @@ for the D1 pause package.
 
 **UNBLOCKED — OQ1–OQ5 all RESOLVED 2026-08-01** (human accepted every planner
 recommendation; details in `## Open questions`). Phase 0 is done and merged.
-**Since the 2026-08-02 replan the authorized work is Phase 0.5 only**, starting at
-`S0.5-1`; **OQ6 blocks `S0.5-2`**.
+**Since the 2026-08-02 replan the authorized work is Phase 0.5 only**; `S0.5-1` is done.
+**Next up: `S0.5-2` — BLOCKED on OQ6** (human ruling needed). `S0.5-3` is not blocked and
+may run first if the human prefers to keep moving; the phase is sequential either way.
 
 ## Checklist
 
@@ -37,7 +38,7 @@ checkpoint/reviewer/chronicler row — set `[~]` the moment a beat is picked up 
 - [x] Checkpoint `ckpt-p0` — **APPROVE** 2026-08-02 after one corrective session (S3-fix). Scorecard: QA 3 · Security 3 · Efficiency 3 · Architecture 3 · UX 3 · DX 2. Merged into `mission/context-economy-integration` (`273f1d3`, batch policy — main untouched).
 - [x] ⛔ **D1 HARD PAUSE — RELEASED 2026-08-02.** Human re-scoped with the measured numbers: **new instrument-repair phase first (P0.5); P1–P4 are NOT authorized and get re-decided after it.** Decisions D10–D12 below.
 - [ ] **Phase 0.5 — instrument repair** (briefs authored by the planner 2026-08-02; supersedes direct entry to P1) — branch `mission/context-economy-p05`
-  - [ ] S0.5-1 — `prompt = 0` phantom-churn guard + collapse ledger + ratchet identity (tasks 22–23)
+  - [x] S0.5-1 — `prompt = 0` phantom-churn guard + collapse ledger + ratchet identity (tasks 22–23)
   - [ ] S0.5-2 — settle the chars/token band + name the char-free mass (task 24) — **blocked on OQ6**
   - [ ] S0.5-3 — occupancy sanity gate + the D7 denominator (tasks 25–26)
   - [ ] S0.5-4 — re-run the baseline, record BOTH numbers, assemble the re-decision package
@@ -183,6 +184,26 @@ allowed; deviating silently is not (§4)._
   from calibration ÷ 1.245 = 87,027 tok (a 1-token match), and it is computed from the same
   disputed ratio. Presenting it as corroboration would have re-committed F3 one paragraph
   after fixing it. Flagged for the reviewer/human to overrule if they disagree.
+- 2026-08-02 (S0.5-1) — **the brief's predicted TOTAL was not met, and was not chased.**
+  Predicted `2,108,485 − 513,634 = 1,594,851`; measured **1,707,036** (`−401,449`). The
+  guard removes exactly the re-billed resident context (the degenerate collapse was
+  401,449 → 0); the remaining 112,185 is real growth from 401,449 to the 513,634 final
+  prompt and stays in churn. Nothing was tuned; the arithmetic is printed by the tool
+  (ratchet identity PASS). The prediction conflated phantom churn with all churn billed
+  after the reset.
+- 2026-08-02 (S0.5-1) — **collapse #4 deferred, reported (brief step 4).** The shipped
+  ledger flags it (`req idx 551`, line 4,222, −270,711, no adjacent compact summary) as
+  UNEXPLAINED and prints that it is deliberately not modelled. Tracked non-blocking in the
+  shape of D4b. The same flag also fires on the memo's "noise" rows #1/#2 (3,106 / 1,778):
+  the adjacency test is mechanical with no size threshold — deliberately, since a
+  threshold would be a modelling choice this phase is not authorized to make.
+- 2026-08-02 (S0.5-1) — **`req idx` runs +1 vs. memo M2** (mine 237/241/310/551 vs. the
+  memo's 236/240/309/550): the shipped ledger indexes the collapsing request itself,
+  1-based over requests with usable usage. **Line numbers match the memo exactly**
+  (1,829 / 1,873 / 2,569 / 4,222), so the rows are the same rows. Nothing moved.
+- 2026-08-02 (S0.5-1) — the handoff entry below exceeds "≤10 lines per entry". The before/
+  after of a measurement change plus the mutation proof does not compress further without
+  dropping a number a reviewer must re-derive. Normal bound resumes at `S0.5-2`.
 - 2026-08-02 (S3-fix) — the S3-fix handoff entry also exceeds "≤10 lines per entry":
   five findings each need their own resolution line at a hard pause. Normal bound at S4.
 - 2026-08-01 (S3) — the handoff entry below exceeds the log's "≤10 lines per entry" rule.
@@ -197,6 +218,30 @@ allowed; deviating silently is not (§4)._
 
 _≤10 lines per entry: what this session did, the verify signal, the branch, and what the
 next session needs. Newest on top; crash-safe by write-ahead._
+
+- _2026-08-02 (`S0.5-1`, `backend`, branch `mission/context-economy-p05`):
+  `tools/context-attrib.mjs` — `prompt = 0` records are skipped as prompt observations
+  (no window, no `prevPrompt` reset), counted in a printed `degenerateUsage`; new collapse
+  ledger (idx · line · before · after · drop · compact-summary adjacency) with Σ collapse
+  mass; printed ratchet identity with PASS/FAIL. **Verify:** `--selftest` clean at **22
+  cases** (17 pre-existing + 5 new), `node tools/lint.mjs` clean. **Mutation proof (scratch
+  copy):** guard deleted ⇒ **7 FAIL** (TOTAL 3,600 vs 2,600 · `degenerateUsage` 0 · 2
+  collapses incl. one to 0 · 2 unexplained · plus the two legacy cases pinning `total ===
+  2600`); restored ⇒ 22/22 ok. **TOTAL 2,108,485 → 1,707,036 (−401,449, −19.0%)** on the
+  same 4,612-line / 12,211,203-byte corpus. The brief predicted −513,634; **it landed at
+  −401,449 and that is the finding, not an error** — 513,634 is the *final prompt* (memo
+  M3), i.e. all churn billed after the reset, of which only the 401,449 re-bill was
+  phantom; the 112,185 of growth from 401,449 up to 513,634 is genuine and correctly
+  retained. Instrument now confirms memo M1/M2 independently: **4 collapses** (was 5),
+  **`isCompactSummary === true` = 1**, ratchet PASS (1,707,036 − 1,193,402 = 513,634 =
+  final prompt), occupancy unchanged. Knock-on for `S0.5-2`: calibration moved **1.25 →
+  1.55 chars/token** (calDelta shrank), so category token columns fell ~19% while **chars
+  are bit-identical** and shares moved ≤0.1pt; the output-side line moved ~28% → ~42%.
+  D7 reviewer share is **invariant at 4.0%** (numerator and denominator scale together) —
+  D11 stands; `S0.5-3` owns the denominator. Deferred + now visible in the output:
+  **3 collapses have no adjacent compact summary** (memo's #1/#2 "noise" 3,106/1,778 and
+  the unexplained #4, 270,711 @ line 4,222) — flagged, not modelled, per brief step 4.
+  **Next: `S0.5-2` (blocked on OQ6) or `S0.5-3`.**_
 
 - _2026-08-02 replan (`planner`, branch `mission/context-economy-integration`): authored
   **Phase 0.5 — instrument repair** into the trio (plan tasks 22–26, four briefs
