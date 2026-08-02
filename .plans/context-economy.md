@@ -288,6 +288,14 @@ _Copied from the source brief with their original dates. Not re-litigated._
   targets only what needs no permission change: templates → the phase's implementing
   agent; CHANGELOG + PR bodies → `chronicler`. **Reopen if** per-agent attribution shows
   `reviewer` returns >3%.
+  - _2026-08-02 (D11 follow-up) — **the 3% trigger's denominator, named.** ">3%" means a
+    **token-domain share of TOTAL prompt growth** (Σ positive prompt-deltas over unique
+    requests) — the unit the trigger was written in, since it was written about context
+    consumption and context is denominated in tokens. A **char-domain** share (Σ appended
+    chars) is a different statistic with a different denominator and is **not** the trigger;
+    reading one as the other produced the 4.0%-vs-1.2% reopen D11 ruled an artefact.
+    `tools/context-attrib.mjs` now prints the denominator and its value beside the share.
+    The locked text above is unchanged; this is a clarification, not a re-decision._
 - **2026-08-01 — D8 — Hook pair = stateless directive.** `SessionStart` matcher
   `compact` injects a fixed ≤6-line re-read directive naming the active ledger. **No
   breadcrumb file**, no freshness guard, no gitignore entry, no harness extension.

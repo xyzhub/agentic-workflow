@@ -22,8 +22,15 @@ for the D1 pause package.
 
 **UNBLOCKED — OQ1–OQ5 all RESOLVED 2026-08-01** (human accepted every planner
 recommendation; details in `## Open questions`). Phase 0 is done and merged.
-**Since the 2026-08-02 replan the authorized work is Phase 0.5 only**, starting at
-`S0.5-1`; **OQ6 blocks `S0.5-2`**.
+**Since the 2026-08-02 replan the authorized work is Phase 0.5 only**; `S0.5-1`, `S0.5-2`,
+`S0.5-3` and `S0.5-4` are ALL done (**OQ6 RESOLVED 2026-08-02** — zero-dep envelope estimator,
+chars primary, shipped in `S0.5-2`; the occupancy gate and D7's named denominator shipped in
+`S0.5-3`; the repaired baseline + the **📦 PHASE 0.5 RE-DECISION PACKAGE** recorded by
+`S0.5-4`). **`ckpt-p05` returned REQUEST CHANGES and `S0.5-fix` landed all three findings
+(F1–F3) plus the latent F4 guard — text and one inert guard only; every headline number is
+unchanged and re-verified byte-for-byte.** **Next up: `ckpt-p05`** (re-review) — then the
+⛔ DECISION POINT where the human re-decides P1–P4 from that package. No implementation
+session remains.
 
 ## Checklist
 
@@ -37,13 +44,13 @@ checkpoint/reviewer/chronicler row — set `[~]` the moment a beat is picked up 
 - [x] Checkpoint `ckpt-p0` — **APPROVE** 2026-08-02 after one corrective session (S3-fix). Scorecard: QA 3 · Security 3 · Efficiency 3 · Architecture 3 · UX 3 · DX 2. Merged into `mission/context-economy-integration` (`273f1d3`, batch policy — main untouched).
 - [x] ⛔ **D1 HARD PAUSE — RELEASED 2026-08-02.** Human re-scoped with the measured numbers: **new instrument-repair phase first (P0.5); P1–P4 are NOT authorized and get re-decided after it.** Decisions D10–D12 below.
 - [ ] **Phase 0.5 — instrument repair** (briefs authored by the planner 2026-08-02; supersedes direct entry to P1) — branch `mission/context-economy-p05`
-  - [ ] S0.5-1 — `prompt = 0` phantom-churn guard + collapse ledger + ratchet identity (tasks 22–23)
-  - [ ] S0.5-2 — settle the chars/token band + name the char-free mass (task 24) — **blocked on OQ6**
-  - [ ] S0.5-3 — occupancy sanity gate + the D7 denominator (tasks 25–26)
-  - [ ] S0.5-4 — re-run the baseline, record BOTH numbers, assemble the re-decision package
-  - [ ] Checkpoint `ckpt-p05` — phase 0.5 review + merge into integration
+  - [x] S0.5-1 — `prompt = 0` phantom-churn guard + collapse ledger + ratchet identity (tasks 22–23)
+  - [x] S0.5-2 — settle the chars/token band + name the char-free mass (task 24) — zero-dep envelope estimator per OQ6
+  - [x] S0.5-3 — occupancy sanity gate + the D7 denominator (tasks 25–26) — gate FAILS at +28.0% vs `/context` TOTAL 401.4k (a finding); D7 denominator named
+  - [x] S0.5-4 — re-run the baseline, record BOTH numbers, assemble the re-decision package — analysis-only (no instrument change); **📦 PHASE 0.5 RE-DECISION PACKAGE** below is the deliverable
+  - [~] Checkpoint `ckpt-p05` — phase 0.5 review + merge into integration (reviewer in flight, 2026-08-02)
 - [ ] ⛔ **DECISION POINT — the human re-decides P1–P4** with repaired numbers. Everything below is **HELD and NOT authorized** until this lands as new dated locked decisions.
-- [ ] S4 — **HELD** — write firewall: extend the 30% rule to writes; no tool-list change anywhere, per D7 (branch `mission/context-economy-p1`). Premise retracted: Write/Edit is ≤15.9% char / 2.8–3.7% token, never 22.5%.
+- [ ] S4 — **HELD** — write firewall: extend the 30% rule to writes; no tool-list change anywhere, per D7 (branch `mission/context-economy-p1`). Premise retracted: Write/Edit is ≤15.9% char / **4.40–7.18% token** (S0.5-4 measured; supersedes the pre-repair "2.8–3.7%"), never 22.5%. See the P0.5 re-decision package §4.
 - [ ] Checkpoint `ckpt-p1` — **HELD** — phase 1 review + merge into integration
 - [ ] S5 — **HELD** — standing steers: ledger block + §3-only append + lint grammar check (branch `mission/context-economy-p2`). Fidelity control; case unchanged by the new evidence.
 - [ ] Checkpoint `ckpt-p2` — **HELD** — phase 2 review + merge into integration
@@ -60,11 +67,14 @@ _OQ1–OQ5 RESOLVED 2026-08-01 — the human accepted every recommendation. Lock
 **OQ6 and OQ7 opened at the 2026-08-02 replan** and live in full in
 `.plans/context-economy.md` `## Open questions`:_
 
-- **OQ6 — OPEN — does settling the chars/token band buy a tokenizer dependency?**
-  **Blocks `S0.5-2` only**; `S0.5-1` may start without it. D10(b) names a real tokenizer;
-  the repo is zero-dep with no `package.json`/lockfile and a bare-checkout CI. Planner
-  recommends the **zero-dep output-side envelope estimator**, chars reported as primary.
-  Flagged as a tension with D10(b)'s wording — **not resolved by the planner**.
+- **OQ6 — RESOLVED 2026-08-02 (human): zero-dep estimator, chars primary.** No tokenizer,
+  no `package.json`, no lockfile, no CI install step. `S0.5-2` implements a **zero-dep
+  output-side envelope estimator**; **character counts are the primary reported figure**
+  (model-free and exact) and tokens are a derived estimate that must always carry its
+  stated band. **This amends D10(b)**, which said "with a real tokenizer" — the human
+  unlocked that clause specifically, on the grounds that a bare-checkout CI has no
+  dependency-resolution surface to attack (cf. the 2026-07 supply-chain incident) and the
+  band narrows but never fully closes either way. **`S0.5-2` is UNBLOCKED.**
 - **OQ7 — OPEN (low stakes) — add `--context-total=<tokens>` as a third CLI form?**
   Planner recommends yes; the hand comparison is what produced the 377.4k/401.4k slip.
   Absent a ruling the recommendation stands, and the reviewer may overrule at `ckpt-p05`.
@@ -122,6 +132,84 @@ _Human steers captured **verbatim** at checkpoints only, never mid-brief. Gramma
 _Any departure from a brief — logged here the moment it happens, with why. Deviating is
 allowed; deviating silently is not (§4)._
 
+- 2026-08-02 (S0.5-fix) — **F3's caption is NOT pinned by a selftest case**, and it is an
+  output change. The `ckpt-p05` corrective brief set the target case count at "43, or 44 if
+  you took F4"; adding a case for the caption would have put it at 45 and moved a number the
+  brief froze. Followed the brief. The consequence is that the cross-domain-transfer caption
+  could be silently deleted without a gate failing — the reviewer may want a case binding it,
+  and that is a one-case addition if so. Logged rather than decided unilaterally.
+- 2026-08-02 (S0.5-fix) — **F4's case needed a SECOND fixture** (`buildRevivedRidFixture`), not
+  a record appended to the main one. The main fixture's TOTAL/collapse/band/preamble constants
+  are pinned by ~40 cases; adding a revived-`requestId` scenario to it would have moved them
+  and broken the brief's "no number may move" constraint. The isolated 4-record fixture leaves
+  every existing case byte-identical. The file's "this is the ONLY fixture" comment was
+  corrected to match.
+- 2026-08-02 (S0.5-4) — **the session is ANALYSIS-ONLY: no behaviour changed, so no new
+  selftest case.** The "every behaviour change ships a mutation-proved case" rule is stated
+  here as **satisfied vacuously**, not skipped: `tools/context-attrib.mjs` was not edited, the
+  case count is **held at 43** (never lowered), and the run is a pure re-execution of the
+  `S0.5-3` instrument. Recorded so `ckpt-p05` does not go looking for a proof that should not
+  exist.
+- 2026-08-02 (S0.5-4) — **THREE stale numbers in the S0.5-4 brief / memo, recorded as measured
+  rather than reverse-engineered toward the brief.** The brief's own step 4/5 figures were
+  written before the repair landed. (i) **collapses = 4, not the briefed 5** — the 5th was the
+  degenerate `prompt = 0` collapse D10a's guard correctly removed (`S0.5-3` already flagged
+  this; `S0.5-4` executed on it). (ii) **token-domain Write/Edit = 4.40–7.18%, not the briefed
+  "2.8–3.7%"** — the repaired TOTAL is 19% smaller *and* the measured band 1.99–3.24 is below
+  memo M9's assumed 3.2–4.2, and both corrections push the share **up**. (iii) consequently the
+  restated headline is **~4.4–7.2% addressed / ~1.8–4.3% captured**, not the briefed "~4% /
+  ~1.5–2.5%" (memo §2's Option C row). **Nothing was tuned toward the briefed values**; the
+  package reports the measurement and names the divergence. Knock-on: this makes P1's case
+  *better* than the memo concluded, which is a re-decision input the human must not miss.
+- 2026-08-02 (S0.5-4) — **checklist row S4 amended** (a HELD row, not a completed one, and not
+  in the untouchable set): its parenthetical still carried the superseded "2.8–3.7% token".
+  Updated to the measured band with a pointer to the package. The char half (≤15.9%) was
+  already correct and is unchanged. Logged because silently correcting a number in a ledger is
+  the exact failure mode this mission exists to fix.
+- 2026-08-02 (S0.5-4) — **two normalisation defects found in memo M8, reported not rewritten**
+  (the memo is a dated advisory artefact; correcting it in place would rewrite history).
+  (i) M8's **NARROW column is incoherent for `attach:` categories** — its denominator excludes
+  them, so `skill_listing`'s "13.6% NARROW" divides a numerator by a base that omits it. The
+  free-lever input must be sized at 7.8% char / 3.8–6.1% token, **not 13.6%**. `Write/Edit` is
+  inside NARROW, so its 15.9% is unaffected. (ii) M8 labels NARROW "**7** non-attach"; the
+  printed base 1,536,639 is the sum of **6** categories. Value right, count off by one.
+- 2026-08-02 (S0.5-4) — **memo §2's "on the 401.4k baseline" column is NOT reproduced as a
+  recommendation.** It applies a *churn* share to an *occupancy* baseline — the same
+  churn/occupancy conflation D10c was created to end. The package states the arithmetic
+  (~7k–17k tok) only to mark it as **not a number to decide on**.
+- 2026-08-02 (S0.5-3) — **the session was completed after an infrastructure failure**, the
+  second time this phase. The first `backend` agent died mid-implementation on an API error,
+  leaving 96 uncommitted insertions and **no new selftest cases** — both gates green purely
+  because nothing new was being tested. A fresh `backend` agent reviewed that work against
+  the brief rather than assuming it. **KEPT** (correct, unchanged): the header's CHURN vs
+  OCCUPANCY model block and the third-form usage lines; the occupancy tracking inside
+  `analyze` (correctly placed in the same branch TOTAL is summed in, so a `prompt = 0` record
+  can neither set the high-water mark nor become the final observation); `GATE_PCT`,
+  `PROMPT_SERIES_COMPONENTS`, `gateRow`/`occupancyGate`; the `report(r, opts)` signature.
+  **DISCARDED / REWRITTEN**: the dead agent's `d7Lines` was never wired in (the old inline D7
+  block was still live, so the denominator work was dead code) and its `verdict:` line
+  **re-decided** D7 in the instrument's voice ("REOPENS decision D7") — rewritten as a
+  `reading:` that re-derives and names D11 as the ruling. Nothing printed the gate, the
+  churn/occupancy block, or parsed the flag: those were written this session, along with all
+  12 new selftest cases. `ckpt-p05` should treat the whole diff as unreviewed by any human.
+- 2026-08-02 (S0.5-3) — **a THIRD CLI invocation form now exists.** S2's deviation recorded
+  "no other CLI form exists beyond `<transcript.jsonl>` and `--selftest`"; `--context-total=`
+  makes three (brief step 2 / **OQ7**, which is still OPEN with the planner's yes standing and
+  no human ruling). Implemented on the standing recommendation; **the reviewer may overrule
+  at `ckpt-p05`** and the removal is local (one flag, one report block, three selftest cases).
+- 2026-08-02 (S0.5-3) — **CLI hygiene beyond the brief**, logged as scope added: the flag
+  **fails closed** (an unparsable comparator is refused with exit 1, never silently coerced to
+  0/NaN and gated against), `--context-total` combined with `--selftest` is refused (the gate
+  needs a real transcript), and an unexpected extra argument is refused. Rationale: a gate
+  computed against a garbage number is exactly the failure class this session exists to end.
+- 2026-08-02 (S0.5-3) — the handoff entry below again exceeds "≤10 lines per entry", after
+  `S0.5-2` promised the normal bound would resume here. Cause: a gate VERDICT the human must
+  see, a ten-mutation proof, and a straddle flag do not compress without dropping something
+  `ckpt-p05` must re-derive. `S0.5-4` is a recording session and should fit the bound.
+- 2026-08-02 (S0.5-3) — **record flag for `S0.5-4`, not a correction made here.** The S0.5-4
+  brief states "collapses = **5**, of which exactly 1 is a compaction". The repaired
+  instrument reports **4** (mass 1,193,402; exactly 1 compaction, at req 310) — the fifth was
+  the degenerate `prompt = 0` collapse that D10a's guard removed. `S0.5-4` records 4, not 5.
 - 2026-08-02 (replan, planner) — **record correction, logged not rewritten.** The D1 pause
   package states "20 `isCompactSummary` records"; the true count is **1** (memo M1 — the
   other 19 are the *string* appearing inside this mission's own docs, a self-referential
@@ -183,6 +271,50 @@ allowed; deviating silently is not (§4)._
   from calibration ÷ 1.245 = 87,027 tok (a 1-token match), and it is computed from the same
   disputed ratio. Presenting it as corroboration would have re-committed F3 one paragraph
   after fixing it. Flagged for the reviewer/human to overrule if they disagree.
+- 2026-08-02 (S0.5-2) — **the session was completed as a SALVAGE.** The first `backend`
+  agent built the estimator and then died on an infrastructure stall with the work
+  uncommitted and one selftest case failing. A second `backend` agent (fresh context)
+  inherited the working tree, was scoped to *resolve, verify, commit* — not redesign — and
+  did so. Everything in the commit except the fixture change below is the first agent's
+  work, reviewed but not rewritten. `ckpt-p05` should treat it as unreviewed by any human.
+- 2026-08-02 (S0.5-2) — **fixture-vs-assertion: the FIXTURE was wrong, the assertion was
+  right, and the assertion's stated reason was also wrong.** The drop case expected 3 and
+  observed 2. `req-5` (the `prompt = 0` record) never reaches the estimator at all — its
+  usage is degenerate so `out` is never recorded and its empty content creates no row,
+  which is deliberate (`outRow`: a degenerate usage block is not trustworthy data on the
+  output side either). So the assertion's "req-4/5/6" rationale was false. But relaxing 3
+  to 2 would have shipped an inert guard: `req-4` and `req-6` tripped **both** drop clauses
+  at once, so deleting either clause alone left the case green — the S2-inversion failure
+  mode this phase's standing constraint forbids. Fix: `req-4`'s `output_tokens` 10 → 30 (so
+  only `chars > 0` can drop it) and a new `req-7` carrying chars with `output_tokens` 10 (so
+  only `MIN_OUT` can drop it). `req-7` is inert on the prompt side by construction — prompt
+  = `prevPrompt` ⇒ window delta 0 / chars 0 — so TOTAL 2,600, `calDelta` 1,400, `calChars`,
+  the collapse ledger, `finalPrompt` and `preamble` are all unchanged; only `requests`
+  (5 → 6) and `naiveTotal` (9,000 → 10,000) were re-pinned. Each clause is now mutation-
+  proven independently (see the handoff entry).
+- 2026-08-02 (S0.5-2) — the handoff entry below exceeds "≤10 lines per entry". Same reason
+  as `S0.5-1`'s: a before/after of a measurement change plus a three-way mutation proof does
+  not compress without dropping a number `ckpt-p05` must re-derive. Normal bound at S0.5-3.
+- 2026-08-02 (S0.5-1) — **the brief's predicted TOTAL was not met, and was not chased.**
+  Predicted `2,108,485 − 513,634 = 1,594,851`; measured **1,707,036** (`−401,449`). The
+  guard removes exactly the re-billed resident context (the degenerate collapse was
+  401,449 → 0); the remaining 112,185 is real growth from 401,449 to the 513,634 final
+  prompt and stays in churn. Nothing was tuned; the arithmetic is printed by the tool
+  (ratchet identity PASS). The prediction conflated phantom churn with all churn billed
+  after the reset.
+- 2026-08-02 (S0.5-1) — **collapse #4 deferred, reported (brief step 4).** The shipped
+  ledger flags it (`req idx 551`, line 4,222, −270,711, no adjacent compact summary) as
+  UNEXPLAINED and prints that it is deliberately not modelled. Tracked non-blocking in the
+  shape of D4b. The same flag also fires on the memo's "noise" rows #1/#2 (3,106 / 1,778):
+  the adjacency test is mechanical with no size threshold — deliberately, since a
+  threshold would be a modelling choice this phase is not authorized to make.
+- 2026-08-02 (S0.5-1) — **`req idx` runs +1 vs. memo M2** (mine 237/241/310/551 vs. the
+  memo's 236/240/309/550): the shipped ledger indexes the collapsing request itself,
+  1-based over requests with usable usage. **Line numbers match the memo exactly**
+  (1,829 / 1,873 / 2,569 / 4,222), so the rows are the same rows. Nothing moved.
+- 2026-08-02 (S0.5-1) — the handoff entry below exceeds "≤10 lines per entry". The before/
+  after of a measurement change plus the mutation proof does not compress further without
+  dropping a number a reviewer must re-derive. Normal bound resumes at `S0.5-2`.
 - 2026-08-02 (S3-fix) — the S3-fix handoff entry also exceeds "≤10 lines per entry":
   five findings each need their own resolution line at a hard pause. Normal bound at S4.
 - 2026-08-01 (S3) — the handoff entry below exceeds the log's "≤10 lines per entry" rule.
@@ -197,6 +329,134 @@ allowed; deviating silently is not (§4)._
 
 _≤10 lines per entry: what this session did, the verify signal, the branch, and what the
 next session needs. Newest on top; crash-safe by write-ahead._
+
+- _2026-08-02 (`S0.5-fix`, `backend`, branch `mission/context-economy-p05`): corrective session
+  for the `ckpt-p05` **REQUEST CHANGES**. **Text + one latent guard; no measurement re-run
+  changed a number.** **F1** [Med] — the guard's justifying comment (`tools/context-attrib.mjs`
+  header + the guard site) claimed the degenerate record manufactured "513,634 tok = 24.4% of
+  TOTAL"; corrected to the **measured 401,449 tok = 19.0% of the unrepaired 2,108,485**, with
+  the provenance (**transcript line 4,253, the 553rd request with a usage block, prompt
+  401,449 → 0**) and an explicit note that 513,634 is the FINAL PROMPT = 401,449 phantom +
+  112,185 genuine, which the guard correctly RETAINS — so a future reconciliation cannot read
+  the gap as under-correction. **F2** [Med] — `CHANGELOG.md` `[Unreleased]` brought current:
+  **three** invocation forms (was "two only"), the **retracted** 5.59×/377.4k headline replaced
+  by the repaired findings (churn **1,707,036** after the `prompt = 0` guard; band
+  **1.99–3.24** chars primary; occupancy gate **+28.0% / +149.1% FAIL** vs `/context` TOTAL
+  401,400), commit-cited `74f4507`/`c6f0218`/`4288280`/`ab2ec04`. **No version bump — S8 owns
+  it and is HELD.** **F3** [Med] — the **cross-domain transfer** (band measured on
+  model-authored OUTPUT, applied to INPUT-side rows) is now disclosed **in the report body**,
+  not only the header: input-side rows (`tool results` · `attach:*` · `human steers` · `user:*`)
+  ride a transferred assumption and may be **UNDERSTATED, not bounded above**; model-authored
+  rows — including **P1's Write/Edit figure** — are the estimator's own corpus and are
+  unaffected. **F4** [Low, latent] — **TAKEN.** Degenerate rids now go in a separate
+  `degenerateRids` set instead of `seen`, so a `requestId` first seen degenerate and later
+  carrying a usable prompt is **billed** rather than silently dropped as a duplicate; a repeated
+  degenerate line still counts as a duplicate. **Inert on this corpus** (595 unique + 1
+  degenerate, no twin). **F5** [Nit] — no action, as directed: `persisted assistant text ≤
+  317,105 tok` keeps its `≤` and names its ratio, so it honours OQ6; recorded here for the
+  record. **Verify:** `node tools/lint.mjs` **clean, exit 0** · `--selftest` **exit 0 at 44
+  cases (43 + F4)** · **baseline re-run on the unchanged 4,612-line / 12,211,203-byte corpus
+  (path only, never read): the full report diffs against the pre-fix run as the SIX added
+  caption lines and NOTHING ELSE** — TOTAL 1,707,036, Σ chars 2,659,518, band 1.99–3.24, gate
+  FAIL +28.0%/+149.1%, D7 1.92–3.13% UNDECIDABLE, ratchet PASS all byte-identical.
+  **Mutation proof (scratch copy, repo file never mutated):** restore `seen.add(rid)` in the
+  degenerate branch ⇒ **exactly 1 FAIL** (total 1,000 / requests 1 / dup 2 — the revived line
+  dropped), exit 1; restored ⇒ **44 ok**, exit 0. Deviations logged: the F3 caption is
+  deliberately **unpinned** (a case would have made 45, past the brief's frozen count), and F4's
+  case uses a **second isolated fixture** so the main fixture's ~40 pinned constants stay
+  untouched. **`ckpt-p05` re-review is next; no headline number moved.** **Next: `ckpt-p05`.**_
+
+- _2026-08-02 (`S0.5-4`, `backend`, branch `mission/context-economy-p05`): **analysis-only —
+  no instrument change**, so no new selftest case (the non-negotiable applies to behaviour
+  changes; count held at **43**, not lowered). Ran the repaired instrument **once** on the
+  **unchanged** corpus (4,612 lines / 12,211,203 bytes — `wc` only, never read) and recorded
+  BOTH quantities plus the full package below. Verify: `node tools/lint.mjs` clean ·
+  `--selftest` **43 ok, exit 0** · script exit 0 · **the transcript was never `Read`/`cat`ed —
+  path passed to the tool, `wc -l -c` for size, nothing else**. Headline: churn **1,707,036**,
+  occupancy final **513,634** / max **999,816**, **gate FAILS +28.0%**, Σ chars **2,659,518**
+  (bit-identical since `S0.5-1` — the invariant proving only the token model moved).
+  **Three brief/memo numbers were found STALE and are recorded as measured, not as briefed**
+  (see Deviations): collapses 4 not 5, token-domain Write/Edit **4.40–7.18%** not 2.8–3.7%,
+  headline **~4.4–7.2% addressed / ~1.8–4.3% captured** not ~4% / ~1.5–2.5%. Nothing tuned;
+  the repaired numbers moved the write-firewall case **up**, not down, and are reported that
+  way. **D11, OQ7 and the P1–P4 question are untouched — the human's at `ckpt-p05`.`Next:
+  ckpt-p05`.**_
+
+- _2026-08-02 (`S0.5-3`, `backend`, branch `mission/context-economy-p05`, **completed after an
+  infrastructure failure**; kept-vs-rewritten in Deviations): `tools/context-attrib.mjs` now
+  labels **churn** (1,707,036 — unchanged, still THE OPTIMISATION TARGET and the headline) and
+  **occupancy** (max **999,816** @ req #309/L2,438, corroborated by the compaction at the next
+  request; final **513,634** @ #595/L4,608) as separate quantities, and the 15% gate runs on
+  **occupancy** via a third CLI form `--context-total=` (OQ7, reviewer may overrule).
+  **GATE FAILS: final +28.0% vs `/context` TOTAL 401,400** (max +149.1%). Comparator is the
+  TOTAL, never the *Messages* 377.4k — the block names the prompt series' components and the
+  5.25x→5.59x slip (M5). +28.0% reproduces M5's 1.280x exactly: a **finding, nothing tuned**.
+  D7's denominator is printed: **TOTAL prompt growth (Σ positive prompt-deltas over unique
+  requests) = 1,707,036 tok**, token-domain; the 4.0% char share is reference only.
+  **⚠ HUMAN AT `ckpt-p05`: reviewer share 1.92–3.13% STRADDLES 3%** — printed as UNDECIDABLE
+  at this band width, not as a verdict. **D11 not re-decided; D7 stands.** Verify: lint clean ·
+  `--selftest` 0 at **43 cases (was 31)** · **10 mutations, 10 caught** on a scratch copy
+  (gate-on-churn 2 FAIL · no high-water 4 · no final idx/line 3 · denominator→chars 1 ·
+  re-decide-guard 1 · *Messages* warning 1 · churn label 1 · threshold 15→25 1 · parser not
+  fail-closed 1 · usage form 1; unmutated **43 ok / clean**). Two **survived a first draft**
+  (churn label, usage form) — cases tightened to bind label→row and form→invocation line.
+  Real 4,612-line transcript exercised by **path only, never read**: flag-absent output diffs
+  against `HEAD` as **only** the two new blocks — TOTAL, band 1.99–3.24, Σ 2,659,518 chars,
+  every category and ratchet PASS byte-identical, so the chars invariant holds. Dated D7
+  clarification appended in `.plans/context-economy.md` (locked text untouched). `S0.5-4`:
+  record BOTH numbers, report the FAIL without tuning, collapses = **4** not 5, carry the
+  straddle into the re-decision package._
+
+- _2026-08-02 (`S0.5-2`, `backend`, branch `mission/context-economy-p05`, **salvaged**):
+  `tools/context-attrib.mjs` — zero-dep **output-side envelope estimator** (per unique
+  request `q = persisted assistant chars ÷ output_tokens`; drops `out < 20` or `chars = 0`;
+  type-7 quantiles). **Band = [p90 … max] = 1.99 – 3.24 chars/token** (n = 594 qualifying,
+  2 dropped; median 1.04) — each q is a FLOOR because unpersisted thinking spends output
+  tokens without chars, so the band is an upper region, and it never closes without a
+  tokenizer. Churn ratio 1.55 **retired as a converter**, still printed as a diagnostic.
+  **CHARS are now the primary column**; every token figure prints as a band + `[MEASURED]`
+  / `[EST/BAND]` tags; the output-side line reads `≥72%` (was `~42%` at 1.55 — the `ckpt-p0`
+  `~`/`≥` nit is closed). **Char-free mass named as its own line: 310,024–827,549 tok =
+  18.2–48.5% of TOTAL**, defined as remainder and captioned QUANTIFIED-NOT-EXPLAINED; the
+  books close in integers at BOTH endpoints. **Verify:** `--selftest` clean **31/31**,
+  `node tools/lint.mjs` clean, baseline re-run on the same 4,612-line corpus.
+  **Mutation proof (scratch copies, repo file never mutated):** delete `chars > 0` ⇒ 3 FAIL
+  (a q = 0 sample enters, n = 4, dropped = 2); delete `out >= MIN_OUT` ⇒ 3 FAIL (req-7's
+  q = 21.4 becomes the band's tight end, n = 4, dropped = 1); delete both ⇒ 3 FAIL
+  (n = 6, dropped = 0); restored ⇒ 31/31 ok. **Chars are bit-identical to `S0.5-1`**
+  (76,007 / 273,235 / 243,578 / 165,629 / 377,452 / 400,738 / 208,338 / 113,672 / 343,579;
+  Σ 2,659,518) and TOTAL is unchanged at 1,707,036 — only token columns moved, downward,
+  because the band's ratio exceeds 1.55: attributed 1,422,285 → 679,085–1,107,624, so
+  **UNATTRIBUTED 16.7% → 35.1–60.2%** and the char-free mass that was hidden inside it is
+  now stated. Category char shares moved ≤0.1pt (rounding of a different denominator).
+  **D7: reviewer 4.0% point → 1.92–3.13% banded — the verdict still REOPENS, but only via
+  the high end**; `S0.5-3` owns naming that denominator and must re-derive it. Note the
+  measured char-free band sits BELOW memo M6/M7's 56–66% expectation, which assumed a
+  3.2–4.2 band; not tuned. **Next: `S0.5-3`.**_
+
+- _2026-08-02 (`S0.5-1`, `backend`, branch `mission/context-economy-p05`):
+  `tools/context-attrib.mjs` — `prompt = 0` records are skipped as prompt observations
+  (no window, no `prevPrompt` reset), counted in a printed `degenerateUsage`; new collapse
+  ledger (idx · line · before · after · drop · compact-summary adjacency) with Σ collapse
+  mass; printed ratchet identity with PASS/FAIL. **Verify:** `--selftest` clean at **22
+  cases** (17 pre-existing + 5 new), `node tools/lint.mjs` clean. **Mutation proof (scratch
+  copy):** guard deleted ⇒ **7 FAIL** (TOTAL 3,600 vs 2,600 · `degenerateUsage` 0 · 2
+  collapses incl. one to 0 · 2 unexplained · plus the two legacy cases pinning `total ===
+  2600`); restored ⇒ 22/22 ok. **TOTAL 2,108,485 → 1,707,036 (−401,449, −19.0%)** on the
+  same 4,612-line / 12,211,203-byte corpus. The brief predicted −513,634; **it landed at
+  −401,449 and that is the finding, not an error** — 513,634 is the *final prompt* (memo
+  M3), i.e. all churn billed after the reset, of which only the 401,449 re-bill was
+  phantom; the 112,185 of growth from 401,449 up to 513,634 is genuine and correctly
+  retained. Instrument now confirms memo M1/M2 independently: **4 collapses** (was 5),
+  **`isCompactSummary === true` = 1**, ratchet PASS (1,707,036 − 1,193,402 = 513,634 =
+  final prompt), occupancy unchanged. Knock-on for `S0.5-2`: calibration moved **1.25 →
+  1.55 chars/token** (calDelta shrank), so category token columns fell ~19% while **chars
+  are bit-identical** and shares moved ≤0.1pt; the output-side line moved ~28% → ~42%.
+  D7 reviewer share is **invariant at 4.0%** (numerator and denominator scale together) —
+  D11 stands; `S0.5-3` owns the denominator. Deferred + now visible in the output:
+  **3 collapses have no adjacent compact summary** (memo's #1/#2 "noise" 3,106/1,778 and
+  the unexplained #4, 270,711 @ line 4,222) — flagged, not modelled, per brief step 4.
+  **Next: `S0.5-2` (blocked on OQ6) or `S0.5-3`.**_
 
 - _2026-08-02 replan (`planner`, branch `mission/context-economy-integration`): authored
   **Phase 0.5 — instrument repair** into the trio (plan tasks 22–26, four briefs
@@ -272,6 +532,172 @@ next session needs. Newest on top; crash-safe by write-ahead._
   (S3 wrote "18 ok"; the actual case count was 17 — corrected at S3-fix),
   `node tools/lint.mjs` clean, script exit 0. Three script defects found and fixed mid-run
   (see `## Deviations` — disclosed as post-target fixes). **The mission now STOPS at D1.**_
+
+### 📦 PHASE 0.5 RE-DECISION PACKAGE — for the human at `ckpt-p05` (S0.5-4, 2026-08-02)
+
+_This block **supersedes the headline numbers** of the D1 pause package below, which is kept
+as the record of what was believed at the pause, not as a source of figures. Every figure
+here is from ONE run of the repaired instrument on the **unchanged** corpus
+`2fa752c7-…-ec63daee6496.jsonl`, **4,612 lines / 12,211,203 bytes** — identical to `S0.5-1/2/3`,
+so the whole of Phase 0.5 is a single-corpus before/after. **The transcript was never read.**
+**Chars are primary (counted). Every token figure is a band. There is no point value.**_
+
+**1 — The repaired numbers.**
+
+| quantity | value | status |
+|---|---|---|
+| **churn** (Σ positive prompt-deltas) — **THE TARGET, the headline** | **1,707,036 tok** | MEASURED |
+| occupancy: final prompt | 513,634 tok (req #595, line 4,608) | MEASURED |
+| occupancy: max prompt | 999,816 tok (req #309, line 2,438) | MEASURED |
+| appended chars, Σ | **2,659,518** | MEASURED — **bit-identical across all of P0.5** |
+| chars/token band `[p90 … max]` | **1.99 – 3.24** (n = 594, 2 dropped, median 1.04) | EST, each q a FLOOR |
+| UNATTRIBUTED (residual) | **35.1 – 60.2%** of churn | EST/BAND |
+| char-free prompt growth | **310,024 – 827,549 tok = 18.2 – 48.5%** | EST/BAND, **quantified not explained** |
+| collapses / Σ collapse mass | **4** / 1,193,402 tok | MEASURED |
+| `isCompactSummary === true` | **1** | MEASURED |
+| ratchet identity | 1,707,036 − 1,193,402 = 513,634 = final prompt | **PASS** |
+| degenerate `prompt = 0` records skipped | 1 | MEASURED |
+| selftest | 43 cases, exit 0 | gate |
+
+**2 — What moved vs. the D1 pause package, and why.** Nothing was tuned; each row has a cause.
+
+| | pause package | repaired | cause |
+|---|---|---|---|
+| TOTAL (churn) | 2,108,485 | **1,707,036** (−19.0%) | D10a: one `prompt = 0` record re-billed the resident context (`S0.5-1`) |
+| chars/token | 1.25 (derived, sub-plausible) | **band 1.99–3.24** | D10b/OQ6: churn ratio retired as a converter; zero-dep output-side envelope estimator (`S0.5-2`) |
+| UNATTRIBUTED | 16.7% | **35.1–60.2%** | smaller TOTAL + a higher ratio ⇒ attributed tokens fall; the char-free mass that was hidden inside it is now stated |
+| sanity check | churn vs `/context` **Messages** 377.4k → 5.59× | **occupancy vs `/context` TOTAL 401,400 → +28.0%** | D10c: churn and occupancy are different quantities; comparator corrected to TOTAL (memo M5) |
+| collapses | 5 | **4** | the 5th was the degenerate `prompt = 0` collapse the D10a guard removed |
+| `isCompactSummary` | "20" | **1** | the 19 others were the *string* in this mission's own docs — a self-referential grep artefact (memo M1) |
+| D7 reviewer share | 4.0% (char point value) | **1.92–3.13%** (token band) | denominator named + banded (`S0.5-3`) |
+| Σ chars | 2,659,518 | **2,659,518** | **unchanged — this is the invariant proving only the token model moved** |
+
+**3 — The three denominators (memo M8), re-derived.** Char shares are **bit-identical** to the
+memo (chars never moved). The token domain is where the repair bites.
+
+| denominator | base | Write/Edit | skill_listing | tool results | subagent ret. | reviewer |
+|---|---|---|---|---|---|---|
+| ALL chars (9 named + residual) | 2,659,518 | 9.16% | 7.83% | 14.19% | 15.07% | 4.00% |
+| MID chars (9 named, residual out) | 2,202,228 | 11.06% | 9.46% | 17.14% | 18.20% | 4.83% |
+| NARROW chars (non-`attach:` named) | 1,536,639 | **15.85%** | (13.56% — see caveat) | 24.56% | 26.08% | 6.91% |
+| **TOKEN — Σ prompt growth (churn)** | **1,707,036 tok** | **4.40 – 7.18%** | 3.76 – 6.14% | 6.8 – 11.1% | 7.2 – 11.8% | **1.92 – 3.13%** |
+| planning-time estimate | — | **22.5%** ⟵ RETRACTED | 16.0% | 25.1% | 0.4% | — |
+
+- **Caveat on the NARROW column (new finding, memo not rewritten):** NARROW's denominator
+  **excludes the `attach:` categories**, so a NARROW share is only coherent for a category
+  inside it. `skill_listing` **is** an `attach:` category, so its 13.6% divides a numerator by
+  a denominator that omits it — **do not use 13.6% to size the free lever**; use 7.8% char /
+  3.8–6.1% token. `Write/Edit` is inside NARROW, so 15.9% is coherent.
+- Memo M8 labels NARROW "7 non-attach"; the value 1,536,639 is the sum of **6** categories.
+  Value right, count off by one.
+
+**4 — The founding premise is RETRACTED, and the retraction is not all one way.**
+The mission was launched on orchestrator **Write/Edit = 22.5%** of context. Measured:
+
+- **char domain: 9.2% (ALL) / 11.1% (MID) / ≤15.9% (NARROW, the most generous).** Even the
+  most generous denominator is **~30% below** the claim. This half of the retraction stands
+  exactly as the memo stated it.
+- **token domain: 4.40 – 7.18% of churn** (243,578 chars ÷ the 1.99–3.24 band ÷ 1,707,036).
+  ⚠️ **This is HIGHER than the 2.83–3.71% carried in the memo (M9), the plan checklist and
+  the S0.5-4 brief** — because the repaired TOTAL is 19% smaller *and* the measured band
+  (1.99–3.24) is lower than M9's assumed 3.2–4.2. Both corrections push the share up.
+  **The measured value is reported; the briefed value is not.**
+
+**5 — The headline scope claim on repaired numbers.**
+
+| | "addresses …" | "realistic capture" (plan's own 40–60%) |
+|---|---|---|
+| as originally claimed | ~25% | 10–15% |
+| memo §2 Option C (token, pre-repair) | ~4% | ~1.5–2.5% |
+| **REPAIRED (token, churn denominator)** | **~4.4 – 7.2%** | **~1.8 – 4.3% of churn = 30k – 74k tok** |
+
+⚠️ **The memo's "on the 401.4k baseline" column is a domain mix and is not reproduced as a
+recommendation.** It applies a *churn* share to an *occupancy* baseline — the exact
+normalisation error class this phase exists to end. If anyone insists on the arithmetic it
+gives ~7k–17k tok; **it is not a number to decide on.**
+
+**Stated plainly:** the write firewall is worth **roughly 1.5–3× more than the memo's Option C
+said**, and still **~3–5× less than the mission's founding claim**. It is not the headline. It
+is also no longer a rounding error. That is a genuinely closer call than the memo's "the cost
+case is dead", and it is the human's to make.
+
+**6 — 🔴 THE OCCUPANCY GATE FAILS. What that bounds, and what it does not block.**
+Comparator `/context` **TOTAL = 401,400** (never the *Messages* 377.4k). Final prompt 513,634
+= **+28.0%**; max 999,816 = **+149.1%**; threshold ±15%. **FAIL.** The +28.0% reproduces memo
+M5's 1.280× *exactly* — a finding, reproduced, not tuned. The max is independently
+corroborated: the one compaction fires at the **very next** request (#310, 999,816 → 82,009).
+
+- **What it bounds:** every **absolute** token magnitude here may be overstated by ~28%. No
+  "this saves N tokens" claim may be made off these numbers without that haircut, and the
+  gate must pass before any such claim is published.
+- **What it does not block:** the P1–P4 decision rests on **shares** (category ÷ churn), and a
+  share is first-order insensitive to a *uniform* scale error — numerator and denominator move
+  together. So the gate FAIL **bounds** a P1–P4 decision; it does not **block** one.
+- **The caveat that keeps it honest:** we have not shown the error *is* uniform. If the 28% is
+  concentrated in one component (char-free mass and preamble re-injection are the obvious
+  suspects), shares shift too. And the comparator itself is a **hand-recorded, single-moment
+  `/context` reading** whose timing against "final prompt" is unverified — part of the 28%
+  could be the comparator, not the instrument. **Nobody has closed this.**
+
+**7 — ⚠️ D7 STRADDLES ITS OWN TRIGGER (flagged, NOT decided).** Reviewer return share =
+**1.92 – 3.13%** of the now-named denominator — *TOTAL prompt growth (Σ positive prompt-deltas
+over unique requests) = 1,707,036 tok, token-domain*. The 3% trigger sits **inside** the band:
+below at the low end, above at the high end. The instrument prints **UNDECIDABLE at this band
+width** and re-derives without re-deciding. **D11 (human, 2026-08-02) stands: D7 STANDS**, the
+`reviewer` keeps its no-Write structural guarantee. The band closes only with a real tokenizer
+(OQ6 ruled that out) or a second transcript. **No agent may resolve this; it is a human act at
+a checkpoint.**
+
+**8 — One line per HELD phase, on repaired evidence.**
+
+- **P1 — write firewall.** Premise **retracted** (22.5% → ≤15.9% char / 4.40–7.18% token), but
+  the token case is **1.5–3× better than the memo said**. Verdict input: no longer the
+  mission's headline; plausibly still worth doing as near-free contract hygiene. **Closest
+  call of the four — genuinely open.**
+- **P2 — standing steers.** A **fidelity** control. Its case never rested on token math and
+  **nothing measured here touches it**, up or down. Decide it on fidelity grounds alone.
+- **P3 — `SessionStart:compact` re-read directive.** A **correctness** control, and the
+  measurement *supports* it independently of cost: **exactly 1 compaction confirmed** in a
+  595-request session, and it dropped the window 999,816 → 82,009 (a **91.8%** loss of resident
+  context in one step). The value is that *that one* does not lose the ledger. **Strongest
+  standalone case of the four.**
+- **P4 — measure / record / ship.** Downstream of every decision above; its D4a design and its
+  metrics-doc headline are both defined by what P1–P3 become. **Cannot be decided first.**
+
+**9 — The free lever, as an INPUT, not as planned work.** `skill_listing` = 208,338 chars
+(**7.8%** of appended chars; **3.8–6.1%** of churn) and is the **only** category whose share
+*rises* under an occupancy view (7.8 → 11.3%, memo M10) because it is re-injected and never
+compacted away. Zero engineering. Currently **out of scope** (`.plans/context-economy.md:243`).
+Two honesty notes: M10's occupancy sample is 44 requests (**directional only**), and its NARROW
+13.6% is incoherent (§3 caveat). The human may fold it in at the decision point; **this session
+neither scopes nor recommends it.**
+
+**10 — Still open, owned by NO phase.**
+
+| item | state |
+|---|---|
+| **Collapse #4** — req #551, line 4,222, **−270,711 tok, no adjacent compact summary** | **unexplained**, deferred by design (task 23). Two more (#1 3,106 / #2 1,778) are likewise unexplained but small. |
+| **The char-free mass** | **quantified (18.2–48.5%), not explained.** Measured **below** memo M6/M7's 56–66% expectation, which assumed the 3.2–4.2 band. Do not size a lever off it. |
+| **`attach: other`** | **likely OVER-stated.** 77 attachments had no `stdout`/`content`/`text`/`output` field and were sized on the record minus `type` — **307,136 chars = 11.5% of all appended chars**. Needs one real record's key set dumped. |
+| **The +28.0% gate residual** | unexplained; instrument and/or comparator (§6). |
+| **OQ7** — `--context-total=<tokens>`, the third CLI form | **OPEN.** Shipped on the planner's standing yes; **no human ruling.** Removal is local (one flag, one report block, three selftest cases). The reviewer may overrule at `ckpt-p05`. |
+| **n = 1 / D4b** | see §11. |
+
+**11 — 🔴 CONFIDENCE: this is n = 1, and that is the largest uncertainty in the package.**
+One transcript, one session, one repo, one operator, measured once. Everything above —
+every share, the band, the char-free mass, the 4 collapses, the 1 compaction, the D7 straddle —
+is a **single observation with no variance estimate**. It cannot say whether these shares are
+typical of an orchestrator session or particular to this one (which was itself a *planning*
+mission — heavy on subagent returns and prose, and the source of its own measurement).
+**D4b — cross-mission re-measurement on a later comparable mission — remains the only real
+confirmation** and is still deferred/tracked. Read the shares as **the right order of
+magnitude with the right sign**, not as parameters. A decision that survives a 2× error in any
+single share is safe to take now; one that does not, is not.
+
+**12 — Bounds on this package as a whole.** Safe to decide **direction** and **relative
+priority** (P3 > P2 > P1 on evidence strength; P4 last). **Not** safe to decide **absolute
+savings targets**, to publish a token number, or to resolve **D7/D11**, **OQ7** or the
+**P1–P4 authorization** — those are the human's at `ckpt-p05` and the decision point after it.
 
 ### ⛔ D1 PAUSE PACKAGE — baseline measurement (read the validity finding FIRST)
 
@@ -453,15 +879,31 @@ attachment-schema check is pulled in or deferred.
   Baseline transcript identified and field-verified by grep (never read). Uncommitted,
   awaiting HITL review of OQ1–OQ5._
 
-Next up: **S0.5-1 — the `prompt = 0` phantom-churn guard + collapse ledger** (Phase 0.5,
-new branch `mission/context-economy-p05` off `mission/context-economy-integration`).
-Brief: `.plans/context-economy.sessions.md` → Phase 0.5. **Suits `backend`.**
+Next up: **`ckpt-p05` — the Phase 0.5 review checkpoint** (branch `mission/context-economy-p05`;
+all four sessions landed: `S0.5-1` `74f4507`, `S0.5-2` `c6f0218`, `S0.5-3` `4288280`, `S0.5-4`).
+An **independent `reviewer` in fresh context** re-runs `node tools/lint.mjs` and `--selftest`,
+**independently re-derives** the `prompt = 0` mutation proof rather than trusting the handoff,
+and verifies: churn (1,707,036) and occupancy (final 513,634 / max 999,816) are unambiguously
+labelled and **churn is still the headline**; the D7 verdict names its denominator and **D7
+still stands (D11)**; every deferral (collapse #4, `attach: other`, the char-free explanation,
+the +28.0% gate residual) is **logged, not dropped**; and **no number was tuned toward a
+target** — note that `S0.5-4` measured Write/Edit token share **above** what the brief and memo
+predicted and reported it that way. On APPROVE the orchestrator merges into
+`mission/context-economy-integration` (batch policy — **never** the default branch).
+Three live threads go to the human, not the reviewer: the **occupancy gate FAILS at +28.0%**
+vs `/context` **TOTAL** 401,400 (bounds absolute magnitudes; does not block a share-based
+decision — package §6); the D7 reviewer share **1.92–3.13% STRADDLES 3%**, printed UNDECIDABLE
+(**D11 stands — do not re-decide**); and **OQ7** (`--context-total=<tokens>`) is still open —
+shipped on the planner's standing yes, no human ruling, removal is local.
+**Then the ⛔ DECISION POINT: the human re-decides P1–P4 from the 📦 PHASE 0.5 RE-DECISION
+PACKAGE.** Brief: `.plans/context-economy.sessions.md` → Phase 0.5. **Suits `reviewer`.**
 
 **Phase 0.5 is the ONLY authorized phase.** The D1 pause was released 2026-08-02 into a
 re-scope (D10/D11/D12 above), not into P1. **S4 and everything after it stay unauthorized**
 until the human re-decides at the decision point that follows `ckpt-p05`.
 
-`S0.5-1` is **not** blocked by OQ6; `S0.5-2` is. Read order for whoever runs Phase 0.5:
+OQ6 blocked `S0.5-2` only; it is resolved and shipped, so nothing in Phase 0.5 is blocked
+now. Read order for whoever runs Phase 0.5:
 the `## D1 re-scope decisions` block above, then the brief, then the memo ranges the brief
 names — the memo is cited by **M-number**, never re-derived. The historical D1 pause package
 below is **superseded in its headline numbers** (its TOTAL carries 24.4% phantom churn and
