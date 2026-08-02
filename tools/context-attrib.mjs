@@ -13,16 +13,37 @@
 //           input + cache_creation + cache_read; the delta against the previous
 //           request is what that turn ADDED to context. Summed, that is the
 //           session's context occupancy — what it paid to accumulate.
-// ratio   = Σ chars-appended ÷ Σ delta — CHARS PER TOKEN, DERIVED PER TRANSCRIPT
-//           (landmine 4); `category chars ÷ ratio` is then dimensionally sound. The
-//           folk "4 chars/token" is wrong for this workload (this repo's baseline
-//           derives ≈1.25, itself sub-plausible — see the D1 pause package), so
-//           nothing here divides by a constant. The FIRST window is excluded
-//           from calibration: prompt_0 carries the system prompt + tool defs +
-//           CLAUDE.md, none of which appear in the transcript, so including it
-//           would skew the ratio. Its tokens still count toward TOTAL and land,
-//           correctly, in UNATTRIBUTED (reported separately as "preamble").
-// category tokens = category chars ÷ ratio.
+// CHARS are the PRIMARY figure everywhere below: they are counted, not modelled.
+//           Every TOKEN figure is an ESTIMATE and is printed as a BAND, never as a
+//           bare point value (OQ6, resolved 2026-08-02: zero-dep, chars primary).
+// churnRatio = Σ chars-appended ÷ Σ prompt-delta, derived per transcript, first
+//           window excluded (prompt_0 carries the system prompt + tool defs +
+//           CLAUDE.md, none of which appear in the transcript; its tokens still
+//           count toward TOTAL and land, correctly, in UNATTRIBUTED as "preamble").
+//           This is a DIAGNOSTIC ONLY and is NO LONGER a token converter. It is
+//           depressed by however much prompt growth carries no persisted chars at
+//           all — this repo's baseline derives ≈1.5, roughly 3x below any plausible
+//           tokenizer — so converting category chars through it inflated every token
+//           column ~3x (D1 re-scope memo M7). Retired as a converter by D10(b).
+// ENVELOPE = the chars/token estimator that replaced it. Per unique request,
+//           q = persisted assistant chars ÷ that request's output_tokens.
+//           Unpersisted thinking spends output tokens WITHOUT producing chars, so
+//           it can only DEPRESS q; it can never inflate it. Every q is therefore a
+//           FLOOR on the true chars/token of persisted text, and the largest q is
+//           the tightest measured floor. Reported as median / p90 / max with n.
+//           BAND used for token columns = [p90 .. max] chars/token; p90 is the
+//           tail-robust endpoint, max the tightest. Known bias: serialized
+//           `tool_use` JSON is counted as assistant text and tokenizes differently
+//           from prose, so q is a floor on a MIXED corpus, not on prose.
+// category tokens = chars ÷ band = the RANGE [chars/max .. chars/p90]. Because both
+//           endpoints are floors on the ratio, the whole range is an UPPER region:
+//           the true token count is at or below the high end always, and at or
+//           below the low end if the max-q request is trusted.
+// char-free prompt growth = TOTAL − attributed tokens − residual-chars tokens −
+//           preamble: prompt growth carrying NO persisted characters. QUANTIFIED
+//           here, NOT explained (unpersisted thinking vs. cached system/tool-def
+//           re-injection vs. something else are not distinguished by this
+//           instrument). Tracked open item feeding the post-P0.5 re-decision.
 // degenerate usage = a request whose prompt (input+creation+read) is 0 is NOT an
 //           observation that context is empty — it is a request carrying no usable
 //           usage data. It is skipped as a prompt observation (no window, no
@@ -33,9 +54,11 @@
 //           deltas only: `TOTAL − Σ collapse mass = final prompt` exactly, and that
 //           ratchet identity is printed with a PASS/FAIL as a model self-check.
 // UNATTRIBUTED    = TOTAL − Σ category tokens. Printed, never redistributed
-//           (landmine 2). It holds the untranscribed preamble, unpersisted
-//           thinking, and every char this taxonomy has no bucket for. A residual-
-//           composition breakdown says WHAT is in it without smearing it.
+//           (landmine 2). It holds the untranscribed preamble, the char-free mass,
+//           and every char this taxonomy has no bucket for. A residual-composition
+//           breakdown says WHAT is in it without smearing it, and the books close
+//           in integers: attributed + residual-chars + preamble + char-free = TOTAL
+//           at EACH band endpoint.
 //
 // Other landmines handled: `usage` repeats verbatim on every JSONL line of one
 // response — deduped by requestId (landmine 1; the naive per-line sum is printed
@@ -94,6 +117,7 @@ export async function analyze(file) {
   const agents = new Map();            // subagent_type -> { spawns, spawnChars, returns, returnChars }
   const windows = [];                  // { delta, chars, first }
   const collapses = [];                // { idx, line, before, after, drop, compactAdjacent }
+  const outByReq = new Map();          // requestId -> { chars, out } for the envelope estimator
 
   let lines = 0, badJson = 0, sidechain = 0;
   let requests = 0, duplicateUsageLines = 0, naiveTotal = 0, outputTokens = 0;
@@ -107,6 +131,16 @@ export async function analyze(file) {
 
   const add = (cat, n) => { cats.set(cat, cats.get(cat) + n); winChars += n; };
   const res = (label, n) => { residual.set(label, (residual.get(label) || 0) + n); winChars += n; };
+  // Per-request output-side ledger. Chars accumulate across EVERY line of a response
+  // (content is not duplicated); `out` is set once, from the deduped usage block, and
+  // only for a request that also carried a usable prompt — a degenerate (prompt = 0)
+  // record is excluded here for the same reason it is excluded from TOTAL: its usage
+  // block is not trustworthy data.
+  const outRow = (rid) => {
+    const k = rid || '(no-request-id)';
+    if (!outByReq.has(k)) outByReq.set(k, { chars: 0, out: 0 });
+    return outByReq.get(k);
+  };
   const agentRow = (t) => {
     const k = t || '(unnamed)';
     if (!agents.has(k)) agents.set(k, { spawns: 0, spawnChars: 0, returns: 0, returnChars: 0 });
@@ -161,11 +195,14 @@ export async function analyze(file) {
     for (const a of blocks(rec.attachments)) countAttachment(a.attachment || a);
 
     if (rec.type === 'assistant') {
+      // Hoisted out of the usage branch: the content loop below needs it too, so the
+      // envelope estimator can bill a response's chars to the request that emitted them
+      // even on lines that carry no usage block.
+      const rid = rec.requestId || rec.message?.id || null;
       const u = rec.message?.usage;
       if (u) {
         const p = promptOf(u);
         naiveTotal += p;
-        const rid = rec.requestId || rec.message?.id || null;
         if (rid && seen.has(rid)) {
           duplicateUsageLines++;             // Landmine 1: same request, later line — usage already counted.
         } else if (p === 0) {
@@ -184,6 +221,7 @@ export async function analyze(file) {
           if (rid) seen.add(rid);
           requests++;
           outputTokens += u.output_tokens || 0;
+          outRow(rid).out = u.output_tokens || 0;
           // TOTAL is Σ POSITIVE deltas: a shrinking prompt contributes 0, never a
           // negative. Ledger the shrink so the ratchet is auditable rather than silent.
           if (prevPrompt != null && p < prevPrompt) {
@@ -202,12 +240,23 @@ export async function analyze(file) {
       }
       // Content is NOT duplicated across a request's lines — always count it.
       for (const b of blocks(rec.message?.content)) {
-        if (b.type === 'text') { assistantChars += textSize(b.text); add('orchestrator prose', textSize(b.text)); }
-        else if (b.type === 'thinking' || b.type === 'redacted_thinking') res('thinking (when persisted)', textSize(b.thinking ?? b.data ?? ''));
+        if (b.type === 'text') {
+          assistantChars += textSize(b.text); outRow(rid).chars += textSize(b.text);
+          add('orchestrator prose', textSize(b.text));
+        } else if (b.type === 'thinking' || b.type === 'redacted_thinking') {
+          // Persisted thinking chars WERE emitted by the model and DID cost output
+          // tokens, so they belong in the estimator's numerator (they tighten the
+          // floor). They stay out of `assistantChars`, whose separate job is to
+          // measure how much output text never reached the transcript at all.
+          const n = textSize(b.thinking ?? b.data ?? '');
+          outRow(rid).chars += n;
+          res('thinking (when persisted)', n);
+        }
         else if (b.type === 'tool_use') {
           let n = 0;
           try { n = JSON.stringify(b.input ?? {}).length; } catch { n = 0; }
           assistantChars += n;
+          outRow(rid).chars += n;
           const name = b.name || '(unnamed)';
           if (b.name === 'Task') taskBlocks++;
           toolById.set(b.id, { name, subagent_type: b.input?.subagent_type });
@@ -259,28 +308,83 @@ export async function analyze(file) {
   const cal = windows.filter((w) => !w.first && w.chars > 0);
   const calDelta = cal.reduce((n, w) => n + w.delta, 0);
   const calChars = cal.reduce((n, w) => n + w.chars, 0);
-  // chars PER TOKEN (so `chars / ratio` below is dimensionally sound). Deriving
-  // it as calDelta/calChars would yield tokens-per-char and, divided into chars,
-  // inflate every category by 1/ratio^2 — invisible in a fixture whose ratio ≈ 1.
-  const ratio = calChars > 0 && calDelta > 0 ? calChars / calDelta : null;
+  // chars PER TOKEN. DIAGNOSTIC ONLY since D10(b) — see the header: this is
+  // prompt-growth chars per prompt-growth token, and prompt growth that carries no
+  // characters at all drags it ~3x below any real tokenizer. Deriving it as
+  // calDelta/calChars would yield tokens-per-char and, divided into chars, inflate
+  // every category by 1/ratio^2 — invisible in a fixture whose ratio ≈ 1.
+  const churnRatio = calChars > 0 && calDelta > 0 ? calChars / calDelta : null;
 
-  const charsSeen = [...cats.values()].reduce((a, b) => a + b, 0)
-    + [...residual.values()].reduce((a, b) => a + b, 0);
+  // ── The output-side envelope estimator (D10b as amended by OQ6) ─────────
+  // q = persisted assistant chars ÷ output_tokens, per unique request. Requests
+  // below MIN_OUT output tokens are dropped: a denominator of a few tokens turns
+  // rounding into an outlier, and the statistic we care about lives in the upper
+  // tail. Requests with no persisted chars are dropped too — q = 0 carries no
+  // information about chars/token, it only says the response was all thinking.
+  const MIN_OUT = 20;
+  const envSamples = [...outByReq.values()]
+    .filter((x) => x.out >= MIN_OUT && x.chars > 0)
+    .map((x) => x.chars / x.out)
+    .sort((a, b) => a - b);
+  // Type-7 (linear-interpolation) quantile — the same definition R and numpy use by
+  // default. Nearest-rank would collapse p90 onto max for any n < 11 and hide a
+  // p90/max mix-up behind a degenerate band.
+  const quantile = (xs, p) => {
+    if (!xs.length) return null;
+    if (xs.length === 1) return xs[0];
+    const h = (xs.length - 1) * p;
+    const lo = Math.floor(h);
+    return xs[lo] + (h - lo) * (xs[Math.min(lo + 1, xs.length - 1)] - xs[lo]);
+  };
+  const env = envSamples.length
+    ? {
+      n: envSamples.length,
+      median: quantile(envSamples, 0.5),
+      p90: quantile(envSamples, 0.9),
+      max: envSamples[envSamples.length - 1],
+      dropped: outByReq.size - envSamples.length,
+    }
+    : null;
+  // The band, low ratio first. Both endpoints are FLOORS on chars/token, so
+  // chars/bandLo is the LARGER token figure. Never a point value (OQ6).
+  const bandLo = env ? env.p90 : null;   // tail-robust floor
+  const bandHi = env ? env.max : null;   // tightest floor
+
+  const residualChars = [...residual.values()].reduce((a, b) => a + b, 0);
+  const charsSeen = [...cats.values()].reduce((a, b) => a + b, 0) + residualChars;
+  const tokAt = (chars, r) => (r ? Math.round(chars / r) : null);
   const rows = CATS.map((name) => {
     const chars = cats.get(name);
-    return { name, chars, tokens: ratio ? Math.round(chars / ratio) : null };
+    // tokHi rides bandLo and vice versa: dividing by the SMALLER ratio yields MORE
+    // tokens. Naming them by the token they produce, not by the ratio they use.
+    return { name, chars, tokLo: tokAt(chars, bandHi), tokHi: tokAt(chars, bandLo) };
   });
-  const attributed = rows.reduce((n, r) => n + (r.tokens || 0), 0);
+  const attributedLo = rows.reduce((n, r) => n + (r.tokLo || 0), 0);
+  const attributedHi = rows.reduce((n, r) => n + (r.tokHi || 0), 0);
+  // Residual CHARS are persisted too (thinking-when-persisted, tool_use JSON, compact
+  // summaries...) — they are simply outside the named taxonomy. Converting them is
+  // what lets the char-free line mean "no persisted characters" rather than "no
+  // characters in a named bucket".
+  const residualTokLo = tokAt(residualChars, bandHi);
+  const residualTokHi = tokAt(residualChars, bandLo);
+  // Char-free is the REMAINDER, so the books close in integers by construction at each
+  // endpoint: attributed + residual-chars + preamble + char-free === TOTAL. Being a
+  // remainder is exactly why it is a QUANTITY and not an EXPLANATION.
+  const charFreeLo = env === null ? null : total - attributedHi - residualTokHi - preamble;
+  const charFreeHi = env === null ? null : total - attributedLo - residualTokLo - preamble;
   // Exact by construction: rows + unattributed === total, in integers.
-  const unattributed = total - attributed;
+  const unattributedLo = env === null ? null : total - attributedHi;
+  const unattributedHi = env === null ? null : total - attributedLo;
 
   return {
     file, lines, badJson, sidechain, requests, duplicateUsageLines, naiveTotal,
     outputTokens, assistantChars, attachFallbackSized, attachFallbackChars, taskBlocks,
-    windows, total, preamble, calDelta, calChars, ratio, trailingChars: winChars,
-    degenerateUsage, compactSummaryRecords,
+    windows, total, preamble, calDelta, calChars, churnRatio, trailingChars: winChars,
+    degenerateUsage, compactSummaryRecords, env, bandLo, bandHi, envSamples,
     collapses, collapseMass, finalPrompt, ratchetOk, unexplainedCollapses,
-    charsSeen, rows, attributed, unattributed,
+    charsSeen, residualChars, rows,
+    attributedLo, attributedHi, residualTokLo, residualTokHi,
+    charFreeLo, charFreeHi, unattributedLo, unattributedHi,
     cats, residual, attachKinds, agents,
   };
 }
@@ -290,21 +394,52 @@ const n0 = (n) => Number(n).toLocaleString('en-US');
 const pad = (s, w) => String(s).padEnd(w);
 const lpad = (s, w) => String(s).padStart(w);
 const pct = (x, total) => (total > 0 ? `${((x / total) * 100).toFixed(1)}%` : '—');
+// A token figure never appears as a bare point value (OQ6): it is always a range
+// derived from the two ends of the chars/token band, or a dash when the band is
+// unavailable. Chars, by contrast, are counted and print plainly.
+const band = (lo, hi) => (lo == null || hi == null ? '—' : (lo === hi ? n0(lo) : `${n0(lo)}–${n0(hi)}`));
+const bandPct = (lo, hi, total) => (lo == null || hi == null || total <= 0
+  ? '—'
+  : (lo === hi
+    ? pct(lo, total)
+    : `${((lo / total) * 100).toFixed(1)}–${((hi / total) * 100).toFixed(1)}%`));
 
 function report(r) {
   const name = path.basename(r.file);
   console.log(`context-attrib: ${name}`);
+  console.log('  [MEASURED] = counted from the transcript · [EST/BAND] = rides the chars/token band below');
   console.log(`  lines ${n0(r.lines)} · unparsable ${n0(r.badJson)} · sidechain excluded ${n0(r.sidechain)}`);
   console.log(`  requests ${n0(r.requests)} unique · ${n0(r.duplicateUsageLines)} duplicate usage line(s) deduped by requestId`);
   // Always printed, including the 0 case: a silently skipped record is the same
   // failure class as a suppressed verdict.
   console.log(`  degenerate usage records skipped ${n0(r.degenerateUsage)} (prompt = 0 → no usable prompt observation; not billed, does not reset the series)`);
-  console.log(`  TOTAL context tokens (Σ prompt-delta) ${n0(r.total)}   [naive per-line sum would report ${n0(r.naiveTotal)}${r.total > 0 ? ` — ${(r.naiveTotal / r.total).toFixed(1)}x` : ''}]`);
-  console.log(r.ratio
+  console.log(`  TOTAL context tokens (Σ prompt-delta) ${n0(r.total)} [MEASURED]   [naive per-line sum would report ${n0(r.naiveTotal)}${r.total > 0 ? ` — ${(r.naiveTotal / r.total).toFixed(1)}x` : ''}]`);
+  console.log('');
+
+  // ── chars/token band — the ONLY place a token conversion is licensed ───
+  console.log('  chars/token — OUTPUT-SIDE ENVELOPE ESTIMATOR (zero-dep; no tokenizer is run)');
+  if (!r.env) {
+    console.log('    unavailable — no request carried both output tokens and persisted chars.');
+    console.log('    Every token column below is suppressed. CHAR columns are unaffected.');
+  } else {
+    console.log(`    method: per unique request, q = persisted assistant chars ÷ that request's output_tokens.`);
+    console.log('    Unpersisted thinking spends output tokens and produces no chars, so it can only');
+    console.log('    DEPRESS q. Every q is therefore a FLOOR on the true chars/token, never a ceiling.');
+    console.log(`    n = ${n0(r.env.n)} qualifying request(s) [MEASURED] · ${n0(r.env.dropped)} dropped (output_tokens < 20 or no persisted chars)`);
+    console.log(`    median ${r.env.median.toFixed(2)} · p90 ${r.env.p90.toFixed(2)} · max ${r.env.max.toFixed(2)}  chars/token (each a floor)`);
+    console.log(`    BAND USED BELOW: ${r.bandLo.toFixed(2)} – ${r.bandHi.toFixed(2)} chars/token (p90 … max)`);
+    console.log('    Read it as: the true ratio is AT LEAST the low end, so every token figure below is');
+    console.log('    an UPPER region — at or below its high end always, at or below its low end if the');
+    console.log('    max-q request is trusted. THE BAND NARROWS, IT NEVER CLOSES: only a real tokenizer');
+    console.log('    could put a ceiling on the ratio, and this instrument deliberately runs none.');
+    console.log('    Known bias: serialized `tool_use` JSON is counted as assistant text and tokenizes');
+    console.log('    differently from prose, so this is a floor on a MIXED corpus, not on prose.');
+  }
+  console.log(r.churnRatio
     // Print the derivation in the SAME order it is computed (chars ÷ tokens), so a
     // human re-deriving it by hand lands on this number and not on its reciprocal.
-    ? `  calibration ${r.ratio.toFixed(2)} chars/token — DERIVED (${n0(r.calChars)} chars ÷ ${n0(r.calDelta)} tokens, first window excluded); the /4 rule is not used`
-    : '  calibration: unavailable (no usable window) — token columns suppressed');
+    ? `    prompt-side churn ratio ${r.churnRatio.toFixed(2)} chars/token — DERIVED (${n0(r.calChars)} chars ÷ ${n0(r.calDelta)} tokens, first window excluded) — DIAGNOSTIC ONLY, NOT a token converter: it is depressed by char-free growth (D10b, memo M7). The /4 rule is not used either.`
+    : '    prompt-side churn ratio: unavailable (no usable window)');
   console.log('');
 
   // ── Collapse ledger + ratchet identity ────────────────────────────────
@@ -325,38 +460,68 @@ function report(r) {
   console.log(`  ratchet ${r.finalPrompt > 0 ? `${(r.total / r.finalPrompt).toFixed(3)}x` : 'n/a'} — TOTAL is CHURN (what accumulation cost), not occupancy (what sits in the window at the end)`);
   console.log('');
 
+  // ── The split. CHARS FIRST: they are counted. Tokens ride the band. ────
   const W = 30;
-  console.log(`  ${pad('Category', W)}${lpad('chars', 12)}${lpad('tokens', 12)}${lpad('share', 9)}`);
+  console.log('  CHARS are the primary column — counted, model-free, exact. TOKENS are an estimate');
+  console.log('  and are shown as the range the chars/token band admits. There is no point value.');
+  console.log(`  ${pad('Category', W)}${lpad('chars [MEAS]', 14)}${lpad('char %', 9)}${lpad('tokens [EST/BAND]', 21)}${lpad('tok % [BAND]', 14)}`);
   for (const row of r.rows) {
-    console.log(`  ${pad(row.name, W)}${lpad(n0(row.chars), 12)}${lpad(row.tokens == null ? '—' : n0(row.tokens), 12)}${lpad(pct(row.tokens || 0, r.total), 9)}`);
+    console.log(`  ${pad(row.name, W)}${lpad(n0(row.chars), 14)}${lpad(pct(row.chars, r.charsSeen), 9)}${lpad(band(row.tokLo, row.tokHi), 21)}${lpad(bandPct(row.tokLo, row.tokHi, r.total), 14)}`);
   }
-  console.log(`  ${pad('UNATTRIBUTED (residual)', W)}${lpad('—', 12)}${lpad(n0(r.unattributed), 12)}${lpad(pct(r.unattributed, r.total), 9)}`);
-  console.log(`  ${pad('TOTAL', W)}${lpad(n0(r.charsSeen), 12)}${lpad(n0(r.total), 12)}${lpad(r.total > 0 ? '100.0%' : '—', 9)}`);
-  console.log('  (residual is printed, never redistributed across categories)');
+  console.log(`  ${pad('UNATTRIBUTED (residual)', W)}${lpad('—', 14)}${lpad('—', 9)}${lpad(band(r.unattributedLo, r.unattributedHi), 21)}${lpad(bandPct(r.unattributedLo, r.unattributedHi, r.total), 14)}`);
+  console.log(`  ${pad('TOTAL', W)}${lpad(n0(r.charsSeen), 14)}${lpad(r.charsSeen > 0 ? '100.0%' : '—', 9)}${lpad(n0(r.total), 21)}${lpad(r.total > 0 ? '100.0%' : '—', 14)}`);
+  console.log('  (residual is printed, never redistributed across categories. char % is of all appended');
+  console.log('   chars; tok % is of TOTAL prompt growth — DIFFERENT denominators, do not mix them.)');
   console.log('');
 
-  console.log('  residual composition — known components inside UNATTRIBUTED (indicative: calibration');
-  console.log('  slack is the remainder, so these need not sum to it, and can exceed it):');
-  console.log(`    ${pad('session preamble (system prompt + tool defs, absent from transcript)', 62)}${lpad(n0(r.preamble), 10)} tok`);
+  // ── The char-free mass, as its own line (D10b step 3) ─────────────────
+  console.log('  char-free prompt growth — growth that carried NO persisted characters');
+  if (r.charFreeLo == null) {
+    console.log('    unavailable — the chars/token band could not be estimated.');
+  } else {
+    console.log(`    = TOTAL − attributed tokens − residual-char tokens − session preamble  [EST/BAND]`);
+    console.log(`    ${band(r.charFreeLo, r.charFreeHi)} tok · ${bandPct(r.charFreeLo, r.charFreeHi, r.total)} of TOTAL`);
+    console.log(`    books close in integers at EACH endpoint: ${n0(r.attributedHi)} + ${n0(r.residualTokHi)} + ${n0(r.preamble)} + ${n0(r.charFreeLo)} = ${n0(r.attributedHi + r.residualTokHi + r.preamble + r.charFreeLo)} = TOTAL (low end)`);
+    console.log(`                                              ${n0(r.attributedLo)} + ${n0(r.residualTokLo)} + ${n0(r.preamble)} + ${n0(r.charFreeHi)} = ${n0(r.attributedLo + r.residualTokLo + r.preamble + r.charFreeHi)} = TOTAL (high end)`);
+    if (r.charFreeLo < 0) {
+      console.log('    WARN: the low end is NEGATIVE — at the band\'s low ratio this transcript over-attributes.');
+      console.log('    That endpoint is not sustainable here; treat only the high end as informative, and');
+      console.log('    suspect either a short transcript dominated by preamble or a bad p90 sample.');
+    }
+    console.log('    QUANTIFIED, NOT EXPLAINED. This line says HOW MUCH growth carried no characters. It');
+    console.log('    does NOT say why. Unpersisted thinking, cached system/tool-def re-injection, and');
+    console.log('    anything else are NOT distinguished by this instrument — it cannot see them. The');
+    console.log('    explanation is a tracked open item feeding the post-P0.5 re-decision; do not read');
+    console.log('    this number as a diagnosis, and do not size a lever off it.');
+  }
+  console.log('');
+
+  console.log('  residual composition — known components inside UNATTRIBUTED. CHARS are exact; the');
+  console.log('  token figures ride the band, so these need not sum to UNATTRIBUTED and can exceed it:');
+  console.log(`    ${pad('session preamble (system prompt + tool defs, absent from transcript)', 62)}${lpad(n0(r.preamble), 10)} tok [MEASURED]`);
   const comp = [...r.residual.entries()].sort((a, b) => b[1] - a[1]);
   for (const [label, chars] of comp) {
-    console.log(`    ${pad(label, 62)}${lpad(n0(chars), 10)} chars${r.ratio ? ` (~${n0(Math.round(chars / r.ratio))} tok)` : ''}`);
+    const tk = r.bandLo ? ` (${band(Math.round(chars / r.bandHi), Math.round(chars / r.bandLo))} tok)` : '';
+    console.log(`    ${pad(label, 62)}${lpad(n0(chars), 10)} chars${tk}`);
   }
   if (!comp.length) console.log('    (no unbucketed chars seen)');
   if (r.trailingChars) console.log(`    ${pad('appended after the last request (never billed as a delta)', 62)}${lpad(n0(r.trailingChars), 10)} chars`);
   console.log('');
 
-  if (r.ratio && r.outputTokens > 0) {
-    const persisted = Math.round(r.assistantChars / r.ratio);
+  if (r.bandHi && r.outputTokens > 0) {
+    // Evaluated at the band's HIGH ratio (max q). That endpoint makes the line
+    // well-defined by construction: chars_i / max ≤ out_i for every request, so
+    // `persisted` can never exceed Σ output and the percentage can never go negative
+    // — which is exactly what the retired churn ratio used to do here.
+    const persisted = Math.round(r.assistantChars / r.bandHi);
     const missing = 1 - persisted / r.outputTokens;
-    console.log(`  output-side coverage: Σ output ${n0(r.outputTokens)} tok · persisted assistant text ≈ ${n0(persisted)} tok · ${missing > 0
-      ? `~${(missing * 100).toFixed(0)}% has no persisted text (thinking is not written to the transcript)`
-      : 'n/a — attributed text exceeds output tokens (calibration slack; treat this line as unusable for this transcript)'}`);
+    console.log(`  output-side coverage: Σ output ${n0(r.outputTokens)} tok [MEASURED] · persisted assistant text ≤ ${n0(persisted)} tok [EST, at ${r.bandHi.toFixed(2)} chars/token] · ≥${(missing * 100).toFixed(0)}% of output tokens produced NO persisted text`);
     // Both error terms push the same way, so the unpersisted % is a FLOOR, not a
     // measurement: `persisted` counts serialized tool_use JSON as assistant text
-    // (over-stating it), and it divides by the derived ratio, so if the ratio is
-    // under-derived the persisted side is over-stated again.
-    if (missing > 0) console.log('    (a FLOOR, not a measurement: persisted includes serialized tool_use JSON, and rides the derived ratio — both inflate the persisted side)');
+    // (over-stating it), and the band endpoint used here is itself a floor on the
+    // ratio, so the persisted side is over-stated again.
+    console.log('    (a FLOOR, not a measurement — hence ≥, matching the ledger: persisted includes serialized');
+    console.log('     tool_use JSON, and rides a ratio that is itself a floor. Both inflate the persisted side.)');
     console.log('');
   }
 
@@ -365,10 +530,11 @@ function report(r) {
   const rowsA = [...r.agents.entries()].sort((a, b) => b[1].returnChars - a[1].returnChars);
   if (!rowsA.length) console.log('    (no Agent tool_use blocks in this transcript)');
   else {
-    console.log(`    ${pad('subagent_type', 30)}${lpad('spawns', 8)}${lpad('spawn chars', 13)}${lpad('returns', 9)}${lpad('return chars', 14)}${lpad('return tok', 12)}${lpad('share', 8)}`);
+    console.log(`    ${pad('subagent_type', 30)}${lpad('spawns', 8)}${lpad('spawn chars', 13)}${lpad('returns', 9)}${lpad('return chars', 14)}${lpad('return tok [BAND]', 21)}${lpad('share [BAND]', 14)}`);
     for (const [t, a] of rowsA) {
-      const tok = r.ratio ? Math.round(a.returnChars / r.ratio) : null;
-      console.log(`    ${pad(t, 30)}${lpad(n0(a.spawns), 8)}${lpad(n0(a.spawnChars), 13)}${lpad(n0(a.returns), 9)}${lpad(n0(a.returnChars), 14)}${lpad(tok == null ? '—' : n0(tok), 12)}${lpad(pct(tok || 0, r.total), 8)}`);
+      const lo = r.bandHi ? Math.round(a.returnChars / r.bandHi) : null;
+      const hi = r.bandLo ? Math.round(a.returnChars / r.bandLo) : null;
+      console.log(`    ${pad(t, 30)}${lpad(n0(a.spawns), 8)}${lpad(n0(a.spawnChars), 13)}${lpad(n0(a.returns), 9)}${lpad(n0(a.returnChars), 14)}${lpad(band(lo, hi), 21)}${lpad(bandPct(lo, hi, r.total), 14)}`);
     }
   }
   // subagent_type is plugin-NAMESPACED in real transcripts (`agentic-workflow:reviewer`);
@@ -378,12 +544,20 @@ function report(r) {
     .filter(([t]) => String(t).split(':').pop() === 'reviewer')
     .reduce((n, [, a]) => n + a.returnChars, 0);
   if (revChars === 0) console.log('    reviewer: no Agent blocks — D7 reopen test not exercised by this transcript');
+  else if (!r.bandLo) console.log('    reviewer: chars/token band unavailable — D7 token-domain verdict SUPPRESSED (a char-domain share is not the trigger)');
   else {
-    const tok = r.ratio ? Math.round(revChars / r.ratio) : 0;
-    const share = r.total > 0 ? (tok / r.total) * 100 : 0;
-    console.log(`    reviewer return share = ${share.toFixed(1)}% — ${share > 3
-      ? 'EXCEEDS 3% → REOPENS decision D7 (reviewer untouched in v1)'
-      : 'at or under 3% → D7 stands (reviewer untouched in v1)'}`);
+    // The verdict keys off the band's HIGH-token end, i.e. the conservative one: if the
+    // share COULD exceed 3% anywhere in the band, say so rather than quietly picking the
+    // endpoint that keeps D7 shut. (D11 already ruled D7 stands; this line re-derives,
+    // it does not re-decide. Naming the denominator formally is S0.5-3's task.)
+    const tokLo = Math.round(revChars / r.bandHi);
+    const tokHi = Math.round(revChars / r.bandLo);
+    const shareLo = r.total > 0 ? (tokLo / r.total) * 100 : 0;
+    const shareHi = r.total > 0 ? (tokHi / r.total) * 100 : 0;
+    console.log(`    reviewer return share = ${shareLo.toFixed(2)}–${shareHi.toFixed(2)}% of TOTAL prompt growth (token domain, [EST/BAND]) — ${shareHi > 3
+      ? 'the band REACHES ABOVE 3% → REOPENS decision D7 (reviewer untouched in v1)'
+      : 'the whole band is at or under 3% → D7 stands (reviewer untouched in v1)'}`);
+    console.log(`    (chars, for reference: ${n0(revChars)} = ${pct(revChars, r.charsSeen)} of all appended chars [MEASURED] — a CHAR share is NOT the D7 trigger)`);
   }
   if (r.taskBlocks) console.log(`  warn: ${n0(r.taskBlocks)} \`Task\` tool_use block(s) seen — the spawn tool is \`Agent\`; taxonomy may have drifted`);
   if (r.attachFallbackSized) {
@@ -415,10 +589,16 @@ function buildFixture(dir) {
 
   const recs = [
     U(F.steer1),                                                                    // human steer
-    A('req-1', [{ type: 'text', text: F.prose1 }, { type: 'tool_use', id: 't1', name: 'Bash', input: { command: F.bashCmd } }], usage(1200, 0, 0, 50)),
+    // output_tokens = 800 is LOAD-BEARING for the envelope estimator: req-1 persists
+    // ~2.4k chars across its two lines, so the old value of 50 asserted ~48 chars/token
+    // — dimensionally impossible under any tokenizer, and undetected because nothing
+    // tested the output side. 800 puts req-1's q ≈ 3.02, which is the fixture's max and
+    // therefore the band's tight end. Changing it moves the band.
+    A('req-1', [{ type: 'text', text: F.prose1 }, { type: 'tool_use', id: 't1', name: 'Bash', input: { command: F.bashCmd } }], usage(1200, 0, 0, 800)),
     U([{ type: 'tool_result', tool_use_id: 't1', content: F.toolResult1 }]),
-    // Same requestId, later line of the SAME response: usage repeats verbatim.
-    A('req-1', [{ type: 'tool_use', id: 't2', name: 'Write', input: { file_path: '/x/y.md', content: F.writeBody } }], usage(1200, 0, 0, 50)),
+    // Same requestId, later line of the SAME response: usage repeats verbatim. Its
+    // CONTENT is not a duplicate and bills to req-1 on the output side.
+    A('req-1', [{ type: 'tool_use', id: 't2', name: 'Write', input: { file_path: '/x/y.md', content: F.writeBody } }], usage(1200, 0, 0, 800)),
     U([{ type: 'tool_result', tool_use_id: 't2', content: 'File created' }]),
     // Attachments: each carries a large field that must NOT be counted.
     { type: 'attachment', attachment: { type: 'skill_listing', content: F.skills, junkMetadata: 'J'.repeat(4000) } },
@@ -445,9 +625,23 @@ function buildFixture(dir) {
     //          whole resident context and pushing TOTAL to 3600. That follow-on request
     //          is what makes this fixture able to fail; a degenerate record with nothing
     //          after it costs nothing and would prove nothing.
-    A('req-4', [], usage(1000, 0, 0, 10)),
+    // The trio's output_tokens are ALSO load-bearing, for the envelope's drop rule (S0.5-2):
+    // req-4 carries out = 30 (≥ MIN_OUT) so it can only be dropped by the `chars > 0`
+    // clause, and req-6 carries out = 10 so it trips both. req-5 never reaches the
+    // estimator at all — its usage block is degenerate, so `out` is never recorded and its
+    // (empty) content creates no row. That is by design, not an omission: see `outRow`.
+    A('req-4', [], usage(1000, 0, 0, 30)),
     A('req-5', [], usage(0, 0, 0, 25)),
     A('req-6', [], usage(1000, 0, 0, 10)),
+    // req-7 isolates the OTHER drop clause: persisted chars but an implausibly small
+    // output_tokens (10 < MIN_OUT), i.e. exactly the rounding-driven outlier MIN_OUT
+    // exists to reject — unfiltered its q is ~22 chars/token, 7x the fixture's true max,
+    // and it would become the band's tight end single-handedly. Deliberately inert on the
+    // prompt side: prompt = 1000 = prevPrompt, so its window is delta 0 / chars 0 (TOTAL,
+    // calDelta, calChars, collapses, finalPrompt and preamble are all untouched), and its
+    // own chars land after the last window closes, as trailing chars. `Grep` keeps them in
+    // the residual map rather than perturbing a named category that other cases pin.
+    A('req-7', [{ type: 'tool_use', id: 't4', name: 'Grep', input: { pattern: F.tinyOutBody } }], usage(1000, 0, 0, 10)),
     U(F.steer2),
     { type: 'summary', summary: 'a compacted summary record' },
   ];
@@ -480,6 +674,7 @@ const F = {
   otherAtt: 'O'.repeat(80),
   think: 'I'.repeat(220),
   spawnPrompt: 'G'.repeat(100),
+  tinyOutBody: 'Z'.repeat(200),  // req-7: chars with a sub-MIN_OUT denominator (see the fixture)
   reviewReturn: 'V'.repeat(250),
 };
 
@@ -490,10 +685,10 @@ async function selftest() {
 
     // 1. Landmine 1 — a repeated `usage` block is counted ONCE.
     check('dedup: duplicate requestId usage counted once',
-      r.requests === 5 && r.duplicateUsageLines === 1 && r.total === 2600,
-      `requests=${r.requests} dup=${r.duplicateUsageLines} total=${r.total} (expected 5/1/2600)`);
+      r.requests === 6 && r.duplicateUsageLines === 1 && r.total === 2600,
+      `requests=${r.requests} dup=${r.duplicateUsageLines} total=${r.total} (expected 6/1/2600)`);
     check('dedup: the naive per-line sum is strictly larger (the trap is real)',
-      r.naiveTotal === 9000 && r.naiveTotal > r.total,
+      r.naiveTotal === 10000 && r.naiveTotal > r.total,
       `naive=${r.naiveTotal} total=${r.total}`);
 
     // 1b. The `prompt = 0` phantom-churn guard (D10a). VERIFIED BY MUTATION 2026-08-02:
@@ -524,22 +719,30 @@ async function selftest() {
       r.unexplainedCollapses.length === 1 && r.compactSummaryRecords === 0,
       `unexplained=${r.unexplainedCollapses.length} compactRecords=${r.compactSummaryRecords}`);
 
-    // 2. Landmine 2 — the books balance EXACTLY, with the residual printed.
-    const sum = r.rows.reduce((n, x) => n + x.tokens, 0);
-    check('exact sum: Σ categories + UNATTRIBUTED === TOTAL',
-      sum + r.unattributed === r.total,
-      `${sum} + ${r.unattributed} !== ${r.total}`);
+    // 2. Landmine 2 — the books balance EXACTLY at BOTH band endpoints.
+    check('exact sum: Σ categories + UNATTRIBUTED === TOTAL, at both band endpoints',
+      r.attributedLo + r.unattributedHi === r.total && r.attributedHi + r.unattributedLo === r.total,
+      `lo ${r.attributedLo}+${r.unattributedHi} hi ${r.attributedHi}+${r.unattributedLo} vs ${r.total}`);
     check('residual is non-zero and not redistributed',
-      r.unattributed !== 0 && r.preamble === 1200,
-      `unattributed=${r.unattributed} preamble=${r.preamble}`);
+      r.unattributedLo !== 0 && r.unattributedHi !== 0 && r.preamble === 1200,
+      `unattributed=${r.unattributedLo}..${r.unattributedHi} preamble=${r.preamble}`);
 
-    // 3. Landmine 3 — the ratio is DERIVED per transcript, never hardcoded /4.
-    check('calibration: ratio === Σcal-chars ÷ Σcal-delta (derived, CHARS per token)',
-      r.ratio === r.calChars / r.calDelta && r.calDelta === 1400,
-      `ratio=${r.ratio} calDelta=${r.calDelta} calChars=${r.calChars}`);
-    check('calibration: fixture ratio is far from the folk 4.0',
-      Math.abs(r.ratio - 4) > 1,
-      `ratio=${r.ratio}`);
+    // 3. Landmine 3 — the prompt-side ratio is DERIVED per transcript, never a /4
+    // constant. It is now a DIAGNOSTIC (D10b retired it as a converter) and the cases
+    // below still pin it, because a broken derivation would still mislead a reader.
+    check('churn ratio: === Σcal-chars ÷ Σcal-delta (derived, CHARS per token)',
+      r.churnRatio === r.calChars / r.calDelta && r.calDelta === 1400,
+      `churnRatio=${r.churnRatio} calDelta=${r.calDelta} calChars=${r.calChars}`);
+    check('churn ratio: fixture ratio is far from the folk 4.0',
+      Math.abs(r.churnRatio - 4) > 1,
+      `churnRatio=${r.churnRatio}`);
+    // D10b/OQ6: the retired converter must not be silently reinstated. Category tokens
+    // must NOT equal chars ÷ churnRatio at either endpoint.
+    const bashRow = r.rows.find((x) => x.name === 'authored: Bash commands');
+    check('D10b: the prompt-side churn ratio is NOT used as a token converter',
+      bashRow.tokLo !== Math.round(bashRow.chars / r.churnRatio)
+      && bashRow.tokHi !== Math.round(bashRow.chars / r.churnRatio),
+      `tok=${bashRow.tokLo}..${bashRow.tokHi} churn-converted=${Math.round(bashRow.chars / r.churnRatio)}`);
     // Dimensional guard, INDEPENDENT of case 3. Case 3 pins the FORMULA (a mirror of
     // the implementation — self-consistent, and therefore blind to a mirrored bug);
     // this pins its CONSEQUENCE — attributed tokens can never exceed TOTAL. An
@@ -550,12 +753,74 @@ async function selftest() {
     // with case 3 neutered, because the fixture ratio is ≈2.8, not ≈1. Do not flatten
     // the fixture ratio: at ≈1 an inversion is a no-op and this guard goes blind.
     check('residual: attributed never exceeds TOTAL (negative residual = broken model)',
-      r.unattributed >= 0 && r.attributed <= r.total,
-      `attributed=${r.attributed} total=${r.total} unattributed=${r.unattributed}`);
-    const bash = r.rows.find((x) => x.name === 'authored: Bash commands');
-    check('calibration: category tokens use the derived ratio, not /4',
-      bash.tokens === Math.round(bash.chars / r.ratio) && bash.tokens !== Math.round(bash.chars / 4),
-      `chars=${bash.chars} tokens=${bash.tokens} /4=${Math.round(bash.chars / 4)}`);
+      r.unattributedLo >= 0 && r.attributedHi <= r.total,
+      `attributed=${r.attributedLo}..${r.attributedHi} total=${r.total} unattributed=${r.unattributedLo}..${r.unattributedHi}`);
+    check('band: category tokens use the envelope band, not /4',
+      bashRow.tokLo === Math.round(bashRow.chars / r.bandHi)
+      && bashRow.tokHi === Math.round(bashRow.chars / r.bandLo)
+      && bashRow.tokLo !== Math.round(bashRow.chars / 4),
+      `chars=${bashRow.chars} tokens=${bashRow.tokLo}..${bashRow.tokHi} /4=${Math.round(bashRow.chars / 4)}`);
+
+    // 3b. The output-side envelope estimator (D10b as amended by OQ6 2026-08-02).
+    // Expected q values are rebuilt HERE from the fixture's own declared payloads —
+    // NOT read back out of `r` — so a case cannot agree with the implementation by
+    // sharing its arithmetic. Two bugs already shipped through mirror-tests.
+    const q1 = (F.prose1.length
+      + JSON.stringify({ command: F.bashCmd }).length
+      + JSON.stringify({ file_path: '/x/y.md', content: F.writeBody }).length) / 800;
+    const q2 = (F.think.length + F.prose2.length
+      + JSON.stringify({ subagent_type: 'agentic-workflow:reviewer', description: 'review', prompt: F.spawnPrompt }).length) / 400;
+    const q3 = F.prose3.length / 40;
+    const qs = [q1, q2, q3].sort((a, b) => a - b);
+    // Type-7 quantile, written out longhand rather than reusing the implementation's
+    // helper: p90 of 3 samples sits 80% of the way from the 2nd to the 3rd.
+    const wantMedian = qs[1];
+    const wantP90 = qs[1] + 0.8 * (qs[2] - qs[1]);
+    const wantMax = qs[2];
+    check('envelope: q = persisted assistant chars ÷ output_tokens, per unique request',
+      r.env !== null && r.env.n === 3
+      && Math.abs(r.env.median - wantMedian) < 1e-9
+      && Math.abs(r.env.max - wantMax) < 1e-9,
+      r.env ? `n=${r.env.n} median=${r.env.median} max=${r.env.max} (want 3/${wantMedian}/${wantMax})` : 'env=null');
+    // Distinct from the case above: pins the QUANTILE definition. Nearest-rank would
+    // return max here (collapsing the band); type-7 interpolates strictly below it.
+    check('envelope: p90 is a type-7 quantile and lies strictly between median and max',
+      Math.abs(r.env.p90 - wantP90) < 1e-9 && r.env.median < r.env.p90 && r.env.p90 < r.env.max,
+      `p90=${r.env.p90} want=${wantP90} median=${r.env.median} max=${r.env.max}`);
+    // Each clause of the drop rule is pinned by a request that trips ONLY that clause, so
+    // deleting either one alone fails this case. (req-4: chars = 0, out = 30 → the
+    // `chars > 0` clause. req-7: chars > 0, out = 10 → the MIN_OUT clause. req-6 trips
+    // both.) VERIFIED BY MUTATION 2026-08-02, one clause at a time — see the ledger.
+    check('envelope: requests with no persisted chars or < 20 output tokens are dropped',
+      r.env.dropped === 3 && r.env.n === 3 && r.envSamples.every((q) => q > 0),
+      `dropped=${r.env.dropped} n=${r.env.n} samples=${JSON.stringify(r.envSamples)} (want dropped 3 / n 3: req-4 chars=0 out=30 · req-6 chars=0 out=10 · req-7 chars>0 out=10)`);
+    check('envelope: the band is [p90 .. max] and is a real interval, never a point',
+      r.bandLo === r.env.p90 && r.bandHi === r.env.max && r.bandLo < r.bandHi,
+      `band=${r.bandLo}..${r.bandHi}`);
+    // The band's whole purpose: MORE chars per token means FEWER tokens. A swap here
+    // is the failure that would silently restore point-like, over-stated token columns.
+    const steerRow = r.rows.find((x) => x.name === 'human steers');
+    check('band: the low-ratio end yields the HIGH token count (orientation not swapped)',
+      steerRow.tokHi > steerRow.tokLo
+      && steerRow.tokHi === Math.round(steerRow.chars / r.bandLo)
+      && steerRow.tokLo === Math.round(steerRow.chars / r.bandHi),
+      `chars=${steerRow.chars} tokLo=${steerRow.tokLo} tokHi=${steerRow.tokHi} band=${r.bandLo}..${r.bandHi}`);
+    // 3c. The char-free mass (D10b step 3). Definition AND closure.
+    check('char-free: = TOTAL − attributed − residual-char tokens − preamble, at each endpoint',
+      r.charFreeHi === r.total - r.attributedLo - r.residualTokLo - r.preamble
+      && r.charFreeLo === r.total - r.attributedHi - r.residualTokHi - r.preamble,
+      `charFree=${r.charFreeLo}..${r.charFreeHi} attributed=${r.attributedLo}..${r.attributedHi} residualTok=${r.residualTokLo}..${r.residualTokHi} preamble=${r.preamble}`);
+    check('char-free: the books close in INTEGERS at both endpoints',
+      r.attributedLo + r.residualTokLo + r.preamble + r.charFreeHi === r.total
+      && r.attributedHi + r.residualTokHi + r.preamble + r.charFreeLo === r.total
+      && Number.isInteger(r.charFreeLo) && Number.isInteger(r.charFreeHi),
+      `lo-end sum=${r.attributedHi + r.residualTokHi + r.preamble + r.charFreeLo} hi-end sum=${r.attributedLo + r.residualTokLo + r.preamble + r.charFreeHi} total=${r.total}`);
+    // Residual CHARS must be converted too, or "char-free" would silently mean "not in
+    // a named bucket" — a different and much larger quantity.
+    check('char-free: unbucketed residual CHARS are converted, not treated as char-free',
+      r.residualChars > 0 && r.residualTokLo === Math.round(r.residualChars / r.bandHi)
+      && r.residualTokHi === Math.round(r.residualChars / r.bandLo),
+      `residualChars=${r.residualChars} tok=${r.residualTokLo}..${r.residualTokHi}`);
 
     // 4. Landmine 4 — attachments sized on the INJECTED field, not the record.
     const cat = (n) => r.rows.find((x) => x.name === n).chars;
