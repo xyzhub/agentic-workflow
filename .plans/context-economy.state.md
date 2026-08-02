@@ -137,6 +137,22 @@ allowed; deviating silently is not (§4)._
 _≤10 lines per entry: what this session did, the verify signal, the branch, and what the
 next session needs. Newest on top; crash-safe by write-ahead._
 
+- _2026-08-02 D1 options memo (`architect`, `549241f`, advisory — decides nothing):
+  `docs/product/decisions/2026-08-02-context-economy-d1-rescope-memo.md`. **The 5.59× is
+  FULLY EXPLAINED**: ratchet 4.105× × (final-prompt 513,634 ÷ 377.4k = 1.361) = 5.587×, no
+  residual. Occupancy hypothesis CONFIRMED; per-request prompt is sound, only the
+  aggregation answered a different question. **Corrections to the ledger's own record**:
+  `isCompactSummary` = **1**, not 20 (grep artefact — the mission's docs mention the
+  field); one **prompt=0 record manufactures 513,634 tok = 24.4% of TOTAL** in phantom
+  churn; the chars/token anomaly is **not** the ratchet (56–66% of prompt growth is
+  char-free); orchestrator Write/Edit is **≤15.9%, never the 22.5%** the mission was
+  premised on. **Headline scope falls to ~4% addressed / ~1.5–2.5% captured.** D7's 4.0%
+  is robust to decision 1 but **not** to decision 3 — in tokens the reviewer is 1.23–1.62%,
+  below the 3% trigger, i.e. the reopen looks like a normalisation artefact. Unresolved:
+  the 3.2–4.2 chars/token band is load-bearing and unverified; collapse #4 unexplained;
+  `attach: other` still unvalidated; n=1. Script byte-identical, lint clean.
+  **Mission remains STOPPED at D1 — this memo is input, not a decision.**_
+
 - _2026-08-02 `ckpt-p0` (reviewer, re-review after S3-fix): **APPROVE**. Scorecard QA 3 ·
   Security 3 · Efficiency 3 · Architecture 3 · UX 3 · DX 2. Re-ran every gate: lint clean;
   `--selftest` 17 ok; fail-closed negative check reproduced; **restraint confirmed — TOTAL
