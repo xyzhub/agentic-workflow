@@ -21,7 +21,9 @@ channel / direct report), not held for the final PR. Same for any REQUEST CHANGE
 for the D1 pause package.
 
 **UNBLOCKED — OQ1–OQ5 all RESOLVED 2026-08-01** (human accepted every planner
-recommendation; details in `## Open questions`). Execution may begin at S1.
+recommendation; details in `## Open questions`). Phase 0 is done and merged.
+**Since the 2026-08-02 replan the authorized work is Phase 0.5 only**, starting at
+`S0.5-1`; **OQ6 blocks `S0.5-2`**.
 
 ## Checklist
 
@@ -34,21 +36,38 @@ checkpoint/reviewer/chronicler row — set `[~]` the moment a beat is picked up 
 - [x] S3 — run the baseline measurement, record split + D9 table + sanity check (branch `mission/context-economy-p0`)
 - [x] Checkpoint `ckpt-p0` — **APPROVE** 2026-08-02 after one corrective session (S3-fix). Scorecard: QA 3 · Security 3 · Efficiency 3 · Architecture 3 · UX 3 · DX 2. Merged into `mission/context-economy-integration` (`273f1d3`, batch policy — main untouched).
 - [x] ⛔ **D1 HARD PAUSE — RELEASED 2026-08-02.** Human re-scoped with the measured numbers: **new instrument-repair phase first (P0.5); P1–P4 are NOT authorized and get re-decided after it.** Decisions D10–D12 below.
-- [ ] **Phase 0.5 — instrument repair** (briefs to be authored by the planner; supersedes direct entry to P1)
-- [ ] S4 — write firewall: extend the 30% rule to writes; no tool-list change anywhere, per D7 (branch `mission/context-economy-p1`)
-- [ ] Checkpoint `ckpt-p1` — phase 1 review + merge into integration
-- [ ] S5 — standing steers: ledger block + §3-only append + lint grammar check (branch `mission/context-economy-p2`)
-- [ ] Checkpoint `ckpt-p2` — phase 2 review + merge into integration
-- [ ] S6 — `SessionStart:compact` re-read directive + hook-test cases (branch `mission/context-economy-p3`)
-- [ ] Checkpoint `ckpt-p3` **[STRICT]** — phase 3 review; **surface the verdict to the human immediately** (batch gating shows no merge prompt); merge into integration
-- [ ] S7 — re-measure (D4a), `isCompactSummary` count, `docs/product/engineering/context-economy-metrics.md` (branch `mission/context-economy-p4`)
-- [ ] S8 — chronicler + CHANGELOG + version bump + integration PR (branch `mission/context-economy-p4`)
-- [ ] Checkpoint `ckpt-p4` — final review of `main..mission/context-economy-integration`; **human merges once**
+- [ ] **Phase 0.5 — instrument repair** (briefs authored by the planner 2026-08-02; supersedes direct entry to P1) — branch `mission/context-economy-p05`
+  - [ ] S0.5-1 — `prompt = 0` phantom-churn guard + collapse ledger + ratchet identity (tasks 22–23)
+  - [ ] S0.5-2 — settle the chars/token band + name the char-free mass (task 24) — **blocked on OQ6**
+  - [ ] S0.5-3 — occupancy sanity gate + the D7 denominator (tasks 25–26)
+  - [ ] S0.5-4 — re-run the baseline, record BOTH numbers, assemble the re-decision package
+  - [ ] Checkpoint `ckpt-p05` — phase 0.5 review + merge into integration
+- [ ] ⛔ **DECISION POINT — the human re-decides P1–P4** with repaired numbers. Everything below is **HELD and NOT authorized** until this lands as new dated locked decisions.
+- [ ] S4 — **HELD** — write firewall: extend the 30% rule to writes; no tool-list change anywhere, per D7 (branch `mission/context-economy-p1`). Premise retracted: Write/Edit is ≤15.9% char / 2.8–3.7% token, never 22.5%.
+- [ ] Checkpoint `ckpt-p1` — **HELD** — phase 1 review + merge into integration
+- [ ] S5 — **HELD** — standing steers: ledger block + §3-only append + lint grammar check (branch `mission/context-economy-p2`). Fidelity control; case unchanged by the new evidence.
+- [ ] Checkpoint `ckpt-p2` — **HELD** — phase 2 review + merge into integration
+- [ ] S6 — **HELD** — `SessionStart:compact` re-read directive + hook-test cases (branch `mission/context-economy-p3`). Correctness control; case unchanged (exactly 1 compaction confirmed).
+- [ ] Checkpoint `ckpt-p3` **[STRICT]** — **HELD** — phase 3 review; **surface the verdict to the human immediately** (batch gating shows no merge prompt); merge into integration
+- [ ] S7 — **HELD** — re-measure (D4a), `isCompactSummary` count, `docs/product/engineering/context-economy-metrics.md` (branch `mission/context-economy-p4`). D4a's design and the doc's headline are both downstream of P0.5.
+- [ ] S8 — **HELD** — chronicler + CHANGELOG + version bump + integration PR (branch `mission/context-economy-p4`)
+- [ ] Checkpoint `ckpt-p4` — **HELD** — final review of `main..mission/context-economy-integration`; **human merges once**
 - [~] D4b — cross-mission re-measurement on a later comparable mission (deferred, non-blocking, tracked)
 
 ## Open questions
 
-_All RESOLVED 2026-08-01 — the human accepted every recommendation. Locked below._
+_OQ1–OQ5 RESOLVED 2026-08-01 — the human accepted every recommendation. Locked below.
+**OQ6 and OQ7 opened at the 2026-08-02 replan** and live in full in
+`.plans/context-economy.md` `## Open questions`:_
+
+- **OQ6 — OPEN — does settling the chars/token band buy a tokenizer dependency?**
+  **Blocks `S0.5-2` only**; `S0.5-1` may start without it. D10(b) names a real tokenizer;
+  the repo is zero-dep with no `package.json`/lockfile and a bare-checkout CI. Planner
+  recommends the **zero-dep output-side envelope estimator**, chars reported as primary.
+  Flagged as a tension with D10(b)'s wording — **not resolved by the planner**.
+- **OQ7 — OPEN (low stakes) — add `--context-total=<tokens>` as a third CLI form?**
+  Planner recommends yes; the hand comparison is what produced the 377.4k/401.4k slip.
+  Absent a ruling the recommendation stands, and the reviewer may overrule at `ckpt-p05`.
 
 - **OQ1 — RESOLVED (yes).** Fix this repo's own `docs/WORKFLOW.md` mirror sites
   (L19-21, L275-281, L645-648) in the same P0a commit; **do not touch the version stamp**.
@@ -102,6 +121,24 @@ _Human steers captured **verbatim** at checkpoints only, never mid-brief. Gramma
 
 _Any departure from a brief — logged here the moment it happens, with why. Deviating is
 allowed; deviating silently is not (§4)._
+
+- 2026-08-02 (replan, planner) — **record correction, logged not rewritten.** The D1 pause
+  package states "20 `isCompactSummary` records"; the true count is **1** (memo M1 — the
+  other 19 are the *string* appearing inside this mission's own docs, a self-referential
+  grep artefact). The historical entry is **left as written** (completed work is history);
+  `S0.5-4` records the corrected figure in the new package. Consequence for D8: the
+  promote-to-Option-B trigger (≥3) is further from firing, not closer.
+- 2026-08-02 (replan, planner) — **record correction (`ckpt-p0` nit 1).** The pause package
+  cites `tools/context-attrib.mjs:171` for "persisted counts serialized `tool_use` JSON as
+  assistant text"; the actual line at that revision is **`:173`** (`assistantChars += n`).
+  Historical entry left intact; the line moves again during Phase 0.5, so future citations
+  must be re-derived rather than copied. (`ckpt-p0` nit 2 — the script printing `~28%` vs
+  the ledger's `≥28%` — is folded into `S0.5-2` step 4 as a code change.)
+- 2026-08-02 (replan, planner) — **ledger reconciled against git; no drift found.** P0's
+  four commits (`03dea55`, `8fa357d`, `51cb366`, `dca7072`), the merge `273f1d3`, and the
+  `mission/context-economy-p0` branch all match the checked rows; `mission/context-economy-p05`
+  does not exist yet, as expected. No checkbox was corrected. Recorded because a replan that
+  finds nothing must say so.
 
 - 2026-08-01 (S2) — D9 is emitted **unconditionally**, not behind "one flag on the script"
   (brief L107). It is a required Phase-0 output, so a flag only adds a way for S3 to forget
@@ -160,6 +197,19 @@ allowed; deviating silently is not (§4)._
 
 _≤10 lines per entry: what this session did, the verify signal, the branch, and what the
 next session needs. Newest on top; crash-safe by write-ahead._
+
+- _2026-08-02 replan (`planner`, branch `mission/context-economy-integration`): authored
+  **Phase 0.5 — instrument repair** into the trio (plan tasks 22–26, four briefs
+  `S0.5-1`…`S0.5-4` + `ckpt-p05` + a decision point), per D10. Held S4–S8 / P1–P4 with a
+  one-line honest note each — **P1's premise is retracted** (Write/Edit ≤15.9% char /
+  2.8–3.7% token, never 22.5%); P2/P3 are fidelity/correctness controls whose case never
+  rested on token math; P4 is downstream of P0.5. Deferred-but-reported inside P0.5:
+  collapse #4's root cause, the char-free *explanation*, `attach: other`, D4b. Opened
+  **OQ6** (tokenizer dependency — blocks `S0.5-2` only; a flagged tension with D10(b)'s
+  wording, left for the human) and **OQ7** (third CLI form). No locked decision re-opened;
+  no completed row or historical entry rewritten; two record corrections logged as
+  deviations. Verified: `node tools/lint.mjs` clean. **Next: `S0.5-1`** — it is not blocked
+  by OQ6._
 
 - _2026-08-02 D1 options memo (`architect`, `549241f`, advisory — decides nothing):
   `docs/product/decisions/2026-08-02-context-economy-d1-rescope-memo.md`. **The 5.59× is
@@ -403,16 +453,20 @@ attachment-schema check is pulled in or deferred.
   Baseline transcript identified and field-verified by grep (never read). Uncommitted,
   awaiting HITL review of OQ1–OQ5._
 
-Next up: **⛔ D1 HARD PAUSE — mission STOPS. Human re-scopes P1–P4 with the real numbers
-before any later phase is spawned. Do not proceed on agent judgment.**
+Next up: **S0.5-1 — the `prompt = 0` phantom-churn guard + collapse ledger** (Phase 0.5,
+new branch `mission/context-economy-p05` off `mission/context-economy-integration`).
+Brief: `.plans/context-economy.sessions.md` → Phase 0.5. **Suits `backend`.**
 
-Phase 0 is measured; `ckpt-p0` (phase-0 review + merge into the integration branch) is the
-orchestrator's to spawn and is NOT yet done. **S4 must not be started.** The pause package
-sits at the top of the handoff log above; read its **VALIDITY FINDING first** — the
-absolute token counts diverge 5.6× from `/context` and are not safe to re-scope on, while
-the category *shares* are approximately robust. Four decisions are queued for the human
-there, including **D7, which the measurement REOPENS** (reviewer at 4.0% > 3%).
-in a FRESH session (deliberate: starting a context-economy mission inside a 400k-token
-session is the anti-pattern it exists to fix). Phase 0 ends
-at `ckpt-p0` and then **STOPS at the D1 HARD PAUSE** — S4 and everything after it are not
-authorized until the human re-scopes with the measured numbers in hand.
+**Phase 0.5 is the ONLY authorized phase.** The D1 pause was released 2026-08-02 into a
+re-scope (D10/D11/D12 above), not into P1. **S4 and everything after it stay unauthorized**
+until the human re-decides at the decision point that follows `ckpt-p05`.
+
+`S0.5-1` is **not** blocked by OQ6; `S0.5-2` is. Read order for whoever runs Phase 0.5:
+the `## D1 re-scope decisions` block above, then the brief, then the memo ranges the brief
+names — the memo is cited by **M-number**, never re-derived. The historical D1 pause package
+below is **superseded in its headline numbers** (its TOTAL carries 24.4% phantom churn and
+its 5.59× divergence is a normalisation artefact); it is kept as the record of what was
+believed at the pause, not as a source of figures.
+
+Run Phase 0.5 in a **FRESH session** (deliberate: starting a context-economy mission inside
+a 400k-token session is the anti-pattern it exists to fix).

@@ -7,7 +7,9 @@ refresh-trigger: event
 # Mission: context-economy — session briefs
 
 _The execution view: one brief per session, each pre-resolved so an execution session
-never explores. The expensive exploration happened once, here (2026-08-01)._
+never explores. The expensive exploration happened once, here (2026-08-01); **re-resolved
+for Phase 0.5 on 2026-08-02** (replan — see `.plans/context-economy.md` `## Replan
+2026-08-02`)._
 
 Protocol: see `docs/WORKFLOW.md` §5 (mission machinery — don't restate it here).
 Master plan: `.plans/context-economy.md` · Ledger: `.plans/context-economy.state.md`
@@ -32,7 +34,11 @@ Source brief (background, read only if a brief points you at it):
 |---|---|
 | `plugins/agentic-workflow/templates/WORKFLOW.md` | 877 |
 | `docs/WORKFLOW.md` (this repo's synced copy, stamp v1.39.0) | 874 |
-| `tools/lint.mjs` | 363 |
+| `tools/context-attrib.mjs` (**new** — measured 2026-08-02) | 510 |
+| `.plans/context-economy.state.md` (measured 2026-08-02) | 418 |
+| `tools/lint.mjs` (**was 363** — measured 2026-08-02 after `checkContextAttrib`) | 388 |
+| `docs/product/decisions/2026-08-02-…-d1-rescope-memo.md` (measured 2026-08-02) | 325 |
+| `.plans/context-economy.md` (measured 2026-08-02) | 316 |
 | `CHANGELOG.md` | 325 |
 | `tools/marker-test.mjs` | 274 |
 | `plugins/agentic-workflow/README.md` | 250 |
@@ -53,7 +59,11 @@ Source brief (background, read only if a brief points you at it):
 | `plugins/agentic-workflow/commands/pr.md` | 37 |
 | `plugins/agentic-workflow/.claude-plugin/plugin.json` | 11 |
 
-**Baseline transcript** (P0b/P4 only, never Read):
+**Line counts for the Phase 0.5 briefs were re-measured 2026-08-02.** The rows carried over
+from 2026-08-01 are only re-verified for briefs that are about to run — the **held** S4–S8
+briefs must have their reads re-measured when (and if) the human un-holds them.
+
+**Baseline transcript** (P0b/P0.5/P4 only, never Read):
 `~/.claude/projects/-Users-baker-Playground-venture-workflow-plugin/2fa752c7-9b89-4313-8729-ec63daee6496.jsonl`
 — 11.2 MB / 4,438 lines at 2026-08-01 18:46; append-only, still growing. Verified
 field facts (cheap greps, already done — don't redo them blind): 76 `"name":"Agent"`,
@@ -183,13 +193,270 @@ the doc sweep left no surviving false claim and that the script's landmine handl
 matches the brief. On APPROVE the orchestrator merges the phase branch into
 `mission/context-economy-integration` (batch policy — **never** the default branch).
 
-> ### ⛔ D1 HARD PAUSE — the mission stops here
-> Do **not** spawn S4 or any later phase. Surface the pause package to the human and
-> wait for an explicit re-scope decision on P1–P4. Resuming is a human act.
+> ### ⛔ D1 HARD PAUSE — RELEASED 2026-08-02
+> The human re-scoped with the measured numbers (D10/D11/D12 in the ledger). The release
+> does **not** authorize S4. It authorizes **Phase 0.5 only**; P1–P4 are re-decided after
+> `ckpt-p05`.
 
 ---
 
-## Phase 1 — write firewall (branch: `mission/context-economy-p1`)
+## Phase 0.5 — instrument repair (branch: `mission/context-economy-p05`)
+
+_Authored at the 2026-08-02 replan. **The only authorized phase.** Sequential — S0.5-1 →
+S0.5-2 → S0.5-3 all edit `tools/context-attrib.mjs` and its selftest, and S0.5-4 measures
+with all three landed. Not parallel-safe. Ends with `ckpt-p05`, then a **decision point**._
+
+**Why this phase exists (D10).** The instrument that produced the D1 pause package has three
+defects that make its headline numbers unusable for a re-scope: one degenerate record
+manufactures 24.4% of TOTAL in phantom churn; the token columns ride an unverified
+3.2–4.2 chars/token band; and the 15% validity gate compares a churn aggregate against an
+occupancy reading, so it fails by construction. Evidence base:
+`docs/product/decisions/2026-08-02-context-economy-d1-rescope-memo.md` (325 lines) —
+**cite it by its M-numbers, do not re-derive it**.
+
+**Standing constraints for every Phase 0.5 session**
+- **Churn stays the optimisation target** (D10c). Only the *sanity check* re-points at
+  occupancy. Do not silently promote occupancy to the headline.
+- **Restraint over improvement.** These sessions repair a measuring instrument. Every number
+  that moves must move for a stated, mechanical reason. If a change alters TOTAL, say by how
+  much and why, in the handoff — the S3-fix disclosure precedent.
+- **No number may be tuned to hit a target.** If the repaired gate still fails, that is the
+  finding.
+- **Prove new guards by mutation.** A guard that cannot be shown to fail when broken did not
+  ship (the S2 inversion bug shipped past an inert case; see `## Deviations`).
+- **Transcript rule applies unchanged** — `wc`, `grep -c`, or the script. Never `Read`.
+
+### S0.5-1 — the `prompt = 0` phantom-churn guard + a collapse ledger (D10a)
+
+- **Reads** (~380 lines):
+  - `docs/product/decisions/2026-08-02-…-d1-rescope-memo.md` (325) — ranged **L11-70**
+    (M1 the `isCompactSummary` grep artefact · **M2 the five-collapse table** ·
+    M3 the exact identity · M4 the occupancy curve · M5 the 5.59× reconciliation).
+    This is the spec for what to emit; do not re-measure it.
+  - `tools/context-attrib.mjs` (510) — four ranged reads: **L11-40** (the accounting-model
+    header comment — it must end this session still true), **L140-165** (the
+    `rec.type === 'assistant'` usage branch; **L161 is the defect site** — the window push
+    with `Math.max(0, p - prevPrompt)` and **L162 `prevPrompt = p`**, which a `p === 0`
+    record poisons), **L212-240** (the derive block + the returned result object),
+    **L248-270** (the report header lines the new output sits beside).
+  - `tools/context-attrib.mjs` — **L341-404** (fixture builder + the payload-sizing
+    constraints comment) and **L406-450** (the selftest cases that pin `r.total === 2600`,
+    which your new fixture record must not break silently).
+  - `.plans/context-economy.state.md` — **L70-92** (`## D1 re-scope decisions`, D10–D12).
+- **Do**:
+  1. **Guard the degenerate record, fail-closed by shape.** A usage record whose
+     `promptOf(u)` is `0` is *not* an observation that the context is empty — it is a
+     request with no usable usage data. Skip it as a **prompt observation**: do not push a
+     window, do not overwrite `prevPrompt`, and leave the open window's accumulated chars
+     accumulating into the next real request. Count it in a new `degenerateUsage` counter
+     and print that counter in the report (a silent skip is the same failure class as the
+     suppressed D7 verdict). State the reasoning in a code comment: zeroing `prevPrompt`
+     re-bills the entire resident context as fresh churn — **513,634 tok = 24.4% of TOTAL**
+     on the baseline (memo M2 row 5).
+  2. **Emit a collapse ledger.** For every request where `p < prevPrompt`: request index,
+     transcript line number, before, after, drop. Plus the collapse **count** and
+     **Σ collapse mass**. This makes memo M2 reproducible from the shipped instrument
+     instead of from a scratch probe.
+  3. **Print the ratchet identity** (memo M3): `Σ positive deltas − Σ collapse mass =
+     final prompt`, with the three numbers and a PASS/FAIL on the equality. It is exact by
+     construction, so a FAIL means the model drifted — a self-check worth one line.
+  4. **Collapse #4 is DEFERRED, not in scope — but it is reported.** The memo's row 4
+     (line 4,222, −270,711, no compact summary) has no explanation. The collapse ledger
+     makes it visible; add a printed note that a collapse with no adjacent compact-summary
+     record is **unexplained**, and log it in the ledger as a tracked non-blocking item in
+     the shape of D4b. **Do not** inspect the record and **do not** model it: root-causing
+     it needs single-record schema inspection (the same class of work as the unvalidated
+     `attach: other`), which is not measurement and not in this phase. If the human wants
+     it explained, it becomes its own session.
+  5. **Selftest — the guard must fail without the fix.** Add a `prompt = 0` usage record to
+     the fixture, plus cases asserting: (a) TOTAL is **unchanged** by its presence
+     (still `2600`), (b) `degenerateUsage === 1`, (c) the collapse ledger lists the genuine
+     collapse and **not** the degenerate record, (d) the ratchet identity holds on the
+     fixture. Then **prove by mutation**: remove the guard ⇒ name which cases fail, restore
+     ⇒ green. Record the mutation output in the handoff.
+- **Verify**: `node tools/context-attrib.mjs --selftest` green (new case count stated
+  explicitly — S3 mis-stated it once); `node tools/lint.mjs` green; then re-run the
+  baseline transcript and record **TOTAL before and after** the guard. Prediction to check,
+  not a target to hit: `2,108,485 − 513,634 = 1,594,851`. If it lands elsewhere, that
+  discrepancy is the finding — report it, do not chase it.
+- **Read budget**: ~380 lines. **Suits:** `backend`.
+
+### S0.5-2 — settle the chars/token band + name the char-free mass (D10b; **OQ6 blocks this session**)
+
+- **⚠️ Blocked on OQ6** (`.plans/context-economy.md` `## Open questions`): whether a real
+  tokenizer dependency is added. **Do not start until the human has answered.** S0.5-1 is
+  not blocked by it.
+- **Reads** (~340 lines):
+  - `docs/product/decisions/2026-08-02-…-d1-rescope-memo.md` — ranged **L70-119**
+    (**M6** the per-segment ratios 1.29 / 1.50 / 1.66 and the char-free claim · **M7** the
+    residual is 67–75%, not 16.1% · **M8** the three denominators · M9 the token domain ·
+    M10 churn vs occupancy ranking) and **L287-316** (§4 "what would change the answer" —
+    the falsification test — and §5's open items 1 and 2).
+  - `tools/context-attrib.mjs` — **L11-40** (the ratio contract in the header),
+    **L212-232** (`calDelta` / `calChars` / `ratio` and the per-category conversion),
+    **L254-295** (the printed calibration line, the residual-composition block, and the
+    output-side FLOOR block — **L286 is the "~28%" nit**), **L428-450** (the three
+    calibration selftest cases and the fixture-ratio guard, which any new estimator must
+    not weaken).
+  - `.plans/context-economy.md` — **L52-62** (task 3, landmine (c): the acceptance wording
+    this session changes) and **L250-262** (the measurement-validity risk).
+- **Do** (the OQ6 answer selects 1a or 1b; everything else is common):
+  1a. **If OQ6 = tokenizer (Option A):** add the dependency with its full cost paid — this
+     repo has **no `package.json` and no lockfile**, and `.github/workflows/lint.yml` runs
+     `node tools/lint.mjs` on a bare checkout with **no install step**. So Option A means:
+     a manifest, a lockfile, a pinned version, a CI install step, and a decision about
+     whether `checkContextAttrib` may now fail on a fresh clone. Land those in the same
+     commit or the lint gate becomes conditionally green, which is the failure mode the
+     fail-closed pattern exists to prevent.
+  1b. **If OQ6 = zero-dep (Option B, recommended):** implement the **output-side envelope
+     estimator**. For each unique request, compute `persisted assistant chars ÷
+     output_tokens`. Unpersisted thinking can only *depress* that quotient (tokens without
+     chars); it can never inflate it. So the per-request **upper envelope** (report median,
+     p90, and max over requests, with n) is a defensible lower bound on the corpus's true
+     chars/token, and it is derived from data the script already parses. Report the
+     estimate **as a band with its method named**, not as a point. Say in the output that
+     serialized `tool_use` JSON is counted as assistant text and tokenizes differently from
+     prose — it is the estimator's known bias.
+  2. **Retire the global ratio as a headline token converter** (memo M7 / the architect's
+     condition 2). Report the category split with **chars as the primary column**
+     (model-free, which is already what the ledger tells readers to prefer) and tokens as a
+     **secondary, banded** column whose band is printed next to it.
+  3. **Name the char-free mass as its own line**: prompt growth carrying no persisted
+     characters = TOTAL − (attributed chars ÷ settled ratio) − preamble, with its share.
+     **This phase QUANTIFIES the 56–66% char-free finding; it does not EXPLAIN it.** The
+     explanation (unpersisted thinking vs. cached system/tool-def re-injection vs. something
+     else) is logged as a tracked open item feeding the post-P0.5 re-decision — say so in
+     the printed caption so no reader mistakes the line for a diagnosis.
+  4. **Nit (from `ckpt-p0`):** the output-side line at **L286** prints `~28%` while the
+     ledger states `≥28%`. It is a floor (the caption at L292 already says so) — make the
+     number itself read as a floor, so the two surfaces agree.
+  5. Every printed number must be classifiable as **measured** or **riding an assumption**.
+     Make that distinction visible in the output, not only in this brief.
+- **Verify**: new selftest cases — the estimator computes the documented formula on the
+  fixture (whose chars and `output_tokens` are both known constants), and the books still
+  close: attributed + char-free + preamble + residual = TOTAL, in integers. `--selftest`
+  green, `node tools/lint.mjs` green. Re-run the baseline: record the settled ratio (or
+  band), the char-free share, and **how much the category token columns moved** vs. the
+  pause package.
+- **Read budget**: ~340 lines. **Suits:** `backend`. (If OQ6 = Option A, the manifest + CI
+  half suits `devops`; split it into a second session rather than stretching this one.)
+
+### S0.5-3 — occupancy sanity gate + the D7 denominator (D10c + the D11 follow-up)
+
+- **Reads** (~300 lines):
+  - `docs/product/decisions/2026-08-02-…-d1-rescope-memo.md` — ranged **L46-68** (M5's
+    reconciliation and, critically, the **normalisation slip**: the ledger compared against
+    `/context`'s *Messages* sub-total 377.4k while the prompt series also carries the 26.8k
+    of skills/agents/system/memory that `/context` breaks out separately) and **L253-283**
+    (§3 — the reviewer's share by view, and why the unit, not the aggregation, decides it).
+  - `tools/context-attrib.mjs` — **L248-270** (report header, where churn TOTAL is printed
+    today), **L296-330** (the D9 table, the namespaced reviewer lookup, and **L317-319 the
+    D7 verdict line** that must name its denominator), **L500-511** (the CLI block and the
+    usage string).
+  - `tools/lint.mjs` (388) — ranged **L355-380** (`checkContextAttrib`) to confirm the gate
+    needs **no** change and stays `--selftest`-only. Do not add a real-transcript gate.
+  - `.plans/context-economy.md` — **L218-225** (the locked D7 text you append a
+    clarification to — **append, never rewrite**).
+- **Do**:
+  1. **Report both quantities, labelled so they cannot be confused.**
+     `churn (Σ positive prompt-deltas) — THE OPTIMISATION TARGET` and
+     `occupancy (max prompt / final prompt) — WHAT /context REPORTS`, each with the request
+     index and transcript line where the max/final occurs. Add one printed sentence stating
+     which question each answers. Churn stays the headline (D10c).
+  2. **Re-point the 15% validity gate at occupancy.** Compare **final prompt** and **max
+     prompt** against the recorded `/context` figure and print PASS/FAIL at 15%. The
+     comparator arrives via a **third CLI form, `--context-total=<tokens>`** (see OQ7): a
+     gate computed by hand is exactly what produced the slip in step 3. Absent the flag,
+     behaviour is unchanged and exit stays 0. Update the usage string at L506 and the
+     header block at L5-6. **Log the third invocation form as a deviation** — the S2 entry
+     recorded that only two forms exist.
+  3. **Fix the normalisation slip.** The comparator is `/context`'s **TOTAL** (401.4k), not
+     the **Messages** sub-total (377.4k). Print which components the prompt series includes
+     (system prompt, tool defs, memory, skills) so the next reader cannot repeat the slip,
+     and note that the pause package's 5.59× was 5.25× under the correct normalisation.
+  4. **D11 follow-up — the 3% trigger must name its denominator.** The D7 verdict line must
+     print `reviewer return share = X% of <denominator>`, with the denominator's definition
+     **and its value**, and must state that the 3% trigger is a **token-domain share of
+     total prompt growth** statement — a char-domain share is not the trigger. Then mirror
+     one dated clarification line into the master plan under D7 (append below the locked
+     text, marked `2026-08-02 (D11 follow-up)`). **Do not alter D7's locked wording**, and
+     do not re-run the D7 verdict as a decision — D11 already ruled: D7 stands.
+  5. Nothing else changes: no tool-list edits anywhere, no lint gate change.
+- **Verify**: selftest cases — the D7 verdict line names a denominator; `--context-total`
+  produces a PASS/FAIL and the flag's absence leaves output otherwise identical;
+  `-h`/no-arg usage matches the new form. `--selftest` green, `node tools/lint.mjs` green,
+  `git diff` shows no `^[+-]tools:` line in any agent file.
+- **Read budget**: ~300 lines. **Suits:** `backend`.
+
+### S0.5-4 — re-run the baseline, record BOTH numbers, assemble the re-decision package
+
+- **Reads** (~260 lines): `.plans/context-economy.md` — the `## Replan 2026-08-02` entry
+  and the Phase 0.5 task list; `.plans/context-economy.state.md` — **L70-92** (D10–D12) and
+  the three S0.5 handoff entries; `docs/product/decisions/2026-08-02-…-d1-rescope-memo.md`
+  — **L87-119** (M8's denominator table, M9, M10) and **L221-249** (§2's recommendation
+  table and "what survives"); `tools/context-attrib.mjs` — **L1-45 header only**, for the
+  invocation forms. **Nothing else, and never the transcript.**
+- **Do**:
+  1. Record the target's size **first**: `wc -l` and `wc -c`. It is append-only and already
+     grew once (4,438 → 4,612 lines); if it grew again, say so and state plainly that the
+     before/after is then across two corpora.
+  2. Run the repaired instrument once. Record, in the ledger: churn TOTAL · occupancy
+     (max/final) · the collapse ledger + Σ collapse mass · the settled chars/token (with its
+     method and band) · the char-free mass share · the category split (**chars primary**,
+     tokens secondary + band) · the D9 table · the D7 verdict **with its named denominator**.
+     **Record both quantities now** — the corpus cannot be re-run later (architect
+     condition 3).
+  3. **The sanity gate**: occupancy vs `/context` TOTAL 401.4k at 15%. Report PASS or FAIL.
+     A FAIL is a finding to report, never a thing to tune.
+  4. **Correct the record without rewriting history**: `isCompactSummary` = **1**, not the
+     20 the pause package states (memo M1 — a self-referential grep artefact); collapses =
+     **5**, of which exactly **1** is a compaction. Note the supersession in the new entry;
+     **do not edit the historical pause-package block**.
+  5. **Assemble the P0.5 re-decision package** — one ledger block, for the human at the
+     decision point: the repaired numbers · what moved vs. the pause package and why ·
+     the three denominators (memo M8) re-derived on the repaired TOTAL · the **retracted
+     22.5%** (measured ceiling ≤15.9% char-domain / 2.8–3.7% token-domain) · the restated
+     mission headline **~4% addressed / ~1.5–2.5% captured** · one line per held phase
+     (P1–P4) on what it is worth under the repaired numbers · the free lever
+     (`skill_listing` — the only category whose share *rises* under an occupancy view, memo
+     M10) as a re-decision **input**, not as planned work · and the still-open items:
+     collapse #4, `attach: other`, the char-free explanation, and n=1 / D4b.
+  6. Set `Next up:` to `ckpt-p05`.
+- **Verify**: `node tools/lint.mjs` green; the ledger block contains every item in step 5;
+  both churn and occupancy recorded; no transcript was Read (state this explicitly).
+- **Read budget**: ~260 lines. **Suits:** `backend` (measurement). `analyst` is acceptable
+  for step 5 alone, with the numbers handed over — it needs no transcript.
+
+**Checkpoint `ckpt-p05`** ends Phase 0.5 — an independent `reviewer` (fresh context) re-runs
+`node tools/lint.mjs` and `--selftest`, **independently re-derives the mutation proof** for
+the `prompt = 0` guard (S0.5-1 step 5) rather than trusting the handoff, and verifies:
+churn and occupancy are labelled unambiguously and churn is still the headline; the D7
+verdict names its denominator and D7 still stands (D11); every deferral (collapse #4,
+`attach: other`, the char-free explanation) is **logged**, not silently dropped; and no
+number was tuned toward a target. On APPROVE the orchestrator merges
+`mission/context-economy-p05` into `mission/context-economy-integration` (batch policy —
+**never** the default branch).
+
+> ### ⛔ DECISION POINT — the human re-decides P1–P4
+> **P1–P4 are NOT authorized.** After `ckpt-p05`, the S0.5-4 re-decision package goes to the
+> human, who re-decides the fate of Phase 1, 2, 3 and 4 with repaired numbers in hand —
+> including whether the free `skill_listing` lever is pulled in. Do not spawn S4 or any
+> later session on agent judgment. Resuming is a human act, and the outcome lands as new
+> dated locked decisions in `.plans/context-economy.md`.
+
+---
+
+## Phase 1 — write firewall (branch: `mission/context-economy-p1`) — **HELD**
+
+> **HELD pending the post-P0.5 re-decision (2026-08-02 replan).** **The premise is
+> retracted**: the write firewall was sized on orchestrator Write/Edit at **22.5%**; the
+> measured ceiling is **≤15.9%** even under the most generous (NARROW) denominator, and
+> **2.8–3.7%** in the token domain (memo M8/M9). Under the architect's recommended
+> normalisation the phase buys **~1.5–2.5%** — the cost case for a phase of contract
+> engineering is dead. What may survive is *contract hygiene worth doing because it is
+> nearly free* (OQ3's one-line `chronicler` addition, the `--body-file` routing). **That is
+> a scope call and it is the human's.** Do not run S4. Re-verify every read below before
+> un-holding — these line counts are from 2026-08-01.
 
 _Sequential (touches `mission.md` and WORKFLOW §6.2, which Phase 2 also edits nearby).
 Runs only after the D1 pause is released._
@@ -237,7 +504,14 @@ the integration branch on APPROVE.
 
 ---
 
-## Phase 2 — standing steers (branch: `mission/context-economy-p2`)
+## Phase 2 — standing steers (branch: `mission/context-economy-p2`) — **HELD**
+
+> **HELD pending the post-P0.5 re-decision (2026-08-02 replan).** **Least affected by the
+> new evidence**: standing steers are a *fidelity* control (file state preserves decisions
+> but loses taste), and their justification never rested on token math — the memo says so
+> explicitly (§2, "what survives"). Held only because it is sequenced after P1 and shares
+> `mission.md` with it, not because the case weakened. Re-verify the reads before
+> un-holding — these line counts are from 2026-08-01.
 
 _Sequential after P1 (both touch `mission.md`). Not parallel-safe with P3 (both touch
 `templates/WORKFLOW.md`)._
@@ -287,7 +561,15 @@ and that no append instruction leaked into §2. Merge into integration on APPROV
 
 ---
 
-## Phase 3 — post-compaction hook (branch: `mission/context-economy-p3`) — **[STRICT]**
+## Phase 3 — post-compaction hook (branch: `mission/context-economy-p3`) — **[STRICT] · HELD**
+
+> **HELD pending the post-P0.5 re-decision (2026-08-02 replan).** **The case is unchanged
+> and arguably strengthened as a correctness control.** M1/M2 confirm exactly **one** real
+> compaction in a 596-request session — so the hook is not a cost lever (it never was), and
+> its value is that *that one* compaction does not lose the ledger. The D8 promote-to-Option-B
+> trigger (`isCompactSummary` ≥ 3) is **further** from firing than the ledger's "20" implied:
+> the true project count is **1**. Re-verify the reads before un-holding — these line counts
+> are from 2026-08-01.
 
 _Sequential. STRICT checkpoint (D3): the reviewer re-derives every claim and dispatches
 the hook itself. The verdict must be **surfaced to the human when it lands** — under the
@@ -348,7 +630,17 @@ into integration on APPROVE.
 
 ---
 
-## Phase 4 — measure, record, ship (branch: `mission/context-economy-p4`)
+## Phase 4 — measure, record, ship (branch: `mission/context-economy-p4`) — **HELD**
+
+> **HELD pending the post-P0.5 re-decision (2026-08-02 replan).** Two things changed.
+> **(a) D4a's design is now downstream of P0.5**: a before/after needs one quantity
+> (churn, per D10c), a repaired baseline, and a settled unit — none of which existed when
+> S7 was written, and S7's baseline comparison points at superseded numbers.
+> **(b) The metrics doc's headline must be restated**: "~25% addressed / 10–15% realistic
+> capture" becomes **~4% addressed / ~1.5–2.5% captured** in the token domain, and the doc
+> must name its denominator. S8's ship step also presumes P1's firewall shipped (it calls
+> itself "the firewall's own first live test"). Re-verify the reads before un-holding —
+> these line counts are from 2026-08-01.
 
 ### S7 — re-measurement + metrics doc (tasks 17–20; OQ5 applies)
 
