@@ -32,7 +32,7 @@ checkpoint/reviewer/chronicler row — set `[~]` the moment a beat is picked up 
 - [x] S1 — doc-defect sweep: kill "fresh context per tick" (branch `mission/context-economy-p0`)
 - [x] S2 — build `tools/context-attrib.mjs` + `--selftest` + lint delegation (branch `mission/context-economy-p0`)
 - [x] S3 — run the baseline measurement, record split + D9 table + sanity check (branch `mission/context-economy-p0`)
-- [~] Checkpoint `ckpt-p0` — phase 0 review + merge into `mission/context-economy-integration` (reviewer in flight, 2026-08-01)
+- [x] Checkpoint `ckpt-p0` — **APPROVE** 2026-08-02 after one corrective session (S3-fix). Scorecard: QA 3 · Security 3 · Efficiency 3 · Architecture 3 · UX 3 · DX 2. Merged into `mission/context-economy-integration` (`273f1d3`, batch policy — main untouched).
 - [ ] ⛔ **D1 HARD PAUSE — mission STOPS. Human re-scopes P1–P4 with the real numbers before any later phase is spawned. Do not proceed on agent judgment.**
 - [ ] S4 — write firewall: extend the 30% rule to writes; no tool-list change anywhere, per D7 (branch `mission/context-economy-p1`)
 - [ ] Checkpoint `ckpt-p1` — phase 1 review + merge into integration
@@ -136,6 +136,18 @@ allowed; deviating silently is not (§4)._
 
 _≤10 lines per entry: what this session did, the verify signal, the branch, and what the
 next session needs. Newest on top; crash-safe by write-ahead._
+
+- _2026-08-02 `ckpt-p0` (reviewer, re-review after S3-fix): **APPROVE**. Scorecard QA 3 ·
+  Security 3 · Efficiency 3 · Architecture 3 · UX 3 · DX 2. Re-ran every gate: lint clean;
+  `--selftest` 17 ok; fail-closed negative check reproduced; **restraint confirmed — TOTAL
+  bit-identical at 2,108,485**, D9 reviewer 4.0%, all category rows digit-for-digit, 5.59×
+  sanity failure standing; S1 sweep re-derived. F1–F5 all verified fixed; F2 mutation
+  re-run independently (residual guard fails with the mirror case forced true). **Ruled
+  for S3-fix on F5-nit-1**: the over-subscription is an algebraic identity
+  `(charsSeen − calChars)/r` = 87,026.5 vs observed 87,026, positive for ANY ratio →
+  zero information, not a third signal. Merged P0 → integration `273f1d3`. Non-blocking
+  nits for later: ledger cites `:171`, actual is `:173`; script prints "~28%" vs ledger
+  "≥28%". **Mission now STOPS at the ⛔ D1 HARD PAUSE.**_
 
 - _2026-08-02 S3-fix (`backend`, branch `mission/context-economy-p0`): corrective pass on
   the `ckpt-p0` REQUEST CHANGES — all five findings landed, **no number improved**.
