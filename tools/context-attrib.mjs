@@ -4,6 +4,9 @@
 //
 //   node tools/context-attrib.mjs <transcript.jsonl>   # measure one session
 //   node tools/context-attrib.mjs --selftest           # synthetic fixture, no real transcript
+//   node tools/context-attrib.mjs <transcript.jsonl> --context-total=<tokens>
+//                                                     # ...and run the 15% validity gate
+//                                                     # against a recorded `/context` TOTAL
 //
 // Transcripts are 3-12 MB, so this NEVER reads one into memory (readline over a
 // stream) and NEVER prints transcript content — labels and numbers only.
@@ -12,7 +15,14 @@
 // TOTAL   = Σ prompt-delta over UNIQUE requestIds. A request's prompt size is
 //           input + cache_creation + cache_read; the delta against the previous
 //           request is what that turn ADDED to context. Summed, that is the
-//           session's context occupancy — what it paid to accumulate.
+//           session's CHURN — what it paid to accumulate. TOTAL is the mission's
+//           OPTIMISATION TARGET (D10c) and is the headline figure of this report.
+// OCCUPANCY = max prompt / final prompt. NOT the same quantity as TOTAL and never
+//           interchangeable with it: churn answers "what did accumulation cost",
+//           occupancy answers "how full is the window" — the latter is what
+//           `/context` reports and therefore the only one a `/context` reading can
+//           validate. The 15% validity gate compares OCCUPANCY (not churn) against
+//           a recorded `/context` **TOTAL**, supplied via `--context-total=`.
 // CHARS are the PRIMARY figure everywhere below: they are counted, not modelled.
 //           Every TOKEN figure is an ESTIMATE and is printed as a BAND, never as a
 //           bare point value (OQ6, resolved 2026-08-02: zero-dep, chars primary).
@@ -127,6 +137,12 @@ export async function analyze(file) {
   let compactSummaryRecords = 0;       // records with isCompactSummary === true (any type)
   let compactSincePrev = false;        // a compact summary sits between the last request and this one
   let prevPrompt = null, winChars = 0;
+  // OCCUPANCY (D10c): what actually SITS in the window, as distinct from churn. Both the
+  // high-water mark and the last observation are kept with the request index and the
+  // transcript line they occur on, because "which request was the session at its
+  // fullest" is the first question anyone asks of a max.
+  let maxPrompt = null, maxPromptIdx = null, maxPromptLine = null;
+  let finalPromptIdx = null, finalPromptLine = null;
   const seen = new Set();
 
   const add = (cat, n) => { cats.set(cat, cats.get(cat) + n); winChars += n; };
@@ -233,6 +249,11 @@ export async function analyze(file) {
           // Close the window: chars appended since the previous request are what
           // this request's prompt delta paid for.
           windows.push({ delta: prevPrompt == null ? p : Math.max(0, p - prevPrompt), chars: winChars, first: prevPrompt == null });
+          // Occupancy is read off the SAME observations TOTAL is summed from — the
+          // degenerate (prompt = 0) records never reach here, so a phantom 0 can neither
+          // become the "final" occupancy nor reset the high-water mark.
+          if (maxPrompt == null || p > maxPrompt) { maxPrompt = p; maxPromptIdx = requests; maxPromptLine = lines; }
+          finalPromptIdx = requests; finalPromptLine = lines;
           prevPrompt = p;
           winChars = 0;
           compactSincePrev = false;
@@ -382,6 +403,8 @@ export async function analyze(file) {
     windows, total, preamble, calDelta, calChars, churnRatio, trailingChars: winChars,
     degenerateUsage, compactSummaryRecords, env, bandLo, bandHi, envSamples,
     collapses, collapseMass, finalPrompt, ratchetOk, unexplainedCollapses,
+    maxPrompt: maxPrompt == null ? 0 : maxPrompt, maxPromptIdx, maxPromptLine,
+    finalPromptIdx, finalPromptLine,
     charsSeen, residualChars, rows,
     attributedLo, attributedHi, residualTokLo, residualTokHi,
     charFreeLo, charFreeHi, unattributedLo, unattributedHi,
@@ -404,7 +427,135 @@ const bandPct = (lo, hi, total) => (lo == null || hi == null || total <= 0
     ? pct(lo, total)
     : `${((lo / total) * 100).toFixed(1)}–${((hi / total) * 100).toFixed(1)}%`));
 
-function report(r) {
+// ── Churn vs occupancy, and the 15% validity gate (D10c, task 25) ────────
+// TWO DIFFERENT QUANTITIES. Only occupancy can be validated against a `/context`
+// reading, because `/context` reports what is resident, not what accumulation cost.
+const GATE_PCT = 15;
+// The prompt series is input + cache_creation + cache_read — i.e. EVERYTHING resident.
+// `/context` breaks the non-message parts out separately, so its *Messages* sub-total
+// excludes them. Comparing occupancy against that sub-total is the normalisation slip
+// that inflated this repo's reported divergence from 5.25x to 5.59x (memo M5): the
+// comparator is `/context`'s **TOTAL**, and `--context-total=` exists so that number is
+// passed in once, in writing, instead of being carried in a head.
+const PROMPT_SERIES_COMPONENTS = 'system prompt + tool definitions + memory (CLAUDE.md) + skills/agents + message history';
+
+const gateRow = (label, value, contextTotal) => {
+  const devPct = contextTotal > 0 ? ((value - contextTotal) / contextTotal) * 100 : null;
+  return { label, value, devPct, pass: devPct != null && Math.abs(devPct) <= GATE_PCT };
+};
+// Returns null when no comparator was supplied — the flag's absence must leave the run
+// otherwise identical, so the gate is a pure function of (result, flag) and prints
+// nothing at all when it is not asked for.
+function occupancyGate(r, contextTotal) {
+  if (!Number.isFinite(contextTotal) || contextTotal <= 0) return null;
+  return {
+    contextTotal,
+    // `/context` shows the RESIDENT window, so the final prompt is its direct analogue
+    // and carries the gate verdict. The high-water mark is printed beside it (with its
+    // own verdict) so no one can pick whichever endpoint flatters the model.
+    final: gateRow('final prompt (resident at session end)', r.finalPrompt, contextTotal),
+    max: gateRow('max prompt (session high-water mark)', r.maxPrompt, contextTotal),
+  };
+}
+
+// The comparator is supplied, never inferred — and a comparator that cannot be parsed
+// is not a comparator. FAILS CLOSED to `null` (never a silent 0 or NaN), so the CLI can
+// refuse the run instead of printing a confident gate against a garbage number.
+function parseContextTotal(raw) {
+  const s = String(raw ?? '').trim().replace(/[_,]/g, '');
+  if (!/^\d+(\.\d+)?$/.test(s)) return null;
+  const n = Number(s);
+  return Number.isFinite(n) && n > 0 ? n : null;
+}
+
+// Both report blocks are pure line producers, not `console.log` walls: that is what lets
+// the selftest assert on their CONTENT (that churn is labelled the optimisation target,
+// that the gate names its comparator) instead of only on the numbers behind them.
+function churnOccupancyLines(r) {
+  const where = (idx, line) => (idx == null ? '(no observation)' : `request #${n0(idx)}, transcript line ${n0(line)}`);
+  return [
+    '  CHURN vs OCCUPANCY — two different quantities, never interchangeable',
+    `    churn (Σ positive prompt-deltas) — THE OPTIMISATION TARGET  ${lpad(n0(r.total), 12)} tok [MEASURED]`,
+    `    occupancy: max prompt   — WHAT /context REPORTS             ${lpad(n0(r.maxPrompt), 12)} tok [MEASURED]  at ${where(r.maxPromptIdx, r.maxPromptLine)}`,
+    `    occupancy: final prompt — WHAT /context REPORTS             ${lpad(n0(r.finalPrompt), 12)} tok [MEASURED]  at ${where(r.finalPromptIdx, r.finalPromptLine)}`,
+    '    Churn answers "what did accumulating this session COST"; occupancy answers "how FULL is the',
+    '    window at a point in time". They are not convertible into one another, and a `/context`',
+    '    reading can validate ONLY occupancy — so the 15% validity gate runs on occupancy, while',
+    '    CHURN REMAINS THE OPTIMISATION TARGET and this report\'s headline figure (D10c).',
+  ];
+}
+
+// Returns [] when no comparator was supplied: the flag's absence must leave the run
+// byte-for-byte identical, so this block either prints in full or not at all.
+function gateLines(r, contextTotal) {
+  const g = occupancyGate(r, contextTotal);
+  if (!g) return [];
+  const sign = (x) => `${x >= 0 ? '+' : ''}${x.toFixed(1)}%`;
+  const row = (x) => `    ${pad(x.label, 40)}${lpad(n0(x.value), 12)} tok  ${lpad(sign(x.devPct), 8)} vs comparator  ${x.pass ? 'PASS' : 'FAIL'}`;
+  const churnDev = ((r.total - g.contextTotal) / g.contextTotal) * 100;
+  return [
+    `  15% VALIDITY GATE — OCCUPANCY vs a recorded \`/context\` TOTAL (--context-total)`,
+    `    comparator: /context TOTAL = ${n0(g.contextTotal)} tok [RECORDED — supplied on the command line]`,
+    `    the prompt series measured here = ${PROMPT_SERIES_COMPONENTS}`,
+    '    → the comparator is /context\'s TOTAL, NOT its `Messages` sub-total. /context breaks',
+    '      skills/agents/system/memory out separately, so the sub-total omits them while the',
+    '      prompt series does not. Comparing against the sub-total is the normalisation slip that',
+    '      inflated this repo\'s reported divergence from 5.25x to 5.59x (memo M5). Passing the',
+    '      TOTAL in on the command line, in writing, is what stops that slip recurring.',
+    row(g.final),
+    row(g.max),
+    `    GATE VERDICT (carried by the FINAL prompt — /context's direct analogue): ${g.final.pass ? 'PASS' : 'FAIL'} at ±${GATE_PCT}%`,
+    `    churn is NOT gated here: at ${n0(r.total)} tok it is ${sign(churnDev)} vs the comparator. That is`,
+    '      expected and is not a defect — churn is not an occupancy figure and no /context reading',
+    '      can validate it (this is exactly the comparison D10c re-pointed).',
+    '    A FAIL is a FINDING to report, never a thing to tune. Exit status is unaffected.',
+  ];
+}
+
+// ── D7's denominator, named (D11 follow-up, task 26) ─────────────────────
+// The 3% trigger in D7 was written about CONTEXT CONSUMPTION, and context is denominated
+// in TOKENS — so the trigger is a token-domain share of total prompt growth. A char-domain
+// share is a different statistic with a different denominator (Σ appended chars), and
+// reading one as the other is what produced the 4.0%-vs-1.2% reopen (memo §3, D11).
+// Naming the denominator AND printing its value is the whole point of this line.
+const D7_DENOM_LABEL = 'TOTAL prompt growth (Σ positive prompt-deltas over unique requests)';
+function d7Lines(r) {
+  const revChars = [...r.agents.entries()]
+    // subagent_type is plugin-NAMESPACED in real transcripts (`agentic-workflow:reviewer`);
+    // an exact 'reviewer' lookup silently reports "not exercised" and suppresses the
+    // verdict. Match on the final segment, and aggregate every namespace ending in it.
+    .filter(([t]) => String(t).split(':').pop() === 'reviewer')
+    .reduce((n, [, a]) => n + a.returnChars, 0);
+  if (revChars === 0) return ['    reviewer: no Agent blocks — D7 reopen test not exercised by this transcript'];
+  if (!r.bandLo) {
+    return ['    reviewer: chars/token band unavailable — D7 token-domain verdict SUPPRESSED (a char-domain share is not the trigger)'];
+  }
+  // The reading keys off the band's HIGH-token end, i.e. the conservative one: if the
+  // share COULD exceed 3% anywhere in the band, say so rather than quietly picking the
+  // endpoint that keeps D7 shut.
+  const tokLo = Math.round(revChars / r.bandHi);
+  const tokHi = Math.round(revChars / r.bandLo);
+  const shareLo = r.total > 0 ? (tokLo / r.total) * 100 : 0;
+  const shareHi = r.total > 0 ? (tokHi / r.total) * 100 : 0;
+  const reading = shareHi > 3
+    ? (shareLo > 3
+      ? 'the WHOLE band is above 3% — the trigger condition reads as MET'
+      : 'the band STRADDLES 3% (below it at the low end, above it at the high end) — the trigger condition is UNDECIDABLE at this band width, and a band this wide cannot answer a threshold question')
+    : 'the whole band is at or under 3% — the trigger condition reads as NOT met';
+  return [
+    `    reviewer return share = ${shareLo.toFixed(2)}–${shareHi.toFixed(2)}% of ${D7_DENOM_LABEL} = ${n0(r.total)} tok [EST/BAND ÷ MEASURED]`,
+    `      DENOMINATOR: ${D7_DENOM_LABEL}. Value ${n0(r.total)} tok [MEASURED].`,
+    `      NUMERATOR: reviewer return chars ${n0(revChars)} [MEASURED] ÷ the ${r.bandLo.toFixed(2)}–${r.bandHi.toFixed(2)} chars/token band = ${band(tokLo, tokHi)} tok [EST/BAND].`,
+    '      The D7 3% trigger is a TOKEN-DOMAIN SHARE OF TOTAL PROMPT GROWTH. A CHAR-DOMAIN SHARE IS NOT THE TRIGGER:',
+    `      for reference the char share is ${pct(revChars, r.charsSeen)} of ${n0(r.charsSeen)} appended chars — a DIFFERENT denominator, and reading it as the trigger is the normalisation error D11 recorded.`,
+    `      reading: ${reading}.`,
+    '      This line RE-DERIVES the trigger; it does not re-decide D7. D11 (2026-08-02, human) already',
+    '      ruled: D7 STANDS and the reviewer keeps its no-Write structural guarantee. Reopening is the',
+    '      human\'s act at a checkpoint, never this instrument\'s.',
+  ];
+}
+
+function report(r, opts = {}) {
   const name = path.basename(r.file);
   console.log(`context-attrib: ${name}`);
   console.log('  [MEASURED] = counted from the transcript · [EST/BAND] = rides the chars/token band below');
@@ -415,6 +566,14 @@ function report(r) {
   console.log(`  degenerate usage records skipped ${n0(r.degenerateUsage)} (prompt = 0 → no usable prompt observation; not billed, does not reset the series)`);
   console.log(`  TOTAL context tokens (Σ prompt-delta) ${n0(r.total)} [MEASURED]   [naive per-line sum would report ${n0(r.naiveTotal)}${r.total > 0 ? ` — ${(r.naiveTotal / r.total).toFixed(1)}x` : ''}]`);
   console.log('');
+
+  // ── Churn vs occupancy, then the gate (D10c) ──────────────────────────
+  for (const l of churnOccupancyLines(r)) console.log(l);
+  console.log('');
+  // Prints nothing at all without `--context-total` — the flag's absence must leave the
+  // rest of this report identical, so no placeholder and no "gate not run" line either.
+  const gl = gateLines(r, opts.contextTotal);
+  if (gl.length) { for (const l of gl) console.log(l); console.log(''); }
 
   // ── chars/token band — the ONLY place a token conversion is licensed ───
   console.log('  chars/token — OUTPUT-SIDE ENVELOPE ESTIMATOR (zero-dep; no tokenizer is run)');
@@ -537,28 +696,8 @@ function report(r) {
       console.log(`    ${pad(t, 30)}${lpad(n0(a.spawns), 8)}${lpad(n0(a.spawnChars), 13)}${lpad(n0(a.returns), 9)}${lpad(n0(a.returnChars), 14)}${lpad(band(lo, hi), 21)}${lpad(bandPct(lo, hi, r.total), 14)}`);
     }
   }
-  // subagent_type is plugin-NAMESPACED in real transcripts (`agentic-workflow:reviewer`);
-  // an exact 'reviewer' lookup silently reports "not exercised" and suppresses the D7
-  // verdict. Match on the final segment, and aggregate every namespace that ends in it.
-  const revChars = [...r.agents.entries()]
-    .filter(([t]) => String(t).split(':').pop() === 'reviewer')
-    .reduce((n, [, a]) => n + a.returnChars, 0);
-  if (revChars === 0) console.log('    reviewer: no Agent blocks — D7 reopen test not exercised by this transcript');
-  else if (!r.bandLo) console.log('    reviewer: chars/token band unavailable — D7 token-domain verdict SUPPRESSED (a char-domain share is not the trigger)');
-  else {
-    // The verdict keys off the band's HIGH-token end, i.e. the conservative one: if the
-    // share COULD exceed 3% anywhere in the band, say so rather than quietly picking the
-    // endpoint that keeps D7 shut. (D11 already ruled D7 stands; this line re-derives,
-    // it does not re-decide. Naming the denominator formally is S0.5-3's task.)
-    const tokLo = Math.round(revChars / r.bandHi);
-    const tokHi = Math.round(revChars / r.bandLo);
-    const shareLo = r.total > 0 ? (tokLo / r.total) * 100 : 0;
-    const shareHi = r.total > 0 ? (tokHi / r.total) * 100 : 0;
-    console.log(`    reviewer return share = ${shareLo.toFixed(2)}–${shareHi.toFixed(2)}% of TOTAL prompt growth (token domain, [EST/BAND]) — ${shareHi > 3
-      ? 'the band REACHES ABOVE 3% → REOPENS decision D7 (reviewer untouched in v1)'
-      : 'the whole band is at or under 3% → D7 stands (reviewer untouched in v1)'}`);
-    console.log(`    (chars, for reference: ${n0(revChars)} = ${pct(revChars, r.charsSeen)} of all appended chars [MEASURED] — a CHAR share is NOT the D7 trigger)`);
-  }
+  // The D7 line names its own denominator and its value (D11 follow-up) — see `d7Lines`.
+  for (const l of d7Lines(r)) console.log(l);
   if (r.taskBlocks) console.log(`  warn: ${n0(r.taskBlocks)} \`Task\` tool_use block(s) seen — the spawn tool is \`Agent\`; taxonomy may have drifted`);
   if (r.attachFallbackSized) {
     const share = pct(r.attachFallbackChars, r.charsSeen);
@@ -860,6 +999,111 @@ async function selftest() {
     check('tool results exclude subagent returns',
       cat('tool results') === F.toolResult1.length + 'File created'.length + F.toolResult2.length,
       `${cat('tool results')}`);
+
+    // 6. OCCUPANCY, the 15% gate, and D7's named denominator (S0.5-3, D10c + D11).
+    // The fixture's prompt series over non-degenerate requests is
+    //   #1 1,200 (L2) · #2 2,000 (L9) · #3 2,600 (L13) · #4 1,000 (L14) · #5 1,000 (L16) · #6 1,000 (L17)
+    // — so the high-water mark is #3 and a later COLLAPSE must not reset it, while the
+    // final observation is #6. Pinning idx AND line is what makes this fail if occupancy
+    // is ever set from anything other than the observation stream (e.g. from TOTAL).
+    check('occupancy: max and final prompt carry their request index and transcript line',
+      r.maxPrompt === 2600 && r.maxPromptIdx === 3 && r.maxPromptLine === 13
+      && r.finalPrompt === 1000 && r.finalPromptIdx === 6 && r.finalPromptLine === 17,
+      `max=${r.maxPrompt}@#${r.maxPromptIdx}/L${r.maxPromptLine} final=${r.finalPrompt}@#${r.finalPromptIdx}/L${r.finalPromptLine} (want 2600@#3/L13 · 1000@#6/L17)`);
+    // Distinctness, stated honestly: on THIS fixture max occupancy and churn coincide at
+    // 2,600 (the series never collapsed-then-exceeded its own churn), so max cannot carry
+    // the churn-vs-occupancy distinction. The FINAL prompt can — 1,000 vs 2,600 — and it
+    // is the row the gate's verdict rides, so that is where the case is placed.
+    check('occupancy: is NOT churn — the final prompt and TOTAL are different quantities',
+      r.finalPrompt !== r.total && r.finalPrompt < r.maxPrompt && r.maxPromptIdx < r.finalPromptIdx,
+      `churn=${r.total} maxOcc=${r.maxPrompt}@#${r.maxPromptIdx} finalOcc=${r.finalPrompt}@#${r.finalPromptIdx}`);
+    // Bound to the ROW that carries each number, not to the block as a whole: a block-wide
+    // regex stays green when the label is stripped off the churn row while the closing
+    // prose still says "optimisation target" — verified by mutation, and it is the exact
+    // hole S0.5-2's salvage was told to close.
+    const coLines = churnOccupancyLines(r);
+    const rowFor = (needle) => coLines.find((l) => l.includes(needle)) ?? '';
+    const churnRow = rowFor('Σ positive prompt-deltas');
+    const maxRow = rowFor('occupancy: max prompt');
+    const finalRow = rowFor('occupancy: final prompt');
+    check('report: EACH row carries its own label — churn the optimisation target, occupancy what /context reports',
+      /THE OPTIMISATION TARGET/.test(churnRow) && churnRow.includes(n0(r.total))
+      && /WHAT \/context REPORTS/.test(maxRow) && maxRow.includes(n0(r.maxPrompt))
+      && /request #3, transcript line 13/.test(maxRow)
+      && /WHAT \/context REPORTS/.test(finalRow) && finalRow.includes(n0(r.finalPrompt))
+      && /request #6, transcript line 17/.test(finalRow)
+      && /CHURN REMAINS THE OPTIMISATION TARGET/.test(coLines.join('\n')),
+      coLines.join('\n'));
+    // THE gate case: feed churn in as the comparator and the final row must FAIL. Wiring
+    // the gate to churn (the pre-D10c comparison) makes this line PASS at 0.0% deviation.
+    check('gate: runs on OCCUPANCY, not churn — churn as comparator fails the final row',
+      occupancyGate(r, r.total).final.pass === false
+      && occupancyGate(r, r.finalPrompt).final.pass === true
+      && Math.abs(occupancyGate(r, r.finalPrompt).final.devPct) < 1e-9,
+      `vs churn ${JSON.stringify(occupancyGate(r, r.total).final)} · vs final ${JSON.stringify(occupancyGate(r, r.finalPrompt).final)}`);
+    check('gate: without a comparator it produces NOTHING (absence leaves the run identical)',
+      occupancyGate(r, null) === null && occupancyGate(r, 0) === null
+      && occupancyGate(r, NaN) === null && occupancyGate(r, -1) === null
+      && gateLines(r, null).length === 0 && gateLines(r, undefined).length === 0,
+      `null=${occupancyGate(r, null)} lines=${gateLines(r, null).length}`);
+    // Brackets the threshold tightly from both sides on BOTH rows: 13.98%/14.03% pass and
+    // 16.02%/16.01% fail, so any threshold that is not 15 breaks one of the four clauses.
+    check('gate: the threshold is ±15% — ~14% passes and ~16% fails, on both rows',
+      occupancyGate(r, 877).final.pass === true && occupancyGate(r, 862).final.pass === false
+      && occupancyGate(r, 2281).max.pass === true && occupancyGate(r, 2241).max.pass === false,
+      `final: 877→${occupancyGate(r, 877).final.devPct.toFixed(2)}% 862→${occupancyGate(r, 862).final.devPct.toFixed(2)}% · max: 2281→${occupancyGate(r, 2281).max.devPct.toFixed(2)}% 2241→${occupancyGate(r, 2241).max.devPct.toFixed(2)}%`);
+    // The normalisation slip this session exists to fix: the block must name /context's
+    // TOTAL as the comparator, name what the prompt series contains, and warn off the
+    // `Messages` sub-total by naming both divergence figures.
+    const gl = gateLines(r, 401400).join('\n');
+    check('gate: names /context TOTAL as comparator and warns off the Messages sub-total',
+      /\/context TOTAL = 401,400 tok/.test(gl) && /`Messages` sub-total/.test(gl)
+      && /5\.25x to 5\.59x/.test(gl)
+      && /system prompt/.test(gl) && /tool definitions/.test(gl) && /memory/.test(gl) && /skills/.test(gl),
+      gl);
+    // D7's denominator (D11 follow-up). The expected share is rebuilt from the fixture's
+    // OWN payloads and the independently-derived quantiles above — never read back out of
+    // the implementation — and the denominator is written as the literal 2,600 that other
+    // cases pin, so swapping the denominator to `charsSeen` (the char-domain reading D11
+    // called an artefact) fails this case rather than quietly re-labelling it.
+    const wantRevLo = Math.round(F.reviewReturn.length / wantMax);
+    const wantRevHi = Math.round(F.reviewReturn.length / wantP90);
+    const wantShareLo = (wantRevLo / 2600) * 100;
+    const wantShareHi = (wantRevHi / 2600) * 100;
+    const d7 = d7Lines(r).join('\n');
+    check('D7: the share names its denominator AND its value (token domain, prompt growth)',
+      d7.includes(`reviewer return share = ${wantShareLo.toFixed(2)}–${wantShareHi.toFixed(2)}%`)
+      && d7.includes('DENOMINATOR: TOTAL prompt growth (Σ positive prompt-deltas over unique requests). Value 2,600 tok')
+      && /TOKEN-DOMAIN SHARE OF TOTAL PROMPT GROWTH/.test(d7),
+      d7);
+    check('D7: the char-domain share is printed as NOT the trigger, and differs from it',
+      /CHAR-DOMAIN SHARE IS NOT THE TRIGGER/.test(d7)
+      && d7.includes(`${pct(F.reviewReturn.length, r.charsSeen)} of ${n0(r.charsSeen)} appended chars`)
+      && Math.abs((F.reviewReturn.length / r.charsSeen) * 100 - wantShareHi) > 0.5,
+      `char share=${pct(F.reviewReturn.length, r.charsSeen)} token share=${wantShareLo.toFixed(2)}–${wantShareHi.toFixed(2)}%`);
+    check('D7: the line RE-DERIVES the trigger and does not re-decide — D11 is named',
+      /D11 \(2026-08-02, human\) already/.test(d7) && /does not re-decide D7/.test(d7)
+      && /D7 STANDS/.test(d7) && !/REOPENS/.test(d7),
+      d7);
+    // The INVOCATION LINES, not merely the flag's presence somewhere in the help text:
+    // the flag name also appears in the option description below them, so a block-wide
+    // regex survives deleting the form itself (verified by mutation).
+    const forms = USAGE.split('\n').filter((l) => /context-attrib\.mjs/.test(l));
+    check('usage: names all THREE invocation forms as separate invocation lines',
+      forms.length === 3
+      && forms.filter((l) => /<transcript\.jsonl>$/.test(l)).length === 1
+      && forms.filter((l) => /<transcript\.jsonl> --context-total=<tokens>$/.test(l)).length === 1
+      && forms.filter((l) => /--selftest$/.test(l)).length === 1,
+      `forms=${JSON.stringify(forms)}`);
+    // Fail closed: an unparsable comparator must become `null` (the CLI then refuses the
+    // run), never a silent 0/NaN that would print a confident gate against garbage.
+    check('--context-total: parses separators and FAILS CLOSED on anything else',
+      parseContextTotal('401400') === 401400 && parseContextTotal('401_400') === 401400
+      && parseContextTotal('401,400') === 401400 && parseContextTotal(' 401400 ') === 401400
+      && parseContextTotal('abc') === null && parseContextTotal('') === null
+      && parseContextTotal('0') === null && parseContextTotal('-5') === null
+      && parseContextTotal('4e5') === null && parseContextTotal(undefined) === null,
+      `401_400→${parseContextTotal('401_400')} abc→${parseContextTotal('abc')} 0→${parseContextTotal('0')}`);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
@@ -872,12 +1116,41 @@ async function selftest() {
 }
 
 // ── CLI ──────────────────────────────────────────────────────────────────
-const arg = process.argv[2];
+// THREE invocation forms (the third added in S0.5-3; logged as a deviation from S2's
+// "no other CLI form exists" note). `--context-total` is optional and additive: without
+// it the run is byte-for-byte what it was before.
+const USAGE = [
+  'usage: node tools/context-attrib.mjs <transcript.jsonl>',
+  '       node tools/context-attrib.mjs <transcript.jsonl> --context-total=<tokens>',
+  '       node tools/context-attrib.mjs --selftest',
+  '',
+  '  --context-total=<tokens>  a recorded `/context` TOTAL — NOT its `Messages` sub-total.',
+  '                            Runs the 15% validity gate against OCCUPANCY (max/final',
+  '                            prompt). Omit it and the report is otherwise identical.',
+].join('\n');
+
+const argv = process.argv.slice(2);
+const ctxFlag = argv.find((a) => a.startsWith('--context-total'));
+const rest = argv.filter((a) => a !== ctxFlag);
+const arg = rest[0];
+const die = (msg) => { console.error(`error: ${msg}\n${USAGE}`); process.exit(1); };
+
 if (arg === '--selftest') {
+  // Fail closed: the gate needs a real `/context` reading of a real session, so pairing
+  // it with the synthetic fixture is a user error rather than something to ignore.
+  if (ctxFlag) die('--context-total cannot be combined with --selftest (the gate needs a real transcript)');
   await selftest();
 } else if (!arg || arg === '-h' || arg === '--help') {
-  console.error('usage: node tools/context-attrib.mjs <transcript.jsonl> | --selftest');
+  console.error(USAGE);
   process.exit(arg ? 0 : 1);
+} else if (rest.length > 1) {
+  die(`unexpected extra argument \`${rest[1]}\``);
 } else {
-  report(await analyze(path.resolve(arg)));
+  let contextTotal = null;
+  if (ctxFlag) {
+    if (!ctxFlag.startsWith('--context-total=')) die('--context-total takes its value inline, e.g. --context-total=401400');
+    contextTotal = parseContextTotal(ctxFlag.slice('--context-total='.length));
+    if (contextTotal == null) die(`--context-total expects a positive token count, e.g. --context-total=401400 (got \`${ctxFlag}\`)`);
+  }
+  report(await analyze(path.resolve(arg)), { contextTotal });
 }

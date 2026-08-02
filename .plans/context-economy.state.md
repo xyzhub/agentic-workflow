@@ -22,10 +22,10 @@ for the D1 pause package.
 
 **UNBLOCKED — OQ1–OQ5 all RESOLVED 2026-08-01** (human accepted every planner
 recommendation; details in `## Open questions`). Phase 0 is done and merged.
-**Since the 2026-08-02 replan the authorized work is Phase 0.5 only**; `S0.5-1` and
-`S0.5-2` are done (**OQ6 RESOLVED 2026-08-02** — zero-dep envelope estimator, chars
-primary, shipped in `S0.5-2`). **`S0.5-3` is next**; the phase is sequential
-(S0.5-3 → S0.5-4 → `ckpt-p05`).
+**Since the 2026-08-02 replan the authorized work is Phase 0.5 only**; `S0.5-1`, `S0.5-2`
+and `S0.5-3` are done (**OQ6 RESOLVED 2026-08-02** — zero-dep envelope estimator, chars
+primary, shipped in `S0.5-2`; the occupancy gate and D7's named denominator shipped in
+`S0.5-3`). **`S0.5-4` is next**; the phase is sequential (S0.5-4 → `ckpt-p05`).
 
 ## Checklist
 
@@ -41,7 +41,7 @@ checkpoint/reviewer/chronicler row — set `[~]` the moment a beat is picked up 
 - [ ] **Phase 0.5 — instrument repair** (briefs authored by the planner 2026-08-02; supersedes direct entry to P1) — branch `mission/context-economy-p05`
   - [x] S0.5-1 — `prompt = 0` phantom-churn guard + collapse ledger + ratchet identity (tasks 22–23)
   - [x] S0.5-2 — settle the chars/token band + name the char-free mass (task 24) — zero-dep envelope estimator per OQ6
-  - [ ] S0.5-3 — occupancy sanity gate + the D7 denominator (tasks 25–26)
+  - [x] S0.5-3 — occupancy sanity gate + the D7 denominator (tasks 25–26) — gate FAILS at +28.0% vs `/context` TOTAL 401.4k (a finding); D7 denominator named
   - [ ] S0.5-4 — re-run the baseline, record BOTH numbers, assemble the re-decision package
   - [ ] Checkpoint `ckpt-p05` — phase 0.5 review + merge into integration
 - [ ] ⛔ **DECISION POINT — the human re-decides P1–P4** with repaired numbers. Everything below is **HELD and NOT authorized** until this lands as new dated locked decisions.
@@ -127,6 +127,39 @@ _Human steers captured **verbatim** at checkpoints only, never mid-brief. Gramma
 _Any departure from a brief — logged here the moment it happens, with why. Deviating is
 allowed; deviating silently is not (§4)._
 
+- 2026-08-02 (S0.5-3) — **the session was completed after an infrastructure failure**, the
+  second time this phase. The first `backend` agent died mid-implementation on an API error,
+  leaving 96 uncommitted insertions and **no new selftest cases** — both gates green purely
+  because nothing new was being tested. A fresh `backend` agent reviewed that work against
+  the brief rather than assuming it. **KEPT** (correct, unchanged): the header's CHURN vs
+  OCCUPANCY model block and the third-form usage lines; the occupancy tracking inside
+  `analyze` (correctly placed in the same branch TOTAL is summed in, so a `prompt = 0` record
+  can neither set the high-water mark nor become the final observation); `GATE_PCT`,
+  `PROMPT_SERIES_COMPONENTS`, `gateRow`/`occupancyGate`; the `report(r, opts)` signature.
+  **DISCARDED / REWRITTEN**: the dead agent's `d7Lines` was never wired in (the old inline D7
+  block was still live, so the denominator work was dead code) and its `verdict:` line
+  **re-decided** D7 in the instrument's voice ("REOPENS decision D7") — rewritten as a
+  `reading:` that re-derives and names D11 as the ruling. Nothing printed the gate, the
+  churn/occupancy block, or parsed the flag: those were written this session, along with all
+  12 new selftest cases. `ckpt-p05` should treat the whole diff as unreviewed by any human.
+- 2026-08-02 (S0.5-3) — **a THIRD CLI invocation form now exists.** S2's deviation recorded
+  "no other CLI form exists beyond `<transcript.jsonl>` and `--selftest`"; `--context-total=`
+  makes three (brief step 2 / **OQ7**, which is still OPEN with the planner's yes standing and
+  no human ruling). Implemented on the standing recommendation; **the reviewer may overrule
+  at `ckpt-p05`** and the removal is local (one flag, one report block, three selftest cases).
+- 2026-08-02 (S0.5-3) — **CLI hygiene beyond the brief**, logged as scope added: the flag
+  **fails closed** (an unparsable comparator is refused with exit 1, never silently coerced to
+  0/NaN and gated against), `--context-total` combined with `--selftest` is refused (the gate
+  needs a real transcript), and an unexpected extra argument is refused. Rationale: a gate
+  computed against a garbage number is exactly the failure class this session exists to end.
+- 2026-08-02 (S0.5-3) — the handoff entry below again exceeds "≤10 lines per entry", after
+  `S0.5-2` promised the normal bound would resume here. Cause: a gate VERDICT the human must
+  see, a ten-mutation proof, and a straddle flag do not compress without dropping something
+  `ckpt-p05` must re-derive. `S0.5-4` is a recording session and should fit the bound.
+- 2026-08-02 (S0.5-3) — **record flag for `S0.5-4`, not a correction made here.** The S0.5-4
+  brief states "collapses = **5**, of which exactly 1 is a compaction". The repaired
+  instrument reports **4** (mass 1,193,402; exactly 1 compaction, at req 310) — the fifth was
+  the degenerate `prompt = 0` collapse that D10a's guard removed. `S0.5-4` records 4, not 5.
 - 2026-08-02 (replan, planner) — **record correction, logged not rewritten.** The D1 pause
   package states "20 `isCompactSummary` records"; the true count is **1** (memo M1 — the
   other 19 are the *string* appearing inside this mission's own docs, a self-referential
@@ -246,6 +279,31 @@ allowed; deviating silently is not (§4)._
 
 _≤10 lines per entry: what this session did, the verify signal, the branch, and what the
 next session needs. Newest on top; crash-safe by write-ahead._
+
+- _2026-08-02 (`S0.5-3`, `backend`, branch `mission/context-economy-p05`, **completed after an
+  infrastructure failure**; kept-vs-rewritten in Deviations): `tools/context-attrib.mjs` now
+  labels **churn** (1,707,036 — unchanged, still THE OPTIMISATION TARGET and the headline) and
+  **occupancy** (max **999,816** @ req #309/L2,438, corroborated by the compaction at the next
+  request; final **513,634** @ #595/L4,608) as separate quantities, and the 15% gate runs on
+  **occupancy** via a third CLI form `--context-total=` (OQ7, reviewer may overrule).
+  **GATE FAILS: final +28.0% vs `/context` TOTAL 401,400** (max +149.1%). Comparator is the
+  TOTAL, never the *Messages* 377.4k — the block names the prompt series' components and the
+  5.25x→5.59x slip (M5). +28.0% reproduces M5's 1.280x exactly: a **finding, nothing tuned**.
+  D7's denominator is printed: **TOTAL prompt growth (Σ positive prompt-deltas over unique
+  requests) = 1,707,036 tok**, token-domain; the 4.0% char share is reference only.
+  **⚠ HUMAN AT `ckpt-p05`: reviewer share 1.92–3.13% STRADDLES 3%** — printed as UNDECIDABLE
+  at this band width, not as a verdict. **D11 not re-decided; D7 stands.** Verify: lint clean ·
+  `--selftest` 0 at **43 cases (was 31)** · **10 mutations, 10 caught** on a scratch copy
+  (gate-on-churn 2 FAIL · no high-water 4 · no final idx/line 3 · denominator→chars 1 ·
+  re-decide-guard 1 · *Messages* warning 1 · churn label 1 · threshold 15→25 1 · parser not
+  fail-closed 1 · usage form 1; unmutated **43 ok / clean**). Two **survived a first draft**
+  (churn label, usage form) — cases tightened to bind label→row and form→invocation line.
+  Real 4,612-line transcript exercised by **path only, never read**: flag-absent output diffs
+  against `HEAD` as **only** the two new blocks — TOTAL, band 1.99–3.24, Σ 2,659,518 chars,
+  every category and ratchet PASS byte-identical, so the chars invariant holds. Dated D7
+  clarification appended in `.plans/context-economy.md` (locked text untouched). `S0.5-4`:
+  record BOTH numbers, report the FAIL without tuning, collapses = **4** not 5, carry the
+  straddle into the re-decision package._
 
 - _2026-08-02 (`S0.5-2`, `backend`, branch `mission/context-economy-p05`, **salvaged**):
   `tools/context-attrib.mjs` — zero-dep **output-side envelope estimator** (per unique
@@ -553,15 +611,17 @@ attachment-schema check is pulled in or deferred.
   Baseline transcript identified and field-verified by grep (never read). Uncommitted,
   awaiting HITL review of OQ1–OQ5._
 
-Next up: **S0.5-3 — occupancy sanity gate + the D7 denominator** (Phase 0.5, branch
-`mission/context-economy-p05`, already created). `S0.5-1` landed as `74f4507`; `S0.5-2`
-landed on the same branch (zero-dep envelope estimator, **chars primary**, band
-**1.99–3.24 chars/token**, char-free mass **18.2–48.5%** of TOTAL) — **OQ6 is RESOLVED**
-(`452fb3a`) and is now implemented, so ignore any "real tokenizer" wording still in the
-briefs. `S0.5-3` inherits two live threads: the D7 reviewer share is now **1.92–3.13%
-banded** and reopens D7 only via its high end, so **naming the denominator changes the
-verdict's reading**; and **OQ7** (`--context-total=<tokens>`) is still open with the
-planner's yes standing.
+Next up: **S0.5-4 — re-run the baseline, record BOTH numbers, assemble the re-decision
+package** (Phase 0.5, branch `mission/context-economy-p05`, already created). `S0.5-1`
+landed as `74f4507`; `S0.5-2` as `c6f0218` (zero-dep envelope estimator, **chars primary**,
+band **1.99–3.24 chars/token**, char-free mass **18.2–48.5%** of TOTAL — **OQ6 RESOLVED**
+`452fb3a`, so ignore any "real tokenizer" wording still in the briefs); `S0.5-3` on the same
+branch (churn/occupancy labelled, occupancy gate, D7 denominator named). `S0.5-4` inherits
+three live threads: the **occupancy gate FAILS at +28.0%** vs the `/context` **TOTAL**
+401,400 — report it, never tune it; the D7 reviewer share **1.92–3.13% STRADDLES 3%** and is
+printed as undecidable at this band width (**D11 stands — do not re-decide**, carry it to the
+human at `ckpt-p05`); and **OQ7** (`--context-total=<tokens>`) is still open — the form is
+implemented on the planner's standing yes and the reviewer may overrule it.
 Brief: `.plans/context-economy.sessions.md` → Phase 0.5. **Suits `backend`.**
 
 **Phase 0.5 is the ONLY authorized phase.** The D1 pause was released 2026-08-02 into a
