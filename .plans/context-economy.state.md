@@ -28,9 +28,11 @@ chars primary, shipped in `S0.5-2`; the occupancy gate and D7's named denominato
 `S0.5-3`; the repaired baseline + the **📦 PHASE 0.5 RE-DECISION PACKAGE** recorded by
 `S0.5-4`). **`ckpt-p05` returned REQUEST CHANGES and `S0.5-fix` landed all three findings
 (F1–F3) plus the latent F4 guard — text and one inert guard only; every headline number is
-unchanged and re-verified byte-for-byte.** **Next up: `ckpt-p05`** (re-review) — then the
-⛔ DECISION POINT where the human re-decides P1–P4 from that package. No implementation
-session remains.
+unchanged and re-verified byte-for-byte.** **`ckpt-p05` re-review returned APPROVE
+(2026-08-02, all six lenses 3/3) and Phase 0.5 is MERGED (`f5fabc6`).**
+**Next up: the ⛔ DECISION POINT** — the human re-decides P1–P4 from the
+📦 PHASE 0.5 RE-DECISION PACKAGE. No implementation session remains, and no phase below
+is authorized until that decision lands as new dated locked decisions.
 
 ## Checklist
 
@@ -879,24 +881,28 @@ attachment-schema check is pulled in or deferred.
   Baseline transcript identified and field-verified by grep (never read). Uncommitted,
   awaiting HITL review of OQ1–OQ5._
 
-Next up: **`ckpt-p05` — the Phase 0.5 review checkpoint** (branch `mission/context-economy-p05`;
-all four sessions landed: `S0.5-1` `74f4507`, `S0.5-2` `c6f0218`, `S0.5-3` `4288280`, `S0.5-4`).
-An **independent `reviewer` in fresh context** re-runs `node tools/lint.mjs` and `--selftest`,
-**independently re-derives** the `prompt = 0` mutation proof rather than trusting the handoff,
-and verifies: churn (1,707,036) and occupancy (final 513,634 / max 999,816) are unambiguously
-labelled and **churn is still the headline**; the D7 verdict names its denominator and **D7
-still stands (D11)**; every deferral (collapse #4, `attach: other`, the char-free explanation,
-the +28.0% gate residual) is **logged, not dropped**; and **no number was tuned toward a
-target** — note that `S0.5-4` measured Write/Edit token share **above** what the brief and memo
-predicted and reported it that way. On APPROVE the orchestrator merges into
-`mission/context-economy-integration` (batch policy — **never** the default branch).
-Three live threads go to the human, not the reviewer: the **occupancy gate FAILS at +28.0%**
-vs `/context` **TOTAL** 401,400 (bounds absolute magnitudes; does not block a share-based
-decision — package §6); the D7 reviewer share **1.92–3.13% STRADDLES 3%**, printed UNDECIDABLE
-(**D11 stands — do not re-decide**); and **OQ7** (`--context-total=<tokens>`) is still open —
-shipped on the planner's standing yes, no human ruling, removal is local.
-**Then the ⛔ DECISION POINT: the human re-decides P1–P4 from the 📦 PHASE 0.5 RE-DECISION
-PACKAGE.** Brief: `.plans/context-economy.sessions.md` → Phase 0.5. **Suits `reviewer`.**
+Next up: **⛔ DECISION POINT — the human re-decides P1–P4.** Phase 0.5 is COMPLETE,
+APPROVED (`ckpt-p05`, all six lenses 3/3, after one corrective session `S0.5-fix`) and
+MERGED into `mission/context-economy-integration` (`f5fabc6`). Sessions: `S0.5-1`
+`74f4507` · `S0.5-2` `c6f0218` · `S0.5-3` `4288280` · `S0.5-4` `ab2ec04` · `S0.5-fix`
+`931c7e5`. **No implementation session remains and NOTHING below is authorized** until
+the decision lands as new dated locked decisions.
+
+Read the **📦 PHASE 0.5 RE-DECISION PACKAGE** in this file. Headline on repaired numbers:
+**~4.4–7.2% addressed / ~1.8–4.3% captured** (founding claim was ~25% / 10–15%).
+Recommended priority **P3 > P2 > P1, P4 last** — P3 is the strongest standalone case
+(correctness control), P2 is a fidelity control untouched by the token math, P1's premise
+is retracted though its case is better than the memo said, P4 is downstream of all of them.
+
+**Four live threads belong to the human, not to any agent:** the **occupancy gate FAILS at
++28.0%** vs `/context` **TOTAL** 401,400 (bounds absolute magnitudes; does not block a
+share-based decision — package §6); the D7 reviewer share **1.92–3.13% STRADDLES 3%**,
+printed UNDECIDABLE (**D11 stands — do not re-decide**); **OQ7** (`--context-total=<tokens>`)
+shipped on the planner's standing yes with no human ruling (reviewer declined to overrule;
+removal is local); and **n = 1** — one transcript, one session, itself a planning mission.
+
+On the decision, re-brief the chosen phases through the **planner** against the repaired
+numbers — the existing P1–P4 briefs were written against the retracted 22.5% premise.
 
 **Phase 0.5 is the ONLY authorized phase.** The D1 pause was released 2026-08-02 into a
 re-scope (D10/D11/D12 above), not into P1. **S4 and everything after it stay unauthorized**
