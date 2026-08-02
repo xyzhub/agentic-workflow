@@ -30,9 +30,10 @@ chars primary, shipped in `S0.5-2`; the occupancy gate and D7's named denominato
 (F1–F3) plus the latent F4 guard — text and one inert guard only; every headline number is
 unchanged and re-verified byte-for-byte.** **`ckpt-p05` re-review returned APPROVE
 (2026-08-02, all six lenses 3/3) and Phase 0.5 is MERGED (`f5fabc6`).**
-**Next up: the ⛔ DECISION POINT** — the human re-decides P1–P4 from the
-📦 PHASE 0.5 RE-DECISION PACKAGE. No implementation session remains, and no phase below
-is authorized until that decision lands as new dated locked decisions.
+**The DECISION POINT is DECIDED (D13, 2026-08-03): P3 ONLY is authorized.**
+**Next up: `S6`** — the `SessionStart:compact` re-read directive, on branch
+`mission/context-economy-p3`, folding in the beat-enforcer blocking-row fix.
+**P1, P2 and P4 remain HELD** pending a session-limit refresh.
 
 ## Checklist
 
@@ -51,13 +52,13 @@ checkpoint/reviewer/chronicler row — set `[~]` the moment a beat is picked up 
   - [x] S0.5-3 — occupancy sanity gate + the D7 denominator (tasks 25–26) — gate FAILS at +28.0% vs `/context` TOTAL 401.4k (a finding); D7 denominator named
   - [x] S0.5-4 — re-run the baseline, record BOTH numbers, assemble the re-decision package — analysis-only (no instrument change); **📦 PHASE 0.5 RE-DECISION PACKAGE** below is the deliverable
   - [x] Checkpoint `ckpt-p05` — **APPROVE** 2026-08-02 after one corrective session (S0.5-fix). Scorecard: QA 3 · Security 3 · Efficiency 3 · Architecture 3 · UX 3 · DX 3 (DX 1→3 and UX 2→3 on the fix). Reviewer ran 11 of its own adversarial mutations, 11 caught; no dangerous mirror among the 44 cases. Merged into `mission/context-economy-integration` (`f5fabc6`, batch policy — main untouched).
-- [ ] ⛔ **DECISION POINT — the human re-decides P1–P4** with repaired numbers. Everything below is **HELD and NOT authorized** until this lands as new dated locked decisions.
+- [x] ⛔ **DECISION POINT — DECIDED 2026-08-03 (D13).** Human authorized **P3 ONLY**, deliberately scoped to the remaining session budget. **P1, P2, P4 stay HELD** and unauthorized pending a session-limit refresh.
 - [ ] S4 — **HELD** — write firewall: extend the 30% rule to writes; no tool-list change anywhere, per D7 (branch `mission/context-economy-p1`). Premise retracted: Write/Edit is ≤15.9% char / **4.40–7.18% token** (S0.5-4 measured; supersedes the pre-repair "2.8–3.7%"), never 22.5%. See the P0.5 re-decision package §4.
 - [ ] Checkpoint `ckpt-p1` — **HELD** — phase 1 review + merge into integration
 - [ ] S5 — **HELD** — standing steers: ledger block + §3-only append + lint grammar check (branch `mission/context-economy-p2`). Fidelity control; case unchanged by the new evidence.
 - [ ] Checkpoint `ckpt-p2` — **HELD** — phase 2 review + merge into integration
-- [ ] S6 — **HELD** — `SessionStart:compact` re-read directive + hook-test cases (branch `mission/context-economy-p3`). Correctness control; case unchanged (exactly 1 compaction confirmed).
-- [ ] Checkpoint `ckpt-p3` **[STRICT]** — **HELD** — phase 3 review; **surface the verdict to the human immediately** (batch gating shows no merge prompt); merge into integration
+- [ ] S6 — **AUTHORIZED (D13)** — `SessionStart:compact` re-read directive + hook-test cases (branch `mission/context-economy-p3`). Correctness control; case unchanged (exactly 1 compaction confirmed). **+ folds in the beat-enforcer blocking-row fix** (machinery defect (b)).
+- [ ] Checkpoint `ckpt-p3` **[STRICT]** — **AUTHORIZED (D13)** — phase 3 review; **surface the verdict to the human immediately** (batch gating shows no merge prompt); merge into integration
 - [ ] S7 — **HELD** — re-measure (D4a), `isCompactSummary` count, `docs/product/engineering/context-economy-metrics.md` (branch `mission/context-economy-p4`). D4a's design and the doc's headline are both downstream of P0.5.
 - [ ] S8 — **HELD** — chronicler + CHANGELOG + version bump + integration PR (branch `mission/context-economy-p4`)
 - [ ] Checkpoint `ckpt-p4` — **HELD** — final review of `main..mission/context-economy-integration`; **human merges once**
@@ -120,6 +121,23 @@ not re-litigated by any later session._
 - **D12 — OQ2 stands as originally resolved: the launch copy is UNPUBLISHED.** S1's
   in-repo correction is sufficient; **no erratum, no outward action**. The `publish-log.md`
   evidence is accepted over the reviewer's flag.
+
+## P1–P4 re-decision (locked 2026-08-03 by the human)
+
+- **D13 — P3 ONLY is authorized.** Scoped deliberately to the remaining session budget;
+  **P1, P2 and P4 stay HELD** pending a session-limit refresh, at which point the human
+  re-decides them. Machinery defect **(b) beat-enforcer blocking-row awareness folds into
+  S6** (it already opens `hooks/lib/` and the hook-test harness). Machinery defect
+  **(a) the `Next up:` two-site agreement check stays UNGUARDED** — its natural home is
+  P2's lint work, which is not authorized; it has now drifted **three times**, so a
+  resuming session must not trust `Next up:` blindly until P2 lands.
+  **Standing decisions attached, to apply when P1/P4 are authorized:** P1 ships as a
+  **discipline** change with docs explicitly **not** claiming token savings (the 22.5%
+  premise is retracted; measured 4.4–7.2% token); and **D4a is downgraded from a pass/fail
+  gate to an observation** — a 50% cut to a 4.4–7.2% share is 2–3.6%, inside the
+  instrument's own uncertainty band, so it cannot be gated on. **D4b remains the real
+  confirmation** and needs a second transcript that does not yet exist.
+  Recommended order when work resumes: **P2 → P1 → P4** (P3 already taken first).
 
 ## Standing steers
 
@@ -881,18 +899,17 @@ attachment-schema check is pulled in or deferred.
   Baseline transcript identified and field-verified by grep (never read). Uncommitted,
   awaiting HITL review of OQ1–OQ5._
 
-Next up: **⛔ DECISION POINT — the human re-decides P1–P4.** Phase 0.5 is COMPLETE,
-APPROVED (`ckpt-p05`, all six lenses 3/3, after one corrective session `S0.5-fix`) and
-MERGED into `mission/context-economy-integration` (`f5fabc6`). Sessions: `S0.5-1`
-`74f4507` · `S0.5-2` `c6f0218` · `S0.5-3` `4288280` · `S0.5-4` `ab2ec04` · `S0.5-fix`
-`931c7e5`. **No implementation session remains and NOTHING below is authorized** until
-the decision lands as new dated locked decisions.
+Next up: **`S6` — the `SessionStart:compact` re-read directive** (branch
+`mission/context-economy-p3`). Brief: `.plans/context-economy.sessions.md` → Phase 3.
+**Suits `devops`.** Phases 0 and 0.5 are COMPLETE, APPROVED and MERGED into
+`mission/context-economy-integration` (`273f1d3`, `f5fabc6`).
 
-Read the **📦 PHASE 0.5 RE-DECISION PACKAGE** in this file. Headline on repaired numbers:
-**~4.4–7.2% addressed / ~1.8–4.3% captured** (founding claim was ~25% / 10–15%).
-Recommended priority **P3 > P2 > P1, P4 last** — P3 is the strongest standalone case
-(correctness control), P2 is a fidelity control untouched by the token math, P1's premise
-is retracted though its case is better than the memo said, P4 is downstream of all of them.
+**D13 (2026-08-03) authorized P3 ONLY** — scoped to the remaining session budget.
+**P1, P2 and P4 remain HELD**; the human re-decides them after a session-limit refresh,
+in the order **P2 → P1 → P4**. S6 additionally folds in the **beat-enforcer blocking-row
+fix**. P3's brief was NOT written against the retracted 22.5% premise — it is a
+correctness control — so it runs from the existing brief; **P1/P2/P4 must be re-briefed
+through the planner before they run.**
 
 **Four live threads belong to the human, not to any agent:** the **occupancy gate FAILS at
 +28.0%** vs `/context` **TOTAL** 401,400 (bounds absolute magnitudes; does not block a
@@ -901,8 +918,9 @@ printed UNDECIDABLE (**D11 stands — do not re-decide**); **OQ7** (`--context-t
 shipped on the planner's standing yes with no human ruling (reviewer declined to overrule;
 removal is local); and **n = 1** — one transcript, one session, itself a planning mission.
 
-On the decision, re-brief the chosen phases through the **planner** against the repaired
-numbers — the existing P1–P4 briefs were written against the retracted 22.5% premise.
+⚠️ **The `Next up:` two-site agreement check is still UNGUARDED** (its home is P2, not
+authorized). This file has drifted three times — a resuming session should confirm this
+block against the `## Checklist` rather than trust it blindly.
 
 **Phase 0.5 is the ONLY authorized phase.** The D1 pause was released 2026-08-02 into a
 re-scope (D10/D11/D12 above), not into P1. **S4 and everything after it stay unauthorized**
