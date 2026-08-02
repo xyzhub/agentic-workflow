@@ -5,7 +5,32 @@ here, in [Keep a Changelog](https://keepachangelog.com/) format. This repo
 has no tags — each version-stamped commit on `main` IS the release.
 
 ## [Unreleased]
+### Fixed
+- **Docs no longer claim a `/loop` tick gets fresh context.** The false claim that each
+  tick of an unattended `/loop` run starts with a clean context window is corrected
+  across the plugin protocol (`commands/mission.md`, `commands/autopilot.md`), this
+  repo's synced `docs/WORKFLOW.md`, the plugin `README.md`, and unpublished launch copy
+  (12 sites total, one consistent wording). The real mechanism: `/loop` is
+  session-scoped — ticks accrete in one transcript; genuine fresh context requires
+  `/clear`, a new session, or a scripted `claude -p`. What makes loop mode safe is that
+  state lives in files, not that context resets. (context-economy mission, Phase 0 S1,
+  `03dea55`)
 ### Added
+- **`tools/context-attrib.mjs`** — a zero-dependency, streaming (`node:readline`)
+  context-attribution measurer for session transcripts: reports a category-share
+  breakdown (human steers, orchestrator prose, authored Write/Edit/Bash, tool results,
+  subagent returns, attachment types, unattributed residual) plus a per-`subagent_type`
+  return-share table, with a `--selftest` fixture and a fail-closed `checkContextAttrib()`
+  gate wired into `tools/lint.mjs`. Operators: two invocation forms only —
+  `node tools/context-attrib.mjs <transcript.jsonl>` and `--selftest`; the script never
+  loads or prints transcript content. (context-economy mission, Phase 0 S2/S3-fix,
+  `8fa357d`, `dca7072`)
+  - The tool's first baseline run (an 11.6 MiB transcript) found its own sanity check
+    fails: TOTAL 2,108,485 tok vs. the recorded `/context` figure of 377.4k — a 5.59×
+    divergence, published as an explicit validity finding rather than silently
+    corrected. Category **shares** are reported as approximately robust; absolute token
+    counts from this tool are not to be relied on until the divergence is understood.
+    (Phase 0 S3, `51cb366`; `ckpt-p0` APPROVE, `273f1d3`)
 - **Sales-enablement kit + living-document architecture (v1.41.0)** — a client-closing
   sales kit and the machinery to keep it current as the product ships (planned via
   `/agentic-workflow:plan` → a 6-phase mission; a 4-expert council + architect shaped it):

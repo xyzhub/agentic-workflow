@@ -15,6 +15,79 @@ protocol's own behavior the way a QA team would.
 
 ---
 
+## 2026-08-01 to 2026-08-02 — The context-economy mission built a measuring instrument, then caught it lying
+
+The team's own long working sessions had been quietly getting more expensive to
+run: an orchestrator session accumulates context turn after turn, and nobody
+had ever measured where those tokens actually go. A new mission,
+"context-economy," set out to fix that — planned as five phases, deliberately
+structured so the first phase does nothing but build the measuring instrument
+and take one honest baseline reading, with a contractual requirement to STOP
+after that reading. A human has to look at the real numbers and decide what
+to do next, rather than the team improvising the next four phases on a guess.
+
+Phase 0's first session corrected a factual error sitting in the product's
+own documentation: a claim that each tick of "loop mode" (long, unattended
+autonomous runs) starts with a fresh slate of context. It doesn't — a loop is
+one continuous session, and every tick adds to the same transcript. What
+actually keeps loop mode safe is that important state lives in files, not in
+a model's memory, so even a very long session doesn't lose track of what it
+is doing. That correction went out everywhere the wrong claim had been
+written, including copy drafted for external use but never published.
+
+The second session built the measuring tool itself — a script that reads a
+session transcript and reports what share of its context came from where:
+human instructions, the orchestrator's own writing, tool results, sub-agent
+returns, and so on. The third session pointed it at an 11.6-megabyte real
+transcript and got a number that should have been reassuring and instead was
+a red flag: the tool's total didn't just differ from the number the product's
+own `/context` display reports — it was 5.59 times larger. Per the mission's
+own plan, a gap that size was defined in advance as a "this instrument cannot
+be trusted for absolute numbers" verdict, not a "close enough" one.
+
+What happened next is the part worth remembering. The team didn't wave the
+discrepancy away. Review found two structural bugs in the days that
+followed — not caught by the tool's own tests, but by a second, independent
+read of the work: a calibration ratio had been computed upside down
+(tokens-per-character where the code meant characters-per-token), which had
+driven one internal number to a negative value the tool's own logic said was
+impossible; and a safety check meant to catch exactly that class of bug
+turned out to be inert, because the test data it ran against happened to sit
+at the one ratio where the bug produces no visible effect. Both were fixed —
+and, tellingly, fixing them changed nothing about the headline number. The
+5.59× gap survived every correction, which is itself informative: the
+discrepancy is not a bug in the new tool, it is a real disagreement about
+what "how much context did this session use" even means. The leading theory,
+left for a human to rule on: the tool counts every time context gets rebuilt
+after a compaction, while the product's own context display shows only the
+current moment — cumulative churn versus a single snapshot, two different
+and both legitimate things to want to know.
+
+Review scored the phase APPROVE (a clean pass on QA, security, efficiency,
+architecture, and UX; one point held back on developer experience) once every
+finding was addressed, and Phase 0 merged into the mission's integration
+branch. But by the mission's own design, that is where it stops. Four
+decisions now sit with the human at this pause: whether to accept the
+"cumulative churn" theory before any before/after comparison is designed;
+what to do about a finding that one specific sub-agent — the reviewer
+itself — accounts for a larger share of context (4.0%) than the plan's own
+3% threshold allowed for, reopening a decision the team had thought settled;
+which of two ways of counting the "addressable" slice of context is the
+right one to re-plan the remaining phases against; and whether a separate
+wrong guess about how attachment data is structured (also caught by the run)
+needs its own follow-up. Nothing further on this mission proceeds until those
+calls are made.
+
+The lesson the team is taking from this: a measuring tool that ships with a
+documented reason to distrust its own headline number is a more honest
+deliverable than one that ships confident and wrong. It is also a reminder
+that green tests are not the same as a correct instrument — both bugs here
+passed a clean self-test every time, and only surfaced because someone sat
+down and asked "does this number make sense," rather than "does this number
+match what the code already does."
+
+---
+
 ### Milestone: The plugin adopted its own workflow — 2026-07-08
 
 Today the repository that builds and ships the Agentic Workflow protocol
