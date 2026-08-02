@@ -43,12 +43,12 @@ checkpoint/reviewer/chronicler row — set `[~]` the moment a beat is picked up 
 - [x] S3 — run the baseline measurement, record split + D9 table + sanity check (branch `mission/context-economy-p0`)
 - [x] Checkpoint `ckpt-p0` — **APPROVE** 2026-08-02 after one corrective session (S3-fix). Scorecard: QA 3 · Security 3 · Efficiency 3 · Architecture 3 · UX 3 · DX 2. Merged into `mission/context-economy-integration` (`273f1d3`, batch policy — main untouched).
 - [x] ⛔ **D1 HARD PAUSE — RELEASED 2026-08-02.** Human re-scoped with the measured numbers: **new instrument-repair phase first (P0.5); P1–P4 are NOT authorized and get re-decided after it.** Decisions D10–D12 below.
-- [ ] **Phase 0.5 — instrument repair** (briefs authored by the planner 2026-08-02; supersedes direct entry to P1) — branch `mission/context-economy-p05`
+- [x] **Phase 0.5 — instrument repair** — COMPLETE, APPROVED, merged `f5fabc6` (branch `mission/context-economy-p05`)
   - [x] S0.5-1 — `prompt = 0` phantom-churn guard + collapse ledger + ratchet identity (tasks 22–23)
   - [x] S0.5-2 — settle the chars/token band + name the char-free mass (task 24) — zero-dep envelope estimator per OQ6
   - [x] S0.5-3 — occupancy sanity gate + the D7 denominator (tasks 25–26) — gate FAILS at +28.0% vs `/context` TOTAL 401.4k (a finding); D7 denominator named
   - [x] S0.5-4 — re-run the baseline, record BOTH numbers, assemble the re-decision package — analysis-only (no instrument change); **📦 PHASE 0.5 RE-DECISION PACKAGE** below is the deliverable
-  - [~] Checkpoint `ckpt-p05` — phase 0.5 review + merge into integration (reviewer in flight, 2026-08-02)
+  - [x] Checkpoint `ckpt-p05` — **APPROVE** 2026-08-02 after one corrective session (S0.5-fix). Scorecard: QA 3 · Security 3 · Efficiency 3 · Architecture 3 · UX 3 · DX 3 (DX 1→3 and UX 2→3 on the fix). Reviewer ran 11 of its own adversarial mutations, 11 caught; no dangerous mirror among the 44 cases. Merged into `mission/context-economy-integration` (`f5fabc6`, batch policy — main untouched).
 - [ ] ⛔ **DECISION POINT — the human re-decides P1–P4** with repaired numbers. Everything below is **HELD and NOT authorized** until this lands as new dated locked decisions.
 - [ ] S4 — **HELD** — write firewall: extend the 30% rule to writes; no tool-list change anywhere, per D7 (branch `mission/context-economy-p1`). Premise retracted: Write/Edit is ≤15.9% char / **4.40–7.18% token** (S0.5-4 measured; supersedes the pre-repair "2.8–3.7%"), never 22.5%. See the P0.5 re-decision package §4.
 - [ ] Checkpoint `ckpt-p1` — **HELD** — phase 1 review + merge into integration
