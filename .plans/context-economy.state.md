@@ -23,8 +23,8 @@ for the D1 pause package.
 **UNBLOCKED — OQ1–OQ5 all RESOLVED 2026-08-01** (human accepted every planner
 recommendation; details in `## Open questions`). Phase 0 is done and merged.
 **Since the 2026-08-02 replan the authorized work is Phase 0.5 only**; `S0.5-1` is done.
-**Next up: `S0.5-2` — BLOCKED on OQ6** (human ruling needed). `S0.5-3` is not blocked and
-may run first if the human prefers to keep moving; the phase is sequential either way.
+**OQ6 was RESOLVED 2026-08-02 — `S0.5-2` is UNBLOCKED** and is next; the phase is
+sequential (S0.5-2 → S0.5-3 → S0.5-4 → `ckpt-p05`).
 
 ## Checklist
 
@@ -39,7 +39,7 @@ checkpoint/reviewer/chronicler row — set `[~]` the moment a beat is picked up 
 - [x] ⛔ **D1 HARD PAUSE — RELEASED 2026-08-02.** Human re-scoped with the measured numbers: **new instrument-repair phase first (P0.5); P1–P4 are NOT authorized and get re-decided after it.** Decisions D10–D12 below.
 - [ ] **Phase 0.5 — instrument repair** (briefs authored by the planner 2026-08-02; supersedes direct entry to P1) — branch `mission/context-economy-p05`
   - [x] S0.5-1 — `prompt = 0` phantom-churn guard + collapse ledger + ratchet identity (tasks 22–23)
-  - [ ] S0.5-2 — settle the chars/token band + name the char-free mass (task 24) — **blocked on OQ6**
+  - [ ] S0.5-2 — settle the chars/token band + name the char-free mass (task 24) — OQ6 RESOLVED, unblocked
   - [ ] S0.5-3 — occupancy sanity gate + the D7 denominator (tasks 25–26)
   - [ ] S0.5-4 — re-run the baseline, record BOTH numbers, assemble the re-decision package
   - [ ] Checkpoint `ckpt-p05` — phase 0.5 review + merge into integration
@@ -501,8 +501,11 @@ attachment-schema check is pulled in or deferred.
   Baseline transcript identified and field-verified by grep (never read). Uncommitted,
   awaiting HITL review of OQ1–OQ5._
 
-Next up: **S0.5-1 — the `prompt = 0` phantom-churn guard + collapse ledger** (Phase 0.5,
-new branch `mission/context-economy-p05` off `mission/context-economy-integration`).
+Next up: **S0.5-2 — settle the chars/token band + name the char-free mass** (Phase 0.5,
+branch `mission/context-economy-p05`, already created). `S0.5-1` landed as `74f4507`.
+**OQ6 is RESOLVED** (`452fb3a`): zero-dep envelope estimator, **chars primary**, tokens
+always with their band, no tokenizer — this **amends D10(b)**, so ignore any "real
+tokenizer" wording still in the S0.5-2 brief.
 Brief: `.plans/context-economy.sessions.md` → Phase 0.5. **Suits `backend`.**
 
 **Phase 0.5 is the ONLY authorized phase.** The D1 pause was released 2026-08-02 into a
