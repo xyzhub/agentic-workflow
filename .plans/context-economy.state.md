@@ -26,8 +26,11 @@ recommendation; details in `## Open questions`). Phase 0 is done and merged.
 `S0.5-3` and `S0.5-4` are ALL done (**OQ6 RESOLVED 2026-08-02** — zero-dep envelope estimator,
 chars primary, shipped in `S0.5-2`; the occupancy gate and D7's named denominator shipped in
 `S0.5-3`; the repaired baseline + the **📦 PHASE 0.5 RE-DECISION PACKAGE** recorded by
-`S0.5-4`). **Next up: `ckpt-p05`** — the phase's review checkpoint, then the ⛔ DECISION POINT
-where the human re-decides P1–P4 from that package. No implementation session remains.
+`S0.5-4`). **`ckpt-p05` returned REQUEST CHANGES and `S0.5-fix` landed all three findings
+(F1–F3) plus the latent F4 guard — text and one inert guard only; every headline number is
+unchanged and re-verified byte-for-byte.** **Next up: `ckpt-p05`** (re-review) — then the
+⛔ DECISION POINT where the human re-decides P1–P4 from that package. No implementation
+session remains.
 
 ## Checklist
 
@@ -45,7 +48,7 @@ checkpoint/reviewer/chronicler row — set `[~]` the moment a beat is picked up 
   - [x] S0.5-2 — settle the chars/token band + name the char-free mass (task 24) — zero-dep envelope estimator per OQ6
   - [x] S0.5-3 — occupancy sanity gate + the D7 denominator (tasks 25–26) — gate FAILS at +28.0% vs `/context` TOTAL 401.4k (a finding); D7 denominator named
   - [x] S0.5-4 — re-run the baseline, record BOTH numbers, assemble the re-decision package — analysis-only (no instrument change); **📦 PHASE 0.5 RE-DECISION PACKAGE** below is the deliverable
-  - [ ] Checkpoint `ckpt-p05` — phase 0.5 review + merge into integration
+  - [~] Checkpoint `ckpt-p05` — phase 0.5 review + merge into integration (reviewer in flight, 2026-08-02)
 - [ ] ⛔ **DECISION POINT — the human re-decides P1–P4** with repaired numbers. Everything below is **HELD and NOT authorized** until this lands as new dated locked decisions.
 - [ ] S4 — **HELD** — write firewall: extend the 30% rule to writes; no tool-list change anywhere, per D7 (branch `mission/context-economy-p1`). Premise retracted: Write/Edit is ≤15.9% char / **4.40–7.18% token** (S0.5-4 measured; supersedes the pre-repair "2.8–3.7%"), never 22.5%. See the P0.5 re-decision package §4.
 - [ ] Checkpoint `ckpt-p1` — **HELD** — phase 1 review + merge into integration
@@ -129,6 +132,18 @@ _Human steers captured **verbatim** at checkpoints only, never mid-brief. Gramma
 _Any departure from a brief — logged here the moment it happens, with why. Deviating is
 allowed; deviating silently is not (§4)._
 
+- 2026-08-02 (S0.5-fix) — **F3's caption is NOT pinned by a selftest case**, and it is an
+  output change. The `ckpt-p05` corrective brief set the target case count at "43, or 44 if
+  you took F4"; adding a case for the caption would have put it at 45 and moved a number the
+  brief froze. Followed the brief. The consequence is that the cross-domain-transfer caption
+  could be silently deleted without a gate failing — the reviewer may want a case binding it,
+  and that is a one-case addition if so. Logged rather than decided unilaterally.
+- 2026-08-02 (S0.5-fix) — **F4's case needed a SECOND fixture** (`buildRevivedRidFixture`), not
+  a record appended to the main one. The main fixture's TOTAL/collapse/band/preamble constants
+  are pinned by ~40 cases; adding a revived-`requestId` scenario to it would have moved them
+  and broken the brief's "no number may move" constraint. The isolated 4-record fixture leaves
+  every existing case byte-identical. The file's "this is the ONLY fixture" comment was
+  corrected to match.
 - 2026-08-02 (S0.5-4) — **the session is ANALYSIS-ONLY: no behaviour changed, so no new
   selftest case.** The "every behaviour change ships a mutation-proved case" rule is stated
   here as **satisfied vacuously**, not skipped: `tools/context-attrib.mjs` was not edited, the
@@ -314,6 +329,42 @@ allowed; deviating silently is not (§4)._
 
 _≤10 lines per entry: what this session did, the verify signal, the branch, and what the
 next session needs. Newest on top; crash-safe by write-ahead._
+
+- _2026-08-02 (`S0.5-fix`, `backend`, branch `mission/context-economy-p05`): corrective session
+  for the `ckpt-p05` **REQUEST CHANGES**. **Text + one latent guard; no measurement re-run
+  changed a number.** **F1** [Med] — the guard's justifying comment (`tools/context-attrib.mjs`
+  header + the guard site) claimed the degenerate record manufactured "513,634 tok = 24.4% of
+  TOTAL"; corrected to the **measured 401,449 tok = 19.0% of the unrepaired 2,108,485**, with
+  the provenance (**transcript line 4,253, the 553rd request with a usage block, prompt
+  401,449 → 0**) and an explicit note that 513,634 is the FINAL PROMPT = 401,449 phantom +
+  112,185 genuine, which the guard correctly RETAINS — so a future reconciliation cannot read
+  the gap as under-correction. **F2** [Med] — `CHANGELOG.md` `[Unreleased]` brought current:
+  **three** invocation forms (was "two only"), the **retracted** 5.59×/377.4k headline replaced
+  by the repaired findings (churn **1,707,036** after the `prompt = 0` guard; band
+  **1.99–3.24** chars primary; occupancy gate **+28.0% / +149.1% FAIL** vs `/context` TOTAL
+  401,400), commit-cited `74f4507`/`c6f0218`/`4288280`/`ab2ec04`. **No version bump — S8 owns
+  it and is HELD.** **F3** [Med] — the **cross-domain transfer** (band measured on
+  model-authored OUTPUT, applied to INPUT-side rows) is now disclosed **in the report body**,
+  not only the header: input-side rows (`tool results` · `attach:*` · `human steers` · `user:*`)
+  ride a transferred assumption and may be **UNDERSTATED, not bounded above**; model-authored
+  rows — including **P1's Write/Edit figure** — are the estimator's own corpus and are
+  unaffected. **F4** [Low, latent] — **TAKEN.** Degenerate rids now go in a separate
+  `degenerateRids` set instead of `seen`, so a `requestId` first seen degenerate and later
+  carrying a usable prompt is **billed** rather than silently dropped as a duplicate; a repeated
+  degenerate line still counts as a duplicate. **Inert on this corpus** (595 unique + 1
+  degenerate, no twin). **F5** [Nit] — no action, as directed: `persisted assistant text ≤
+  317,105 tok` keeps its `≤` and names its ratio, so it honours OQ6; recorded here for the
+  record. **Verify:** `node tools/lint.mjs` **clean, exit 0** · `--selftest` **exit 0 at 44
+  cases (43 + F4)** · **baseline re-run on the unchanged 4,612-line / 12,211,203-byte corpus
+  (path only, never read): the full report diffs against the pre-fix run as the SIX added
+  caption lines and NOTHING ELSE** — TOTAL 1,707,036, Σ chars 2,659,518, band 1.99–3.24, gate
+  FAIL +28.0%/+149.1%, D7 1.92–3.13% UNDECIDABLE, ratchet PASS all byte-identical.
+  **Mutation proof (scratch copy, repo file never mutated):** restore `seen.add(rid)` in the
+  degenerate branch ⇒ **exactly 1 FAIL** (total 1,000 / requests 1 / dup 2 — the revived line
+  dropped), exit 1; restored ⇒ **44 ok**, exit 0. Deviations logged: the F3 caption is
+  deliberately **unpinned** (a case would have made 45, past the brief's frozen count), and F4's
+  case uses a **second isolated fixture** so the main fixture's ~40 pinned constants stay
+  untouched. **`ckpt-p05` re-review is next; no headline number moved.** **Next: `ckpt-p05`.**_
 
 - _2026-08-02 (`S0.5-4`, `backend`, branch `mission/context-economy-p05`): **analysis-only —
   no instrument change**, so no new selftest case (the non-negotiable applies to behaviour

@@ -21,16 +21,39 @@ has no tags — each version-stamped commit on `main` IS the release.
   breakdown (human steers, orchestrator prose, authored Write/Edit/Bash, tool results,
   subagent returns, attachment types, unattributed residual) plus a per-`subagent_type`
   return-share table, with a `--selftest` fixture and a fail-closed `checkContextAttrib()`
-  gate wired into `tools/lint.mjs`. Operators: two invocation forms only —
-  `node tools/context-attrib.mjs <transcript.jsonl>` and `--selftest`; the script never
-  loads or prints transcript content. (context-economy mission, Phase 0 S2/S3-fix,
-  `8fa357d`, `dca7072`)
-  - The tool's first baseline run (an 11.6 MiB transcript) found its own sanity check
-    fails: TOTAL 2,108,485 tok vs. the recorded `/context` figure of 377.4k — a 5.59×
-    divergence, published as an explicit validity finding rather than silently
-    corrected. Category **shares** are reported as approximately robust; absolute token
-    counts from this tool are not to be relied on until the divergence is understood.
-    (Phase 0 S3, `51cb366`; `ckpt-p0` APPROVE, `273f1d3`)
+  gate wired into `tools/lint.mjs`. Operators: **three invocation forms** —
+  `node tools/context-attrib.mjs <transcript.jsonl>`, `--selftest`, and
+  `<transcript.jsonl> --context-total=<tokens>` (runs the 15% validity gate against a
+  recorded `/context` TOTAL); the script never loads or prints transcript content.
+  (context-economy mission, Phase 0 S2/S3-fix, `8fa357d`, `dca7072`; Phase 0.5 repair,
+  `74f4507`, `c6f0218`, `4288280`)
+  - **Phase 0.5 repaired the instrument, and the repair moved the headline numbers.**
+    The Phase 0 baseline's "TOTAL 2,108,485 tok vs. a 5.59× divergence from 377.4k"
+    finding is **RETRACTED** on two counts, both of which were measurement defects
+    rather than findings about the sessions:
+    - A single `prompt = 0` usage record zeroed the running prompt series, so the next
+      real request re-billed the whole resident context as fresh churn. Guarded (the
+      record is now skipped as a prompt observation, counted, and reported), churn
+      falls to **1,707,036 tok** — the phantom was 401,449, not the 513,634 originally
+      predicted, because 112,185 of that growth was genuine and is retained. (`74f4507`)
+    - The 5.59× compared the prompt series against `/context`'s **`Messages`
+      sub-total** (377.4k), which omits system prompt, tool definitions, memory and
+      skills — quantities the prompt series does include. Against `/context`'s **TOTAL**
+      (401,400) the correct comparison is occupancy, not churn. (`4288280`)
+  - **Tokens are now an estimate with a stated band; characters are the primary
+    figure.** A zero-dependency output-side envelope estimator derives a
+    **1.99 – 3.24 chars/token** band (per-request `persisted assistant chars ÷
+    output_tokens`, each sample a floor); every token column prints as a range tagged
+    `[EST/BAND]`, never as a point value. Character counts (Σ 2,659,518 appended chars
+    on the baseline corpus) are counted, model-free and exact. The band is measured on
+    model-authored output and its transfer to input-side categories is disclosed in the
+    report. (`c6f0218`)
+  - **The sanity check is now an explicit gate, and it FAILS — reported, not tuned.**
+    `--context-total=401400` compares occupancy against the recorded `/context` TOTAL:
+    final prompt 513,634 tok = **+28.0%**, max prompt 999,816 tok = **+149.1%**, both
+    outside ±15%. Published as an open validity finding: category **shares** remain the
+    robust output; absolute token figures carry their band and the unresolved
+    occupancy divergence. (`4288280`, baseline re-run `ab2ec04`)
 - **Sales-enablement kit + living-document architecture (v1.41.0)** — a client-closing
   sales kit and the machinery to keep it current as the product ships (planned via
   `/agentic-workflow:plan` → a 6-phase mission; a 4-expert council + architect shaped it):

@@ -49,6 +49,17 @@
 //           endpoints are floors on the ratio, the whole range is an UPPER region:
 //           the true token count is at or below the high end always, and at or
 //           below the low end if the max-q request is trusted.
+//           CROSS-DOMAIN TRANSFER — disclosed, not corrected. The band is measured on
+//           ASSISTANT OUTPUT only (q's numerator is persisted assistant chars) but is
+//           applied to INPUT-side categories too: `tool results`, `attach: *`, `human
+//           steers` and the input-side residual rows. "Upper region" only holds for a
+//           category whose own true chars/token is >= bandLo; dense machine-generated
+//           content plausibly tokenizes BELOW that, so those rows may be UNDERSTATED
+//           rather than bounded above. Model-authored rows (`orchestrator prose`,
+//           `authored: Write/Edit inputs`, `authored: Bash commands`, `subagent
+//           returns`, `tool_use:*` residual rows) ARE the estimator's own corpus and
+//           are not affected — in particular the P1 Write/Edit figure is unaffected.
+//           Disclosed in the report body as well, not just here (ckpt-p05 F3).
 // char-free prompt growth = TOTAL − attributed tokens − residual-chars tokens −
 //           preamble: prompt growth carrying NO persisted characters. QUANTIFIED
 //           here, NOT explained (unpersisted thinking vs. cached system/tool-def
@@ -58,7 +69,9 @@
 //           observation that context is empty — it is a request carrying no usable
 //           usage data. It is skipped as a prompt observation (no window, no
 //           `prevPrompt` overwrite) and counted in `degenerateUsage`, which is
-//           always printed. See the guard's comment for the 24.4% it manufactured.
+//           always printed. See the guard's comment for the 401,449 tok of phantom
+//           churn it manufactured on this repo's baseline, and for why that is NOT
+//           the 513,634 the D1 re-scope memo predicted.
 // collapses = every request where prompt < previous prompt. Ledgered (index, line,
 //           before, after, drop) with Σ collapse mass, because TOTAL is Σ POSITIVE
 //           deltas only: `TOTAL − Σ collapse mass = final prompt` exactly, and that
@@ -144,6 +157,10 @@ export async function analyze(file) {
   let maxPrompt = null, maxPromptIdx = null, maxPromptLine = null;
   let finalPromptIdx = null, finalPromptLine = null;
   const seen = new Set();
+  // Degenerate (prompt = 0) requestIds are tracked SEPARATELY from `seen` so that a
+  // later line of the same requestId carrying a usable prompt is still billed. See
+  // the guard in `analyze` below.
+  const degenerateRids = new Set();
 
   const add = (cat, n) => { cats.set(cat, cats.get(cat) + n); winChars += n; };
   const res = (label, n) => { residual.set(label, (residual.get(label) || 0) + n); winChars += n; };
@@ -225,14 +242,31 @@ export async function analyze(file) {
           // FAIL CLOSED BY SHAPE. prompt = 0 is not "the context is empty"; it is a
           // usage block with no usable prompt data. Treating it as an observation
           // zeroes `prevPrompt`, so the ENTIRE resident context is re-billed as fresh
-          // churn by the next real request: on this repo's baseline that manufactured
-          // 513,634 tok = 24.4% of TOTAL (memo M2 row 5, 2026-08-02 D1 re-scope memo).
+          // churn by the next real request.
+          //   MEASURED on this repo's baseline (S0.5-1, 2026-08-02), not predicted:
+          //   exactly ONE such record — transcript line 4,253, the 553rd request
+          //   carrying a usage block, prompt 401,449 -> 0. Unguarded it re-billed the
+          //   resident 401,449 tok, i.e. 19.0% of the unrepaired TOTAL 2,108,485, which
+          //   the guard brings down to 1,707,036.
+          //   It is NOT the 513,634 the D1 re-scope memo (M2 row 5) asked to delete:
+          //   513,634 is the FINAL PROMPT = 401,449 phantom re-bill + 112,185 of GENUINE
+          //   growth over requests #554-#596. This guard removes the 401,449 and RETAINS
+          //   the 112,185, which is correct. A future reconciliation of the ledger's
+          //   -401,449 against this comment must not read the gap as under-correction and
+          //   "fix" the phantom churn back in.
           // So: no window, no `prevPrompt` overwrite, and the open window's chars keep
           // accumulating into the next real request, which is the request that actually
-          // paid for them. The rid IS marked seen, so a repeated line of the same
-          // degenerate response counts as a duplicate, not as a second degenerate.
-          if (rid) seen.add(rid);
-          degenerateUsage++;
+          // paid for them. The rid goes in `degenerateRids`, NOT in `seen`: a repeated
+          // line of the same degenerate response still counts as a duplicate rather than
+          // a second degenerate, but a LATER line of the same requestId that carries a
+          // usable prompt is still billed as the real request it is (marking it `seen`
+          // would silently drop it — latent in this corpus, which has no such twin).
+          if (rid && degenerateRids.has(rid)) {
+            duplicateUsageLines++;
+          } else {
+            if (rid) degenerateRids.add(rid);
+            degenerateUsage++;
+          }
         } else {
           if (rid) seen.add(rid);
           requests++;
@@ -593,6 +627,12 @@ function report(r, opts = {}) {
     console.log('    could put a ceiling on the ratio, and this instrument deliberately runs none.');
     console.log('    Known bias: serialized `tool_use` JSON is counted as assistant text and tokenizes');
     console.log('    differently from prose, so this is a floor on a MIXED corpus, not on prose.');
+    console.log('    CROSS-DOMAIN TRANSFER — measured on OUTPUT, applied to INPUT. q is measured only on');
+    console.log('    model-authored text, so "UPPER region" is ASSURED only for model-authored rows (orch-');
+    console.log('    estrator prose · authored: Write/Edit · authored: Bash · subagent returns · tool_use:*).');
+    console.log('    On INPUT-side rows — tool results · attach:* · human steers · user:* — the band is a');
+    console.log('    TRANSFERRED ASSUMPTION, not a measurement: dense machine-generated content may tokenize');
+    console.log('    BELOW the low end, in which case those rows are UNDERSTATED rather than bounded above.');
   }
   console.log(r.churnRatio
     // Print the derivation in the SAME order it is computed (chars ÷ tokens), so a
@@ -717,7 +757,8 @@ function check(name, cond, detail) {
 }
 
 // A ~20-line synthetic transcript in a throwaway dir. No real transcript is ever
-// touched here — this is the ONLY fixture the harness knows.
+// touched here — this and `buildRevivedRidFixture` are the ONLY fixtures the harness
+// knows, and the main one below carries every case except the revived-rid guard.
 function buildFixture(dir) {
   const p = path.join(dir, 'fixture.jsonl');
   const usage = (input, cc, cr, out) => ({
@@ -789,6 +830,32 @@ function buildFixture(dir) {
   return p;
 }
 
+// A SECOND, deliberately tiny fixture for one scenario the main one cannot host without
+// perturbing the constants ~40 other cases pin: a requestId that appears FIRST with a
+// degenerate (prompt = 0) usage block and LATER with a usable one. Real transcripts in
+// this repo's corpus contain no such twin (595 unique + 1 degenerate = 596), so the
+// hazard is latent and the ratchet identity cannot detect it — only a case can.
+// Shape: r1 real (1000) · r2 degenerate · r2 degenerate again · r2 REAL (1500).
+// Correct behaviour: the revived r2 is billed (TOTAL 1500, requests 2) while the repeat
+// degenerate line is a duplicate (degenerateUsage 1, duplicateUsageLines 1). Marking a
+// degenerate rid `seen` instead makes the revived line look like a duplicate and drops
+// it silently — TOTAL 1000, requests 1. VERIFIED BY MUTATION (see the case).
+function buildRevivedRidFixture(dir) {
+  const p = path.join(dir, 'revived-rid.jsonl');
+  const usage = (input, out) => ({
+    input_tokens: input, cache_creation_input_tokens: 0, cache_read_input_tokens: 0, output_tokens: out,
+  });
+  const A = (requestId, content, u) => ({ type: 'assistant', isSidechain: false, requestId, message: { role: 'assistant', content, usage: u } });
+  const recs = [
+    A('r1', [{ type: 'text', text: 'A'.repeat(300) }], usage(1000, 100)),
+    A('r2', [], usage(0, 25)),
+    A('r2', [], usage(0, 25)),
+    A('r2', [{ type: 'text', text: 'B'.repeat(300) }], usage(1500, 100)),
+  ];
+  writeFileSync(p, recs.map((r) => JSON.stringify(r)).join('\n') + '\n');
+  return p;
+}
+
 // Fixture payloads. TWO sizing constraints, both load-bearing:
 //   (1) the true chars/token ratio is far from the folk 4.0, so a hardcoded `/4`
 //       cannot reproduce these numbers;
@@ -854,6 +921,17 @@ async function selftest() {
     check('ratchet identity: Σ positive deltas − Σ collapse mass === final prompt',
       r.ratchetOk && r.collapseMass === 1600 && r.total - r.collapseMass === r.finalPrompt,
       `total=${r.total} collapseMass=${r.collapseMass} final=${r.finalPrompt}`);
+    // 1c. The guard must not COST a real observation: a requestId first seen degenerate
+    // and later carrying a usable prompt is still billed. Isolated fixture (see
+    // `buildRevivedRidFixture`) so the main fixture's pinned constants are untouched.
+    // MUTATION-VERIFIED 2026-08-02: replace `degenerateRids` with `seen` in the guard and
+    // ONLY this case fails (total 1000/requests 1/dup 2, i.e. the revived line silently
+    // dropped); restore and 44/44 pass.
+    const rv = await analyze(buildRevivedRidFixture(dir));
+    check('prompt=0: a requestId that later carries a usable prompt is BILLED, not dropped as a duplicate',
+      rv.total === 1500 && rv.requests === 2 && rv.degenerateUsage === 1 && rv.duplicateUsageLines === 1,
+      `total=${rv.total} requests=${rv.requests} degenerate=${rv.degenerateUsage} dup=${rv.duplicateUsageLines} (expected 1500/2/1/1)`);
+
     check('collapse with no adjacent compact summary is flagged unexplained (not modelled)',
       r.unexplainedCollapses.length === 1 && r.compactSummaryRecords === 0,
       `unexplained=${r.unexplainedCollapses.length} compactRecords=${r.compactSummaryRecords}`);
