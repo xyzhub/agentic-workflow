@@ -66,8 +66,10 @@ live status page, decision log.
 ### 3. Built to run unattended — and still governed
 
 Everything is loop-drivable: the ledger is the state, so `/loop /mission
-continue` or `/loop /autopilot continue` executes one brief per tick in a
-fresh context, crash-safe by construction. The owner channel
+continue` or `/loop /autopilot continue` executes one brief per tick,
+crash-safe by construction. (`/loop` is session-scoped and doesn't reset the
+context window — but because state lives in files, any tick can be run from a
+fresh context without losing anything.) The owner channel
 (Telegram/Slack) brings gates to your phone — tap-to-decide, nonce-bound,
 identity-pinned, fail-closed — while action gates (merge/deploy/spend/
 publish) always carry a link so the human fires them where they live.

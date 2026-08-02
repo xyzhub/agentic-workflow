@@ -45,7 +45,9 @@ are dev-loop methodologies — this sits above that layer):
   nonce-bound and fail-closed. Action gates (merge/deploy/spend) always carry
   a link instead — you fire those where they live.
 - Everything is loop-drivable: the ledger is the state, so a cron'd
-  `/loop /mission continue` executes one brief per tick in a fresh context.
+  `/loop /mission continue` executes one brief per tick. (`/loop` is
+  session-scoped — it doesn't reset the context window — but because the
+  state lives in files, any tick can be run from a fresh context.)
 - Portfolio mode: one owner, many ventures, one cross-venture ops sweep.
 
 Honest caveats: it's MIT and there is no moat — it's all forkable prose. The

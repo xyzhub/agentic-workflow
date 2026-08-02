@@ -29,10 +29,10 @@ _Glyphs: `[ ]` not started · `[~]` in-flight / deferred / awaiting owner · `[x
 (verified, not merely written). The beat-enforcer nudges only on a not-started `[ ]`
 checkpoint/reviewer/chronicler row — set `[~]` the moment a beat is picked up or parked._
 
-- [ ] S1 — doc-defect sweep: kill "fresh context per tick" (branch `mission/context-economy-p0`)
-- [ ] S2 — build `tools/context-attrib.mjs` + `--selftest` + lint delegation (branch `mission/context-economy-p0`)
-- [ ] S3 — run the baseline measurement, record split + D9 table + sanity check (branch `mission/context-economy-p0`)
-- [~] Checkpoint `ckpt-p0` — phase 0 review + merge into `mission/context-economy-integration` — **DEFERRED: mission parked before S1** (owner chose to run it in a fresh session, 2026-08-01); flip to `[ ]` when execution starts
+- [x] S1 — doc-defect sweep: kill "fresh context per tick" (branch `mission/context-economy-p0`)
+- [x] S2 — build `tools/context-attrib.mjs` + `--selftest` + lint delegation (branch `mission/context-economy-p0`)
+- [x] S3 — run the baseline measurement, record split + D9 table + sanity check (branch `mission/context-economy-p0`)
+- [~] Checkpoint `ckpt-p0` — phase 0 review + merge into `mission/context-economy-integration` (reviewer in flight, 2026-08-01)
 - [ ] ⛔ **D1 HARD PAUSE — mission STOPS. Human re-scopes P1–P4 with the real numbers before any later phase is spawned. Do not proceed on agent judgment.**
 - [ ] S4 — write firewall: extend the 30% rule to writes; no tool-list change anywhere, per D7 (branch `mission/context-economy-p1`)
 - [ ] Checkpoint `ckpt-p1` — phase 1 review + merge into integration
@@ -79,20 +79,287 @@ _Human steers captured **verbatim** at checkpoints only, never mid-brief. Gramma
 _Any departure from a brief — logged here the moment it happens, with why. Deviating is
 allowed; deviating silently is not (§4)._
 
-(none)
+- 2026-08-01 (S2) — D9 is emitted **unconditionally**, not behind "one flag on the script"
+  (brief L107). It is a required Phase-0 output, so a flag only adds a way for S3 to forget
+  it. No other CLI form exists beyond `<transcript.jsonl>` and `--selftest`.
+- 2026-08-01 (S2) — three modeling choices the brief left open, all printed by the tool so
+  S3/the reviewer can re-derive them: (a) TOTAL = Σ prompt-delta over unique requestIds
+  (context *occupancy*), not Σ per-line usage; (b) the **first** window is excluded from the
+  chars/token calibration — prompt_0 is system prompt + tool defs + CLAUDE.md, which never
+  appear in the transcript; its tokens still count in TOTAL and land in UNATTRIBUTED, broken
+  out as "session preamble"; (c) tool inputs that are neither Write/Edit nor Bash (Read,
+  Grep, **Agent spawn prompts**) are left in UNATTRIBUTED rather than smeared into a named
+  category — the residual-composition breakdown names them, and the D9 table sizes the Agent
+  slice separately (so D9 spawn chars are a cross-cut, not a tenth category).
+
+- 2026-08-01 (S3) — **three script fixes made AFTER seeing the 377.4k target** (disclosed
+  per brief step 4). None was tuned to hit the target; the sanity check still fails at 5.6x
+  after all three, and fix (a) leaves TOTAL bit-identical.
+  (a) **Calibration unit inversion.** `ratio` was derived as `calDelta/calChars` — tokens
+  per char (0.80) — while being labelled `chars/token` and applied as `chars / ratio`.
+  Dimensionally wrong: it inflated every category by `1/ratio²` (×1.55) and drove
+  UNATTRIBUTED to **−30%**, which is impossible under the script's own stated model. Now
+  `calChars/calDelta` = **1.25 chars/token**; residual is **+16.1%**. TOTAL unchanged.
+  The 15-case S2 selftest missed this because the fixture is, by its own comment,
+  "sized so the true chars/token ratio is deliberately ≈1" — the single value at which an
+  inversion is a no-op. Added a residual-non-negativity case. **(S3-fix: that case was
+  INERT — at the fixture's ratio of 1.373 an inversion still could not drive the residual
+  negative, so only the formula-mirror case caught the mutation. Fixture resized to
+  ratio ≈2.8; the guard is now verified independent by mutation.)**
+  (b) **D7 verdict was silently suppressed.** The reviewer lookup was `agents.get('reviewer')`
+  but real transcripts emit the plugin-NAMESPACED `agentic-workflow:reviewer`, so the run
+  printed "no Agent blocks — D7 reopen test not exercised" while the table showed the
+  reviewer at 4.0%. Now matched on the final `:` segment. The fixture's bare `'reviewer'`
+  was changed to the namespaced form (it was hiding the bug) and a case pins the resolution.
+  **Consequence: D7 IS reopened — this was a false negative, not a non-result.**
+  (c) **Attachment fallback mass instrumented** (brief step 5): the warning counted records
+  but not chars, so its blast radius was unjudgeable. It now prints affected chars + share.
+- 2026-08-02 (S3-fix) — **F5 nit 1 answered differently than the reviewer framed it.** The
+  brief said to name the residual over-subscription (426.7k tok of components inside a
+  339.7k residual) as "the third consistency signal". It is named — but as a **closure
+  check that PASSES**, not as a third sign of inflation, because it is not independent: the
+  87,026 tok of over-subscription equals the 108,350 chars that are attributed yet excluded
+  from calibration ÷ 1.245 = 87,027 tok (a 1-token match), and it is computed from the same
+  disputed ratio. Presenting it as corroboration would have re-committed F3 one paragraph
+  after fixing it. Flagged for the reviewer/human to overrule if they disagree.
+- 2026-08-02 (S3-fix) — the S3-fix handoff entry also exceeds "≤10 lines per entry":
+  five findings each need their own resolution line at a hard pause. Normal bound at S4.
+- 2026-08-01 (S3) — the handoff entry below exceeds the log's "≤10 lines per entry" rule.
+  Deliberate: the brief requires the D1 pause package as ONE block in the handoff entry, and
+  the human reads it at a hard pause with no other surface. Normal bound resumes at S4.
+
+- 2026-08-01 (S1) — routed to `backend` rather than the brief's "main session / writer":
+  the session's own verify gate needs Bash (`node tools/lint.mjs`), which the `writer`
+  agent does not have. No change to the work itself.
 
 ## Handoff log (newest first)
 
 _≤10 lines per entry: what this session did, the verify signal, the branch, and what the
 next session needs. Newest on top; crash-safe by write-ahead._
 
+- _2026-08-02 S3-fix (`backend`, branch `mission/context-economy-p0`): corrective pass on
+  the `ckpt-p0` REQUEST CHANGES — all five findings landed, **no number improved**.
+  **F1** the printed calibration narrated the S2 inversion (`tokens ÷ chars` = 0.80) while
+  computing the opposite; both the script line and the package line now read
+  `2,551,168 chars ÷ 2,049,094 tokens` = 1.25, so a hand re-derivation lands on 1.25.
+  **F2** the residual-non-negativity guard was inert — at the fixture's ratio 1.373 an
+  inversion could not break the invariant, so only the formula-mirror case (a self-
+  consistent pin, the same blind spot that shipped the S2 bug) fired. Resized `writeBody`
+  200→2,200 chars so `calChars ≈ 2.8 × calDelta`; **proved by mutation** that the residual
+  guard now fails alone (below). Replaced the sidechain case's size-proxy assertion
+  (`no row ≥500 chars`, which the resize would have broken) with a named one.
+  **F3** the package sold the 5.59× TOTAL gap and the 1.25 ratio as independent
+  corroboration; they are one signal (`ratio = calChars÷calDelta`, `calDelta = TOTAL−preamble`)
+  and they imply **different factors (~2.9× vs 5.59×)** — rewritten to say so, with the
+  unexplained ~1.9× named as what churn-vs-occupancy must carry.
+  **F4** the ~28% unpersisted-thinking conclusion is downgraded to a **floor** (rides the
+  disputed ratio; counts `tool_use` JSON as persisted text, `:171`) — it no longer overturns
+  the plan's 61–66%. **F5** residual over-subscription named + explained (it closes to 1
+  token); "18 ok"→17 ok; the attachment fallback warning now names `attach: other` as the
+  category it invalidates. Verified: `--selftest` 17 ok exit 0 · `node tools/lint.mjs` clean
+  · negative check (script moved away ⇒ lint exit 1 "harness missing", restored ⇒ clean) ·
+  baseline re-run on the unchanged 4,612-line / 12,211,203-byte transcript → **TOTAL still
+  2,108,485 bit-identical**, reviewer row still **4.0%**, 5.59× sanity failure still stands.
+  **Mutation proof (F2):** `ratio := calDelta/calChars` ⇒ residual case FAILS
+  (`attributed=10,229 > TOTAL=2,600`, `unattributed=−7,629`) **and still fails with the
+  mirror case neutered** ⇒ independent. Restored ⇒ 17 ok, exit 0. Mission still STOPS at
+  the D1 hard pause; `ckpt-p0` is the reviewer's to re-verify._
+
+- _2026-08-01 S3 (`backend`, branch `mission/context-economy-p0`): ran the baseline
+  measurement and assembled the **D1 pause package** (below). Verified: `--selftest` 17 ok
+  (S3 wrote "18 ok"; the actual case count was 17 — corrected at S3-fix),
+  `node tools/lint.mjs` clean, script exit 0. Three script defects found and fixed mid-run
+  (see `## Deviations` — disclosed as post-target fixes). **The mission now STOPS at D1.**_
+
+### ⛔ D1 PAUSE PACKAGE — baseline measurement (read the validity finding FIRST)
+
+**Target** `2fa752c7-…-ec63daee6496.jsonl`, measured 2026-08-01 at **4,612 lines /
+12,211,203 bytes** (11.6 MiB). Append-only: it GREW from the planning-time 4,438 lines /
+11.2 MB, so this is a different, larger file than the one the estimates were made against.
+596 unique requests · 951 duplicate usage lines deduped · 0 unparsable · 0 sidechain.
+
+**🔴 VALIDITY FINDING — these numbers are NOT trustworthy as absolute token counts.**
+Script TOTAL = **2,108,485 tok** vs. the recorded `/context` Messages figure **377.4k** →
+**5.59×, +459% divergence**, vastly beyond the 15% threshold. Per plan task 6 this is an
+explicit script-validity finding: *the absolute magnitudes must not be used to size a
+re-scope.*
+
+**ONE signal seen two ways — NOT two independent confirmations** (corrected at S3-fix; the
+S3 wording overstated the evidence). The derived **1.25 chars/token** is sub-plausible for
+text (English ≈3.5–4; the plan expected ≈2.0), but it is not a second witness:
+`ratio = calChars ÷ calDelta` and `calDelta = TOTAL − preamble`, so the ratio anomaly *is*
+the TOTAL anomaly divided by a directly-measured char count. Counting both is counting one
+observation twice.
+**What IS informative is that the two views disagree on the size of the error.** Re-scaling
+the 2,551,168 calibration chars at a plausible ~3.8 chars/token implies TOTAL ≈ 731k tok, a
+**~2.9× inflation** — not the **5.59×** the `/context` comparison implies. So the
+implausible ratio accounts for only about half the gap (2.9 × 1.9 ≈ 5.6); a residual
+**~1.9×** is left unexplained by any chars/token story. That leftover is precisely what the
+churn-vs-occupancy hypothesis below has to carry — and it is the thing to test first.
+
+**Likely root cause (NOT fixed — it is a modeling
+decision that belongs to the human):** TOTAL is `Σ max(0, prompt-delta)`, positive deltas
+only. This session compacted (20 `isCompactSummary` records); every compaction collapses
+the prompt and the re-accumulation is counted again. So the script measures cumulative
+context **churn over the session**, while `/context` reports **point-in-time occupancy** —
+arguably two different quantities, not merely a bug. **Decide which one the mission targets
+before P4's re-measurement (D4a) is designed, or the before/after will be meaningless.**
+
+**What survives the finding:** category **chars** are directly measured and model-free.
+And `share = chars_i × (calDelta/calChars) ÷ total`, where `calDelta` and `total` both
+scale with the inflation — so *if* inflation were uniform across windows the share column
+is invariant to it. Compaction re-counting is concentrated, not uniform, so treat shares as
+**approximately robust, ±a few points**; treat token columns as **unusable**.
+
+**Category split** (token share | char share — prefer the char column):
+| category | chars | tokens | tok share | char share |
+|---|---|---|---|---|
+| human steers | 76,007 | 61,049 | 2.9% | 2.9% |
+| orchestrator prose | 273,235 | 219,462 | 10.4% | 10.3% |
+| authored: Write/Edit inputs | 243,578 | 195,641 | 9.3% | 9.2% |
+| authored: Bash commands | 165,629 | 133,033 | 6.3% | 6.2% |
+| tool results | 377,452 | 303,169 | 14.4% | 14.2% |
+| subagent returns | 400,738 | 321,872 | 15.3% | 15.1% |
+| attach: skill_listing | 208,338 | 167,337 | 7.9% | 7.8% |
+| attach: hook_success | 113,672 | 91,301 | 4.3% | 4.3% |
+| attach: other | 343,579 | 275,962 | 13.1% | 12.9% |
+| **UNATTRIBUTED** | — | 339,659 | **16.1%** | 17.2% |
+| TOTAL | 2,659,518 | 2,108,485 | 100.0% | 100% |
+
+Derived **chars/token = 1.25** — that is **2,551,168 chars ÷ 2,049,094 tokens**, first
+window excluded (chars on top, tokens underneath; re-deriving it the other way round gives
+0.80 and is the S2 inversion bug, now fixed and guarded).
+**UNATTRIBUTED = 16.1%**, printed and never redistributed. Largest known components inside
+it: Agent spawn prompts 264,434 chars, `user:meta` 80,554, `AskUserQuestion` 60,691,
+session preamble ~59,391 tok.
+
+**Third consistency check — the residual is over-subscribed by 26%, and it closes.** The
+named components inside UNATTRIBUTED sum to **~426,685 tok** against an UNATTRIBUTED of
+**339,659 tok** — 26% more than the bucket they sit inside, which the printed caption
+discloses but does not explain. It resolves exactly: the 87,026 tok of over-subscription
+equals the **108,350 chars that are attributed but excluded from calibration** (the
+pre-first-request window plus 772 trailing chars) ÷ 1.245 = 87,027 tok — a **1-token
+match**. Read it for what it is: a **closure check on the bookkeeping, which PASSES**, not
+a third independent sign of inflation (calling it one would repeat the error corrected
+above — it is computed from the same disputed ratio).
+
+**Output-side — a FLOOR, not a measurement; it does NOT overturn the plan's 61–66%.**
+Σ output 1,144,454 tok vs ~825,971 tok of persisted assistant text → **≥28% of output has
+no persisted text**. Two caveats, inline, both pushing the same direction: (a) it **rides
+the disputed ratio** — `persisted = assistant chars ÷ 1.25` — so a token scale this package
+has just declared unusable is what sets it, and a higher true ratio shrinks `persisted` and
+*raises* the unpersisted share; (b) `persisted` counts serialized `tool_use` JSON as
+assistant *text* (`tools/context-attrib.mjs:171`), inflating the persisted side. Both
+inflate `persisted`, so 28% is a lower bound. The plan's 61–66% estimate is **not refuted
+— only unconfirmed**, and drawing a token-scale conclusion here at all is in tension with
+the validity finding above.
+
+**D9 — per-`subagent_type` (return share of TOTAL):**
+| subagent_type | spawns | spawn chars | returns | return chars | return tok | share |
+|---|---|---|---|---|---|---|
+| **`agentic-workflow:reviewer`** | **19** | **55,511** | **19** | **106,258** | **85,346** | **4.0%** |
+| `agentic-workflow:brainstormer` | 9 | 31,362 | 10 | 76,862 | 61,735 | 2.9% |
+| `Explore` | 3 | 6,159 | 5 | 68,520 | 55,035 | 2.6% |
+| `general-purpose` | 12 | 37,815 | 12 | 35,243 | 28,307 | 1.3% |
+| `agentic-workflow:advisor` | 8 | 24,607 | 12 | 30,970 | 24,875 | 1.2% |
+| `agentic-workflow:backend` | 10 | 44,915 | 10 | 27,819 | 22,344 | 1.1% |
+| `agentic-workflow:architect` | 4 | 15,963 | 4 | 26,063 | 20,934 | 1.0% |
+| `agentic-workflow:planner` | 5 | 28,831 | 5 | 12,331 | 9,904 | 0.5% |
+| `agentic-workflow:frontend` | 2 | 7,384 | 2 | 4,607 | 3,700 | 0.2% |
+| `agentic-workflow:researcher` | 1 | 3,914 | 1 | 4,103 | 3,296 | 0.2% |
+| `claude-code-guide` | 1 | 1,564 | 1 | 3,670 | 2,948 | 0.1% |
+| `agentic-workflow:security` | 1 | 3,363 | 1 | 3,212 | 2,580 | 0.1% |
+| `agentic-workflow:analyst` | 1 | 3,046 | 1 | 1,080 | 867 | 0.0% |
+
+**🔴 D7 VERDICT — REOPENED.** `reviewer` return share **4.0% > 3%** → per plan task 4 this
+**reopens decision D7** ("the reviewer is NOT touched"). The reviewer is the single largest
+subagent consumer: 19 spawns, 106k return chars, plus 55.5k of spawn-prompt chars sitting
+in UNATTRIBUTED (~161k chars total, ~6.1% of all appended chars). Note this verdict was
+INITIALLY REPORTED AS "not exercised" by a namespace bug (Deviations (b)) — the D7 trigger
+was a false negative that only surfaced because the table row was read by hand. **The human
+must decide whether D7 stands**; P1 task 10 currently mandates zero reviewer changes, and
+its stated rationale (the reviewer's `tools:` line is the fleet's only structural
+guarantee) is a safety argument that the 4.0% cost figure does not by itself defeat.
+
+**Re-scope inputs — measured vs. planning-time estimate:**
+| input | planning-time | measured (tok share) | verdict |
+|---|---|---|---|
+| `attach: skill_listing` "free lever" | ≈16.0% | **7.9%** | **~half** the estimate. Still a zero-engineering lever, but worth ~8%, not ~16%. |
+| `tool results` (untouched by all 4 phases) | ≈25.1% | **14.4%** | **~half** the estimate. The out-of-scope gap is smaller than feared. |
+Both estimates are ~2× the measurement in the same direction, which suggests the planning
+figures used a different (smaller) denominator — probably excluding UNATTRIBUTED and/or
+`attach: other`. Against a denominator of just the seven non-attach, non-residual
+categories, skill_listing ≈ 13.5% and tool results ≈ 24.5%, close to the planning numbers.
+**So the two estimates were probably not wrong, just differently normalised — but the
+mission's "addresses ~25% of consumption / realistic capture 10–15%" risk statement was
+built on the larger normalisation and should be re-derived before P1–P4 are re-scoped.**
+
+**S2's three modeling caveats (read the split WITH these attached):**
+1. TOTAL = Σ prompt-delta over unique requestIds = context *occupancy*, not Σ per-line
+   usage. (This is exactly the choice the validity finding calls into question.)
+2. The **first window is excluded from calibration** — prompt_0 is system prompt + tool
+   defs + CLAUDE.md, none of which appear in the transcript. Its tokens still count in
+   TOTAL and land in UNATTRIBUTED, broken out as "session preamble" (~59,391 tok).
+3. Tool inputs that are neither Write/Edit nor Bash (Read, Grep, **Agent spawn prompts**)
+   are left in UNATTRIBUTED rather than smeared into a named category. So the authored-
+   content categories **understate** orchestrator-authored bytes, and D9 spawn chars are a
+   cross-cut of the residual, not a tenth category.
+
+**Attachment-schema finding (brief step 5) — the S2 field-order guess is materially wrong.**
+The fallback warning **FIRED**: 77 attachments had none of `stdout`/`content`/`text`/
+`output` and were sized on the whole record minus `type`, affecting **307,136 chars =
+11.5% of all appended chars**. That is **89% of the entire `attach: other` category**
+(343,579 chars), so `attach: other` at 13.1% is essentially an unvalidated number and is
+probably **over**-stated (the whole record carries ids/metadata the model never sees).
+S2 flagged this field order as a guess; the guess did not hold. **Anyone acting on
+`attach: other` must first dump one real attachment record's key set** (a schema question,
+not a measurement question) — that work is not in any current phase.
+
+**Recommended decisions for the human at this pause:** (1) accept or reject the
+churn-vs-occupancy model before D4a is designed; (2) rule on D7 given 4.0%; (3) confirm
+which normalisation the ~25%/10–15% scope claim should use; (4) decide whether the
+attachment-schema check is pulled in or deferred.
+
+- _2026-08-01 S2 (`backend`, branch `mission/context-economy-p0`): built
+  `tools/context-attrib.mjs` — zero-dep, `readline`-streamed (never loads or prints
+  transcript content) — plus a 15-case `--selftest` over a synthetic fixture in a throwaway
+  tmpdir, and fail-closed `checkContextAttrib()` in `tools/lint.mjs` (shape of
+  `checkMarkerMutation`; `--selftest` only, never a real transcript). All four landmines
+  covered (usage deduped by `requestId`; UNATTRIBUTED printed, never redistributed;
+  chars/token DERIVED per transcript, no `/4`; attachments sized on the injected field) and
+  the D9 per-`subagent_type` table is always emitted with a reviewer >3% → reopen-D7 callout.
+  Verified: `--selftest` exit 0 (15 ok); `node tools/lint.mjs` clean; NEGATIVE CHECK — script
+  moved away ⇒ lint FAILS "context-attribution harness missing", restored ⇒ clean. S3: run
+  `node tools/context-attrib.mjs <transcript.jsonl>` (only two invocation forms exist, that
+  and `--selftest`; D9 needs no flag) and read the printed table — never the transcript._
+
+- _2026-08-01 S1 (`backend`, branch `mission/context-economy-p0`): corrected the false
+  "fresh context per tick" claim at all 12 sites with one consistent wording — `/loop` is
+  session-scoped, ticks accrete in the same transcript, genuine fresh context needs
+  `/clear` / new session / scripted `claude -p`; what makes loop mode safe is that state
+  lives in files. Sites: `commands/mission.md`, `commands/autopilot.md`, plugin `README.md`,
+  `templates/WORKFLOW.md` ×3, `docs/WORKFLOW.md` ×3 (OQ1, version stamp untouched), launch
+  copy ×3 (OQ2, plain correction). One extra site fixed beyond the brief:
+  `docs/product/features/orchestrator-governance/idea.md:45` ("fresh context each turn" →
+  "re-injected every turn"), covered by the brief's turn-end exit criterion. Verified:
+  `node tools/lint.mjs` clean + full `fresh context` grep sweep — every surviving hit is a
+  reviewer/subagent reference or the new corrective text. Next: S2 builds
+  `tools/context-attrib.mjs` on the same branch._
+
 - _2026-08-01 planning: trio authored on `plan/orchestrator-context-economy` from the
   2026-08-01 brief (D1–D9 locked, not re-opened). 8 sessions / 5 phases / 5 checkpoints.
   Baseline transcript identified and field-verified by grep (never read). Uncommitted,
   awaiting HITL review of OQ1–OQ5._
 
-Next up: **S1 — doc-defect sweep** (branch `mission/context-economy-p0`). OQ1–OQ5 are all
-RESOLVED; execution is unblocked. Resume with `/agentic-workflow:mission "context-economy" continue`
+Next up: **⛔ D1 HARD PAUSE — mission STOPS. Human re-scopes P1–P4 with the real numbers
+before any later phase is spawned. Do not proceed on agent judgment.**
+
+Phase 0 is measured; `ckpt-p0` (phase-0 review + merge into the integration branch) is the
+orchestrator's to spawn and is NOT yet done. **S4 must not be started.** The pause package
+sits at the top of the handoff log above; read its **VALIDITY FINDING first** — the
+absolute token counts diverge 5.6× from `/context` and are not safe to re-scope on, while
+the category *shares* are approximately robust. Four decisions are queued for the human
+there, including **D7, which the measurement REOPENS** (reviewer at 4.0% > 3%).
 in a FRESH session (deliberate: starting a context-economy mission inside a 400k-token
 session is the anti-pattern it exists to fix). Phase 0 ends
 at `ckpt-p0` and then **STOPS at the D1 HARD PAUSE** — S4 and everything after it are not

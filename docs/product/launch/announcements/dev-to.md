@@ -69,8 +69,10 @@ repo, published by me, because publishing is on the safety boundary.
 The part I use most: everything is loop-drivable. Missions decompose into a
 `.plans/` trio where the planner explores once so execution sessions never
 do; the ledger is the state, so a recurring `/loop /mission "<name>"
-continue` executes one brief per tick in a fresh context. No transcript
-bloat, crash-safe by construction.
+continue` executes one brief per tick. `/loop` is session-scoped — it doesn't
+reset the context window — but because the state lives in files, any tick can
+be run from a fresh context (`/clear`, a new session, or a scripted
+`claude -p`) without losing anything. Crash-safe by construction.
 
 And the gates don't block silently while you're away. A private
 Telegram/Slack owner channel sends gate/alert/digest notifications out, and

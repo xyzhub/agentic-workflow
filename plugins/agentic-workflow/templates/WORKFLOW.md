@@ -25,8 +25,9 @@
 **The daily loop**: `/agentic-workflow:start` → build → `/agentic-workflow:end` → PR → human merges.
 Small isolated fix → `/agentic-workflow:fix`. Bigger than one sitting → `/agentic-workflow:mission "<goal>"`.
 Long missions and autopilot are **loop-friendly**: drive them with a recurring
-`/loop … continue` or a scheduled agent — each tick resumes from files with a
-fresh context. Once live, schedule `/agentic-workflow:operate` weekly.
+`/loop … continue` or a scheduled agent — each tick resumes from files, so any
+tick can be run from a fresh context (`/loop` itself is session-scoped and does
+not reset the window). Once live, schedule `/agentic-workflow:operate` weekly.
 
 **Stages at a glance**: V0 validate → V1 define → V2 foundation → V3 build →
 V4 harden → V5 launch → V6 operate.
@@ -281,11 +282,15 @@ reviewers raises its confidence. Routine checkpoints stay single-reviewer —
 this is where review cost is spent deliberately, not everywhere.
 
 **Loop mode.** The ledger makes missions loop-drivable: a recurring
-`/loop /mission "<name>" continue` (or a scheduled agent) gives every tick a
-FRESH context that reads the ledger, executes exactly one brief or checkpoint,
-writes the handoff, and ends. Context never bloats across phases, a crashed
-tick loses nothing, and the human can stop the loop at any gate. The same
-applies to `/agentic-workflow:autopilot continue` at venture scale (§11).
+`/loop /mission "<name>" continue` (or a scheduled agent) has every tick read
+the ledger, execute exactly one brief or checkpoint, write the handoff, and
+end. A `/loop` tick does NOT reset the context window — `/loop` is
+session-scoped, and ticks accrete in the same transcript; genuine fresh context
+requires `/clear`, a new session, or a scripted `claude -p`. What makes loop
+mode safe is that **state lives in files**: any tick can be run from a fresh
+context without losing anything, a crashed tick loses nothing, and the human
+can stop the loop at any gate. The same applies to
+`/agentic-workflow:autopilot continue` at venture scale (§11).
 
 The trio is authored by the `planner` agent and driven by the bundled `/agentic-workflow:mission`
 command (plan · run · continue · replan). Technical open questions may be routed
@@ -655,8 +660,11 @@ stage artifacts, status page), it ends cleanly at a stage boundary when its
 context fills, and `/agentic-workflow:autopilot continue` re-derives the current stage from
 those files and resumes — locked decisions stay decided. That makes autopilot
 **loop-drivable**: a recurring `/loop /autopilot continue` (or a scheduled
-agent) advances the venture one clean stage boundary per tick, each tick a
-fresh context. Human confirmations may arrive through the verified **owner
+agent) advances the venture one clean stage boundary per tick. `/loop` is
+session-scoped and does not reset the context window, so the stage-boundary
+stop still matters — but because state lives in files, any tick can be run
+from a fresh context (`/clear`, a new session, or a scripted `claude -p`)
+without losing anything. Human confirmations may arrive through the verified **owner
 channel** (§12) — another input device for the same human; the boundary list
 above is unchanged.
 

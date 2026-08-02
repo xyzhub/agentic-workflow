@@ -42,7 +42,7 @@ channel to notify; §8 ("the loop improves the loop") welcomes protocol addition
      directive to route it through the protocol / hand it to `intake`, not freewheel.
    - **Thread-keeper** (`UserPromptSubmit`, every turn): inject the current phase +
      the **next expected protocol step** pulled from the ledger — the anti-forgetting
-     mechanism (the required beat sits in fresh context each turn instead of decaying).
+     mechanism (the required beat is re-injected every turn instead of decaying).
    - **Beat-enforcer** (`PreToolUse` on commit/phase-advance + a `Stop` hook): when
      the orchestrator tries to close/advance while a required ledger step
      (chronicler/reviewer) is unchecked → nudge at the overdue moment.
