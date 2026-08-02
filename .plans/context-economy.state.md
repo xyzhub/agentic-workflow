@@ -33,7 +33,8 @@ checkpoint/reviewer/chronicler row — set `[~]` the moment a beat is picked up 
 - [x] S2 — build `tools/context-attrib.mjs` + `--selftest` + lint delegation (branch `mission/context-economy-p0`)
 - [x] S3 — run the baseline measurement, record split + D9 table + sanity check (branch `mission/context-economy-p0`)
 - [x] Checkpoint `ckpt-p0` — **APPROVE** 2026-08-02 after one corrective session (S3-fix). Scorecard: QA 3 · Security 3 · Efficiency 3 · Architecture 3 · UX 3 · DX 2. Merged into `mission/context-economy-integration` (`273f1d3`, batch policy — main untouched).
-- [ ] ⛔ **D1 HARD PAUSE — mission STOPS. Human re-scopes P1–P4 with the real numbers before any later phase is spawned. Do not proceed on agent judgment.**
+- [x] ⛔ **D1 HARD PAUSE — RELEASED 2026-08-02.** Human re-scoped with the measured numbers: **new instrument-repair phase first (P0.5); P1–P4 are NOT authorized and get re-decided after it.** Decisions D10–D12 below.
+- [ ] **Phase 0.5 — instrument repair** (briefs to be authored by the planner; supersedes direct entry to P1)
 - [ ] S4 — write firewall: extend the 30% rule to writes; no tool-list change anywhere, per D7 (branch `mission/context-economy-p1`)
 - [ ] Checkpoint `ckpt-p1` — phase 1 review + merge into integration
 - [ ] S5 — standing steers: ledger block + §3-only append + lint grammar check (branch `mission/context-economy-p2`)
@@ -65,6 +66,29 @@ _All RESOLVED 2026-08-01 — the human accepted every recommendation. Locked bel
 - **OQ5 — RESOLVED.** D4a reports the authored-Write **share (%)** delta with the
   comparability caveat stated explicitly (this mission is ~8 sessions of contract text vs.
   the 9-session baseline of template authoring); **D4b remains the real confirmation**.
+
+## D1 re-scope decisions (locked 2026-08-02 by the human)
+
+_Taken at the D1 pause with the architect's options memo (`549241f`) in hand. Locked —
+not re-litigated by any later session._
+
+- **D10 — Instrument repair comes first (new Phase 0.5).** P1–P4 stay unauthorized until
+  it lands and the numbers are re-decided. Scope: (a) the `prompt = 0` record that
+  manufactures 513,634 tok = **24.4% of TOTAL** in phantom churn; (b) settle the
+  load-bearing **3.2–4.2 chars/token** band with a real tokenizer; (c) re-point the 15%
+  sanity check at **occupancy** (max/final prompt) while **churn remains the optimisation
+  target** (architect's decision-1 recommendation, accepted). Rationale: the mission's
+  founding premise moved (orchestrator Write/Edit ≤15.9%, never 22.5%), so building P1
+  on it would be building on a retracted number.
+- **D11 — D7 stays LOCKED; the reopen is recorded as a normalisation artefact.** The 4.0%
+  trigger does not survive the token-domain denominator (reviewer = **1.23–1.62%**, below
+  3%). The `reviewer` agent keeps its no-Write structural guarantee. The reviewer's safety
+  argument and the architect's independent measurement agree. **Follow-up owed:** the 3%
+  trigger must name the denominator it measures against, or the next reopen is another
+  artefact.
+- **D12 — OQ2 stands as originally resolved: the launch copy is UNPUBLISHED.** S1's
+  in-repo correction is sufficient; **no erratum, no outward action**. The `publish-log.md`
+  evidence is accepted over the reviewer's flag.
 
 ## Standing steers
 
