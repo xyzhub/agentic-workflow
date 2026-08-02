@@ -61,11 +61,14 @@ _OQ1–OQ5 RESOLVED 2026-08-01 — the human accepted every recommendation. Lock
 **OQ6 and OQ7 opened at the 2026-08-02 replan** and live in full in
 `.plans/context-economy.md` `## Open questions`:_
 
-- **OQ6 — OPEN — does settling the chars/token band buy a tokenizer dependency?**
-  **Blocks `S0.5-2` only**; `S0.5-1` may start without it. D10(b) names a real tokenizer;
-  the repo is zero-dep with no `package.json`/lockfile and a bare-checkout CI. Planner
-  recommends the **zero-dep output-side envelope estimator**, chars reported as primary.
-  Flagged as a tension with D10(b)'s wording — **not resolved by the planner**.
+- **OQ6 — RESOLVED 2026-08-02 (human): zero-dep estimator, chars primary.** No tokenizer,
+  no `package.json`, no lockfile, no CI install step. `S0.5-2` implements a **zero-dep
+  output-side envelope estimator**; **character counts are the primary reported figure**
+  (model-free and exact) and tokens are a derived estimate that must always carry its
+  stated band. **This amends D10(b)**, which said "with a real tokenizer" — the human
+  unlocked that clause specifically, on the grounds that a bare-checkout CI has no
+  dependency-resolution surface to attack (cf. the 2026-07 supply-chain incident) and the
+  band narrows but never fully closes either way. **`S0.5-2` is UNBLOCKED.**
 - **OQ7 — OPEN (low stakes) — add `--context-total=<tokens>` as a third CLI form?**
   Planner recommends yes; the hand comparison is what produced the 377.4k/401.4k slip.
   Absent a ruling the recommendation stands, and the reviewer may overrule at `ckpt-p05`.
