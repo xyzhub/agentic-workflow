@@ -147,7 +147,7 @@
     <!-- data:meta -->
     <div class="meta">
       <span class="stagebadge"><span class="pulse"></span>V6 · Operate &amp; Evolve</span>
-      <span>Updated 2026-08-02 · context-economy mission Phase 0 chronicled</span>
+      <span>Updated 2026-08-02 · context-economy mission Phase 0.5 chronicled — parked at P1–P4 decision point</span>
     </div>
     <!-- /data:meta -->
   </header>
@@ -174,15 +174,15 @@
       <div class="card">
         <h3>In flight</h3>
         <div class="kv">
-          <div class="row"><span class="k">Active mission</span><span class="v">context-economy — Phase 0 complete, PARKED at the ⛔ D1 hard pause</span></div>
-          <div class="row"><span class="k">Next step</span><span class="v">Blocked on the owner — see "Needs the owner" below. S4/Phase 1 is not authorized until then.</span></div>
+          <div class="row"><span class="k">Active mission</span><span class="v">context-economy — Phase 0.5 (instrument repair) complete, reviewed APPROVE, merged; PARKED at the human P1–P4 re-decision point</span></div>
+          <div class="row"><span class="k">Next step</span><span class="v">Blocked on the owner — re-decide Phases 1–4 from the repaired numbers. No implementation session remains until then.</span></div>
           <div class="row"><span class="k">Deployed</span><span class="v">v1.30.0 on the marketplace (installs from main)</span></div>
         </div>
       </div>
       <div class="card">
         <h3>Needs the owner</h3>
         <div class="actions">
-          <div class="action blocked"><span class="dot"></span><span class="txt">context-economy mission is paused pending 4 decisions<small>Baseline measurement's own sanity check failed 5.59× vs. `/context` — absolute counts aren't trustworthy, category shares are. (1) accept/reject the "cumulative churn vs. point-in-time occupancy" model before Phase 4 is designed; (2) rule on decision D7 — the reviewer subagent is reopened at 4.0% context share, above the plan's 3% threshold; (3) confirm which normalisation the ~25%/10–15% scope claim should use; (4) decide whether an attachment-schema wrong-guess (also caught) gets its own follow-up. Full pause package: `.plans/context-economy.state.md`</small></span></div>
+          <div class="action blocked"><span class="dot"></span><span class="txt">context-economy mission parked — human re-decides Phases 1–4 on repaired numbers<small>Phase 0.5 repaired the measuring instrument: TOTAL fell 19% (2,108,485 → 1,707,036 tok) once a phantom-reset bug was fixed, and the mission's own headline moved with it — the write-firewall case is now ~4.4–7.2% of context addressed / ~1.8–4.3% realistically captured, against the founding pitch of ~25% / 10–15%. The occupancy sanity gate still FAILS (+28.0% vs. `/context` TOTAL) — absolute magnitudes carry that haircut; category shares remain the robust output. Decision D7 (reviewer subagent) is already re-decided and stands. Full re-decision package: `.plans/context-economy.state.md`</small></span></div>
           <div class="action todo"><span class="dot"></span><span class="txt">Run /connect<small>Owner channel status last recorded as none — gates currently reach you only at the terminal</small></span></div>
           <div class="action todo"><span class="dot"></span><span class="txt">Schedule /audit all<small>V4-grade pillar audit never formally ran on this repo</small></span></div>
         </div>
@@ -207,6 +207,7 @@
     <div class="sec-head"><h2>Timeline</h2><span class="rule"></span></div>
     <!-- data:timeline -->
     <div class="timeline">
+      <div class="entry"><span class="date">2026-08-02</span><span class="body"><div class="title"><span class="tag fix">Phase 0.5</span>Instrument repaired — the mission's own headline shrank</div><div class="desc">Four sessions fixed a `prompt = 0` phantom-reset bug (TOTAL 2,108,485 → 1,707,036 tok, −19.0%), added a zero-dependency chars/token band (1.99–3.24), and re-pointed the occupancy gate at the correct `/context` figure (still FAILS, +28.0%). Repaired numbers move the founding ~25%/10–15% write-firewall case to ~4.4–7.2% addressed / ~1.8–4.3% captured. Review caught an inert regression guard and abandoned code that re-decided a settled question in the tool's own voice. `ckpt-p05` APPROVE after one corrective round, merged (`f5fabc6`). Mission PARKS at the P1–P4 human decision point.</div></span></div>
       <div class="entry"><span class="date">2026-08-02</span><span class="body"><div class="title"><span class="tag fix">Paused</span>context-economy Phase 0 — measurement built, sanity check failed</div><div class="desc">New `tools/context-attrib.mjs` context-attribution measurer + fail-closed lint gate; corrected a false "/loop tick = fresh context" doc claim at 12 sites. Baseline run on an 11.6 MiB transcript diverged 5.59× from the `/context` figure — two bugs caught by review (a calibration-ratio inversion, an inert regression guard), neither of which moved the headline gap. `ckpt-p0` APPROVE, merged into the integration branch (`273f1d3`). Mission STOPS at the ⛔ D1 hard pause pending 4 owner decisions — see "Needs the owner."</div></span></div>
       <div class="entry"><span class="date">2026-07-08</span><span class="body"><div class="title"><span class="tag plan">Milestone</span>The protocol adopted itself</div><div class="desc">/adopt fill on the plugin's own repo: §10 profile, records reconstructed, registered as row 1 of the portfolio registry (xyzhub/registry).</div></span></div>
       <div class="entry"><span class="date">2026-07-08</span><span class="body"><div class="title"><span class="tag ship">v1.30.0</span>Portfolio registry (§13)</div><div class="desc">Registry-repo mechanism, /operate portfolio mode, /adopt registration. PR #7.</div></span></div>

@@ -15,6 +15,94 @@ protocol's own behavior the way a QA team would.
 
 ---
 
+## 2026-08-02 — Phase 0.5: the instrument got repaired, and the mission's own headline shrank with it
+
+The previous entry left the context-economy mission stopped at a hard pause: a
+measuring tool that disagreed with the product's own diagnostics by 5.59×, and
+four questions sitting with a human before anyone could act on the numbers it
+produced. The human's answer was not to pick an option from that list. It was
+to authorize one more phase — Phase 0.5, instrument repair only — before any of
+the four questions got answered at all, on the reasoning that deciding a
+multi-month build plan from numbers nobody trusted would be building on sand.
+Four sessions did the repair. A fifth, sent back once by review, wrote it up
+honestly.
+
+The single biggest fix explained most of the original 5.59× gap by itself. One
+log record, mid-transcript, briefly reported the running context size as zero —
+a known quirk of how the underlying tool reports usage after certain resets —
+and the measuring script had been reading that as "the whole conversation just
+restarted," re-billing every token that followed as if it had all been rebuilt
+from nothing. Skipping that one phantom record dropped the mission's own
+reported total by 19%, from just over 2.1 million tokens to about 1.7 million.
+The fix was not applied with a heavy hand: some of the growth in that same
+window was real, ongoing work, and the tool correctly left it in the count
+rather than zeroing out everything downstream of the glitch.
+
+The second fix replaced a guess with a measurement. Converting character counts
+to token counts needs a conversion ratio, and the team had already ruled out
+pulling in an external tokenizer library — a standing lesson from an unrelated
+supply-chain scare earlier in the year, about not adding dependency surface to
+a bare checkout. So they built their own zero-dependency estimator, deriving a
+defensible range (roughly 2 to 3.2 characters per token) from what the model
+itself had actually written in the same transcript, and made every downstream
+token figure report as a range instead of a falsely precise point value. Doing
+that honestly also surfaced something the cruder math had been quietly hiding:
+somewhere between a third and three-fifths of all the context in the session —
+more than any single thing the mission was designed to trim — cannot be
+attributed to any category the tool knows how to name. That unattributed mass
+is now visible only because the tool refuses to smear it across the categories
+it can name; it remains unexplained, not undiscovered.
+
+The third fix pointed the tool's built-in sanity check at the correct number in
+the product's own diagnostics (it had been checking against the wrong
+sub-total). The corrected check still failed: the repaired occupancy figure
+runs 28% higher than what the product's own live display shows, for reasons
+nobody has yet explained. That failure is reported as a live, unresolved
+finding — not tuned away, not hidden behind a passing gate.
+
+None of the four sessions went entirely smoothly. Three separate times, the
+session doing the work died mid-implementation on an unrelated infrastructure
+failure, unrelated to anything being measured. Each time, nothing was lost: a
+fresh session picked up the unfinished changes and reviewed them against the
+brief rather than trusting them, before continuing. That discipline caught two
+things that would otherwise have shipped quietly. One earlier session's own
+safety test turned out to be inert — it happened to exercise a scenario where
+two different bug-catching rules both fired at once, so deleting either rule
+alone still left the test green, hiding a guard that provided no protection at
+all. And a piece of code abandoned mid-session by one of the failed runs was
+quietly printing a management decision — "this reopens a settled question" —
+into the measuring tool's own output. A tool reporting a number is not the same
+thing as a tool making a call, and that line was rewritten to report the
+measurement and name the human decision it feeds, not make it.
+
+The reason this phase matters more than a routine bug-fix: repairing the
+instrument didn't just shrink an error bar, it moved the mission's own central
+argument, and not entirely in the direction anyone expected. The original case
+for this work assumed one specific editing behavior consumed roughly a quarter
+of a working session's context, worth realistically capturing 10–15% of it.
+With the instrument repaired, that behavior measures at roughly 4.4–7.2% of
+context addressed, worth capturing perhaps 1.8–4.3% — both still far below the
+original pitch. But two of the numbers behind that figure moved up, not down,
+once repaired: the smaller total (a 19% drop) and the corrected conversion
+band both push the same category's *share* higher, even though the category's
+absolute size didn't grow. Smaller correction and larger correction pulled in
+opposite directions on the same line item, and the net still landed well below
+where the mission started. Every number in this story comes from one
+transcript, measured once; nothing has been confirmed on a second session, and
+the team is reading all of it as directionally right, not as settled fact.
+
+The first write-up of this work was sent back by review — not for a wrong
+number, but for underselling how large the phantom-reset bug actually was, and
+for a safety claim ("this guard works") that needed to be proven independently
+rather than assumed. The second pass fixed both without moving a single
+headline figure, and passed clean. The phase is done, reviewed APPROVE, and
+merged. What the team does next — whether the smaller, now honestly-priced
+version of the original idea is still worth building — is, once again, a call
+that belongs to a human, not to the team that just finished proving its own
+numbers wrong once already.
+
+---
+
 ## 2026-08-01 to 2026-08-02 — The context-economy mission built a measuring instrument, then caught it lying
 
 The team's own long working sessions had been quietly getting more expensive to
