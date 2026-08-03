@@ -51,8 +51,12 @@ AUTHORIZED, the mission WRAPS at P4.** **Phase 4 was re-briefed by the planner o
 **`S7a` is DONE (2026-08-03)** — the instrument names the four A4 delta kinds, PRINTS the
 per-attachment-kind table + the `mission machinery footprint` line, and the D7 trigger is a
 named constant pinned in both directions. Selftest **44 → 54**, no reported verdict moved.
-**Next up: S7b** — run the measurement against S7a's instrument and record the numbers (no
-code change) on the same branch `mission/context-economy-p4`.
+**`S7b` is DONE (2026-08-03)** — the measurement ran on both transcripts; every baseline
+headline and every A4/A5 hand figure in the audit REPRODUCED exactly, `attach: other` shrank
+by exactly the newly-named sum, and D4a is recorded as an **observation, not a gate**. All
+figures are in **`## 📊 S7b MEASUREMENT BLOCK`** below — that block is S7c's source.
+**Next up: S7c** — write `docs/product/engineering/context-economy-metrics.md` from the
+measurement block (doc-only, no instrument run) on the same branch `mission/context-economy-p4`.
 
 ## Checklist
 
@@ -82,7 +86,7 @@ checkpoint/reviewer/chronicler row — set `[~]` the moment a beat is picked up 
 - [x] **S2-fix — DONE 2026-08-03** (branch `mission/context-economy-p2`) — the `ckpt-p2` corrective, all four findings: **F1** both WORKFLOW mirrors' §3 silence list now names the unreleased `[~]` HELD barrier (and states that a `[ ]` HELD row is parked, not a wall) · **F2** the shared row is SPLIT — a `Stop` backstop row with the due-ness scan and a closing-action row that states the PreToolUse enforcer's *missing* due-ness outright; the hook's behavior is untouched, the scan port remains its own session · **F5** the non-candidate `- [ ] … HELD` row and the PreToolUse divergence are both pinned in the harness · **F3 landed, not severed** — `checkNextUpAgreement()` keys a wrapped `Next up:` from its continuation lines and fails closed on an unkeyable site. Harness **31 → 33 cases**; 3 mutations in both states with anti-inert controls.
 - [x] Checkpoint `ckpt-p2` re-review — **APPROVE** 2026-08-03; merged into integration. Three items left open **by choice** for the human: the PreToolUse due-ness port (own session; the new harness case pins the doc-row coupling for when it lands), **F4** (loose ckpt-id fallback — `(ckpt s5)` / `(ckpt 2)` still pass), and **[Low] `plugins/agentic-workflow/README.md:199-202`** still describes one merged enforcer with stepping-over "at the moment you try to close or advance" — true of Stop only; becomes true when the port lands, or a one-line tweak before.
 - [x] S7a — **DONE 2026-08-03** (branch `mission/context-economy-p4`) — instrument only, no measurement run: **P1 residue (a)** name the four A4 delta kinds so they stop collapsing into `attach: other` (`context-attrib.mjs:197-199`, ~3 additive lines); **P1 residue (b)** print the per-attachment-kind table (`attachKinds` is collected at `:200`, returned at `:445`, **never printed**) plus a named `mission machinery footprint` line; **A3** pin the D7 3% trigger as a named constant beside `GATE_PCT` with cases in both directions. Selftest **≥ 44 cases**, mutation-proven. **Suits:** `backend`.
-- [ ] S7b — **AUTHORIZED (D15), re-briefed 2026-08-03** — run the measurement on this mission's own transcript (greps only, **never a Read**): **D4a as an OBSERVATION with the OQ5 caveat, explicitly not gated on**; the `isCompactSummary` count (**planning-time value 1**, not the 20 a self-referential grep suggested — memo M1; ≥ 3 promotes D8 to Option B); the **A5** hook footprint; the **A4** delta-kind split. Numbers mirrored into this ledger. **Suits:** `backend`.
+- [x] S7b — **DONE 2026-08-03** (branch `mission/context-economy-p4`) — measurement only, **no source change** (`git diff --stat` touches this ledger alone). Ran S7a's instrument on the untouched baseline (`2fa752c7…`, 4,612 lines / 12,211,203 B) and on this mission's own transcript (`b167727e…`, 1,501 lines / 3,283,782 B, identified by `grep -c "context-economy"` = 1,138 vs 159; **greps only, no `*.jsonl` was Read**). **Baseline reproduces the audit byte-for-byte** and **every A4/A5 hand figure lands exactly**; `attach: other` 343,579 → 179,803, a shrink of **163,776 = exactly** the four newly-named kinds. **A5 footprint 143,689 = 5.4% (baseline) / 87,070 = 9.3% (this mission)** — all three components were attachment kinds in **both**, so the `EXCLUDED` provenance branch never fired. **D4a recorded as an OBSERVATION, not a gate** (9.16% → 8.61% char share, −6.0% relative). **`isCompactSummary` true-records = 1 ⇒ D8 stays Option A.** Gate NOT evaluated (no fresh `/context` TOTAL). Full figures: **`## 📊 S7b MEASUREMENT BLOCK`**. **Suits:** `backend`.
 - [ ] S7c — **AUTHORIZED (D15), re-briefed 2026-08-03** — write `docs/product/engineering/context-economy-metrics.md` (new directory), doc-only, numbers handed over from S7b. Must state **A1–A10 and the A4 correction honestly**, headline **~4.4–7.2% addressed / ~1.8–4.3% captured** vs a founding **~25% / 10–15%**, and **n = 1 throughout**. **Suits:** `analyst`.
 - [ ] S8a — **AUTHORIZED (D15), re-briefed 2026-08-03** — **P1 residue (c)**: the discipline lines as contract text in **WORKFLOW §6.2, both mirrors** (`docs/WORKFLOW.md:468-495`, `templates/WORKFLOW.md:476-503`) + the **OQ3** one-line PR-body addition to the documentation-of-record agent's contract (its agent file; no tool-list change — the brief names the exact ranges). **No savings claim, no new gate.** **Suits:** `writer`. _(Wording avoids the bare beat keyword so the enforcer does not read this writer session as a documentation beat — same reason as `037b36b`.)_
 - [ ] S8b — **AUTHORIZED (D15), re-briefed 2026-08-03** — `chronicler` pass covering **P2, P3 and P4** (the P2 and P3 passes were skipped to conserve budget and are **OWED**): CHANGELOG + JOURNEY + status page, then the orchestrator republishes via the Artifact tool. **Minor version bump** (new tool + new hook + protocol change). Status-page lifecycle/pillars staleness (stale since 2026-07-08): stamp fixed, rewrite **deferred** — the ledger must say which was done. **Suits:** main session + `chronicler`.
@@ -445,6 +449,23 @@ _Human steers captured **verbatim** at checkpoints only, never mid-brief. Gramma
 _Any departure from a brief — logged here the moment it happens, with why. Deviating is
 allowed; deviating silently is not (§4)._
 
+- 2026-08-03 (S7b) — **the brief's `isCompactSummary` command does not return its stated
+  value.** `grep -l isCompactSummary …/*.jsonl | wc -l` returns **11**, not the planning-time
+  **1**. Diagnosis: memo M1's self-reference artefact has grown — the mission's own docs name
+  the field and ten more transcripts now quote them. Rather than silently substituting a
+  different command, both are recorded: the brief's literal command (11) **and** the honest
+  true-record counts (**1 file / 1 record**, matching the instrument's own MEASURED line).
+  **D8 stays Option A**; the criterion itself is flagged to the human as needing restatement.
+- 2026-08-03 (S7b) — **ran a second, non-repo copy of the instrument.** The `attach: other`
+  before-value needed for the re-bucketing arithmetic does not exist in any recorded run, so
+  `git show 04df14a~1:tools/context-attrib.mjs` was extracted to the scratchpad and run on the
+  same corpus. The brief did not specify how to obtain the before-value. **No repo file was
+  modified**; the working tree stayed clean apart from this ledger.
+- 2026-08-03 (S7b) — **a known instrument defect was NOT fixed.** The `attach: other`
+  over-statement warning (`"likely OVER-stated"`) still prints on both corpora, and **A4
+  falsified it**. This was a measurement session; fixing it would have put a source change in a
+  no-source-change diff and risked tuning the instrument during its own measurement. **Flagged
+  for S7c and `ckpt-p4` instead of fixed** — logged here so the omission is not silent.
 - 2026-08-03 (S7a) — **naming the four A4 kinds moves attributed tokens by ±1 (rounding), and
   the brief did not anticipate it.** `attach: other` was ONE row rounded once; it is now five
   rows rounded five times, so `attributed` and the char-free remainder shift by a token or two
@@ -720,10 +741,175 @@ allowed; deviating silently is not (§4)._
   the session's own verify gate needs Bash (`node tools/lint.mjs`), which the `writer`
   agent does not have. No change to the work itself.
 
+## 📊 S7b MEASUREMENT BLOCK — 2026-08-03 (this is S7c's source; do not re-derive)
+
+_Instrument: `tools/context-attrib.mjs` at `04df14a` (S7a). Gates at run time: `--selftest`
+**54 ok, exit 0** · `node tools/lint.mjs` clean. Run **2026-08-03T15:59:53Z**.
+**No `*.jsonl` was ever `Read`/`cat`/`head`/`tail`-ed** — only `wc`, `grep -c`, `grep -l`, and
+the streaming instrument. **CHARS are the primary (counted) column; every token figure is a
+BAND, never a point value.**_
+
+**Corpora (append-only — a figure without its size stamp is unreproducible)**
+
+| | path (`~/.claude/projects/-Users-baker-Playground-venture-workflow-plugin/`) | lines | bytes | `grep -c "context-economy"` |
+|---|---|---|---|---|
+| **B** = baseline | `2fa752c7-9b89-4313-8729-ec63daee6496.jsonl` | 4,612 | 12,211,203 | 159 |
+| **M** = this mission's own | `b167727e-9e8d-48c3-a3d6-775eb3425ef7.jsonl` | 1,501 | 3,283,782 | 1,138 |
+
+B is byte-identical to the S0.5-4 / audit corpus. M was identified by grep alone; every other
+transcript in the directory scores ≤ 19. **M was LIVE when measured** (it is the P4
+orchestrator session), so it has grown since: any re-run reads a larger file and **will not
+reproduce these figures**. Size was stamped immediately before and after the run — unchanged
+across it (1,501 / 3,283,782 both times).
+
+**Gate NOT evaluated on either run** — no fresh `/context` TOTAL was available, and reusing
+401,400 from a different session is barred. M's occupancy is 441,684 tok (final = max, 0
+collapses, ratchet 1.000×) but has no `/context` reading to be validated against.
+
+**§1 — B reproduces the whole-mission audit byte-for-byte [MEASURED].** churn **1,707,036** ·
+Σ appended chars **2,659,518** · band **1.99–3.24** chars/tok · **4** collapses (3 unexplained) ·
+ratchet identity **PASS** · compact-summary records **1** · D7 reviewer return share
+**1.92–3.13%** (STRADDLE). **Nothing in this session contradicts a single audit figure.**
+
+**§2 — A4, the delta-kind split [MEASURED, chars; denominators differ per column]**
+
+| attachment kind | B chars | B % of 2,659,518 | M chars | M % of 941,193 |
+|---|---|---|---|---|
+| `skill_listing` | 208,338 | 7.8% | 30,000 | 3.2% |
+| `deferred_tools_delta` | 79,463 | 3.0% | 17,105 | 1.8% |
+| `agent_listing_delta` | 58,194 | 2.2% | 28,891 | 3.1% |
+| `mcp_instructions_delta` | 14,319 | 0.5% | 4,664 | 0.5% |
+| `invoked_skills` | 11,800 | 0.4% | 0 | 0.0% |
+| **A4 total** | **372,114** | **14.0%** | **80,660** | **8.6%** |
+| (for contrast) `attach: other` after naming | 179,803 | 6.8% | 74,929 | 8.0% |
+
+**Every B figure equals the audit's hand figure exactly.** **Arithmetic proof that the
+reclassification is a pure re-bucketing:** the pre-S7a instrument (`git show
+04df14a~1:tools/context-attrib.mjs`, run on the same corpus) reports `attach: other` =
+**343,579**; the post-S7a instrument reports **179,803**; the shrink is **163,776 = 79,463 +
+58,194 + 14,319 + 11,800 exactly**. **No mass created, none lost.** Σ chars, TOTAL, D7, gate
+and ratchet lines are identical between the two runs; the only movement is ±1 token at band
+endpoints (599,412–1,027,951 → …952; 310,024–827,549 → …550), which is S7a's logged rounding
+deviation now confirmed on real data rather than a fixture.
+
+**The A4 correction stands and is reinforced:** ≥ ~80% of the 372,114 chars is the human's own
+`~/.claude/skills` (208k) and user-level MCP config (79k + 14k), **not this repo's surface**;
+the only in-repo lever is the ~9,875 chars of agent descriptions feeding `agent_listing_delta`.
+**This is an owner SETTINGS action (minutes), not engineering.** New nuance from M:
+`skill_listing` fell **208,338 → 30,000** on the *same machine* between the two sessions, so
+**14.0% is episodic, not a per-session constant** — a before/after on skill pruning would need
+matched sessions, which is D4b's problem all over again. Also inside `attach: other`, the
+largest single kind is `edited_text_file` (B 136,143 = 5.1%; M 41,941 = 4.5%) — tool-result
+echo of edits, not registry injection.
+
+**§3 — A5, the mission machinery footprint [MEASURED]**
+
+| component | B chars | M chars | runtime branch that fired |
+|---|---|---|---|
+| `hook_success` | 113,672 (4.3%) | 65,737 (7.0%) | **attachment kind → MEASURED** in both |
+| `hook_additional_context` | 19,362 (0.7%) | 21,333 (2.3%) | **attachment kind → MEASURED** in both |
+| `task_reminder` | 10,655 (0.4%) | 0 (0.0%) | **attachment kind → MEASURED** in both (a kind key in M, sized 0) |
+| **footprint** | **143,689 = 5.4%** | **87,070 = 9.3%** | |
+
+**The audit's hand figure 113,672 + 19,362 + 10,655 = 143,689 = 5.4% is REPRODUCED exactly.**
+**The `NOT an attachment kind … EXCLUDED from the sum … [AUDIT, NOT measured here]` branch did
+NOT fire for any component on either transcript** — the brief's hypothesis that `task_reminder`
+might arrive on another record shape is **not borne out here**; it is an attachment kind in
+both, merely empty in M. Every component of the printed footprint is therefore MEASURED, with
+no attributed-but-unmeasured residue.
+
+**P3 shipped another injecting hook (`hooks/lib/compact-resume.sh`) without measuring it, and
+the footprint's share nearly doubled: 5.4% → 9.3% of appended chars.** **That hook's own
+footprint is NOT separable** — the table's granularity is `attachment.type`, and *every* hook
+lands under `hook_success` / `hook_additional_context` whatever fired it; per-hook attribution
+needs a new instrument field, not a new reading of this one. What can be said: with M's corpus
+2.8× smaller than B's, `hook_additional_context` **grew in absolute chars** (19,362 → 21,333)
+and tripled in share (0.7% → 2.3%), and `hook_success` went 4.3% → 7.0%. **The mission's own
+machinery is a larger consumer than anything P1–P4 can save, and it grew during the mission.**
+
+**§4 — D4a: an OBSERVATION. NOT a gate. Not treated as one. [EST/BAND over MEASURED chars]**
+
+| `authored: Write/Edit inputs` | chars | % of appended chars | % of churn (token band) |
+|---|---|---|---|
+| **B** (baseline) | 243,578 | **9.16%** | **4.4–7.2%** |
+| **M** (this mission) | 81,004 | **8.61%** | **5.6–6.8%** |
+| delta | — | **−0.55 pp (−6.0% relative)** | **bands OVERLAP — no signal** |
+
+- **The char share is the only comparable column.** The token bands are **not** comparable
+  across transcripts: the estimator's own band differs (B 1.99–3.24 vs M 2.68–3.26 chars/tok),
+  so any token-share "movement" here is an artefact of the estimator, not of behaviour.
+- **This is not a gate, was not evaluated as one, and no session may report it as met/not-met**
+  (D13, standing; D15). A 50% cut to a 4.4–7.2% share is **2–3.6%** — inside the instrument's
+  own uncertainty band. **D4b remains the only real confirmation** and still needs a second
+  *comparable* transcript, which does not exist.
+- **OQ5 comparability caveat, in full:** M is ~8 sessions of contract/instrument/doc text in
+  which the orchestrator **delegated almost all authoring to subagents in their own sessions**;
+  B is a 9-session baseline of template authoring largely done in-session. Different missions,
+  different shapes, different delegation profiles. The rest of M's split says the same thing
+  loudly: human steers **2.9% → 12.6%**, orchestrator prose **10.3% → 14.3%**, subagent returns
+  **15.1% → 3.9%**, `authored: Bash` **6.2% → 1.7%**. **These are not the same experiment**, and
+  the −6.0% must not be read as a treatment effect.
+
+**§5 — `isCompactSummary`: D8 stays Option A [MEASURED]**
+
+- The brief's exact command —
+  `grep -l isCompactSummary ~/.claude/projects/-Users-baker-Playground-venture-workflow-plugin/*.jsonl | wc -l`
+  → **11** (planning-time value was **1**).
+- **That 11 is memo M1's self-reference artefact, grown.** The mission's own docs name the
+  field, and ten more transcripts have since quoted them. The honest counts:
+  - `grep -lE '"isCompactSummary" *: *true' *.jsonl | wc -l` → **1 file**
+  - `grep -hoE '"isCompactSummary" *: *true' *.jsonl | wc -l` → **1 record**, across *every*
+    transcript in the project directory
+  - the instrument's own MEASURED line: **1** on B, **0** on M
+- **Real compaction events = 1. 1 < 3 ⇒ D8 stays Option A**; no promotion to Option B.
+- **Flagged for the human, not changed here:** the D8 criterion should be restated in terms of
+  `"isCompactSummary": true` **records**, because the bare-string grep is now a documentation
+  detector and will keep drifting upward as the mission writes about itself. The instrument
+  already says so in its own output ("a grep for the bare string over-counts").
+
+**§6 — caveats that attach to EVERY figure above (S7c must carry all of them)**
+
+- **n = 1 per corpus.** One transcript, one session, one operator; B was itself a *planning*
+  mission and M is a *measurement/implementation* mission. Two n = 1 points are not a trend.
+- **The +28.0% occupancy gate FAIL stands** (S0.5-3, vs `/context` TOTAL 401.4k) and **was not
+  re-evaluated in this session** — no fresh `/context` reading existed for either corpus.
+- **A1 applies and is load-bearing.** The "shares are robust to a uniform scale error" argument
+  is **provably wrong post-repair**: the numerator now rides `output_tokens` only while the
+  denominator is Σ prompt-deltas of `input+cache_creation+cache_read` — orthogonal. **A ~28%
+  prompt-series inflation deflates every TOKEN share above by ~28%.** The char column (primary,
+  counted) is untouched by A1 but answers a different denominator; never mix the two.
+- **Cross-domain transfer:** every `attach:*`, tool-result, human-steer and `user:*` row is an
+  **INPUT-side** row whose token band is a *transferred assumption*, not a measurement — dense
+  machine-generated content may tokenize below the band, leaving those rows **understated**.
+- **A6 stands unresolved:** ~34% of transcript records are excluded from the taxonomy with no
+  counter; this feeds the 35–60% (B) / 39–50% (M) UNATTRIBUTED residual.
+- **A9's asymmetric-band reading trap stands.** On M, UNATTRIBUTED is **39.3–50.1%** and
+  char-free growth **9.6–23.7%** — both still multiples of every lever the mission owns.
+- **Known instrument defect left in place (measurement session, no source change):** the
+  `attach: other` over-statement warning still prints (B: 77 attachments / 307,136 chars =
+  11.5%; M: 19 / 104,256 = 11.1%). **A4 falsified that warning** — the fallback records are
+  lean payload objects. It is flagged for S7c and `ckpt-p4`, deliberately **not** fixed here.
+
 ## Handoff log (newest first)
 
 _≤10 lines per entry: what this session did, the verify signal, the branch, and what the
 next session needs. Newest on top; crash-safe by write-ahead._
+
+- _2026-08-03 (`S7b`, `backend`, branch `mission/context-economy-p4`): the measurement. **No
+  source change** — `git diff --stat` touches this ledger only. **No `*.jsonl` was Read**;
+  `wc`/`grep -c`/`grep -l` and the streaming instrument only. Corpora: baseline `2fa752c7…`
+  **4,612 lines / 12,211,203 B** (unchanged) and this mission's own `b167727e…` **1,501 lines /
+  3,283,782 B** (identified by `grep -c "context-economy"` 1,138 vs 159; still LIVE, so it will
+  not reproduce). **The baseline reproduces the audit byte-for-byte and every A4/A5 hand figure
+  lands exactly** — nothing contradicted. **A4:** `attach: other` **343,579 → 179,803**, shrink
+  **163,776 = exactly** the four newly-named kinds ⇒ pure re-bucketing. **A5:** footprint
+  **143,689 = 5.4%** (B) / **87,070 = 9.3%** (M); **all three components were attachment kinds in
+  BOTH, so the `EXCLUDED` provenance branch never fired** — `task_reminder` is a kind, just 0 in
+  M. **D4a is an OBSERVATION** (9.16% → 8.61% char share, −6.0% rel.; token bands not comparable),
+  explicitly not gated. **`isCompactSummary` true-records = 1 ⇒ D8 Option A** (the brief's
+  bare-string command now returns 11 — M1's artefact grown). Gate NOT evaluated (no fresh
+  `/context`). Verified: `--selftest` **54 ok exit 0** · lint clean. **S7c** writes the metrics
+  doc from **`## 📊 S7b MEASUREMENT BLOCK`** — every caveat in its §6 must survive into the doc._
 
 - _2026-08-03 (`S7a`, `backend`, branch `mission/context-economy-p4`): instrument only, **no
   measurement run**. `tools/context-attrib.mjs`: **(A4)** `NAMED_ATTACH_KINDS` now names
@@ -1342,12 +1528,13 @@ attachment-schema check is pulled in or deferred.
   Baseline transcript identified and field-verified by grep (never read). Uncommitted,
   awaiting HITL review of OQ1–OQ5._
 
-Next up: **S7b** — run the measurement against the instrument `S7a` just shipped and record
-the numbers, on the SAME branch `mission/context-economy-p4`. No code change. The new output
-to read: the per-attachment-kind table, the `mission machinery footprint` line (note which
-components are/aren't attachment kinds), and the four now-named A4 delta rows — plus whether
-`attach: other` shrank by exactly their sum. Brief: `.plans/context-economy.sessions.md`
-`## Phase 4` → `### S7b`.
+Next up: **S7c** — write `docs/product/engineering/context-economy-metrics.md` (new directory)
+from `## 📊 S7b MEASUREMENT BLOCK`, on the SAME branch `mission/context-economy-p4`. Doc-only:
+**do not run the instrument and do not touch a transcript** — every number already exists in
+that block. The doc must carry **A1–A10 and the A4 correction honestly**, present **D4a as an
+observation and never as a gate**, keep **D4b `[~]`**, and reproduce **every caveat in the
+block's §6** (n = 1, the +28% gate FAIL, A1's ~28% token-share deflation). A doc that reads as
+a success story has failed. Brief: `.plans/context-economy.sessions.md` `## Phase 4` → `### S7c`.
 
 Phases 0, 0.5, 2 and 3 are COMPLETE, APPROVED and MERGED (`273f1d3`, `f5fabc6`, `e5b6326`,
 `8a3b4c7`). **Phase 4 is the last phase — nothing follows it.**
