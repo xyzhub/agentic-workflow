@@ -42,7 +42,9 @@ two-site agreement check) and **S5b** (the `ckpt-p3` follow-ups, incl. the enfor
 **`S5b` is DONE (2026-08-03)** — the beat-enforcer now scans for the first *DUE* beat
 instead of giving up at the first candidate (the open [Med] from `ckpt-p3`), plus the §3
 wording tighten and the two test-coverage gaps.
-**Next up: `ckpt-p2`** on branch `mission/context-economy-p2`.
+**Next up: `S2-fix`** on branch `mission/context-economy-p2` — the `ckpt-p2` corrective
+(F1 + F2 + F5, F3 folded last and severable). **D15 accepted the Fable recommendation in
+full: P1 is DROPPED, P4 is authorized and needs a planner re-brief, the mission wraps at P4.**
 **P1 and P4 remain HELD** and require a planner re-brief before they run.
 
 ## Checklist
@@ -63,16 +65,18 @@ checkpoint/reviewer/chronicler row — set `[~]` the moment a beat is picked up 
   - [x] S0.5-4 — re-run the baseline, record BOTH numbers, assemble the re-decision package — analysis-only (no instrument change); **📦 PHASE 0.5 RE-DECISION PACKAGE** below is the deliverable
   - [x] Checkpoint `ckpt-p05` — **APPROVE** 2026-08-02 after one corrective session (S0.5-fix). Scorecard: QA 3 · Security 3 · Efficiency 3 · Architecture 3 · UX 3 · DX 3 (DX 1→3 and UX 2→3 on the fix). Reviewer ran 11 of its own adversarial mutations, 11 caught; no dangerous mirror among the 44 cases. Merged into `mission/context-economy-integration` (`f5fabc6`, batch policy — main untouched).
 - [x] ⛔ **DECISION POINT — DECIDED 2026-08-03 (D13).** Human authorized **P3 ONLY**, deliberately scoped to the remaining session budget. **P1, P2, P4 stay HELD** and unauthorized pending a session-limit refresh.
-- [ ] S4 — **HELD** — write firewall: extend the 30% rule to writes; no tool-list change anywhere, per D7 (branch `mission/context-economy-p1`). Premise retracted: Write/Edit is ≤15.9% char / **4.40–7.18% token** (S0.5-4 measured; supersedes the pre-repair "2.8–3.7%"), never 22.5%. See the P0.5 re-decision package §4.
-- [ ] Checkpoint `ckpt-p1` — **HELD** — phase 1 review + merge into integration
+- [x] ~~S4 — write firewall (Phase 1)~~ — **DROPPED 2026-08-03 (D15).** Premise retracted (Write/Edit is 9.2% char / 4.4–7.2% token, never 22.5%); what remained was contract hygiene that does not need a phase. **Residue folded into P4's re-brief**, not lost: the discipline lines, a ~3-line instrument extension naming the A4 delta kinds, and an A5 hook-footprint measurement. Branch `mission/context-economy-p1` never created.
+- [x] ~~Checkpoint `ckpt-p1`~~ — **DROPPED 2026-08-03 (D15)** with Phase 1. Nothing to review.
 - [x] S5 — **DONE 2026-08-03** (branch `mission/context-economy-p2`) — standing steers: `## Standing steers` in `templates/mission-state.md`, §3-only append rule in `mission.md` (+ §4 resume line), WORKFLOW §5 ledger row, and `checkStandingSteers()` in `lint.mjs` (OQ4: only ledgers that already carry the block). **+ machinery defect (a) folded in: `checkNextUpAgreement()`** — every `Next up:` site must name the same beat. Both mutation proofs run in both states.
 - [x] S5b — **DONE 2026-08-03** (branch `mission/context-economy-p2`) — enforcer due-ness: `head -1` → a scan for the first *DUE* candidate (the open [Med] from `ckpt-p3`); rule (iii) narrowed to step over marker-carrying rows and rule (ii)'s `[ ]`-carrying-HELD branch dropped, so a held row is skipped rather than walling off everything beneath it; §3 wording made per-beat-precise in both WORKFLOW mirrors + the plugin README; both test-coverage gaps closed. Harness **24 → 31 cases**; 7 mutations run in both states incl. the anti-inert control.
 - [~] Checkpoint `ckpt-p2` — **REQUEST CHANGES** 2026-08-03 (Fable reviewer). Scorecard: Security 3 · Efficiency 3 · Architecture 2 · QA 2 · **DX 1** · UX n/a. Engineering sound; **two always-on doc rows describe behavior the hooks don't have**. Corrective session NOT run — human paused the mission here. Findings below.
 - [x] S6 — **DONE 2026-08-03** (branch `mission/context-economy-p3`) — `hooks/lib/compact-resume.sh` + a `SessionStart` block whose matcher is `compact` and nothing else; **+ the beat-enforcer due-ness fix** (machinery defect (b)), contained to `hooks/lib/beat-enforcer-stop.sh`. Atomic-ref doc updates in the same commit. Harness **16 → 24 cases**; both mutation proofs run. Completed after the first attempt died on a usage limit.
 - [x] Checkpoint `ckpt-p3` **[STRICT]** — **APPROVE** 2026-08-03, no corrective session needed. Scorecard: Security 3 · Efficiency 3 · UX 3 · QA 2 · Architecture 2 · DX 2. Reviewer hand-dispatched all three `SessionStart` matchers, re-ran both mutation proofs (preservation case green in BOTH states), and proved injection-resistance with shell metacharacters in ledger path + content (no artifacts, exit 0). Rule (iii) ruled IN BOUNDS. **Verdict surfaced to the human immediately** per batch gating. Merged into `mission/context-economy-integration`. **[Med] finding left OPEN for the human — see D13 follow-ups.**
-- [ ] S7 — **HELD** — re-measure (D4a), `isCompactSummary` count, `docs/product/engineering/context-economy-metrics.md` (branch `mission/context-economy-p4`). D4a's design and the doc's headline are both downstream of P0.5.
-- [ ] S8 — **HELD** — chronicler + CHANGELOG + version bump + integration PR (branch `mission/context-economy-p4`)
-- [ ] Checkpoint `ckpt-p4` — **HELD** — final review of `main..mission/context-economy-integration`; **human merges once**
+- [ ] **S2-fix — AUTHORIZED (D15)** — the `ckpt-p2` corrective: **F1** (both WORKFLOW mirrors' §3 row drops HELD from the silence list while rule (ii) still treats `- [~] … HELD` as a barrier) + **F2** (split the doc row shared with `beat-enforcer-pretooluse.sh`) + **F5** (pin the non-candidate `- [ ] … HELD` row) + **F3 folded in, LAST and SEVERABLE** (`lint.mjs:489-490` fails open on a wrapped `Next up:` beat). Branch `mission/context-economy-p2`.
+- [ ] Checkpoint `ckpt-p2` re-review — then merge into integration
+- [ ] S7 — **AUTHORIZED (D15)** — re-measure (D4a as an *observation*, not a gate), `isCompactSummary` count, `docs/product/engineering/context-economy-metrics.md` (branch `mission/context-economy-p4`). **+ P1 residue**: the ~3-line instrument extension naming the A4 delta kinds, and the **A5 hook-footprint measurement** (the mission's own hooks are 5.4% and were never measured). **Requires a planner re-brief** — the existing brief was written against the retracted premise.
+- [ ] S8 — **AUTHORIZED (D15)** — chronicler + CHANGELOG + version bump + integration PR (branch `mission/context-economy-p4`). **+ P1 residue**: the discipline lines, shipped as contract text with **no savings claim**. The metrics doc must record A1–A10 and the A4 correction.
+- [ ] Checkpoint `ckpt-p4` — **AUTHORIZED (D15)** — final review of `main..mission/context-economy-integration`; **human merges once**
 - [~] D4b — cross-mission re-measurement on a later comparable mission (deferred, non-blocking, tracked)
 
 ## Open questions
@@ -149,6 +153,28 @@ not re-litigated by any later session._
   instrument's own uncertainty band, so it cannot be gated on. **D4b remains the real
   confirmation** and needs a second transcript that does not yet exist.
   Recommended order when work resumes: **P2 → P1 → P4** (P3 already taken first).
+
+## D15 — recommendation ACCEPTED IN FULL (locked 2026-08-03 by the human)
+
+_The human read the Fable memo (`0ddc109`) and said "apply the recommendation". Both calls
+adopted verbatim._
+
+- **P2 → fix and merge.** One corrective session (`S2-fix`): **F1 + F2 + F5** as the
+  reviewer required, **plus F3 folded in, last and severable** if the session is at risk.
+  Then re-review, then merge into integration.
+- **P1 → DROPPED as a phase.** Not deferred — dropped. Premise retracted; the remainder was
+  contract hygiene that does not warrant a phase, a branch, or a checkpoint. **Residue
+  folded into P4's re-brief** so nothing is lost: the discipline lines (shipped as contract
+  text with **no savings claim**), a ~3-line instrument extension naming the A4 delta kinds,
+  and the **A5 hook-footprint measurement**.
+- **P4 → AUTHORIZED**, and it **requires a planner re-brief** — the existing S7/S8 briefs
+  were written against the retracted 22.5% premise. The metrics doc must record **A1–A10
+  and the A4 correction**, and **D4a is an observation, not a gate** (D13 standing).
+- **A4 is NOT engineering work and is NOT a phase.** ≥~80% of it is the human's own
+  environment. **Owner action, minutes, whenever they choose: prune `~/.claude/skills`
+  (~140 skills, 208k chars) and unused MCP servers (93k chars).** That is a larger win than
+  everything P1–P4 could deliver combined, and it is outside this repo.
+- **Mission wraps at P4.** No phase after it.
 
 ## 📋 Fable recommendation memo — 2026-08-03 (`0ddc109`, advisory)
 
@@ -1231,18 +1257,27 @@ attachment-schema check is pulled in or deferred.
   Baseline transcript identified and field-verified by grep (never read). Uncommitted,
   awaiting HITL review of OQ1–OQ5._
 
-Next up: **`ckpt-p2`** — phase 2 review, covering `S5` **and** `S5b` together, on branch
-`mission/context-economy-p2`. Both sessions are DONE. Merge into
-`mission/context-economy-integration` on APPROVE (batch policy — never the default branch).
-**Re-derive:** the enforcer's three due-ness rules against the 31-case harness, and whether
-narrowing rule (iii) to step over marker-carrying rows is the right semantic.
+Next up: **`S2-fix`** — the `ckpt-p2` corrective, on branch `mission/context-economy-p2`.
+Scope: **F1** (both WORKFLOW mirrors' §3 row drops HELD from the silence list while rule (ii)
+still treats `- [~] … HELD` as a barrier) + **F2** (split the doc row shared with
+`beat-enforcer-pretooluse.sh`, still a bare `head -1`) + **F5** (pin the non-candidate
+`- [ ] … HELD` row) + **F3 folded in, LAST and SEVERABLE** (`lint.mjs:489-490` fails open on
+a wrapped `Next up:` beat). Then **re-review**, then merge into
+`mission/context-economy-integration` (batch policy — never the default branch).
 
-Phases 0, 0.5 and 3 are COMPLETE, APPROVED and MERGED into
-`mission/context-economy-integration` (`273f1d3`, `f5fabc6`, `8a3b4c7`).
-**D13 authorized P3 only; D14 (2026-08-03) authorized P2.** **P1 and P4 remain HELD** —
-under D13's standing decisions (P1 ships as *discipline*, no savings claim; D4a is an
-observation, not a gate) — and **both require a planner re-brief before they run**, since
-their briefs were written against the retracted 22.5% premise. P2's and P3's were not.
+Phases 0, 0.5 and 3 are COMPLETE, APPROVED and MERGED (`273f1d3`, `f5fabc6`, `8a3b4c7`).
+
+**D15 (2026-08-03) accepted the Fable recommendation in full:**
+- **P1 is DROPPED** — not deferred. Its residue rides along in P4 (discipline lines with no
+  savings claim; a ~3-line instrument extension naming the A4 delta kinds; the A5
+  hook-footprint measurement).
+- **P4 is AUTHORIZED and REQUIRES a planner re-brief** — S7/S8 were written against the
+  retracted 22.5% premise. The metrics doc must record **A1–A10 and the A4 correction**;
+  **D4a is an observation, not a gate**.
+- **The mission WRAPS AT P4.** Nothing after it.
+- **A4 is an OWNER SETTINGS ACTION, not engineering** — ≥~80% of that 372k is the human's own
+  `~/.claude/skills` (~140 skills, 208k) and MCP config (93k). Pruning those beats everything
+  P1–P4 could have delivered, and it is outside this repo.
 
 **Four live threads belong to the human, not to any agent:** the **occupancy gate FAILS at
 +28.0%** vs `/context` **TOTAL** 401,400 (bounds absolute magnitudes; does not block a
