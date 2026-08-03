@@ -43,10 +43,13 @@ two-site agreement check) and **S5b** (the `ckpt-p3` follow-ups, incl. the enfor
 instead of giving up at the first candidate (the open [Med] from `ckpt-p3`), plus the §3
 wording tighten and the two test-coverage gaps.
 **`S2-fix` is DONE (2026-08-03)** — F1 + F2 + F5 + F3 all landed; nothing severed.
-**Next up: the `ckpt-p2` re-review** on branch `mission/context-economy-p2`, then merge into
-integration. **D15 accepted the Fable recommendation in
-full: P1 is DROPPED, P4 is authorized and needs a planner re-brief, the mission wraps at P4.**
-**P1 and P4 remain HELD** and require a planner re-brief before they run.
+**`ckpt-p2` re-review returned APPROVE and Phase 2 is MERGED (`e5b6326`).**
+**D15 accepted the Fable recommendation in full: P1 is DROPPED (not deferred), P4 is
+AUTHORIZED, the mission WRAPS at P4.** **Phase 4 was re-briefed by the planner on 2026-08-03**
+(`.plans/context-economy.md` `## Replan 2026-08-03`) and split six ways —
+`S7a` → `S7b` → `S7c` → `S8a` → `S8b` → `S8c`, then `ckpt-p4`.
+**Next up: S7a** — the instrument change (name the A4 delta kinds, print the attachment-kind
+footprint, pin the D7 3% trigger) on a new branch `mission/context-economy-p4`.
 
 ## Checklist
 
@@ -75,9 +78,13 @@ checkpoint/reviewer/chronicler row — set `[~]` the moment a beat is picked up 
 - [x] Checkpoint `ckpt-p3` **[STRICT]** — **APPROVE** 2026-08-03, no corrective session needed. Scorecard: Security 3 · Efficiency 3 · UX 3 · QA 2 · Architecture 2 · DX 2. Reviewer hand-dispatched all three `SessionStart` matchers, re-ran both mutation proofs (preservation case green in BOTH states), and proved injection-resistance with shell metacharacters in ledger path + content (no artifacts, exit 0). Rule (iii) ruled IN BOUNDS. **Verdict surfaced to the human immediately** per batch gating. Merged into `mission/context-economy-integration`. **[Med] finding left OPEN for the human — see D13 follow-ups.**
 - [x] **S2-fix — DONE 2026-08-03** (branch `mission/context-economy-p2`) — the `ckpt-p2` corrective, all four findings: **F1** both WORKFLOW mirrors' §3 silence list now names the unreleased `[~]` HELD barrier (and states that a `[ ]` HELD row is parked, not a wall) · **F2** the shared row is SPLIT — a `Stop` backstop row with the due-ness scan and a closing-action row that states the PreToolUse enforcer's *missing* due-ness outright; the hook's behavior is untouched, the scan port remains its own session · **F5** the non-candidate `- [ ] … HELD` row and the PreToolUse divergence are both pinned in the harness · **F3 landed, not severed** — `checkNextUpAgreement()` keys a wrapped `Next up:` from its continuation lines and fails closed on an unkeyable site. Harness **31 → 33 cases**; 3 mutations in both states with anti-inert controls.
 - [x] Checkpoint `ckpt-p2` re-review — **APPROVE** 2026-08-03; merged into integration. Three items left open **by choice** for the human: the PreToolUse due-ness port (own session; the new harness case pins the doc-row coupling for when it lands), **F4** (loose ckpt-id fallback — `(ckpt s5)` / `(ckpt 2)` still pass), and **[Low] `plugins/agentic-workflow/README.md:199-202`** still describes one merged enforcer with stepping-over "at the moment you try to close or advance" — true of Stop only; becomes true when the port lands, or a one-line tweak before.
-- [ ] S7 — **AUTHORIZED (D15)** — re-measure (D4a as an *observation*, not a gate), `isCompactSummary` count, `docs/product/engineering/context-economy-metrics.md` (branch `mission/context-economy-p4`). **+ P1 residue**: the ~3-line instrument extension naming the A4 delta kinds, and the **A5 hook-footprint measurement** (the mission's own hooks are 5.4% and were never measured). **Requires a planner re-brief** — the existing brief was written against the retracted premise.
-- [ ] S8 — **AUTHORIZED (D15)** — chronicler + CHANGELOG + version bump + integration PR (branch `mission/context-economy-p4`). **+ P1 residue**: the discipline lines, shipped as contract text with **no savings claim**. The metrics doc must record A1–A10 and the A4 correction.
-- [ ] Checkpoint `ckpt-p4` — **AUTHORIZED (D15)** — final review of `main..mission/context-economy-integration`; **human merges once**
+- [ ] S7a — **AUTHORIZED (D15), re-briefed 2026-08-03** (branch `mission/context-economy-p4`) — instrument only, no measurement run: **P1 residue (a)** name the four A4 delta kinds so they stop collapsing into `attach: other` (`context-attrib.mjs:197-199`, ~3 additive lines); **P1 residue (b)** print the per-attachment-kind table (`attachKinds` is collected at `:200`, returned at `:445`, **never printed**) plus a named `mission machinery footprint` line; **A3** pin the D7 3% trigger as a named constant beside `GATE_PCT` with cases in both directions. Selftest **≥ 44 cases**, mutation-proven. **Suits:** `backend`.
+- [ ] S7b — **AUTHORIZED (D15), re-briefed 2026-08-03** — run the measurement on this mission's own transcript (greps only, **never a Read**): **D4a as an OBSERVATION with the OQ5 caveat, explicitly not gated on**; the `isCompactSummary` count (**planning-time value 1**, not the 20 a self-referential grep suggested — memo M1; ≥ 3 promotes D8 to Option B); the **A5** hook footprint; the **A4** delta-kind split. Numbers mirrored into this ledger. **Suits:** `backend`.
+- [ ] S7c — **AUTHORIZED (D15), re-briefed 2026-08-03** — write `docs/product/engineering/context-economy-metrics.md` (new directory), doc-only, numbers handed over from S7b. Must state **A1–A10 and the A4 correction honestly**, headline **~4.4–7.2% addressed / ~1.8–4.3% captured** vs a founding **~25% / 10–15%**, and **n = 1 throughout**. **Suits:** `analyst`.
+- [ ] S8a — **AUTHORIZED (D15), re-briefed 2026-08-03** — **P1 residue (c)**: the discipline lines as contract text in **WORKFLOW §6.2, both mirrors** (`docs/WORKFLOW.md:468-495`, `templates/WORKFLOW.md:476-503`) + the **OQ3** one-line PR-body addition to the documentation-of-record agent's contract (its agent file; no tool-list change — the brief names the exact ranges). **No savings claim, no new gate.** **Suits:** `writer`. _(Wording avoids the bare beat keyword so the enforcer does not read this writer session as a documentation beat — same reason as `037b36b`.)_
+- [ ] S8b — **AUTHORIZED (D15), re-briefed 2026-08-03** — `chronicler` pass covering **P2, P3 and P4** (the P2 and P3 passes were skipped to conserve budget and are **OWED**): CHANGELOG + JOURNEY + status page, then the orchestrator republishes via the Artifact tool. **Minor version bump** (new tool + new hook + protocol change). Status-page lifecycle/pillars staleness (stale since 2026-07-08): stamp fixed, rewrite **deferred** — the ledger must say which was done. **Suits:** main session + `chronicler`.
+- [ ] S8c — **AUTHORIZED (D15), re-briefed 2026-08-03** — merge P4 into integration, `chronicler` authors the PR body to `.plans/context-economy.artifacts/p4-pr-body.md`, `gh pr create --body-file` against `main`. **The human merges once. No agent pushes to `main`.** **Suits:** main session + `chronicler`.
+- [ ] Checkpoint `ckpt-p4` — **AUTHORIZED (D15)** — final review of the whole `main..mission/context-economy-integration` diff: all gates green with the selftest count stated and **≥ 44**; **the metrics doc honest about what was and was not moved** (a doc that reads as a success story has failed this checkpoint); D4a nowhere presented as a gate; **D4b still `[~]`**; D7's untouched-tool-list invariant intact across the whole mission; the discipline lines carrying no savings claim; the A4 naming additive only; the tracked open items survived into both the ledger and the metrics doc. Then the **human merges once**. **Nothing follows P4.**
 - [~] D4b — cross-mission re-measurement on a later comparable mission (deferred, non-blocking, tracked)
 
 ## Open questions
@@ -402,6 +409,25 @@ throwaway worktree, restored and verified._
 - ~~**Still unguarded:** machinery defect (a), the `Next up:` two-site agreement check~~ —
   **CLOSED by `S5` (2026-08-03)**: `checkNextUpAgreement()` in `tools/lint.mjs` now fails
   the gate when two `Next up:` sites name different beats.
+
+## Tracked open items (must OUTLIVE the mission)
+
+_Opened at the **Replan 2026-08-03**. The mission wraps at P4, so these are **recorded, not
+planned** — none of them is a P4 session. `S7c` copies this block into
+`docs/product/engineering/context-economy-metrics.md` so it survives the ledger going quiet._
+
+| item | owner | state |
+|---|---|---|
+| **PreToolUse due-ness port** — `beat-enforcer-pretooluse.sh` still nudges the first `[ ]` candidate, not the first *due* one; the Stop backstop was fixed in `S5b`. Doc row already split (`S2-fix` F2) and a harness case pins the coupling. | future session | open, scoped, low risk |
+| **F4** — `tools/lint.mjs:~458` id-existence fallback is `\b<id>\b` anywhere in checklist text, so `(ckpt s5)` (a *session*) and `(ckpt 2)` both PASS despite the comment claiming the id must name a real checkpoint. | future session | open, [Low] |
+| **`plugins/agentic-workflow/README.md:199-202`** — still describes one merged enforcer stepping over held rows "at the moment you try to close or advance"; true of the **Stop** hook only. Becomes true when the port lands, or a one-line tweak before. | future session | open, [Low] |
+| **Collapse #4** — req #551, transcript line **4,222**, **−270,711 tok, no adjacent compact summary**. Visible in the collapse ledger, never explained. Root-causing it needs single-record schema inspection. | future session | unexplained by design (task 23) |
+| **The +28% gate residual** — occupancy 513,634 vs a hand-recorded `/context` TOTAL 401,400. **Nobody has resolved whether it is the instrument or the comparator**, and A1 shows it now bounds every share (~28% deflation), not just absolute magnitudes. | human / future session | **unresolved by anyone so far** |
+| **D4b** — cross-mission re-measurement on a later comparable mission. **The only real confirmation**; needs a second transcript that does not exist. Row stays `[~]`, never `[x]`. | future mission | deferred, non-blocking |
+| **Owner settings action (A4, corrected)** — prune `~/.claude/skills` (~140 skills, 208k chars) and unused MCP servers (93k chars). **≥ ~80% of the 372,114 chars is the human's own environment, not this repo.** Minutes of settings work, and a larger win than everything P1–P4 could deliver combined. **Not engineering. Outside this repo.** | **the human** | open, unscheduled |
+| **Status-page staleness** — lifecycle / pillars / "Deployed v1.30.0" sections unchanged since 2026-07-08 despite v1.39.x and v1.41.0. `S8b` fixes the stamp and the mission's own rows and **defers the lifecycle/pillars rewrite**; if the orchestrator decides otherwise it must say so in one line. | future editorial pass | deferred by `S8b` |
+| **A6** — 34% of transcript records excluded with no counter (1,583 records); the assistant content loop has no `else` residual branch. Probably correct to exclude; **nobody verified**. | future session | open, feeds UNATTRIBUTED |
+| **Unenforced discipline rots** — the `S8a` contract lines have **no gate**, deliberately (inventing an enforcement mechanism at the wrap is worse than recording the gap). | future session | accepted risk, recorded |
 
 ## Standing steers
 
@@ -1283,16 +1309,15 @@ attachment-schema check is pulled in or deferred.
   Baseline transcript identified and field-verified by grep (never read). Uncommitted,
   awaiting HITL review of OQ1–OQ5._
 
-Next up: the **`ckpt-p2` re-review** on branch `mission/context-economy-p2` — `S2-fix` is
-DONE (`a4a4cd9` + the F3 commit): F1 (both WORKFLOW mirrors' §3 silence list now names the
-unreleased `[~]` HELD barrier and says a `[ ]` HELD row is parked, not a wall), F2 (the
-shared row is SPLIT — the closing-action row states the PreToolUse enforcer's missing
-due-ness outright; its behavior is unchanged, the scan port stays a later session), F5 (the
-non-candidate `- [ ] … HELD` row and the PreToolUse divergence are both pinned) and F3
-(`checkNextUpAgreement` no longer fails open on a wrapped beat). Then merge into
-`mission/context-economy-integration` (batch policy — never the default branch).
+Next up: **S7a** — the Phase 4 instrument change on a **new branch
+`mission/context-economy-p4`** cut from `mission/context-economy-integration`: name the four
+A4 delta kinds (`context-attrib.mjs:197-199`), print the per-attachment-kind table plus the
+`mission machinery footprint` line (A5), and pin the D7 3% trigger as a named constant beside
+`GATE_PCT` with cases in both directions (A3). Selftest **≥ 44 cases**, mutation-proven, no
+measurement run. Brief: `.plans/context-economy.sessions.md` `## Phase 4`.
 
-Phases 0, 0.5 and 3 are COMPLETE, APPROVED and MERGED (`273f1d3`, `f5fabc6`, `8a3b4c7`).
+Phases 0, 0.5, 2 and 3 are COMPLETE, APPROVED and MERGED (`273f1d3`, `f5fabc6`, `e5b6326`,
+`8a3b4c7`). **Phase 4 is the last phase — nothing follows it.**
 
 **D15 (2026-08-03) accepted the Fable recommendation in full:**
 - **P1 is DROPPED** — not deferred. Its residue rides along in P4 (discipline lines with no
@@ -1318,17 +1343,17 @@ fails when two `Next up:` sites name different beats (comparison is on the first
 session/checkpoint id at each site, so prose around it may differ freely). This file drifted
 three times before the gate existed; a resuming session may now trust these two sites.
 
-**Phase 0.5 is the ONLY authorized phase.** The D1 pause was released 2026-08-02 into a
-re-scope (D10/D11/D12 above), not into P1. **S4 and everything after it stay unauthorized**
-until the human re-decides at the decision point that follows `ckpt-p05`.
+**Phase 4 is the ONLY remaining authorized work** (D15). P1 is dropped; P0, P0.5, P2 and P3
+are merged. Nothing is authorized after `ckpt-p4`.
 
-OQ6 blocked `S0.5-2` only; it is resolved and shipped, so nothing in Phase 0.5 is blocked
-now. Read order for whoever runs Phase 0.5:
-the `## D1 re-scope decisions` block above, then the brief, then the memo ranges the brief
-names — the memo is cited by **M-number**, never re-derived. The historical D1 pause package
-below is **superseded in its headline numbers** (its TOTAL carries 24.4% phantom churn and
-its 5.59× divergence is a normalisation artefact); it is kept as the record of what was
-believed at the pause, not as a source of figures.
+Read order for whoever runs Phase 4: the `## D15` block and the `## ⚠️ WHOLE-MISSION AUDIT`
+above, then the brief in `.plans/context-economy.sessions.md` `## Phase 4`, then only the
+📦 package ranges the brief names — the package is cited by **section number**, never
+re-derived. The historical **D1 pause package** below is **superseded in its headline
+numbers** (its TOTAL carries 24.4% phantom churn and its 5.59× divergence is a normalisation
+artefact); it is kept as the record of what was believed at the pause, not as a source of
+figures. **Every P0.5 headline reproduces byte-for-byte** and was re-verified by the audit.
 
-Run Phase 0.5 in a **FRESH session** (deliberate: starting a context-economy mission inside
-a 400k-token session is the anti-pattern it exists to fix).
+Run each Phase 4 session in a **FRESH session** (deliberate: starting a context-economy
+session inside a 400k-token window is the anti-pattern it exists to fix). Ten sessions died
+on usage limits on 2026-08-03 — that is why P4 is six small briefs and not two.

@@ -32,36 +32,38 @@ Source brief (background, read only if a brief points you at it):
 
 | File | Lines |
 |---|---|
-| `plugins/agentic-workflow/templates/WORKFLOW.md` | 877 |
-| `docs/WORKFLOW.md` (this repo's synced copy, stamp v1.39.0) | 874 |
-| `tools/context-attrib.mjs` (**new** — measured 2026-08-02) | 510 |
-| `.plans/context-economy.state.md` (measured 2026-08-02) | 418 |
-| `tools/lint.mjs` (**was 363** — measured 2026-08-02 after `checkContextAttrib`) | 388 |
+| `.plans/context-economy.state.md` (**was 418** — measured 2026-08-03) | 1,334 |
+| `tools/context-attrib.mjs` (**was 510** — measured 2026-08-03) | 1,234 |
+| `plugins/agentic-workflow/templates/WORKFLOW.md` (**was 877** — measured 2026-08-03) | 890 |
+| `docs/WORKFLOW.md` (this repo's synced copy — **was 874**, measured 2026-08-03) | 887 |
+| `tools/lint.mjs` (**was 388** — measured 2026-08-03) | 529 |
+| `.plans/context-economy.md` (**was 316** — measured 2026-08-03) | 476 |
+| `CHANGELOG.md` (**was 325** — measured 2026-08-03) | 373 |
 | `docs/product/decisions/2026-08-02-…-d1-rescope-memo.md` (measured 2026-08-02) | 325 |
-| `.plans/context-economy.md` (measured 2026-08-02) | 316 |
-| `CHANGELOG.md` | 325 |
 | `tools/marker-test.mjs` | 274 |
-| `plugins/agentic-workflow/README.md` | 250 |
+| `plugins/agentic-workflow/README.md` (**was 250** — measured 2026-08-03) | 258 |
+| `docs/product/decisions/2026-08-03-…-p1-p2-recommendation.md` (measured 2026-08-03) | 210 |
 | `plugins/agentic-workflow/commands/autopilot.md` | 169 |
 | `tools/hook-test.mjs` | 165 |
-| `plugins/agentic-workflow/hooks/hooks.json` | 114 |
+| `plugins/agentic-workflow/hooks/hooks.json` (**was 114** — measured 2026-08-03) | 126 |
+| `plugins/agentic-workflow/commands/mission.md` (**was 103** — measured 2026-08-03) | 117 |
 | `plugins/agentic-workflow/agents/chronicler.md` | 114 |
 | `docs/product/decisions/2026-08-01-…-brief.md` | 111 |
-| `plugins/agentic-workflow/commands/mission.md` | 103 |
 | `plugins/agentic-workflow/agents/reviewer.md` | 97 |
 | `plugins/agentic-workflow/README.md` (root `README.md`) | 59 |
 | `plugins/agentic-workflow/agents/writer.md` | 59 |
 | `plugins/agentic-workflow/commands/end.md` | 56 |
 | `plugins/agentic-workflow/commands/handoff.md` | 53 |
 | `plugins/agentic-workflow/hooks/lib/beat-enforcer-stop.sh` | 52 |
-| `plugins/agentic-workflow/templates/mission-state.md` | 51 |
+| `plugins/agentic-workflow/templates/mission-state.md` (**was 51** — measured 2026-08-03) | 63 |
 | `plugins/agentic-workflow/hooks/lib/beat-enforcer-pretooluse.sh` | 50 |
 | `plugins/agentic-workflow/commands/pr.md` | 37 |
 | `plugins/agentic-workflow/.claude-plugin/plugin.json` | 11 |
 
-**Line counts for the Phase 0.5 briefs were re-measured 2026-08-02.** The rows carried over
-from 2026-08-01 are only re-verified for briefs that are about to run — the **held** S4–S8
-briefs must have their reads re-measured when (and if) the human un-holds them.
+**Line counts were re-measured 2026-08-03 for the Phase 4 re-brief** (files grow: the ledger
+went 418 → 1,334 and the instrument 510 → 1,234). Rows still carrying a 2026-08-01/02 stamp
+belong to phases that are complete; do not re-verify them. **S4 is dropped (D15)** and its
+row is struck in the ledger — there is nothing left to re-measure for it.
 
 **Baseline transcript** (P0b/P0.5/P4 only, never Read):
 `~/.claude/projects/-Users-baker-Playground-venture-workflow-plugin/2fa752c7-9b89-4313-8729-ec63daee6496.jsonl`
@@ -630,66 +632,313 @@ into integration on APPROVE.
 
 ---
 
-## Phase 4 — measure, record, ship (branch: `mission/context-economy-p4`) — **HELD**
+## Phase 4 — measure, record, ship (branch: `mission/context-economy-p4`) — **AUTHORIZED (D15)**
 
-> **HELD pending the post-P0.5 re-decision (2026-08-02 replan).** Two things changed.
-> **(a) D4a's design is now downstream of P0.5**: a before/after needs one quantity
-> (churn, per D10c), a repaired baseline, and a settled unit — none of which existed when
-> S7 was written, and S7's baseline comparison points at superseded numbers.
-> **(b) The metrics doc's headline must be restated**: "~25% addressed / 10–15% realistic
-> capture" becomes **~4% addressed / ~1.5–2.5% captured** in the token domain, and the doc
-> must name its denominator. S8's ship step also presumes P1's firewall shipped (it calls
-> itself "the firewall's own first live test"). Re-verify the reads before un-holding —
-> these line counts are from 2026-08-01.
+> **Re-briefed 2026-08-03.** See `.plans/context-economy.md` `## Replan 2026-08-03`. The
+> 2026-08-01 S7/S8 briefs were written against the **retracted 22.5% premise** and are
+> replaced wholesale. **The mission WRAPS at P4** — no phase follows it; P1 is **DROPPED**
+> (not deferred) and its residue rides here: **(a)** the ~3-line instrument extension naming
+> the A4 delta kinds, **(b)** the A5 hook-footprint measurement, **(c)** the discipline lines
+> as contract text with **no savings claim**.
+>
+> **Six small sessions, deliberately.** Ten sessions died on usage limits on 2026-08-03;
+> every split so far has survived better than its unsplit alternative. Sequential within the
+> phase (S7a → S7b → S7c → S8a → S8b → S8c); **not parallel-safe** — S7b consumes S7a's
+> instrument, S7c consumes S7b's numbers, S8c consumes S8b's version bump.
 
-### S7 — re-measurement + metrics doc (tasks 17–20; OQ5 applies)
+**Standing constraints for every Phase 4 session**
 
-- **Reads** (~250 lines): `.plans/context-economy.md` (Phase-4 tasks + risks);
-  the P0b baseline numbers from `.plans/context-economy.state.md`;
-  `plugins/agentic-workflow/templates/engineering-tracking-plan.md` (59) — **skim only**,
-  to state accurately in the new doc how it differs;
-  `tools/context-attrib.mjs` CLI header (~40 lines).
+- **Transcript rule applies unchanged** — `wc`, `grep -c`, or pass the path to
+  `tools/context-attrib.mjs`. **Never `Read`/`cat`/`head`/`tail` a `*.jsonl`.**
+- **D4a is an OBSERVATION, not a pass/fail gate (D13/D15).** A 50% cut to a 4.4–7.2% share
+  is 2–3.6% — inside the instrument's own uncertainty band. Nothing in this phase may gate
+  on it, and no session may report it as met/not-met. Report the delta and the caveat.
+- **D7 and D11 stay LOCKED.** Nothing here re-decides the reviewer's tool list. The
+  instrument may pin its trigger; it may not move its verdict.
+- **No savings claim on the discipline lines** (D13/D15). They ship as contract text.
+- **n = 1 throughout.** Every share is one transcript, one session, one operator, and that
+  session was itself a planning mission. Say so wherever a number is stated.
+- **Prove new guards by mutation.** A guard that cannot be shown to fail when broken did not
+  ship. **Selftest case count must not fall below 44** (measured 2026-08-03).
+- **Batch policy (D3):** every session commits to `mission/context-economy-p4`; the phase
+  merges into `mission/context-economy-integration` on APPROVE. **Never the default branch.**
+
+### S7a — instrument: name the A4 delta kinds, print the attachment-kind footprint, pin the 3% trigger
+
+_One file: `tools/context-attrib.mjs` (1,234 lines, measured 2026-08-03) plus its selftest.
+No measurement run here — S7b does that against the instrument this session ships._
+
+- **Reads** (~250 lines):
+  - `tools/context-attrib.mjs` — **L102-116** (the `CATS` taxonomy array — the three
+    `attach:` rows live at L110-112), **L184-201** (the attachment sizing block; **L197-199
+    is the A4 site** where every unknown kind collapses into `attach: other`, and **L200**
+    already accumulates the per-kind map), **L438-446** (the returned result object —
+    `attachKinds` is **collected and returned but never printed**; that is the A5 reporting
+    gap), **L462-482** (the `GATE_PCT = 15` named-constant pattern — **copy this convention**),
+    **L560-585** (`d7Lines`: `shareHi`/`shareLo` and the bare literal `> 3` at **L574-577**),
+    **L738-752** (the attach-fallback warn block — the new kind breakdown prints beside it),
+    **L1040-1050** (the `attach: hook_success` selftest case — the pattern for a new
+    per-kind case), **L1143-1165** (the D7 selftest cases, which any trigger change must
+    not weaken).
+  - `.plans/context-economy.state.md` — **L240-262** (audit findings **A3**, **A4**, **A5**
+    — the spec for this session; do not re-derive them).
 - **Do**:
-  1. Identify **this mission's own transcript** (`ls -t
-     ~/.claude/projects/-Users-baker-Playground-venture-workflow-plugin/*.jsonl | head`,
-     matched by `grep -c "context-economy" <file>` — greps only, **never a Read**).
-  2. Run `node tools/context-attrib.mjs` on it; compare the **authored-Write share (%)**
-     against the P0b baseline for **D4a**; state the non-comparability caveat (OQ5).
-  3. Count `isCompactSummary` transcripts across the project
-     (`grep -l isCompactSummary *.jsonl | wc -l`) — planning-time value was **1**; ≥3
-     promotes D8 to Option B. Record the command with the number.
-  4. Write `docs/product/engineering/context-economy-metrics.md` (new directory) —
-     method, baseline split, D9 per-agent table, re-measurement, D4a verdict
-     (met / not met / not comparable + reason), **D4b logged as deferred and
-     non-blocking**, the `isCompactSummary` counter, the honest ceiling (targets ~25%;
-     realistic capture 10–15%), and the two out-of-scope levers. Opening note must state
-     it is an engineering-economics record, **not** the product tracking plan.
-  5. Mirror the headline numbers + the D4a verdict into the ledger.
-- **Verify**: `node tools/lint.mjs` green; the metrics doc contains every section above;
-  the D4b row is `[~]` in the ledger, not `[x]`.
-- **Read budget**: ~250 lines. **Suits:** `backend` (or `analyst` for the doc, with the
-  numbers handed over — the analyst does not need the transcript).
+  1. **P1 residue (a) — name the four A4 delta kinds.** Add `deferred_tools_delta`,
+     `agent_listing_delta`, `mcp_instructions_delta` and `invoked_skills` as their own
+     categories, so they stop collapsing into `attach: other` at L197-199. Keep it
+     **additive and mechanical** (~3 lines at the dispatch + the matching `CATS` rows).
+     Change no sizing logic: `attach: other` must simply get smaller by exactly the mass
+     the four named rows now carry.
+  2. **P1 residue (b) — make the A5 hook footprint printable.** `attachKinds` is already
+     built (L200) and returned (L445) and **never shown**. Print it as a per-kind chars
+     table in the report, **and** print a single named line —
+     **`mission machinery footprint`** = `hook_success` + `hook_additional_context` +
+     `task_reminder` — with its share of appended chars. The audit's hand figures to
+     reproduce (not to hard-code): 113,672 + 19,362 + 10,655 = **143,689 chars = 5.4%**.
+     **If a component is not an attachment kind** (`task_reminder` may arrive on another
+     record shape), say so in the output and attribute the audit's figure with its
+     provenance rather than silently omitting it — an unexplained omission is the same
+     failure class as the suppressed D7 verdict.
+  3. **A3 — pin the 3% trigger** (planner recommends fixing it here; see the note below).
+     Replace the bare literal `> 3` with a named constant beside `GATE_PCT`
+     (`D7_TRIGGER_PCT = 3`), state the denominator in its comment, and de-duplicate the
+     three prose strings so the threshold appears once. **This does not re-decide D7** —
+     D11 is locked and the printed verdict logic is unchanged in behaviour.
+  4. **Selftest — every change fails without it.** Add cases: (a) each of the four named
+     delta kinds lands in its own category and **not** in `attach: other`, with
+     `attach: other` reduced by exactly their sum; (b) the per-kind table prints and the
+     machinery-footprint line sums the three hook kinds; (c) the D7 trigger is pinned in
+     **both directions** — a fixture share below the trigger reads NOT met, one above reads
+     MET — so that mutating the constant `3 → 1` **fails a case** instead of printing the
+     self-contradicting verdict the audit reproduced.
+     Then **prove by mutation**, both states, with an anti-inert control; record the output
+     in the handoff.
+- **Verify**: `node tools/context-attrib.mjs --selftest` green with the **new case count
+  stated explicitly and ≥ 44** (44 at brief time — S3 mis-stated a count once); mutation
+  `D7_TRIGGER_PCT 3 → 1` names at least one failing case, restore ⇒ green; `node
+  tools/lint.mjs` green. **Do not run a real transcript in this session.**
+- **Read budget**: ~250 lines. **Suits:** `backend`.
 
-### S8 — ship the mission (task 21)
+### S7b — run the measurement and record the numbers (no code change)
 
-- **Reads** (~200 lines): `CHANGELOG.md` — **`## [Unreleased]` head only, ~L1-40**;
-  `plugins/agentic-workflow/.claude-plugin/plugin.json` (11);
-  `.claude-plugin/marketplace.json` (17); the ledger's handoff log.
-- **Do**: spawn `chronicler` (CHANGELOG + JOURNEY + status page, then republish the
-  status page via the Artifact tool — subagents cannot publish); bump the plugin version
-  (minor: new tool + new hook + protocol change); **have the `chronicler` author the PR
-  body to `.plans/context-economy.artifacts/p4-pr-body.md`** and open the integration PR
-  with `gh pr create --body-file …` — this session is the firewall's own first live test
-  (task 8); leave the merge to the human.
-- **Verify**: `node tools/lint.mjs` green; `git status --short` clean; the PR exists
-  against `main` from `mission/context-economy-integration`; the orchestrator authored no
-  document over ~15 lines during this session (state it explicitly in the handoff).
-- **Read budget**: ~200 lines. **Suits:** the main session (orchestration + chronicler).
+- **Reads** (~200 lines):
+  - `.plans/context-economy.state.md` — **L940-1010** (📦 re-decision package §1-§5: the
+    repaired numbers, what moved and why, the three denominators, the retracted premise,
+    the headline scope claim). **Cite these; do not re-derive them.**
+  - `.plans/context-economy.state.md` — **L211-262** (the whole-mission audit A1–A5) and
+    **L158-179** (D15).
+  - `tools/context-attrib.mjs` — **L1-40** (the CLI header: the three invocation forms and
+    the accounting model).
+- **Do**:
+  1. **Identify this mission's own transcript.** `ls -t
+     ~/.claude/projects/-Users-baker-Playground-venture-workflow-plugin/*.jsonl`, then
+     `grep -c "context-economy" <file>` on the candidates. **Greps only.** Record the path,
+     `wc -l`, byte size and the timestamp of the run — the baseline transcript is
+     append-only and this one will be too, so a figure without a size stamp is unreproducible.
+  2. **Run `node tools/context-attrib.mjs <path> --context-total=<tokens>`** if a fresh
+     `/context` TOTAL is available; otherwise run without it and **say the gate was not
+     evaluated** rather than reusing 401,400 from a different session.
+  3. **D4a as an OBSERVATION.** Record the authored-Write **share (%)** on this transcript
+     beside the baseline's **4.40–7.18% of churn / 9.16% of appended chars**, with the delta
+     and **the comparability caveat stated in full** (OQ5: ~8 sessions of contract text vs.
+     a 9-session baseline of template authoring; different missions, different shapes).
+     **State explicitly that this is not a gate and was not treated as one**, and that a
+     50% cut to this share is 2–3.6% — inside the band. **D4b remains the only real
+     confirmation and needs a second transcript that does not exist.**
+  4. **`isCompactSummary` count.** `grep -l isCompactSummary
+     ~/.claude/projects/-Users-baker-Playground-venture-workflow-plugin/*.jsonl | wc -l`.
+     **The planning-time value was 1, not the 20 a self-referential grep once suggested**
+     (memo M1 — the 19 others were the literal string in this mission's own docs). Record
+     the exact command with the number. **≥ 3 promotes D8 to Option B** — if it has reached
+     3, that is a finding for the human, not a change to make here.
+  5. **A5 — report the hook footprint** from S7a's new output: the per-kind table, the
+     machinery-footprint line and its share, against the baseline's 143,689 chars = 5.4%.
+     State plainly that **P3 shipped another injecting hook without measuring it**, and give
+     that hook's own footprint if it is separable in the kind table.
+  6. **A4 — report the delta-kind split** from S7a's new categories, and state the
+     correction: **≥ ~80% of the 372,114 chars is the human's own `~/.claude/skills` and MCP
+     config, not this repo's surface**; the only in-repo lever is ~9,875 chars of agent
+     descriptions. **This is an owner settings action, not engineering.**
+  7. **Mirror the headline numbers into the ledger** (a compact block; S7c writes the prose).
+- **Verify**: `node tools/lint.mjs` green; every number recorded carries its **status tag**
+  (MEASURED / EST-BAND) and its denominator; the ledger's `D4b` row is still `[~]`, never
+  `[x]`; **no `*.jsonl` was Read** (state it in the handoff).
+- **Read budget**: ~200 lines. **Suits:** `backend`.
 
-**Checkpoint `ckpt-p4`** — final reviewer pass over the full integration diff
-(`main..mission/context-economy-integration`): all gates green, the metrics doc honest
-about what was and was not moved, D7's untouched-tool-list invariant still holding across
-the whole mission. Then the **human merges the integration branch once** (batch policy).
+### S7c — the record: `docs/product/engineering/context-economy-metrics.md`
+
+_Doc-only. The numbers arrive from S7b; this session does **not** run the instrument and does
+**not** touch a transcript. New directory: `docs/product/engineering/`._
+
+- **Reads** (~430 lines):
+  - `.plans/context-economy.state.md` — **L211-307** (the whole-mission audit **A1–A10**,
+    the process ruling, and the NOT-verified list) and **L940-1105** (the 📦 re-decision
+    package in full, §1-§12).
+  - `.plans/context-economy.md` — **L235-260** (Phase-4 tasks 17–21 and their acceptance).
+  - S7b's ledger block (the fresh numbers).
+- **Do** — write the doc. Opening note: this is an **engineering-economics record**, not the
+  product tracking plan (`templates/engineering-tracking-plan.md` serves product
+  instrumentation, a different consumer). It must contain, honestly and without softening:
+  1. **Method** — the instrument, the accounting model, chars primary / tokens banded, the
+     zero-dep output-side envelope estimator (OQ6), and the transcript rule.
+  2. **The headline, stated as the correction it is:** **~4.4–7.2% addressed / ~1.8–4.3%
+     captured**, against a founding claim of **~25% / 10–15%**. Name the denominator every
+     time. **n = 1 throughout.**
+  3. **A1 — the invariance argument is provably wrong post-repair.** §6's "shares are robust
+     to the gate FAIL" held before P0.5 and does not hold after it: the numerator now rides
+     `output_tokens` only while the denominator is Σ prompt-deltas of
+     `input+cache_creation+cache_read` — **orthogonal**. Consequence, stated plainly: a ~28%
+     prompt-series inflation **deflates every share by ~28%**, so the gate FAIL **does**
+     bound the share decision.
+  4. **A2 — the D7 "straddle" was manufactured by the p90 choice**, not measured: the
+     `envSamples` tail (n=594) is smooth with no outlier, 59 of 594 samples already exceed
+     the p90 endpoint, and at max the reviewer is **1.92%** — below 3% under any defensible
+     endpoint, agreeing with the architect's independent 1.23–1.62%. **Record that D11 stands
+     and that this doc does not re-decide D7.**
+  5. **A3 — the 3% trigger was a bare literal pinned by zero cases**, and mutating it
+     produced a self-contradicting verdict with all gates green. State what S7a did about it
+     (fixed, or logged) and which case now pins it.
+  6. **A4 — AS CORRECTED.** ≥ ~80% of the 372,114 chars is the human's own
+     `~/.claude/skills` (~140 skills, 208k) and MCP config (93k) — **not this repo's
+     surface**. The only in-repo lever is **~9,875 chars of agent descriptions**.
+     **Reduction is an owner settings action, minutes, not engineering** — and it is a
+     larger win than everything P1–P4 could deliver combined.
+  7. **A5 — the mission's own machinery is a top-5 consumer**: 143,689 chars = **5.4%**,
+     larger than anything P1–P4 could save, never measured until now, and **P3 shipped
+     another injecting hook without measuring it**. Give S7b's fresh figure.
+  8. **A6 — 34% of transcript records are excluded with no counter** (`last-prompt`, `mode`,
+     `ai-title`, `pr-link`, `file-history-snapshot` — 1,583 records), while `badJson` and
+     `sidechain` **are** counted and printed. Probably correct; **nobody verified**. Note the
+     assistant content loop's missing `else` residual branch.
+  9. **A7 — the mission's best corroboration, which nobody stated:** all **480 thinking
+     blocks carry `thinking: ""`** — zero persisted chars. That is *why* median q = 1.04, and
+     it independently validates the estimator's premise.
+  10. **A9 — the reading trap.** The bands are **asymmetric**: the levers sit at the low end
+      and the unexplained mass at the high end **simultaneously**, so reading midpoints
+      flatters the mission in both directions at once. Honest reading: Write/Edit ≈5.6%,
+      UNATTRIBUTED ≈60%, **char-free ≈48.5% — ~10× every lever, owned by no phase.**
+  11. **A8/A10 as recorded** — the dogfooding gap, and the wrap-at-P4 judgment.
+  12. **What was and was not moved.** Shipped: P0 (instrument), P0.5 (repair), P2 (standing
+      steers + `Next up:` agreement + enforcer due-ness), P3 (`SessionStart:compact`
+      directive). **Dropped: P1.** Measured-but-unaddressed: the char-free mass, the
+      machinery footprint, the owner's settings surface.
+  13. **The tracked open items** (copy the ledger's `## Tracked open items` block verbatim so
+      they survive the mission ending), and **D4b logged as deferred, non-blocking**.
+- **Verify**: `node tools/lint.mjs` green; the doc contains every numbered item above; every
+  figure carries a status tag and a denominator; **no claim of savings** appears for the
+  discipline lines; the `D4b` ledger row is `[~]`.
+- **Read budget**: ~430 lines. **Suits:** `analyst` (doc-only; the numbers are handed over —
+  the analyst never needs the transcript).
+
+### S8a — P1 residue (c): the discipline lines, as contract text with no savings claim
+
+_Doc/protocol only, no tool changes. **Atomic-ref invariant:** both WORKFLOW mirrors change
+in ONE commit._
+
+- **Reads** (~180 lines):
+  - `docs/WORKFLOW.md` — **L468-495** (§6.2 the context firewall: bounded returns +
+    fresh-self handoff — the discipline lines land **here**, as a third paragraph).
+  - `plugins/agentic-workflow/templates/WORKFLOW.md` — **L476-503** (the same section,
+    +8 offset; must end identical in substance).
+  - `plugins/agentic-workflow/agents/chronicler.md` — **L1-20** (frontmatter + the
+    three-artifact contract) and **L60-70** (the publish/Artifact note) — **OQ3**: PR bodies
+    are **not** currently in the contract; add them as a **one-line contract addition**,
+    **no tool-list change**.
+- **Do**:
+  1. Add to §6.2, in both mirrors, as contract text: **the orchestrator authors only the
+     ledger and edits under ~15 lines; any longer document goes to a subagent and comes back
+     as a path, not as content.** State the reason as **fidelity and division of labour** —
+     the heavy reading belongs in the subagent's own window.
+  2. **State NO savings figure and make no savings claim** (D13/D15 — the 22.5% premise is
+     retracted; the measured share is 4.4–7.2% of churn, and A1 deflates even that by ~28%).
+     If a reviewer can read a number out of this text, it is wrong.
+  3. **OQ3** — add PR bodies to the `chronicler` contract as one line, and name
+     `gh pr create --body-file` as the mechanism.
+  4. Do **not** add a hook, a gate or a lint check for these lines. They are discipline, and
+     the mission's own audit already says unenforced discipline rots — record that as a
+     tracked open item rather than inventing an enforcement mechanism at the wrap.
+- **Verify**: `node tools/lint.mjs` green (it cross-checks the WORKFLOW mirrors); `diff` the
+  two §6.2 blocks and state they agree; `grep` the new text for `%` and for "save/savings"
+  and show zero hits.
+- **Read budget**: ~180 lines. **Suits:** `writer` (or `backend` — it is contract prose in
+  two mirrored files).
+
+### S8b — chronicler pass (incl. the OWED P2 + P3 passes) + version bump
+
+_The P2 and P3 chronicler passes were **skipped to conserve budget and are OWED** — this
+session folds them in, so the CHANGELOG/JOURNEY cover P2, P3 and P4 together._
+
+- **Reads** (~150 lines): `CHANGELOG.md` — **`## [Unreleased]` head only, L1-45** (373 lines
+  total, measured 2026-08-03 — **do not read it whole**);
+  `plugins/agentic-workflow/.claude-plugin/plugin.json` (11); `.claude-plugin/marketplace.json`
+  (17); `.plans/context-economy.state.md` — the checklist **L51-82** and the newest handoff
+  entries only.
+- **Do**:
+  1. Spawn **`chronicler`** for CHANGELOG + `docs/product/JOURNEY.md` + the status page
+     `docs/product/overview.html`, covering **P2, P3 and P4** (the two owed passes plus this
+     one). Hand it the S7c metrics doc path — it cites, it does not re-derive.
+  2. **Then the orchestrator republishes the status page via the Artifact tool** — subagents
+     cannot publish. This step is the orchestrator's, always.
+  3. **Status-page staleness — DECIDE AND SAY.** The lifecycle / pillars / "Deployed v1.30.0"
+     sections have been stale since 2026-07-08 despite v1.39.x and v1.41.0 shipping.
+     **Planner's call: fix only the version/deployed stamp and the mission's own rows in this
+     session; explicitly DEFER the lifecycle and pillars rewrite** as a tracked open item —
+     it is a separate editorial job and this is a wrap session. Whichever way the orchestrator
+     goes, **the ledger must say which**, in one line.
+  4. **Version bump** in `plugins/agentic-workflow/.claude-plugin/plugin.json` — **minor**
+     (new tool `context-attrib.mjs`, new `SessionStart:compact` hook, protocol change in
+     WORKFLOW §3/§5/§6.2). Mirror it wherever the marketplace manifest carries a version.
+- **Verify**: `node tools/lint.mjs` green (it checks manifests and version stamps);
+  `git status --short` clean; the status page's published URL matches its `artifact-url`
+  comment; the CHANGELOG entry names P2, P3 **and** P4 and claims **no savings figure**.
+- **Read budget**: ~150 lines. **Suits:** the main session (orchestration) + `chronicler`.
+
+### S8c — the integration PR (the human merges)
+
+- **Reads** (~60 lines): the ledger's `Next up:` trailer and the newest handoff entry;
+  `git log --oneline main..mission/context-economy-integration` (a command, not a read).
+- **Do**:
+  1. Merge `mission/context-economy-p4` into `mission/context-economy-integration` on
+     `ckpt-p4` APPROVE (batch policy, D3) — **never into the default branch**.
+  2. Have the **`chronicler`** author the PR body to
+     `.plans/context-economy.artifacts/p4-pr-body.md` — honest headline (**~4.4–7.2%
+     addressed / ~1.8–4.3% captured** vs a founding **~25% / 10–15%**), what shipped, what
+     was dropped (P1), what stays open, and **n = 1**.
+  3. `gh pr create --base main --head mission/context-economy-integration --body-file
+     .plans/context-economy.artifacts/p4-pr-body.md`. **Do not push to `main`. Do not merge.
+     The human merges once.**
+  4. Close the ledger: final handoff entry, the `## Tracked open items` block confirmed
+     intact, `D4b` still `[~]`, and **both `Next up:` sites** set to the same terminal
+     wording (`checkNextUpAgreement()` fails the gate if they disagree).
+- **Verify**: `node tools/lint.mjs` green; `git status --short` clean; the PR exists against
+  `main` from `mission/context-economy-integration`; **the orchestrator authored no document
+  over ~15 lines this session** (state it explicitly — it is S8a's contract, live).
+- **Read budget**: ~60 lines. **Suits:** the main session (orchestration) + `chronicler`.
+
+**Checkpoint `ckpt-p4`** — final reviewer pass over the **whole** integration diff
+(`main..mission/context-economy-integration`). It must verify:
+
+- **All gates green** from a clean checkout: `node tools/lint.mjs` (which spawns
+  `hook-test.mjs`, `marker-test.mjs` and `context-attrib.mjs --selftest`), with the
+  **selftest case count ≥ 44** and stated.
+- **The metrics doc is honest about what was and was not moved** — it states A1 (the
+  invariance argument is wrong post-repair; every share deflates ~28%), A2, A3, **A4 as
+  corrected** (an owner settings action, not engineering), A5, A6, A7, A9, the
+  **~4.4–7.2% / ~1.8–4.3%** headline against the founding **~25% / 10–15%**, and **n = 1**.
+  A doc that reads as a success story has failed this checkpoint.
+- **D4a is presented as an observation, nowhere as a gate**; **D4b is `[~]`, never `[x]`**.
+- **D7's untouched-tool-list invariant holds across the whole mission** — `reviewer.md` has
+  no Write tool, and nothing in P4 re-decided D7 (D11 locked). The A3 fix, if it landed,
+  pinned the trigger without moving the verdict.
+- **The discipline lines carry no savings claim** and no enforcement mechanism was invented
+  at the wrap.
+- **The A4 delta-kind naming is additive only** — `attach: other` shrank by exactly the mass
+  the four named rows carry, and no sizing logic changed.
+- **The tracked open items survived** into both the ledger and the metrics doc.
+- **Batch policy respected**: `main` untouched, one PR, the human merges.
+
+Then the **human merges the integration branch once** and the mission is closed. **Nothing
+follows P4.**
 
 ---
 _Size every brief to its read budget; split any that can't fit and note the split. Each

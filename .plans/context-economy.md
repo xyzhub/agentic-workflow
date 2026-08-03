@@ -232,13 +232,19 @@ who re-decides P1–P4 with repaired numbers. **P1–P4 are NOT authorized until
     Acceptance: `node tools/hook-test.mjs` green with the new cases; `node tools/lint.mjs`
     green; the §3 table and README name the hook.
 
-### Phase 4 — wrap (D4a) and record — **HELD pending the post-P0.5 re-decision**
+### Phase 4 — wrap (D4a) and record — **AUTHORIZED (D15); re-briefed 2026-08-03**
+
+_Sessions: `S7a` → `S7b` → `S7c` → `S8a` → `S8b` → `S8c`, then `ckpt-p4`. See
+`.plans/context-economy.sessions.md` `## Phase 4`. **The mission wraps here.**_
 
 17. **Re-measure on THIS mission's own transcript** and compare against the P0b
-    baseline for **D4a** — the authored-Write share must be reduced. Report **share
-    (%)**, not absolute tokens (the two missions differ in size and shape).
-    Acceptance: both runs' numbers are in the ledger with the delta and an explicit
-    verdict (met / not met / not comparable, with reason).
+    baseline for **D4a** — reported as an **OBSERVATION, not a pass/fail gate**
+    (D13/D15: a 50% cut to a 4.4–7.2% share is 2–3.6%, inside the instrument's own
+    band). Report **share (%)**, not absolute tokens (the two missions differ in size
+    and shape).
+    Acceptance: both runs' numbers are in the ledger with the delta, the OQ5
+    comparability caveat in full, and an explicit statement that **it was not gated on**.
+    A met/not-met verdict is a defect here, not a deliverable.
 18. **Log D4b as a non-blocking tracked item** — the cross-mission confirmation on a
     later comparable mission is deferred, not dropped.
     Acceptance: a `[~]` ledger row and a line in the metrics doc naming it as deferred.
@@ -252,11 +258,35 @@ who re-decides P1–P4 with repaired numbers. **P1–P4 are NOT authorized until
     (`templates/engineering-tracking-plan.md` serves a different consumer — product
     instrumentation, not orchestrator economics); say so in the doc's opening note.
     Acceptance: the file exists with those sections; `node tools/lint.mjs` green.
-21. **Ship** — `chronicler` (CHANGELOG + JOURNEY + status page), version bump in
-    `plugins/agentic-workflow/.claude-plugin/plugin.json`, integration PR from
-    `mission/context-economy-integration` opened for the human to merge ONCE.
-    Acceptance: gates green; PR body authored per the new firewall (task 8) as a
-    `--body-file`; the human merges.
+21. **Ship** — `chronicler` (CHANGELOG + JOURNEY + status page, **incl. the OWED P2 and
+    P3 passes**, skipped to conserve budget), version bump in
+    `plugins/agentic-workflow/.claude-plugin/plugin.json` (minor: new tool + new hook +
+    protocol change), integration PR from `mission/context-economy-integration` opened
+    for the human to merge ONCE. The orchestrator republishes the status page via the
+    Artifact tool — subagents cannot publish.
+    Acceptance: gates green; PR body authored by the `chronicler` and opened with
+    `gh pr create --body-file`; the human merges; `main` never touched by an agent.
+
+**P1 residue, folded in by D15** (Phase 1 is dropped; these are not a phase):
+
+27. **Name the A4 delta kinds in the instrument** — `deferred_tools_delta`,
+    `agent_listing_delta`, `mcp_instructions_delta`, `invoked_skills` currently collapse
+    into `attach: other` at `tools/context-attrib.mjs:197-199`. A **~3-line additive**
+    change; no sizing logic moves.
+    Acceptance: each kind is its own category, `attach: other` shrinks by exactly their
+    sum, a selftest case fails without the change, and the case count is **≥ 44**.
+28. **Measure the A5 hook footprint** — the mission's own hooks (`hook_success` 113,672 +
+    `hook_additional_context` 19,362 + `task_reminder` 10,655 = **143,689 chars = 5.4%**)
+    are larger than anything P1–P4 could save and have never been measured; **P3 shipped
+    another injecting hook without measuring it**.
+    Acceptance: the per-attachment-kind table and a named `mission machinery footprint`
+    line print from the shipped instrument, and the figure is recorded in the metrics doc.
+29. **The discipline lines as contract text** — the orchestrator authors only the ledger
+    and edits under ~15 lines; longer documents go to subagents and return as paths. Lands
+    in **WORKFLOW §6.2, both mirrors**, plus the **OQ3** one-line `chronicler` PR-body
+    contract addition (no tool-list change).
+    Acceptance: both mirrors agree; **no savings figure and no savings claim anywhere in
+    the text** (D13 — the 22.5% premise is retracted); no new gate or hook is invented.
 
 ## Locked decisions
 
@@ -313,6 +343,83 @@ _Copied from the source brief with their original dates. Not re-litigated._
   subagent returns = 0.4%"; one number is wrong, and if it is the 0.4% then the "§6.2
   firewall is already working" premise under D1 is unsound. Required Phase-0 output;
   feeds the D7 reopen test.
+
+## Replan 2026-08-03
+
+_Dated replan entry (WORKFLOW §5). Completed work is history and is not re-planned;
+locked decisions stay locked. **This is the last replan — the mission wraps at P4.**_
+
+**What triggered it.** **D15** (locked 2026-08-03 by the human) accepted the Fable
+recommendation memo in full after the independent whole-mission audit
+(`758f244`, findings **A1–A10**): **P2 fix-and-merge** (done, `e5b6326`), **P1 DROPPED**,
+**P4 authorized and requiring a planner re-brief**, **the mission wraps at P4**. The
+2026-08-01 S7/S8 briefs were written against the **retracted 22.5% premise** and could not
+be run as written.
+
+**Reconciled against git first.** Merged into `mission/context-economy-integration`:
+Phase 0 `273f1d3`, Phase 0.5 `f5fabc6`, Phase 3 `8a3b4c7`, Phase 2 `e5b6326`. The ledger
+already matched — no corrections were owed, so no deviation entries were added. `main` is
+untouched, as batch policy (D3) requires.
+
+**What changed in this replan.**
+- **Phase 4 re-briefed and split six ways** (`S7a`, `S7b`, `S7c`, `S8a`, `S8b`, `S8c`),
+  replacing the two stale briefs. Ten sessions died on usage limits on 2026-08-03; every
+  split so far has survived better than its unsplit alternative. Each brief carries
+  pre-resolved reads with line ranges re-measured 2026-08-03, a `Verify` gate, a read
+  budget and a `Suits:` routing line.
+- **P1's residue rides into P4, itemised:** (a) the ~3-line additive instrument change
+  naming the A4 delta kinds (`deferred_tools_delta`, `agent_listing_delta`,
+  `mcp_instructions_delta`, `invoked_skills`), which currently collapse into `attach: other`
+  at `context-attrib.mjs:197-199` — shipped with a case that fails without it, case count
+  never below **44**; (b) the **A5 hook-footprint measurement** — the mission's own hooks
+  are 143,689 chars = **5.4%**, larger than anything P1–P4 could save and never measured;
+  (c) the **discipline lines** as contract text in WORKFLOW §6.2 (both mirrors) plus the
+  OQ3 one-line `chronicler` PR-body addition, **with no savings claim** (D13).
+- **D4a is briefed as an OBSERVATION, never a gate** (D13/D15) — a 50% cut to a 4.4–7.2%
+  share is 2–3.6%, inside the instrument's own uncertainty band.
+- **The metrics doc is briefed to state A1–A10 and the A4 correction honestly**, with the
+  headline **~4.4–7.2% addressed / ~1.8–4.3% captured** against a founding claim of
+  **~25% / 10–15%**, and **n = 1** stated throughout.
+- **`ckpt-p4` is briefed as a whole-diff final review** (`main..mission/context-economy-integration`)
+  with an explicit honesty test: a metrics doc that reads as a success story has failed it.
+
+**Planner recommendation carried into the briefs — A3.** Fix it in **S7a**, not later. The
+D7 3% trigger is a bare literal duplicated in three prose strings and pinned by **zero**
+cases; mutating it `3 → 1` leaves the selftest clean while the tool prints a
+**self-contradicting governance verdict** on the real corpus. It is small, it is in the file
+S7a already opens, and the repair pattern already exists in the same file (`GATE_PCT = 15`,
+named and case-pinned both directions). **It pins the trigger; it does not move the verdict
+— D7/D11 stay locked.** The human can overrule and have it logged as an open item instead.
+
+**What stays locked (not re-litigated here).** D1–D15 and OQ1–OQ7. In particular: **P1 is
+DROPPED, not deferred**; **D3 batch policy** (phase branches → the integration branch, never
+the default branch; the human merges once, at the end); **D11** (D7 stands, the reviewer
+keeps its no-Write structural guarantee); **D4a is an observation**; **the mission wraps at
+P4**. Completed sessions, logged deviations and struck-through rows are untouched.
+
+**What is dropped.** Phase 1 in its entirety — branch `mission/context-economy-p1` was never
+created, `S4` and `ckpt-p1` are struck. Its premise (Write/Edit = 22.5%) is retracted;
+measured 9.2% char / 4.4–7.2% token, and A1 deflates even that by ~28%.
+
+**What is tracked, not planned** — carried into a new `## Tracked open items` block in the
+ledger and copied into the metrics doc so they outlive the mission: the **PreToolUse
+due-ness port**; **F4** (loose ckpt-id fallback in `lint.mjs`); the
+**`plugins/agentic-workflow/README.md:199-202`** line; **collapse #4** (−270,711 @ line
+4,222, unexplained); the **+28% gate residual** (instrument vs. a hand-recorded comparator —
+unresolved by anyone so far); **D4b** (the only real confirmation, needs a second
+transcript); the **owner settings action** on `~/.claude/skills` + MCP config; and the
+status-page lifecycle/pillars staleness if S8b defers it.
+
+**Flagged, NOT resolved — where the audit rubs against locked text.** The planner does not
+unlock decisions. **(i)** D13/D15 cite Write/Edit at **4.4–7.2%**; **A1 says every share
+deflates by ~28%** post-repair, so the figure the locked text carries is itself un-deflated.
+The direction of the correction *strengthens* the decision to drop P1, so nothing operational
+turns on it — but the number in the locked text is not the corrected number. **(ii)** The
+📦 package §7 escalated the D7 **"straddle / UNDECIDABLE"** to the human and put it on the
+status page; **A2 says the straddle was manufactured by the p90 choice** and the reviewer is
+below 3% under any defensible endpoint. **D11's outcome (D7 stands) is unaffected** — A2
+agrees with it — but the published framing overstated the uncertainty. Both are the human's
+to rule on; S7c records them, nobody resolves them.
 
 ## Replan 2026-08-02
 
