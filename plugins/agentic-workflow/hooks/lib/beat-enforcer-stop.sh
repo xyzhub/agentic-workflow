@@ -17,20 +17,35 @@
 # behind an unreleased blocker, is not overdue and must not be nudged. Observed
 # defect: ~20 consecutive turns nudging a checkpoint that was marked HELD behind
 # an unmade human decision, with three [ ] sessions still pending above it.
-# A candidate beat is suppressed when, in the ROWS ABOVE it:
-#   - any `- [ ]` row remains (work above it is unfinished → not its turn), or
-#   - an UNRELEASED blocking row (`- [ ]`/`- [~]` carrying ⛔ / HARD PAUSE /
-#     HELD) sits between. A blocker marked `[x]` is released and does NOT block.
-# …or when the beat row ITSELF carries a HELD / ⛔ / HARD PAUSE marker.
+# Rules, applied to a candidate beat:
+#   (i)   the beat row ITSELF carries HELD / ⛔ / HARD PAUSE → it is parked, so
+#         SKIP it and keep scanning the LATER candidates. A parked row is not a
+#         wall; missions routinely proceed around one (a phase held pending a
+#         human decision while a later phase is authorized).
+#   (ii)  an UNRELEASED BARRIER sits above it — a `- [ ]`/`- [~]` row carrying
+#         ⛔ or HARD PAUSE (a mission-wide stop), or a `- [~]` row carrying HELD.
+#         A barrier marked `[x]` is RELEASED and does NOT block.
+#   (iii) unmarked unfinished work sits above it — any `- [ ]` row carrying none
+#         of those markers (work above it is genuinely in progress → not its
+#         turn). Rows carrying a marker are parked, not unfinished, so (iii)
+#         steps over them; that is what makes (i)'s "keep scanning" reachable.
+# (ii) and (iii) look only UPWARD, so once either fires no later candidate can be
+# due either and the scan stops. Only (i) advances to the next candidate.
 # This is the one place prose is read, and only for these blocking markers —
 # every other decision stays glyph-only.
+#
+# 2026-08-03 (S5b) — this scan replaced a `head -1`: the enforcer used to evaluate
+# ONLY the first [ ] candidate, so a single HELD checkpoint above an open one
+# silenced the backstop permanently (dead, and silently so, for the rest of a
+# mission). Rule (ii)'s `[ ]`-carrying-HELD branch went with it: a held row is
+# now skipped over by (i)/(iii) rather than blocking everything beneath it.
 #
 # Contract:
 #   - FIRST read stdin and exit 0 when .stop_hook_active is true — Claude Code's
 #     re-fire guard; without it a Stop hook that emits feedback loops on every
 #     stop attempt (the 2026-07 infinite-loop bug).
-#   - Otherwise, if the active .plans/*.state.md ledger still has a NOT-STARTED
-#     [ ] Checkpoint/chronicler/reviewer row, inject a soft reminder via
+#   - Otherwise, if the active .plans/*.state.md ledger still has a DUE
+#     NOT-STARTED [ ] Checkpoint/chronicler/reviewer row, inject a soft reminder via
 #     hookSpecificOutput.additionalContext (jq-built, so ledger text is
 #     JSON-escaped, never executed).
 #   - Silent when no .plans/ or no such row. ALWAYS exit 0 — NEVER exit 2.
@@ -55,24 +70,36 @@ LEDGER=$(ls -t .plans/*.state.md 2>/dev/null | while IFS= read -r f; do
 done)
 [ -n "$LEDGER" ] || exit 0
 
-# First not-started checkpoint/chronicler/reviewer row. [~] (parked) and [x] (done)
-# rows are the author's "hands off" signal and are never matched.
-HIT=$(grep -inE '^- \[ \].*(checkpoint|chronicler|reviewer|review)' "$LEDGER" | head -1)
-[ -n "$HIT" ] || exit 0
-BEAT_LINE=${HIT%%:*}
-BEAT=${HIT#*:}
+# Every not-started checkpoint/chronicler/reviewer row, top-down, as `LINE:row`.
+# [~] (parked) and [x] (done) rows are the author's "hands off" signal and are
+# never candidates.
+CANDIDATES=$(grep -inE '^- \[ \].*(checkpoint|chronicler|reviewer|review)' "$LEDGER")
+[ -n "$CANDIDATES" ] || exit 0
 
-# Due-ness (see header). The beat row itself may be explicitly held.
-case "$BEAT" in
-  *HELD*|*⛔*|*"HARD PAUSE"*) exit 0 ;;
-esac
+# Scan for the first DUE candidate (see the DUE-NESS header). The here-string
+# keeps the loop in THIS shell, so an `exit 0` inside it really ends the hook.
+BEAT=
+while IFS= read -r HIT; do
+  [ -n "$HIT" ] || continue
+  BEAT_LINE=${HIT%%:*}
+  ROW=${HIT#*:}
 
-# Checklist rows ABOVE the candidate beat.
-ABOVE=$(head -n "$((BEAT_LINE - 1))" "$LEDGER" | grep -E '^- \[')
-# (a) unfinished work above it → the beat is not its turn yet.
-printf '%s\n' "$ABOVE" | grep -qE '^- \[ \]' && exit 0
-# (b) an unreleased blocker between the top and the beat ([x] = released, passes).
-printf '%s\n' "$ABOVE" | grep -qE '^- \[[ ~]\].*(⛔|HARD PAUSE|HELD)' && exit 0
+  # (i) the row itself is parked by marker → not due; try the NEXT candidate.
+  case "$ROW" in
+    *HELD*|*⛔*|*"HARD PAUSE"*) continue ;;
+  esac
+
+  # Checklist rows ABOVE this candidate.
+  ABOVE=$(head -n "$((BEAT_LINE - 1))" "$LEDGER" | grep -E '^- \[')
+  # (ii) an unreleased barrier above it ([x] = released, passes).
+  printf '%s\n' "$ABOVE" | grep -qE '^- \[[ ~]\].*(⛔|HARD PAUSE)|^- \[~\].*HELD' && exit 0
+  # (iii) unmarked unfinished work above it → not its turn yet.
+  printf '%s\n' "$ABOVE" | grep -E '^- \[ \]' | grep -qvE '⛔|HARD PAUSE|HELD' && exit 0
+
+  BEAT=$ROW
+  break
+done <<<"$CANDIDATES"
+[ -n "$BEAT" ] || exit 0
 
 MSG="⏳ Beat pending — $LEDGER shows a not-started reviewer/chronicler beat for this phase/session; spawn it (or mark it [~] if it's in-flight/deferred/awaiting you) before you close/advance: $BEAT"
 jq -n --arg m "$MSG" '{hookSpecificOutput:{hookEventName:"Stop",additionalContext:$m}}' 2>/dev/null
