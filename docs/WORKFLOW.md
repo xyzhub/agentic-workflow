@@ -1,6 +1,6 @@
 # The Workflow — one agentic protocol from idea to viable product
 
-<!-- protocol-master: v1.39.0 -->
+<!-- protocol-master: v1.42.0 -->
 
 ## Quick reference — humans start here
 
@@ -482,6 +482,15 @@ building happened in the subagent's OWN context; only the distillate crosses
 back. The caller ingests conclusions, not corpora (§2, principle 2), and pulls
 detail from the named files on demand into its own budget. `advisor` (one page)
 and `chronicler` (≤10 lines) are the model.
+
+**Bounded writes.** The firewall has a write side. The orchestrating session
+**authors only the ledger**, plus edits of roughly fifteen lines or fewer; any
+longer document — a PR body, a report, a spec — is authored by a **subagent and
+comes back as a path, not as content**. The reason is fidelity and division of
+labour: the reading a document needs belongs in the window of the agent that
+writes it, and a document the caller composes out of a subagent's distillate
+sits one paraphrase further from the source files. This is discipline, not a
+gate — nothing checks it for you.
 
 **The fresh-self handoff.** The interactive main session is context-disciplined
 too — the same "ledger outlives the transcript" rule (§2, principle 1) and loop
