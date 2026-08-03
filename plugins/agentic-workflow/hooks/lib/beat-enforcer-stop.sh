@@ -12,6 +12,19 @@
 # To silence a nag, change [ ]→[~]. The mission workflow auto-sets [~] when a
 # review is in-flight and [x] on APPROVE, so this rarely needs a manual touch.
 #
+# DUE-NESS (added 2026-08-03) — the glyph says "hands off"; it does NOT say the
+# beat is DUE. A checkpoint whose predecessors are unfinished, or which sits
+# behind an unreleased blocker, is not overdue and must not be nudged. Observed
+# defect: ~20 consecutive turns nudging a checkpoint that was marked HELD behind
+# an unmade human decision, with three [ ] sessions still pending above it.
+# A candidate beat is suppressed when, in the ROWS ABOVE it:
+#   - any `- [ ]` row remains (work above it is unfinished → not its turn), or
+#   - an UNRELEASED blocking row (`- [ ]`/`- [~]` carrying ⛔ / HARD PAUSE /
+#     HELD) sits between. A blocker marked `[x]` is released and does NOT block.
+# …or when the beat row ITSELF carries a HELD / ⛔ / HARD PAUSE marker.
+# This is the one place prose is read, and only for these blocking markers —
+# every other decision stays glyph-only.
+#
 # Contract:
 #   - FIRST read stdin and exit 0 when .stop_hook_active is true — Claude Code's
 #     re-fire guard; without it a Stop hook that emits feedback loops on every
@@ -44,8 +57,22 @@ done)
 
 # First not-started checkpoint/chronicler/reviewer row. [~] (parked) and [x] (done)
 # rows are the author's "hands off" signal and are never matched.
-BEAT=$(grep -iE '^- \[ \].*(checkpoint|chronicler|reviewer|review)' "$LEDGER" | head -1)
-[ -n "$BEAT" ] || exit 0
+HIT=$(grep -inE '^- \[ \].*(checkpoint|chronicler|reviewer|review)' "$LEDGER" | head -1)
+[ -n "$HIT" ] || exit 0
+BEAT_LINE=${HIT%%:*}
+BEAT=${HIT#*:}
+
+# Due-ness (see header). The beat row itself may be explicitly held.
+case "$BEAT" in
+  *HELD*|*⛔*|*"HARD PAUSE"*) exit 0 ;;
+esac
+
+# Checklist rows ABOVE the candidate beat.
+ABOVE=$(head -n "$((BEAT_LINE - 1))" "$LEDGER" | grep -E '^- \[')
+# (a) unfinished work above it → the beat is not its turn yet.
+printf '%s\n' "$ABOVE" | grep -qE '^- \[ \]' && exit 0
+# (b) an unreleased blocker between the top and the beat ([x] = released, passes).
+printf '%s\n' "$ABOVE" | grep -qE '^- \[[ ~]\].*(⛔|HARD PAUSE|HELD)' && exit 0
 
 MSG="⏳ Beat pending — $LEDGER shows a not-started reviewer/chronicler beat for this phase/session; spawn it (or mark it [~] if it's in-flight/deferred/awaiting you) before you close/advance: $BEAT"
 jq -n --arg m "$MSG" '{hookSpecificOutput:{hookEventName:"Stop",additionalContext:$m}}' 2>/dev/null

@@ -94,6 +94,25 @@ const MIXED = ledger('- [~] Checkpoint — phase 1 review **APPROVED**', '- [ ] 
 // Nothing not-started — every row parked or done. Silent.
 const NONE_OPEN = ledger('- [x] S1 — build', '- [~] Checkpoint — phase 1 review');
 
+// ── Due-ness fixtures (2026-08-03): a [ ] beat is not automatically DUE ──
+// Work above the checkpoint is still not-started — the checkpoint isn't its turn.
+const PENDING_ABOVE = ledger(
+  '- [x] S1 — build', '- [ ] S2 — build', '- [ ] Checkpoint — phase 2 review');
+// Sessions above are done, but an UNRELEASED blocking row sits between. The
+// blocker carries [~] so this isolates the blocker rule from the PENDING_ABOVE one.
+const BLOCKED_BY_DECISION = ledger(
+  '- [x] S1 — build',
+  '- [~] ⛔ **DECISION POINT** — awaiting the human',
+  '- [ ] Checkpoint — phase 2 review');
+// The beat row itself is explicitly HELD — the exact row that nagged ~20 turns.
+const HELD_BEAT = ledger(
+  '- [x] S1 — build', '- [ ] Checkpoint `ckpt-p1` — **HELD** — phase 1 review');
+// A RELEASED blocker above ([x]) must NOT suppress — the preserved-nudge guard.
+const RELEASED_BLOCKER = ledger(
+  '- [x] S1 — build',
+  '- [x] ⛔ **D1 HARD PAUSE — RELEASED 2026-08-02.** Human re-scoped',
+  '- [ ] Checkpoint — phase 3 review');
+
 // ── Stop backstop (fires every turn-end) ─────────────────────────────────
 {
   const r = runHook({ event: 'Stop', desc: STOP, input: { stop_hook_active: false }, ledgers: NOT_STARTED });
@@ -142,6 +161,69 @@ const NONE_OPEN = ledger('- [x] S1 — build', '- [~] Checkpoint — phase 1 rev
   });
   check('Stop: newest ledger parked, older has [ ] → silent (active = newest)',
     r.code === 0 && !nudged(r), `stdout=${JSON.stringify(r.stdout)}`);
+}
+
+// ── Stop backstop: due-ness (a [ ] beat behind unfinished/blocked rows) ───
+{
+  const r = runHook({ event: 'Stop', desc: STOP, input: { stop_hook_active: false }, ledgers: PENDING_ABOVE });
+  check('Stop: [ ] session still open above the checkpoint → silent (not due)', r.code === 0 && !nudged(r), `stdout=${JSON.stringify(r.stdout)}`);
+}
+{
+  const r = runHook({ event: 'Stop', desc: STOP, input: { stop_hook_active: false }, ledgers: BLOCKED_BY_DECISION });
+  check('Stop: unreleased ⛔ blocker above the checkpoint → silent', r.code === 0 && !nudged(r), `stdout=${JSON.stringify(r.stdout)}`);
+}
+{
+  const r = runHook({ event: 'Stop', desc: STOP, input: { stop_hook_active: false }, ledgers: HELD_BEAT });
+  check('Stop: beat row itself marked HELD → silent', r.code === 0 && !nudged(r), `stdout=${JSON.stringify(r.stdout)}`);
+}
+{ // preserved-nudge guard: a RELEASED [x] blocker must not silence a due beat.
+  const r = runHook({ event: 'Stop', desc: STOP, input: { stop_hook_active: false }, ledgers: RELEASED_BLOCKER });
+  check('Stop: released [x] blocker above, all work done → still nudges', r.code === 0 && nudged(r) && /phase 3/.test(r.stdout), `stdout=${JSON.stringify(r.stdout)}`);
+}
+
+// ── SessionStart:compact re-read directive ───────────────────────────────
+// Matcher discipline is structural (the harness dispatches commands directly and
+// does not apply matchers), so assert the registered matcher set itself: `compact`
+// and nothing else — never `startup`, never `resume`.
+{
+  const spec = JSON.parse(readFileSync(HOOKS, 'utf8'));
+  const matchers = (spec.hooks.SessionStart || []).map((g) => g.matcher);
+  check('SessionStart: matcher is exactly ["compact"]',
+    matchers.length === 1 && matchers[0] === 'compact', `matchers=${JSON.stringify(matchers)}`);
+}
+const COMPACT = 'compact-resume directive';
+const reReadDirective = (r) => /just COMPACTED/.test(r.stdout);
+{
+  const r = runHook({ event: 'SessionStart', desc: COMPACT, input: { source: 'compact' }, ledgers: NOT_STARTED });
+  check('SessionStart(compact): injects the re-read directive naming the active ledger',
+    r.code === 0 && reReadDirective(r) && /m\.state\.md/.test(r.stdout), `stdout=${JSON.stringify(r.stdout)}`);
+}
+{
+  const r = runHook({ event: 'SessionStart', desc: COMPACT, input: { source: 'startup' }, ledgers: NOT_STARTED });
+  check('SessionStart(startup): silent', r.code === 0 && !reReadDirective(r), `stdout=${JSON.stringify(r.stdout)}`);
+}
+{
+  const r = runHook({ event: 'SessionStart', desc: COMPACT, input: { source: 'resume' }, ledgers: NOT_STARTED });
+  check('SessionStart(resume): silent', r.code === 0 && !reReadDirective(r), `stdout=${JSON.stringify(r.stdout)}`);
+}
+{
+  const r = runHook({ event: 'SessionStart', desc: COMPACT, input: { source: 'compact' } });
+  check('SessionStart(compact): no .plans/ → silent, exit 0', r.code === 0 && !reReadDirective(r), `stdout=${JSON.stringify(r.stdout)}`);
+}
+{ // a fully-done ledger has no active mission — nothing to re-read.
+  const r = runHook({ event: 'SessionStart', desc: COMPACT, input: { source: 'compact' }, ledgers: ledger('- [x] S1 — build') });
+  check('SessionStart(compact): no active ledger → silent, exit 0', r.code === 0 && !reReadDirective(r), `stdout=${JSON.stringify(r.stdout)}`);
+}
+{ // the directive the human contracted for is ≤6 lines.
+  const r = runHook({ event: 'SessionStart', desc: COMPACT, input: { source: 'compact' }, ledgers: NOT_STARTED });
+  let lines = -1;
+  try { lines = JSON.parse(r.stdout).hookSpecificOutput.additionalContext.split('\n').length; } catch { /* reported below */ }
+  check('SessionStart(compact): directive is ≤6 lines', lines > 0 && lines <= 6, `lines=${lines}`);
+}
+{ // never exits 2 — a SessionStart hook must never be able to block a session.
+  const codes = ['compact', 'startup', 'resume', 'clear'].map(
+    (source) => runHook({ event: 'SessionStart', desc: COMPACT, input: { source }, ledgers: NOT_STARTED }).code);
+  check('SessionStart: exit 0 on every source (never 2)', codes.every((c) => c === 0), `codes=${JSON.stringify(codes)}`);
 }
 
 // ── PreToolUse enforcer (fires only at the closing action) ────────────────

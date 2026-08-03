@@ -98,6 +98,18 @@
         ]
       }
     ],
+    "SessionStart": [
+      {
+        "matcher": "compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/lib/compact-resume.sh\"",
+            "description": "compact-resume directive (D8, SessionStart): after a context compaction ONLY (matcher `compact` — never startup/resume), inject a ≤6-line directive telling the agent to re-read the active .plans/*.state.md ledger and docs/product/session-handoff.md VERBATIM rather than resume from a summary of a summary, and to honor the ledger's ## Standing steers. Selects the active ledger with the same newest-mtime rule as the beat-enforcer; also stays silent when stdin's .source is present and not `compact`. Emits via hookSpecificOutput.additionalContext (jq-built so the ledger path is JSON-escaped, never executed); silent when no .plans/ or no active ledger; always exit 0 — NEVER exit 2. Body: hooks/lib/compact-resume.sh"
+          }
+        ]
+      }
+    ],
     "SessionEnd": [
       {
         "matcher": ".*",
