@@ -150,6 +150,37 @@ not re-litigated by any later session._
   confirmation** and needs a second transcript that does not yet exist.
   Recommended order when work resumes: **P2 → P1 → P4** (P3 already taken first).
 
+## 📋 Fable recommendation memo — 2026-08-03 (`0ddc109`, advisory)
+
+`docs/product/decisions/2026-08-03-context-economy-p1-p2-recommendation.md`.
+
+- **Q1 — P2: fix and merge**, one corrective session: F1 + F2 + F5 as the reviewer
+  required, **plus F3 folded in** (same file S5 touched, same mutation pattern; P2's
+  headline guard otherwise ships blind to exactly the drift it polices). F3 goes **last and
+  is severable** if the session is at risk. _Case against: session mortality — eight deaths
+  on limits today, and D14 split sessions for this reason; F3 adds code + mutations to an
+  otherwise doc-only retry._
+- **Q2 — DROP P1 as a phase.** Fold its residue into P4's re-brief (the discipline lines, a
+  ~3-line instrument extension naming the A4 delta kinds, an A5 hook-footprint
+  measurement). **Do NOT re-point P1 at A4.** _Case against: unenforced discipline rots —
+  no gate re-checks contract text, and the package itself calls 4.4–7.2% "no longer a
+  rounding error"._
+
+**🔴 A4 IS LARGELY DEBUNKED — measured, not asserted.** **≥ ~80% of the 372,114 chars is
+NOT this repo's surface:** `skill_listing` **208k is the USER's ~140 skills** in
+`~/.claude/skills` (this plugin ships **one 2,874-byte skill**); `deferred_tools_delta`
+79k + `mcp_instructions_delta` 14k are **user-level MCP config**. The **only in-repo lever
+is the 20 agent descriptions totalling 9,875 chars** feeding the 58k `agent_listing_delta`
+— **~2% of appended chars at best.** **Reduction is a SETTINGS action for the human**
+(prune skills / MCP servers), minutes, not engineering. Measurability: `skill_listing` is
+already a named category; the three delta kinds fall into `attach: other` via
+`context-attrib.mjs:197-199`, so naming them is a **~3-line additive change** (a P4 item) —
+but any before/after **needs a new transcript** (n = 1 still stands).
+
+_Unresolved by the memo: whether the +28% gate FAIL is instrument or comparator (nobody has
+resolved this); the exact plugin share of `agent_listing_delta` (would require reading the
+transcript, which is barred); and n = 1 until D4b's second transcript exists._
+
 ## ⚠️ WHOLE-MISSION AUDIT — REQUEST CHANGES 2026-08-03 (Fable, independent)
 
 _Commissioned by the human, mission-wide, licensed to overturn prior verdicts. Verdict:
