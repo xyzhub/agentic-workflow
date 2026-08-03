@@ -39,7 +39,10 @@ two-site agreement check) and **S5b** (the `ckpt-p3` follow-ups, incl. the enfor
 `first → first due` fix). **`S5` is DONE (2026-08-03)** — standing-steers block, the
 §3-only append rule, and BOTH new lint checks (`checkStandingSteers`,
 `checkNextUpAgreement` — machinery defect (a) is now GUARDED).
-**Next up: `S5b`** on branch `mission/context-economy-p2`.
+**`S5b` is DONE (2026-08-03)** — the beat-enforcer now scans for the first *DUE* beat
+instead of giving up at the first candidate (the open [Med] from `ckpt-p3`), plus the §3
+wording tighten and the two test-coverage gaps.
+**Next up: `ckpt-p2`** on branch `mission/context-economy-p2`.
 **P1 and P4 remain HELD** and require a planner re-brief before they run.
 
 ## Checklist
@@ -63,7 +66,7 @@ checkpoint/reviewer/chronicler row — set `[~]` the moment a beat is picked up 
 - [ ] S4 — **HELD** — write firewall: extend the 30% rule to writes; no tool-list change anywhere, per D7 (branch `mission/context-economy-p1`). Premise retracted: Write/Edit is ≤15.9% char / **4.40–7.18% token** (S0.5-4 measured; supersedes the pre-repair "2.8–3.7%"), never 22.5%. See the P0.5 re-decision package §4.
 - [ ] Checkpoint `ckpt-p1` — **HELD** — phase 1 review + merge into integration
 - [x] S5 — **DONE 2026-08-03** (branch `mission/context-economy-p2`) — standing steers: `## Standing steers` in `templates/mission-state.md`, §3-only append rule in `mission.md` (+ §4 resume line), WORKFLOW §5 ledger row, and `checkStandingSteers()` in `lint.mjs` (OQ4: only ledgers that already carry the block). **+ machinery defect (a) folded in: `checkNextUpAgreement()`** — every `Next up:` site must name the same beat. Both mutation proofs run in both states.
-- [ ] S5b — **AUTHORIZED (D14)** — enforcer due-ness: `head -1` → first *due* candidate (the open [Med] from `ckpt-p3`), the §3 wording tighten, and the two low test-coverage gaps (multi-ledger `ls -t` for `compact-resume`; unreleased `HARD PAUSE` row). Same branch `mission/context-economy-p2`. **Split from S5 deliberately** — different file set (`hooks/lib/` + `hook-test.mjs` + WORKFLOW §3), and smaller sessions survive better.
+- [x] S5b — **DONE 2026-08-03** (branch `mission/context-economy-p2`) — enforcer due-ness: `head -1` → a scan for the first *DUE* candidate (the open [Med] from `ckpt-p3`); rule (iii) narrowed to step over marker-carrying rows and rule (ii)'s `[ ]`-carrying-HELD branch dropped, so a held row is skipped rather than walling off everything beneath it; §3 wording made per-beat-precise in both WORKFLOW mirrors + the plugin README; both test-coverage gaps closed. Harness **24 → 31 cases**; 7 mutations run in both states incl. the anti-inert control.
 - [ ] Checkpoint `ckpt-p2` — **AUTHORIZED (D14)** — phase 2 review (covers S5 **and** S5b) + merge into integration
 - [x] S6 — **DONE 2026-08-03** (branch `mission/context-economy-p3`) — `hooks/lib/compact-resume.sh` + a `SessionStart` block whose matcher is `compact` and nothing else; **+ the beat-enforcer due-ness fix** (machinery defect (b)), contained to `hooks/lib/beat-enforcer-stop.sh`. Atomic-ref doc updates in the same commit. Harness **16 → 24 cases**; both mutation proofs run. Completed after the first attempt died on a usage limit.
 - [x] Checkpoint `ckpt-p3` **[STRICT]** — **APPROVE** 2026-08-03, no corrective session needed. Scorecard: Security 3 · Efficiency 3 · UX 3 · QA 2 · Architecture 2 · DX 2. Reviewer hand-dispatched all three `SessionStart` matchers, re-ran both mutation proofs (preservation case green in BOTH states), and proved injection-resistance with shell metacharacters in ledger path + content (no artifacts, exit 0). Rule (iii) ruled IN BOUNDS. **Verdict surfaced to the human immediately** per batch gating. Merged into `mission/context-economy-integration`. **[Med] finding left OPEN for the human — see D13 follow-ups.**
@@ -173,17 +176,30 @@ not re-litigated by any later session._
   HELD indefinitely the backstop is now **dead for the rest of this mission** and for any
   consuming repo carrying a HELD row above an open checkpoint — a durable, *silent* failure.
   **Fix:** `head -1` → scan candidates for the first *due* one. Small, `hooks/lib/` only.
-- **[Low] §3 wording overclaims** — `docs/WORKFLOW.md:191` and `templates/WORKFLOW.md:199`
+  → **RESOLVED by `S5b` (2026-08-03).** The enforcer scans candidates top-down; rule (i)
+  now `continue`s to the next candidate instead of exiting. Hand-dispatched against THIS
+  ledger: it nudges `ckpt-p2`, no longer silent behind HELD `ckpt-p1`.
+- ~~**[Low] §3 wording overclaims** — `docs/WORKFLOW.md:191` and `templates/WORKFLOW.md:199`
   say the beat-enforcer is "suppressed when the beat isn't due", implying per-beat
-  evaluation. Tighten when the fix above lands.
-- **[Low] No harness case pins multi-ledger `ls -t` selection for `compact-resume`** (the
-  beat-enforcer has one; the reviewer verified compact-resume's by hand).
-- **[Low] `HARD PAUSE` on an unreleased row** is matched by both rules but exercised by no
-  case (only `⛔` and `HELD` are).
+  evaluation. Tighten when the fix above lands.~~ → **RESOLVED by `S5b`**: both mirrors (and
+  the plugin README) now say it scans open beats and nudges the **first due** one, and that
+  a held row is stepped over rather than treated as a wall.
+- ~~**[Low] No harness case pins multi-ledger `ls -t` selection for `compact-resume`** (the
+  beat-enforcer has one; the reviewer verified compact-resume's by hand).~~ → **RESOLVED by
+  `S5b`**: two cases (newest-with-an-open-beat wins; newest-complete falls through to the
+  older open one), killed by `ls -t`→`ls -tr` and by dropping the open-beat filter.
+- ~~**[Low] `HARD PAUSE` on an unreleased row** is matched by both rules but exercised by no
+  case (only `⛔` and `HELD` are).~~ → **RESOLVED by `S5b`**: cases for `HARD PAUSE` on an
+  unreleased `[~]` row AND on an unreleased `[ ]` row; each has its own killing mutation.
 - **Reviewer's correction to S6's deviation note:** the observed ~20-turn defect is
   suppressed by rule **(i) alone**; rule (iii) was not needed for it. Consequence: (iii)
   subsumes the `[ ]` half of (ii), leaving (ii) useful only for `[~]` blockers — i.e.
   rule (ii)'s `[ ]` branch is now dead code.
+  → **ADDRESSED by `S5b`, but the finding's premise moved.** Only the HELD half of (ii)'s
+  `[ ]` branch was dead, and it was removed. The ⛔/HARD PAUSE half is now **load-bearing**:
+  narrowing (iii) to step over marker-carrying rows (required for the scan to reach a later
+  candidate) means an unreleased `[ ] ⛔ HARD PAUSE` barrier is caught by (ii) ALONE.
+  Mutation-proven live — dropping (ii)'s `[ ]` branch fails a case. Nothing left dead.
 - ~~**Still unguarded:** machinery defect (a), the `Next up:` two-site agreement check~~ —
   **CLOSED by `S5` (2026-08-03)**: `checkNextUpAgreement()` in `tools/lint.mjs` now fails
   the gate when two `Next up:` sites name different beats.
@@ -201,6 +217,19 @@ _Human steers captured **verbatim** at checkpoints only, never mid-brief. Gramma
 _Any departure from a brief — logged here the moment it happens, with why. Deviating is
 allowed; deviating silently is not (§4)._
 
+- 2026-08-03 (S5b) — **one suppression rule was narrowed, not merely re-scanned.** The brief said
+  "you are not loosening the rules, only stopping the scan at the first candidate". That is not
+  sufficient: rules (ii)/(iii) look UPWARD, so they grow monotonically with the candidate index —
+  a skipped HELD candidate is itself a `[ ]` row above the next one, and re-blocks it. Scanning
+  further would have been a no-op. Minimum change that makes "first DUE" reachable: **a row
+  carrying HELD/⛔/HARD PAUSE is parked, not unfinished**, so rule (iii) steps over it, and rule
+  (ii) no longer treats `[ ]`-carrying-HELD as a barrier. `[~]`-carrying-HELD and every unreleased
+  ⛔/HARD PAUSE barrier still block, at every candidate beneath them — both halves case-pinned.
+- 2026-08-03 (S5b) — **`beat-enforcer-pretooluse.sh` was left alone** (still a bare `head -1`, no
+  due-ness at all). Out of the brief's [Med], which named the Stop backstop only, and expanding a
+  second hook risked the session. Consequence: the §3 row covers BOTH enforcers, so its due-ness
+  sentence is accurate for the Stop backstop and aspirational for the PreToolUse one. **For
+  `ckpt-p2` to rule on** — port the due-ness scan, or split the doc row.
 - 2026-08-03 (S5) — **scope addition beyond the brief, at the orchestrator's direction (D14):**
   machinery defect (a), the `Next up:` two-site agreement check, was folded in as
   `checkNextUpAgreement()` in `tools/lint.mjs`. It stayed a **contained** addition (one function,
@@ -444,6 +473,20 @@ allowed; deviating silently is not (§4)._
 
 _≤10 lines per entry: what this session did, the verify signal, the branch, and what the
 next session needs. Newest on top; crash-safe by write-ahead._
+
+- _2026-08-03 (`S5b`, `devops`, branch `mission/context-economy-p2`): the beat-enforcer backstop's
+  `head -1` became a **scan for the first DUE candidate** — rule (i) now steps to the next candidate
+  instead of exiting, and a HELD-marked row counts as parked (rule iii steps over it; rule ii drops
+  its `[ ]`+HELD branch). ⛔/HARD PAUSE barriers still silence every candidate beneath them.
+  §3 wording made per-beat-precise in `docs/WORKFLOW.md` + `templates/WORKFLOW.md` + plugin README.
+  **Live hand-dispatch on THIS ledger: nudges `ckpt-p2`** — the backstop was dead before (silent
+  behind HELD `ckpt-p1`). Verified: hook-test **24 → 31 cases** green · lint green ·
+  `context-attrib --selftest` 44 exit 0. **7 mutations, both states:** `head -1` revert → the
+  first-due case alone fails; rule (ii) minus its `[ ]` branch / minus `[~]`+HELD / minus
+  HARD PAUSE → one distinct case each; rule (ii) deleted → 5; `ls -t`→`ls -tr` and open-beat filter
+  dropped → the two new compact-resume cases. **Anti-inert control: every mutation re-run against
+  HEAD's 24-case harness passed there** (only the pre-existing ⛔ cases fired) → the new cases are
+  load-bearing. Next: `ckpt-p2` (reviews `S5` + `S5b`); see the two S5b deviations._
 
 - _2026-08-03 (`S5`, `backend`, branch `mission/context-economy-p2`): `## Standing steers` added to
   `templates/mission-state.md` (verbatim-only, grammar `- YYYY-MM-DD (ckpt <id>) — "<exact words>"`,
@@ -1017,11 +1060,11 @@ attachment-schema check is pulled in or deferred.
   Baseline transcript identified and field-verified by grep (never read). Uncommitted,
   awaiting HITL review of OQ1–OQ5._
 
-Next up: **`S5b`** — enforcer `head -1` → first *due* candidate, the §3 wording tighten, and
-the two low test-coverage gaps (multi-ledger `ls -t` for `compact-resume`; unreleased
-`HARD PAUSE` row) — on the SAME branch `mission/context-economy-p2`. Scope: `hooks/lib/`,
-`tools/hook-test.mjs`, WORKFLOW §3, plugin README. **Suits `devops`.** Then **`ckpt-p2`**,
-which reviews `S5` **and** `S5b` together.
+Next up: **`ckpt-p2`** — phase 2 review, covering `S5` **and** `S5b` together, on branch
+`mission/context-economy-p2`. Both sessions are DONE. Merge into
+`mission/context-economy-integration` on APPROVE (batch policy — never the default branch).
+**Re-derive:** the enforcer's three due-ness rules against the 31-case harness, and whether
+narrowing rule (iii) to step over marker-carrying rows is the right semantic.
 
 Phases 0, 0.5 and 3 are COMPLETE, APPROVED and MERGED into
 `mission/context-economy-integration` (`273f1d3`, `f5fabc6`, `8a3b4c7`).

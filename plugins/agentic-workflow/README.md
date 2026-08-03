@@ -197,8 +197,9 @@ protocol without it being read: the **router** nudges an un-prefixed work reques
 to route through the workflow (hand to `intake`); the **thread-keeper** surfaces
 the active ledger's phase + `Next up:` + first open beat each turn; the
 **beat-enforcer** nudges a not-started ledger beat (`chronicler` at
-close, `reviewer` at a checkpoint) at the moment you try to close or advance, and
-stays quiet when that beat isn't due yet; and **compact-resume** fires after a
+close, `reviewer` at a checkpoint) at the moment you try to close or advance —
+stepping over beats that aren't due (held, or behind unfinished work or an
+unreleased blocker) to reach the first one that is; and **compact-resume** fires after a
 context compaction, telling the session to re-read the active ledger verbatim
 rather than resume from the summary.
 
