@@ -55,8 +55,14 @@ named constant pinned in both directions. Selftest **44 → 54**, no reported ve
 headline and every A4/A5 hand figure in the audit REPRODUCED exactly, `attach: other` shrank
 by exactly the newly-named sum, and D4a is recorded as an **observation, not a gate**. All
 figures are in **`## 📊 S7b MEASUREMENT BLOCK`** below — that block is S7c's source.
-**Next up: S7c** — write `docs/product/engineering/context-economy-metrics.md` from the
-measurement block (doc-only, no instrument run) on the same branch `mission/context-economy-p4`.
+**`S7c` is DONE (2026-08-03)** — `docs/product/engineering/context-economy-metrics.md`
+written from the S7b measurement block (doc-only, no instrument run, no transcript touched).
+Carries the headline correction, A1–A10, the A4 re-bucketing proof, D4a as an observation,
+D8's Option A with the `grep -l` artefact disclosed, all §6 caveats, and the tracked open
+items table copied verbatim.
+**Next up: S8a** — the P1 residue (c) discipline lines as contract text in WORKFLOW §6.2
+(both mirrors) + the OQ3 PR-body contract line, no savings claim, no new gate, on branch
+`mission/context-economy-p4`.
 
 ## Checklist
 
@@ -87,7 +93,7 @@ checkpoint/reviewer/chronicler row — set `[~]` the moment a beat is picked up 
 - [x] Checkpoint `ckpt-p2` re-review — **APPROVE** 2026-08-03; merged into integration. Three items left open **by choice** for the human: the PreToolUse due-ness port (own session; the new harness case pins the doc-row coupling for when it lands), **F4** (loose ckpt-id fallback — `(ckpt s5)` / `(ckpt 2)` still pass), and **[Low] `plugins/agentic-workflow/README.md:199-202`** still describes one merged enforcer with stepping-over "at the moment you try to close or advance" — true of Stop only; becomes true when the port lands, or a one-line tweak before.
 - [x] S7a — **DONE 2026-08-03** (branch `mission/context-economy-p4`) — instrument only, no measurement run: **P1 residue (a)** name the four A4 delta kinds so they stop collapsing into `attach: other` (`context-attrib.mjs:197-199`, ~3 additive lines); **P1 residue (b)** print the per-attachment-kind table (`attachKinds` is collected at `:200`, returned at `:445`, **never printed**) plus a named `mission machinery footprint` line; **A3** pin the D7 3% trigger as a named constant beside `GATE_PCT` with cases in both directions. Selftest **≥ 44 cases**, mutation-proven. **Suits:** `backend`.
 - [x] S7b — **DONE 2026-08-03** (branch `mission/context-economy-p4`) — measurement only, **no source change** (`git diff --stat` touches this ledger alone). Ran S7a's instrument on the untouched baseline (`2fa752c7…`, 4,612 lines / 12,211,203 B) and on this mission's own transcript (`b167727e…`, 1,501 lines / 3,283,782 B, identified by `grep -c "context-economy"` = 1,138 vs 159; **greps only, no `*.jsonl` was Read**). **Baseline reproduces the audit byte-for-byte** and **every A4/A5 hand figure lands exactly**; `attach: other` 343,579 → 179,803, a shrink of **163,776 = exactly** the four newly-named kinds. **A5 footprint 143,689 = 5.4% (baseline) / 87,070 = 9.3% (this mission)** — all three components were attachment kinds in **both**, so the `EXCLUDED` provenance branch never fired. **D4a recorded as an OBSERVATION, not a gate** (9.16% → 8.61% char share, −6.0% relative). **`isCompactSummary` true-records = 1 ⇒ D8 stays Option A.** Gate NOT evaluated (no fresh `/context` TOTAL). Full figures: **`## 📊 S7b MEASUREMENT BLOCK`**. **Suits:** `backend`.
-- [ ] S7c — **AUTHORIZED (D15), re-briefed 2026-08-03** — write `docs/product/engineering/context-economy-metrics.md` (new directory), doc-only, numbers handed over from S7b. Must state **A1–A10 and the A4 correction honestly**, headline **~4.4–7.2% addressed / ~1.8–4.3% captured** vs a founding **~25% / 10–15%**, and **n = 1 throughout**. **Suits:** `analyst`.
+- [x] S7c — **DONE 2026-08-03** (branch `mission/context-economy-p4`) — `docs/product/engineering/context-economy-metrics.md` written, doc-only, no instrument run, no transcript touched. States **A1–A10 and the A4 correction honestly**, headline **~4.4–7.2% addressed / ~1.8–4.3% captured** vs a founding **~25% / 10–15%**, **n = 1 throughout**, D4a as an observation never a gate, D8 stays Option A with the `grep -l` = 11 artefact disclosed alongside the honest 1-record count, the A4 re-bucketing arithmetic (343,579 → 179,803, shrink = 163,776 exactly), and the tracked open items table copied verbatim. **Suits:** `analyst`.
 - [ ] S8a — **AUTHORIZED (D15), re-briefed 2026-08-03** — **P1 residue (c)**: the discipline lines as contract text in **WORKFLOW §6.2, both mirrors** (`docs/WORKFLOW.md:468-495`, `templates/WORKFLOW.md:476-503`) + the **OQ3** one-line PR-body addition to the documentation-of-record agent's contract (its agent file; no tool-list change — the brief names the exact ranges). **No savings claim, no new gate.** **Suits:** `writer`. _(Wording avoids the bare beat keyword so the enforcer does not read this writer session as a documentation beat — same reason as `037b36b`.)_
 - [ ] S8b — **AUTHORIZED (D15), re-briefed 2026-08-03** — `chronicler` pass covering **P2, P3 and P4** (the P2 and P3 passes were skipped to conserve budget and are **OWED**): CHANGELOG + JOURNEY + status page, then the orchestrator republishes via the Artifact tool. **Minor version bump** (new tool + new hook + protocol change). Status-page lifecycle/pillars staleness (stale since 2026-07-08): stamp fixed, rewrite **deferred** — the ledger must say which was done. **Suits:** main session + `chronicler`.
 - [ ] S8c — **AUTHORIZED (D15), re-briefed 2026-08-03** — merge P4 into integration, `chronicler` authors the PR body to `.plans/context-economy.artifacts/p4-pr-body.md`, `gh pr create --body-file` against `main`. **The human merges once. No agent pushes to `main`.** **Suits:** main session + `chronicler`.
@@ -895,6 +901,22 @@ machinery is a larger consumer than anything P1–P4 can save, and it grew durin
 _≤10 lines per entry: what this session did, the verify signal, the branch, and what the
 next session needs. Newest on top; crash-safe by write-ahead._
 
+- _2026-08-03 (`S7c`, `analyst`, branch `mission/context-economy-p4`): **doc-only** — wrote
+  `docs/product/engineering/context-economy-metrics.md` from `## 📊 S7b MEASUREMENT BLOCK`
+  alone; no instrument run, no `*.jsonl` touched. Opening note distinguishes it from
+  `templates/engineering-tracking-plan.md`. Carries: the method (churn vs occupancy, chars
+  primary/tokens banded, the envelope estimator, the transcript rule); the headline
+  **~4.4–7.2% addressed / ~1.8–4.3% captured** vs founding **~25%/10–15%**; **A1–A10** each
+  stated per the brief (A1's ~28% share deflation now load-bearing, A2's manufactured
+  straddle, A3 fixed in S7a, **A4 as corrected** with the re-bucketing arithmetic
+  343,579→179,803=163,776 exactly, A5's footprint 5.4%→9.3% growth, A6, A7's `thinking: ""`
+  corroboration, A9's asymmetric-band trap, A8/A10 as recorded); **D4a as an observation**
+  (never a gate, OQ5 full caveat); **D8 stays Option A** with the `grep -l`=11 artefact
+  disclosed next to the honest 1-record count; the **Tracked open items** table copied
+  verbatim; **D4b** recorded `[~]`, deferred. Verify: `node tools/lint.mjs` clean;
+  `git diff --stat` touches only the new doc + this ledger. **No number invented** — every
+  figure traces to the S7b block or the whole-mission-audit/Fable-memo blocks it cites.
+  **Next: S8a** (discipline lines, WORKFLOW §6.2 both mirrors + OQ3)._
 - _2026-08-03 (`S7b`, `backend`, branch `mission/context-economy-p4`): the measurement. **No
   source change** — `git diff --stat` touches this ledger only. **No `*.jsonl` was Read**;
   `wc`/`grep -c`/`grep -l` and the streaming instrument only. Corpora: baseline `2fa752c7…`
@@ -1528,13 +1550,14 @@ attachment-schema check is pulled in or deferred.
   Baseline transcript identified and field-verified by grep (never read). Uncommitted,
   awaiting HITL review of OQ1–OQ5._
 
-Next up: **S7c** — write `docs/product/engineering/context-economy-metrics.md` (new directory)
-from `## 📊 S7b MEASUREMENT BLOCK`, on the SAME branch `mission/context-economy-p4`. Doc-only:
-**do not run the instrument and do not touch a transcript** — every number already exists in
-that block. The doc must carry **A1–A10 and the A4 correction honestly**, present **D4a as an
-observation and never as a gate**, keep **D4b `[~]`**, and reproduce **every caveat in the
-block's §6** (n = 1, the +28% gate FAIL, A1's ~28% token-share deflation). A doc that reads as
-a success story has failed. Brief: `.plans/context-economy.sessions.md` `## Phase 4` → `### S7c`.
+Next up: **S8a** — the P1 residue (c): the discipline lines as contract text in WORKFLOW
+§6.2, both mirrors (`docs/WORKFLOW.md:468-495`, `templates/WORKFLOW.md:476-503`), plus the
+OQ3 one-line PR-body addition to the documentation-of-record agent's contract. **No savings
+claim, no new gate** — the metrics doc (`docs/product/engineering/context-economy-metrics.md`,
+shipped by `S7c`) already states the retracted 22.5% premise and the measured 4.4–7.2%
+share; this session must not reintroduce a number into contract text. Same branch
+`mission/context-economy-p4`. Brief: `.plans/context-economy.sessions.md` `## Phase 4` →
+`### S8a`.
 
 Phases 0, 0.5, 2 and 3 are COMPLETE, APPROVED and MERGED (`273f1d3`, `f5fabc6`, `e5b6326`,
 `8a3b4c7`). **Phase 4 is the last phase — nothing follows it.**
