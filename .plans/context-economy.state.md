@@ -60,9 +60,12 @@ written from the S7b measurement block (doc-only, no instrument run, no transcri
 Carries the headline correction, A1–A10, the A4 re-bucketing proof, D4a as an observation,
 D8's Option A with the `grep -l` artefact disclosed, all §6 caveats, and the tracked open
 items table copied verbatim.
-**Next up: S8a** — the P1 residue (c) discipline lines as contract text in WORKFLOW §6.2
-(both mirrors) + the OQ3 PR-body contract line, no savings claim, no new gate, on branch
-`mission/context-economy-p4`.
+**`S8a` is DONE (2026-08-03)** — the P1 residue (c) discipline lines shipped as contract
+text (**Bounded writes** in §6.2 of both WORKFLOW mirrors) plus the OQ3 PR-body line in the
+documentation-of-record agent's contract. No savings claim, no number, no new gate.
+**Next up: S8b** — the owed `chronicler` pass covering P2, P3 and P4 (CHANGELOG + JOURNEY +
+status page, then the orchestrator republishes via the Artifact tool) and the **minor**
+version bump, on branch `mission/context-economy-p4`.
 
 ## Checklist
 
@@ -94,7 +97,7 @@ checkpoint/reviewer/chronicler row — set `[~]` the moment a beat is picked up 
 - [x] S7a — **DONE 2026-08-03** (branch `mission/context-economy-p4`) — instrument only, no measurement run: **P1 residue (a)** name the four A4 delta kinds so they stop collapsing into `attach: other` (`context-attrib.mjs:197-199`, ~3 additive lines); **P1 residue (b)** print the per-attachment-kind table (`attachKinds` is collected at `:200`, returned at `:445`, **never printed**) plus a named `mission machinery footprint` line; **A3** pin the D7 3% trigger as a named constant beside `GATE_PCT` with cases in both directions. Selftest **≥ 44 cases**, mutation-proven. **Suits:** `backend`.
 - [x] S7b — **DONE 2026-08-03** (branch `mission/context-economy-p4`) — measurement only, **no source change** (`git diff --stat` touches this ledger alone). Ran S7a's instrument on the untouched baseline (`2fa752c7…`, 4,612 lines / 12,211,203 B) and on this mission's own transcript (`b167727e…`, 1,501 lines / 3,283,782 B, identified by `grep -c "context-economy"` = 1,138 vs 159; **greps only, no `*.jsonl` was Read**). **Baseline reproduces the audit byte-for-byte** and **every A4/A5 hand figure lands exactly**; `attach: other` 343,579 → 179,803, a shrink of **163,776 = exactly** the four newly-named kinds. **A5 footprint 143,689 = 5.4% (baseline) / 87,070 = 9.3% (this mission)** — all three components were attachment kinds in **both**, so the `EXCLUDED` provenance branch never fired. **D4a recorded as an OBSERVATION, not a gate** (9.16% → 8.61% char share, −6.0% relative). **`isCompactSummary` true-records = 1 ⇒ D8 stays Option A.** Gate NOT evaluated (no fresh `/context` TOTAL). Full figures: **`## 📊 S7b MEASUREMENT BLOCK`**. **Suits:** `backend`.
 - [x] S7c — **DONE 2026-08-03** (branch `mission/context-economy-p4`) — `docs/product/engineering/context-economy-metrics.md` written, doc-only, no instrument run, no transcript touched. States **A1–A10 and the A4 correction honestly**, headline **~4.4–7.2% addressed / ~1.8–4.3% captured** vs a founding **~25% / 10–15%**, **n = 1 throughout**, D4a as an observation never a gate, D8 stays Option A with the `grep -l` = 11 artefact disclosed alongside the honest 1-record count, the A4 re-bucketing arithmetic (343,579 → 179,803, shrink = 163,776 exactly), and the tracked open items table copied verbatim. **Suits:** `analyst`.
-- [ ] S8a — **AUTHORIZED (D15), re-briefed 2026-08-03** — **P1 residue (c)**: the discipline lines as contract text in **WORKFLOW §6.2, both mirrors** (`docs/WORKFLOW.md:468-495`, `templates/WORKFLOW.md:476-503`) + the **OQ3** one-line PR-body addition to the documentation-of-record agent's contract (its agent file; no tool-list change — the brief names the exact ranges). **No savings claim, no new gate.** **Suits:** `writer`. _(Wording avoids the bare beat keyword so the enforcer does not read this writer session as a documentation beat — same reason as `037b36b`.)_
+- [x] S8a — **DONE 2026-08-03** (branch `mission/context-economy-p4`) — the **Bounded writes** paragraph landed in §6.2 of both WORKFLOW mirrors (identical text, one commit) and the PR-body line landed in `plugins/agentic-workflow/agents/chronicler.md` (before `## Invocation contract`, naming `gh pr create --body-file`; **no `tools:` line touched**). No number, no `%`, no savings language, no gate. Originally — **P1 residue (c)**: the discipline lines as contract text in **WORKFLOW §6.2, both mirrors** (`docs/WORKFLOW.md:468-495`, `templates/WORKFLOW.md:476-503`) + the **OQ3** one-line PR-body addition to the documentation-of-record agent's contract (its agent file; no tool-list change — the brief names the exact ranges). **No savings claim, no new gate.** **Suits:** `writer`. _(Wording avoids the bare beat keyword so the enforcer does not read this writer session as a documentation beat — same reason as `037b36b`.)_
 - [ ] S8b — **AUTHORIZED (D15), re-briefed 2026-08-03** — `chronicler` pass covering **P2, P3 and P4** (the P2 and P3 passes were skipped to conserve budget and are **OWED**): CHANGELOG + JOURNEY + status page, then the orchestrator republishes via the Artifact tool. **Minor version bump** (new tool + new hook + protocol change). Status-page lifecycle/pillars staleness (stale since 2026-07-08): stamp fixed, rewrite **deferred** — the ledger must say which was done. **Suits:** main session + `chronicler`.
 - [ ] S8c — **AUTHORIZED (D15), re-briefed 2026-08-03** — merge P4 into integration, `chronicler` authors the PR body to `.plans/context-economy.artifacts/p4-pr-body.md`, `gh pr create --body-file` against `main`. **The human merges once. No agent pushes to `main`.** **Suits:** main session + `chronicler`.
 - [ ] Checkpoint `ckpt-p4` — **AUTHORIZED (D15)** — final review of the whole `main..mission/context-economy-integration` diff: all gates green with the selftest count stated and **≥ 44**; **the metrics doc honest about what was and was not moved** (a doc that reads as a success story has failed this checkpoint); D4a nowhere presented as a gate; **D4b still `[~]`**; D7's untouched-tool-list invariant intact across the whole mission; the discipline lines carrying no savings claim; the A4 naming additive only; the tracked open items survived into both the ledger and the metrics doc. Then the **human merges once**. **Nothing follows P4.**
@@ -901,6 +904,26 @@ machinery is a larger consumer than anything P1–P4 can save, and it grew durin
 _≤10 lines per entry: what this session did, the verify signal, the branch, and what the
 next session needs. Newest on top; crash-safe by write-ahead._
 
+- _2026-08-03 (`S8a`, `backend`, branch `mission/context-economy-p4`): **contract text only**
+  — P1's residue (c). New **Bounded writes** paragraph in §6.2 of both WORKFLOW mirrors
+  (`docs/WORKFLOW.md` + `plugins/agentic-workflow/templates/WORKFLOW.md`, byte-identical
+  §6.2 blocks, one commit per the atomic-ref invariant): the orchestrator authors only the
+  ledger plus edits of ~15 lines or fewer; longer documents are authored by a subagent and
+  returned as a **path**. Reason stated as fidelity + division of labour — **no number, no
+  `%`, no savings language** (grep of the added lines for `%|sav|token|cost|reduc`: zero
+  hits), and **no gate was invented** (the "unenforced discipline rots" risk is already a
+  tracked open item). **OQ3 closed**: a PR-body line in `agents/chronicler.md` before
+  `## Invocation contract`, naming `gh pr create --body-file <path>`. **D7 holds** — no
+  `tools:` line added, removed or changed by this mission (`git diff
+  mission/context-economy-integration..HEAD -- agents/`: no `tools:` hits; vs `main` the only
+  `+tools:` lines are the whole-file additions `compass.md`, `curator.md`, `intake.md`, which
+  predate this mission and carry no `-tools:` counterpart). **Deviation: routed to `backend`,
+  not the briefed `writer`** — this session's own gate is `node tools/lint.mjs` and `writer`
+  has no Bash, so it could not prove its gate; same call as `S1`. Verify: `lint.mjs` clean ·
+  `hook-test.mjs` clean at **33** · `context-attrib.mjs --selftest` clean at **54** ·
+  `git diff --stat` limited to the two mirrors, `chronicler.md` and this ledger.
+  `docs/WORKFLOW.md:3` untouched — the version stamp is S8b's.
+  **Next: S8b** (owed P2+P3+P4 documentation pass + minor version bump)._
 - _2026-08-03 (`S7c`, `analyst`, branch `mission/context-economy-p4`): **doc-only** — wrote
   `docs/product/engineering/context-economy-metrics.md` from `## 📊 S7b MEASUREMENT BLOCK`
   alone; no instrument run, no `*.jsonl` touched. Opening note distinguishes it from
@@ -1550,14 +1573,16 @@ attachment-schema check is pulled in or deferred.
   Baseline transcript identified and field-verified by grep (never read). Uncommitted,
   awaiting HITL review of OQ1–OQ5._
 
-Next up: **S8a** — the P1 residue (c): the discipline lines as contract text in WORKFLOW
-§6.2, both mirrors (`docs/WORKFLOW.md:468-495`, `templates/WORKFLOW.md:476-503`), plus the
-OQ3 one-line PR-body addition to the documentation-of-record agent's contract. **No savings
-claim, no new gate** — the metrics doc (`docs/product/engineering/context-economy-metrics.md`,
-shipped by `S7c`) already states the retracted 22.5% premise and the measured 4.4–7.2%
-share; this session must not reintroduce a number into contract text. Same branch
-`mission/context-economy-p4`. Brief: `.plans/context-economy.sessions.md` `## Phase 4` →
-`### S8a`.
+Next up: **S8b** — the owed documentation pass covering **P2, P3 and P4** together (the P2
+and P3 passes were skipped to conserve budget): CHANGELOG + `docs/product/JOURNEY.md` +
+`docs/product/overview.html`, authored by the documentation-of-record agent and then
+republished by the orchestrator via the Artifact tool (subagents cannot publish). Plus the
+**minor** version bump in `plugins/agentic-workflow/.claude-plugin/plugin.json` and wherever
+the marketplace manifest mirrors it — `S8a` deliberately left `docs/WORKFLOW.md:3` alone, so
+the stamp is S8b's. The CHANGELOG entry must claim **no savings figure**; the status-page
+lifecycle/pillars rewrite is deferred (stamp + mission rows only) and the ledger must say
+so. Same branch `mission/context-economy-p4`. Brief: `.plans/context-economy.sessions.md`
+`## Phase 4` → `### S8b`.
 
 Phases 0, 0.5, 2 and 3 are COMPLETE, APPROVED and MERGED (`273f1d3`, `f5fabc6`, `e5b6326`,
 `8a3b4c7`). **Phase 4 is the last phase — nothing follows it.**
