@@ -474,21 +474,42 @@ function checkNextUpAgreement() {
   };
 
   for (const file of stateLedgers()) {
+    const lines = read(file).split('\n');
     const sites = [];
-    read(file).split('\n').forEach((line, i) => {
+    lines.forEach((line, i) => {
       // Split on backticks: even segments are outside inline code, so prose
       // *about* `Next up:` (always backticked in house style) is not a site.
       let offset = 0;
       line.split('`').forEach((seg, s) => {
         const at = s % 2 === 0 ? seg.indexOf('Next up:') : -1;
-        if (at !== -1) sites.push({ n: i + 1, rest: line.slice(offset + at + 'Next up:'.length) });
+        if (at !== -1) {
+          // Continuation: the rest of the paragraph (up to 2 more lines, stopping
+          // at a blank line) — a wrapped `Next up:` states its beat on line 2.
+          const cont = [];
+          for (let j = i + 1; j < lines.length && cont.length < 2; j++) {
+            if (!lines[j].trim()) break;
+            cont.push(lines[j]);
+          }
+          sites.push({ n: i + 1, rest: line.slice(offset + at + 'Next up:'.length), cont });
+        }
         offset += seg.length + 1;
       });
     });
     if (sites.length < 2) continue; // one site (or none) cannot disagree
-    const keyed = sites.map((s) => ({ ...s, key: beatKey(s.rest) })).filter((s) => s.key);
-    if (keyed.length < 2) continue;
-    const [first, ...rest] = keyed;
+    // FAIL CLOSED (ckpt-p2 F3): this used to `.filter((s) => s.key)` and skip the
+    // file when fewer than 2 sites keyed — so a `Next up:` whose beat wrapped to
+    // the next line keyed to '', was dropped, and a REAL disagreement went
+    // unreported. A wrapped site is now keyed from its continuation lines, and a
+    // site that still yields no beat is a finding, not a silent pass.
+    const keyed = sites.map((s) => {
+      let key = beatKey(s.rest);
+      for (let k = 0; !key && k < s.cont.length; k++) key = beatKey(s.cont[k]);
+      return { ...s, key };
+    });
+    for (const site of keyed.filter((s) => !s.key))
+      fail(file, site.n, '`Next up:` names no session/checkpoint beat (nothing keyable on this line or the rest of its paragraph) — an unkeyable site cannot be checked for agreement, so it is a finding, not a pass');
+    const [first, ...rest] = keyed.filter((s) => s.key);
+    if (!first) continue;
     for (const site of rest) {
       if (site.key !== first.key)
         fail(file, site.n, `\`Next up:\` disagrees with the site at line ${first.n}: "${site.key}" vs "${first.key}" — every \`Next up:\` site must name the same next beat, or a resuming session re-runs committed work`);

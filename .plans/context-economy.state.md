@@ -42,8 +42,9 @@ two-site agreement check) and **S5b** (the `ckpt-p3` follow-ups, incl. the enfor
 **`S5b` is DONE (2026-08-03)** — the beat-enforcer now scans for the first *DUE* beat
 instead of giving up at the first candidate (the open [Med] from `ckpt-p3`), plus the §3
 wording tighten and the two test-coverage gaps.
-**Next up: `S2-fix`** on branch `mission/context-economy-p2` — the `ckpt-p2` corrective
-(F1 + F2 + F5, F3 folded last and severable). **D15 accepted the Fable recommendation in
+**`S2-fix` is DONE (2026-08-03)** — F1 + F2 + F5 + F3 all landed; nothing severed.
+**Next up: the `ckpt-p2` re-review** on branch `mission/context-economy-p2`, then merge into
+integration. **D15 accepted the Fable recommendation in
 full: P1 is DROPPED, P4 is authorized and needs a planner re-brief, the mission wraps at P4.**
 **P1 and P4 remain HELD** and require a planner re-brief before they run.
 
@@ -72,7 +73,7 @@ checkpoint/reviewer/chronicler row — set `[~]` the moment a beat is picked up 
 - [~] Checkpoint `ckpt-p2` — **REQUEST CHANGES** 2026-08-03 (Fable reviewer). Scorecard: Security 3 · Efficiency 3 · Architecture 2 · QA 2 · **DX 1** · UX n/a. Engineering sound; **two always-on doc rows describe behavior the hooks don't have**. Corrective session NOT run — human paused the mission here. Findings below.
 - [x] S6 — **DONE 2026-08-03** (branch `mission/context-economy-p3`) — `hooks/lib/compact-resume.sh` + a `SessionStart` block whose matcher is `compact` and nothing else; **+ the beat-enforcer due-ness fix** (machinery defect (b)), contained to `hooks/lib/beat-enforcer-stop.sh`. Atomic-ref doc updates in the same commit. Harness **16 → 24 cases**; both mutation proofs run. Completed after the first attempt died on a usage limit.
 - [x] Checkpoint `ckpt-p3` **[STRICT]** — **APPROVE** 2026-08-03, no corrective session needed. Scorecard: Security 3 · Efficiency 3 · UX 3 · QA 2 · Architecture 2 · DX 2. Reviewer hand-dispatched all three `SessionStart` matchers, re-ran both mutation proofs (preservation case green in BOTH states), and proved injection-resistance with shell metacharacters in ledger path + content (no artifacts, exit 0). Rule (iii) ruled IN BOUNDS. **Verdict surfaced to the human immediately** per batch gating. Merged into `mission/context-economy-integration`. **[Med] finding left OPEN for the human — see D13 follow-ups.**
-- [ ] **S2-fix — AUTHORIZED (D15)** — the `ckpt-p2` corrective: **F1** (both WORKFLOW mirrors' §3 row drops HELD from the silence list while rule (ii) still treats `- [~] … HELD` as a barrier) + **F2** (split the doc row shared with `beat-enforcer-pretooluse.sh`) + **F5** (pin the non-candidate `- [ ] … HELD` row) + **F3 folded in, LAST and SEVERABLE** (`lint.mjs:489-490` fails open on a wrapped `Next up:` beat). Branch `mission/context-economy-p2`.
+- [x] **S2-fix — DONE 2026-08-03** (branch `mission/context-economy-p2`) — the `ckpt-p2` corrective, all four findings: **F1** both WORKFLOW mirrors' §3 silence list now names the unreleased `[~]` HELD barrier (and states that a `[ ]` HELD row is parked, not a wall) · **F2** the shared row is SPLIT — a `Stop` backstop row with the due-ness scan and a closing-action row that states the PreToolUse enforcer's *missing* due-ness outright; the hook's behavior is untouched, the scan port remains its own session · **F5** the non-candidate `- [ ] … HELD` row and the PreToolUse divergence are both pinned in the harness · **F3 landed, not severed** — `checkNextUpAgreement()` keys a wrapped `Next up:` from its continuation lines and fails closed on an unkeyable site. Harness **31 → 33 cases**; 3 mutations in both states with anti-inert controls.
 - [ ] Checkpoint `ckpt-p2` re-review — then merge into integration
 - [ ] S7 — **AUTHORIZED (D15)** — re-measure (D4a as an *observation*, not a gate), `isCompactSummary` count, `docs/product/engineering/context-economy-metrics.md` (branch `mission/context-economy-p4`). **+ P1 residue**: the ~3-line instrument extension naming the A4 delta kinds, and the **A5 hook-footprint measurement** (the mission's own hooks are 5.4% and were never measured). **Requires a planner re-brief** — the existing brief was written against the retracted premise.
 - [ ] S8 — **AUTHORIZED (D15)** — chronicler + CHANGELOG + version bump + integration PR (branch `mission/context-economy-p4`). **+ P1 residue**: the discipline lines, shipped as contract text with **no savings claim**. The metrics doc must record A1–A10 and the A4 correction.
@@ -316,21 +317,22 @@ weakened**. **`beat-enforcer-pretooluse.sh`: split the doc row NOW, port the sca
 its own session (a second always-on hook with only 4 harness cases — not this phase's fix).
 
 **Corrective scope, one retry (F1 + F2 required, F5 welcome):**
-- **F1 [Med]** `docs/WORKFLOW.md:190` + `templates/WORKFLOW.md:198` — the reworded row lists
+**✅ ALL RESOLVED in `S2-fix` (2026-08-03) — F1, F2, F5 and F3; nothing severed.**
+- **✅ RESOLVED (S2-fix) — F1 [Med]** `docs/WORKFLOW.md:190` + `templates/WORKFLOW.md:198` — the reworded row lists
   silence as "unfinished work, or an unreleased ⛔/HARD PAUSE barrier" and **drops HELD**, but
   rule (ii) still treats `- [~] … HELD` as a barrier. Ledger `- [~] S1 — **HELD**` above
   `- [ ] Checkpoint` → hook **SILENT** while the row predicts a nudge. The old generic
   "unreleased blocker" was true; the new precise wording is precisely wrong. README:197 is fine.
-- **F2 [Med, LIVE]** the **PreToolUse** enforcer contradicts the row it shares. Hand-dispatched
+- **✅ RESOLVED (S2-fix) — doc row SPLIT; hook behavior deliberately unchanged, the scan port is still its own session — F2 [Med, LIVE]** the **PreToolUse** enforcer contradicts the row it shares. Hand-dispatched
   unmodified in this repo, `git commit` emits ``⏳ Beat pending … ckpt-p1 — **HELD**`` —
   **it nudges toward HELD, unauthorized P1 work.** 5 of 8 test ledgers diverge from the Stop
   backstop. Pre-existing, but S5b sharpened the shared row to "scans top-down, nudges the
   first due" without scoping it to Stop. **This is the nudge seen on ~30 turns this session.**
-- **F5 [Low/QA]** no harness case pins the non-candidate `- [ ] … HELD` row — the exact class
+- **✅ RESOLVED (S2-fix) — F5 [Low/QA]** no harness case pins the non-candidate `- [ ] … HELD` row — the exact class
   whose semantics changed, and the one the real ledger relies on.
 
 **Deferred to the human, not the implementer:**
-- **F3 [Low] `tools/lint.mjs:489-490` FAILS OPEN** — a `Next up:` whose beat wraps to the next
+- **✅ RESOLVED (S2-fix, folded in last per D15) — F3 [Low] `tools/lint.mjs:489-490` FAILS OPEN** — a `Next up:` whose beat wraps to the next
   line keys to `''`, is filtered, and with <2 keyed sites **the file is skipped silently**.
   Reproduced: trailer beat moved to line 2 and changed to `S8`, header still `ckpt-p2` → lint
   clean. The drift check has a hole in exactly the shape of the drift it exists to catch.
@@ -414,6 +416,16 @@ _Human steers captured **verbatim** at checkpoints only, never mid-brief. Gramma
 _Any departure from a brief — logged here the moment it happens, with why. Deviating is
 allowed; deviating silently is not (§4)._
 
+- 2026-08-03 (S2-fix) — **two harness cases added, not one.** F5 asked for the non-candidate
+  `- [ ] … HELD` case; a second case pins the **PreToolUse** enforcer's documented divergence
+  (it names the HELD beat where the Stop backstop steps over it). Reason: F2 is discharged by
+  *documentation only*, so without a case the split row can drift back to fiction unnoticed —
+  and when the scan is ported, that case fails and forces the doc row to change with it.
+  Harness 31 → 33. No hook behavior changed.
+- 2026-08-03 (S2-fix) — **F3's fix does slightly more than "stop filtering".** Dropping the
+  filter alone would fail every wrapped site instead of checking it, so a site now also keys
+  from its continuation lines (≤2, stopping at a blank line); only a site with nothing keyable
+  in its whole paragraph is a finding. Both branches mutation-proven; repo lints clean.
 - 2026-08-03 (S5b) — **one suppression rule was narrowed, not merely re-scanned.** The brief said
   "you are not loosening the rules, only stopping the scan at the first candidate". That is not
   sufficient: rules (ii)/(iii) look UPWARD, so they grow monotonically with the candidate index —
@@ -671,6 +683,20 @@ allowed; deviating silently is not (§4)._
 _≤10 lines per entry: what this session did, the verify signal, the branch, and what the
 next session needs. Newest on top; crash-safe by write-ahead._
 
+- _2026-08-03 (`S2-fix`, `devops`, branch `mission/context-economy-p2`): the `ckpt-p2` corrective —
+  **all four findings landed; F3 NOT severed.** **F1** both §3 mirrors now name the unreleased
+  `[~]` **HELD** barrier and say a `[ ]` HELD row is parked, not a wall. **F2** the shared row is
+  **SPLIT** (Stop = due-ness scan; closing-action = its *missing* due-ness, stated outright);
+  **`beat-enforcer-pretooluse.sh` is untouched** — the scan port stays its own session. **F5**
+  the non-candidate `- [ ] … HELD` row **and** the PreToolUse divergence are pinned. **F3**
+  `checkNextUpAgreement()` keys a wrapped `Next up:` from its continuation lines and **fails
+  closed** on an unkeyable site. Verified: hook-test **31 → 33** green · lint green · selftest 44
+  exit 0. **3 mutations, both states, each with the anti-inert control (re-run vs HEAD's checker →
+  clean there):** rule (iii) narrowed to "exempt only skipped candidates" → the F5 case ALONE
+  fails; PreToolUse given partial due-ness → the new PreToolUse case ALONE fails; the reviewer's
+  wrapped-`Next up:` repro (`S8` on line 2 vs header `S2-fix`) → caught now, clean before.
+  **Both enforcers hand-dispatched over 7 conditions and each matches its own reworded row.**
+  Next: the **`ckpt-p2` re-review**._
 - _2026-08-03 (`S5b`, `devops`, branch `mission/context-economy-p2`): the beat-enforcer backstop's
   `head -1` became a **scan for the first DUE candidate** — rule (i) now steps to the next candidate
   instead of exiting, and a HELD-marked row counts as parked (rule iii steps over it; rule ii drops
@@ -1257,12 +1283,13 @@ attachment-schema check is pulled in or deferred.
   Baseline transcript identified and field-verified by grep (never read). Uncommitted,
   awaiting HITL review of OQ1–OQ5._
 
-Next up: **`S2-fix`** — the `ckpt-p2` corrective, on branch `mission/context-economy-p2`.
-Scope: **F1** (both WORKFLOW mirrors' §3 row drops HELD from the silence list while rule (ii)
-still treats `- [~] … HELD` as a barrier) + **F2** (split the doc row shared with
-`beat-enforcer-pretooluse.sh`, still a bare `head -1`) + **F5** (pin the non-candidate
-`- [ ] … HELD` row) + **F3 folded in, LAST and SEVERABLE** (`lint.mjs:489-490` fails open on
-a wrapped `Next up:` beat). Then **re-review**, then merge into
+Next up: the **`ckpt-p2` re-review** on branch `mission/context-economy-p2` — `S2-fix` is
+DONE (`a4a4cd9` + the F3 commit): F1 (both WORKFLOW mirrors' §3 silence list now names the
+unreleased `[~]` HELD barrier and says a `[ ]` HELD row is parked, not a wall), F2 (the
+shared row is SPLIT — the closing-action row states the PreToolUse enforcer's missing
+due-ness outright; its behavior is unchanged, the scan port stays a later session), F5 (the
+non-candidate `- [ ] … HELD` row and the PreToolUse divergence are both pinned) and F3
+(`checkNextUpAgreement` no longer fails open on a wrapped beat). Then merge into
 `mission/context-economy-integration` (batch policy — never the default branch).
 
 Phases 0, 0.5 and 3 are COMPLETE, APPROVED and MERGED (`273f1d3`, `f5fabc6`, `8a3b4c7`).
