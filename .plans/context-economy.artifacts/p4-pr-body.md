@@ -52,7 +52,7 @@ Full derivation, all ten audit findings (A1–A10), and every caveat:
   a band, never a point value.
 - **`hooks/lib/compact-resume.sh`** — a `SessionStart:compact`-matched
   re-read directive. This is a **correctness fix**, not a cost lever: this
-  mission's own window collapsed 999,816 → 82,009 chars in one compaction step
+  mission's own window collapsed 999,816 → 82,009 tokens in one compaction step
   with nothing telling the resuming agent to re-read the ledger. Now it does.
 - **Standing steers** — human decisions captured verbatim in the ledger
   template, retired by strikethrough, never deleted — plus two new ledger-
