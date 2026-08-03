@@ -31,8 +31,11 @@ chars primary, shipped in `S0.5-2`; the occupancy gate and D7's named denominato
 unchanged and re-verified byte-for-byte.** **`ckpt-p05` re-review returned APPROVE
 (2026-08-02, all six lenses 3/3) and Phase 0.5 is MERGED (`f5fabc6`).**
 **The DECISION POINT is DECIDED (D13, 2026-08-03): P3 ONLY is authorized.**
-**Next up: `S6`** — the `SessionStart:compact` re-read directive, on branch
-`mission/context-economy-p3`, folding in the beat-enforcer blocking-row fix.
+**`S6` is DONE (2026-08-03)** — the `SessionStart:compact` re-read directive plus the
+beat-enforcer due-ness fix landed on `mission/context-economy-p3`.
+**Next up: `ckpt-p3` [STRICT]** — phase 3 review; the reviewer re-derives every claim,
+dispatches the hook by hand for all three `SessionStart` matchers, and the verdict is
+**surfaced to the human the moment it lands** (batch gating shows no merge prompt).
 **P1, P2 and P4 remain HELD** pending a session-limit refresh.
 
 ## Checklist
@@ -57,7 +60,7 @@ checkpoint/reviewer/chronicler row — set `[~]` the moment a beat is picked up 
 - [ ] Checkpoint `ckpt-p1` — **HELD** — phase 1 review + merge into integration
 - [ ] S5 — **HELD** — standing steers: ledger block + §3-only append + lint grammar check (branch `mission/context-economy-p2`). Fidelity control; case unchanged by the new evidence.
 - [ ] Checkpoint `ckpt-p2` — **HELD** — phase 2 review + merge into integration
-- [ ] S6 — **AUTHORIZED (D13)** — `SessionStart:compact` re-read directive + hook-test cases (branch `mission/context-economy-p3`). Correctness control; case unchanged (exactly 1 compaction confirmed). **+ folds in the beat-enforcer blocking-row fix** (machinery defect (b)).
+- [x] S6 — **DONE 2026-08-03** (branch `mission/context-economy-p3`) — `hooks/lib/compact-resume.sh` + a `SessionStart` block whose matcher is `compact` and nothing else; **+ the beat-enforcer due-ness fix** (machinery defect (b)), contained to `hooks/lib/beat-enforcer-stop.sh`. Atomic-ref doc updates in the same commit. Harness **16 → 24 cases**; both mutation proofs run. Completed after the first attempt died on a usage limit.
 - [ ] Checkpoint `ckpt-p3` **[STRICT]** — **AUTHORIZED (D13)** — phase 3 review; **surface the verdict to the human immediately** (batch gating shows no merge prompt); merge into integration
 - [ ] S7 — **HELD** — re-measure (D4a), `isCompactSummary` count, `docs/product/engineering/context-economy-metrics.md` (branch `mission/context-economy-p4`). D4a's design and the doc's headline are both downstream of P0.5.
 - [ ] S8 — **HELD** — chronicler + CHANGELOG + version bump + integration PR (branch `mission/context-economy-p4`)
@@ -152,6 +155,38 @@ _Human steers captured **verbatim** at checkpoints only, never mid-brief. Gramma
 _Any departure from a brief — logged here the moment it happens, with why. Deviating is
 allowed; deviating silently is not (§4)._
 
+- 2026-08-03 (S6) — **the beat-enforcer fix is BROADER than "blocking-row awareness"** (D13's
+  wording). It ships three suppression rules, not one: (i) the beat row itself carrying
+  `HELD`/`⛔`/`HARD PAUSE`, (ii) an unreleased blocking row above it, and **(iii) any `- [ ]`
+  row above it at all** — rule (iii) is a generalization D13 did not name. Kept because the
+  observed defect (~20 turns nudging `ckpt-p1`) was produced by (i)+(iii) together, and rules
+  (i)/(ii) alone would still nudge a checkpoint whose sessions are merely unfinished. It is
+  contained to `hooks/lib/beat-enforcer-stop.sh` + cases (the brief's stop-condition), and the
+  existing behaviour is preserved (`[~]`/`[x]` silent, `ls -t` selection byte-identical, exit
+  codes unchanged, `RELEASED_BLOCKER` case proves a released blocker still nudges). **Reviewer
+  should re-derive rule (iii) specifically** — it is the one rule with no line of authority
+  behind it. Known limitation, not fixed: the enforcer still picks the FIRST `[ ]` beat, so on
+  this ledger it now goes silent on `ckpt-p3` because `ckpt-p1` (HELD) sits above it. That is
+  strictly better than nagging the wrong row, but it means the enforcer will not chase
+  `ckpt-p3`. Fixing "first" → "first due" is a bigger change; logged for P2, not taken.
+- 2026-08-03 (S6) — **this session is a COMPLETION after an infrastructure failure.** The
+  first `S6` agent implemented the hooks + harness cases and then died on a usage limit
+  **immediately after reporting gates green**, with the atomic-ref doc updates, both mutation
+  proofs and this ledger still unwritten. A second `devops` session reviewed the uncommitted
+  work against the brief rather than trusting it, and finished the session. **Kept** (verified,
+  not assumed): `compact-resume.sh` in full, the `hooks.json` `SessionStart` block, the
+  beat-enforcer due-ness block, all 8 new harness cases. **Discarded/added:** nothing was
+  discarded; what was missing was added — the three doc sites, both mutation proofs, and this
+  ledger. Recorded so `ckpt-p3` knows the code and its proofs were written by different
+  sessions and re-derives rather than trusts the harness's green.
+- 2026-08-03 (S6) — **the WORKFLOW and README governance counts legitimately differ (3 vs 4)**
+  and were NOT forced to agree. §4's "Reflex backstops" paragraph counts the hooks that keep a
+  **running** session on protocol (thread-keeper, beat-enforcer, compact-resume = **three**);
+  the plugin README counts **all** governance reflexes including the *router*, which fires
+  before the work starts (= **four**). Both were stale by one before this session; each was
+  corrected within its own scope and a clause was added to §4 naming the router as the fourth,
+  so a reader comparing the two no longer sees an unexplained mismatch. `docs/WORKFLOW.md` was
+  updated in the same commit per the S1 precedent; **its line-3 version stamp is untouched**.
 - 2026-08-02 (S0.5-fix) — **F3's caption is NOT pinned by a selftest case**, and it is an
   output change. The `ckpt-p05` corrective brief set the target case count at "43, or 44 if
   you took F4"; adding a case for the caption would have put it at 45 and moved a number the
@@ -350,6 +385,16 @@ allowed; deviating silently is not (§4)._
 _≤10 lines per entry: what this session did, the verify signal, the branch, and what the
 next session needs. Newest on top; crash-safe by write-ahead._
 
+- _2026-08-03 (`S6`, `devops`, branch `mission/context-economy-p3`): shipped
+  `hooks/lib/compact-resume.sh` — `SessionStart`, matcher **`compact` and nothing else** —
+  emitting a **5-line** re-read directive (`jq -n --arg`, ledger path JSON-escaped, never
+  executed); silent with no `.plans/` and no active ledger; **always exit 0**. Folded in the
+  **beat-enforcer due-ness fix** (defect (b)): a `[ ]` beat is suppressed when unfinished `[ ]`
+  work or an unreleased `⛔`/`HARD PAUSE`/`HELD` row sits above it, or the row itself is held;
+  `[x]` blockers stay released. Atomic-ref docs same commit (§3 table row ×2 mirrors; reflex
+  count **two → three**, README **Three → Four**). Verify: hook-test **24 cases** clean (was
+  16), lint clean, `context-attrib --selftest` exit 0 at **44**; **both mutation proofs run**
+  (scratch only, restored). `ckpt-p3` **[STRICT]** is next — surface its verdict immediately._
 - _2026-08-02 (`S0.5-fix`, `backend`, branch `mission/context-economy-p05`): corrective session
   for the `ckpt-p05` **REQUEST CHANGES**. **Text + one latent guard; no measurement re-run
   changed a number.** **F1** [Med] — the guard's justifying comment (`tools/context-attrib.mjs`
@@ -899,14 +944,14 @@ attachment-schema check is pulled in or deferred.
   Baseline transcript identified and field-verified by grep (never read). Uncommitted,
   awaiting HITL review of OQ1–OQ5._
 
-Next up: **`S6` — the `SessionStart:compact` re-read directive** (branch
-`mission/context-economy-p3`). Brief: `.plans/context-economy.sessions.md` → Phase 3.
-**Suits `devops`.** Phases 0 and 0.5 are COMPLETE, APPROVED and MERGED into
-`mission/context-economy-integration` (`273f1d3`, `f5fabc6`).
+Next up: **`ckpt-p3` [STRICT] — the phase 3 review** (branch
+`mission/context-economy-p3`). Brief: `.plans/context-economy.sessions.md` → Phase 3
+checkpoint. **`S6` is DONE** (2026-08-03). Phases 0 and 0.5 are COMPLETE, APPROVED and
+MERGED into `mission/context-economy-integration` (`273f1d3`, `f5fabc6`).
 
 **D13 (2026-08-03) authorized P3 ONLY** — scoped to the remaining session budget.
 **P1, P2 and P4 remain HELD**; the human re-decides them after a session-limit refresh,
-in the order **P2 → P1 → P4**. S6 additionally folds in the **beat-enforcer blocking-row
+in the order **P2 → P1 → P4**. S6 additionally folded in the **beat-enforcer due-ness
 fix**. P3's brief was NOT written against the retracted 22.5% premise — it is a
 correctness control — so it runs from the existing brief; **P1/P2/P4 must be re-briefed
 through the planner before they run.**

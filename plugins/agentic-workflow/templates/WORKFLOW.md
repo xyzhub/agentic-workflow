@@ -198,7 +198,8 @@ Shipped by this plugin as hooks. Advisory except where marked:
 | `Write`/`Edit` | Reminder to update docs when high-impact files change |
 | Prompt submit | **Router** (governance) — an un-prefixed work request gets a soft "route it through the protocol — hand to `intake`" nudge; silent on plain chat, never blocks |
 | Prompt submit | **Thread-keeper** (governance) — injects the active ledger's phase + `Next up:` + first unchecked beat each turn; silent when no active ledger, never blocks |
-| `git commit` / turn end | **Beat-enforcer** (governance) — nudges a not-started ledger beat (`chronicler` at close, `reviewer` at a checkpoint) at the overdue moment; advisory, never blocks |
+| `git commit` / turn end | **Beat-enforcer** (governance) — nudges a not-started ledger beat (`chronicler` at close, `reviewer` at a checkpoint) at the overdue moment; suppressed when the beat isn't due (unfinished work or an unreleased blocker above it, or the row itself held); advisory, never blocks |
+| After a compaction | **Compact-resume** (governance) — on `SessionStart` with matcher `compact` only, injects a short directive to re-read the active ledger and the last handoff **verbatim** rather than resume from the summary; silent when there's no active mission, never blocks |
 
 Blockers exit 2 (hard stop); reminders exit 0. Guardrails catch autopilot
 mistakes; they never replace judgment. Checks evaluate in the command's
@@ -230,12 +231,15 @@ end a session). For a long *interactive* session with no natural session end,
 `/agentic-workflow:handoff` writes a fresh-self re-read manifest so the reset stays lossless
 (§6.2) — never lean on the auto-summary.
 
-**Reflex backstops** — two §3 governance hooks keep a session on-protocol without
-being read: the *thread-keeper* surfaces the active ledger's phase + `Next up:` +
-first open beat every turn, and the *beat-enforcer* nudges a not-started
-beat (`chronicler` at close, `reviewer` at a checkpoint) at the moment you try to
-close or advance. Both are advisory — they steer the session back to the ledger,
-never block it.
+**Reflex backstops** — three §3 governance hooks keep a *running* session
+on-protocol without being read: the *thread-keeper* surfaces the active ledger's
+phase + `Next up:` + first open beat every turn; the *beat-enforcer* nudges a
+not-started beat (`chronicler` at close, `reviewer` at a checkpoint) at the moment
+you try to close or advance; and *compact-resume* fires the moment the context
+window is compacted, telling you to re-read the ledger verbatim instead of
+resuming from a summary of a summary. All three are advisory — they steer the
+session back to the ledger, never block it. (§3's fourth governance hook, the
+*router*, fires before the work starts rather than during it.)
 
 ## 5. Mission lifecycle (multi-session work)
 
