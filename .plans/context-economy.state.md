@@ -67,7 +67,7 @@ checkpoint/reviewer/chronicler row — set `[~]` the moment a beat is picked up 
 - [ ] Checkpoint `ckpt-p1` — **HELD** — phase 1 review + merge into integration
 - [x] S5 — **DONE 2026-08-03** (branch `mission/context-economy-p2`) — standing steers: `## Standing steers` in `templates/mission-state.md`, §3-only append rule in `mission.md` (+ §4 resume line), WORKFLOW §5 ledger row, and `checkStandingSteers()` in `lint.mjs` (OQ4: only ledgers that already carry the block). **+ machinery defect (a) folded in: `checkNextUpAgreement()`** — every `Next up:` site must name the same beat. Both mutation proofs run in both states.
 - [x] S5b — **DONE 2026-08-03** (branch `mission/context-economy-p2`) — enforcer due-ness: `head -1` → a scan for the first *DUE* candidate (the open [Med] from `ckpt-p3`); rule (iii) narrowed to step over marker-carrying rows and rule (ii)'s `[ ]`-carrying-HELD branch dropped, so a held row is skipped rather than walling off everything beneath it; §3 wording made per-beat-precise in both WORKFLOW mirrors + the plugin README; both test-coverage gaps closed. Harness **24 → 31 cases**; 7 mutations run in both states incl. the anti-inert control.
-- [ ] Checkpoint `ckpt-p2` — **AUTHORIZED (D14)** — phase 2 review (covers S5 **and** S5b) + merge into integration
+- [~] Checkpoint `ckpt-p2` — **REQUEST CHANGES** 2026-08-03 (Fable reviewer). Scorecard: Security 3 · Efficiency 3 · Architecture 2 · QA 2 · **DX 1** · UX n/a. Engineering sound; **two always-on doc rows describe behavior the hooks don't have**. Corrective session NOT run — human paused the mission here. Findings below.
 - [x] S6 — **DONE 2026-08-03** (branch `mission/context-economy-p3`) — `hooks/lib/compact-resume.sh` + a `SessionStart` block whose matcher is `compact` and nothing else; **+ the beat-enforcer due-ness fix** (machinery defect (b)), contained to `hooks/lib/beat-enforcer-stop.sh`. Atomic-ref doc updates in the same commit. Harness **16 → 24 cases**; both mutation proofs run. Completed after the first attempt died on a usage limit.
 - [x] Checkpoint `ckpt-p3` **[STRICT]** — **APPROVE** 2026-08-03, no corrective session needed. Scorecard: Security 3 · Efficiency 3 · UX 3 · QA 2 · Architecture 2 · DX 2. Reviewer hand-dispatched all three `SessionStart` matchers, re-ran both mutation proofs (preservation case green in BOTH states), and proved injection-resistance with shell metacharacters in ledger path + content (no artifacts, exit 0). Rule (iii) ruled IN BOUNDS. **Verdict surfaced to the human immediately** per batch gating. Merged into `mission/context-economy-integration`. **[Med] finding left OPEN for the human — see D13 follow-ups.**
 - [ ] S7 — **HELD** — re-measure (D4a), `isCompactSummary` count, `docs/product/engineering/context-economy-metrics.md` (branch `mission/context-economy-p4`). D4a's design and the doc's headline are both downstream of P0.5.
@@ -149,6 +149,146 @@ not re-litigated by any later session._
   instrument's own uncertainty band, so it cannot be gated on. **D4b remains the real
   confirmation** and needs a second transcript that does not yet exist.
   Recommended order when work resumes: **P2 → P1 → P4** (P3 already taken first).
+
+## ⚠️ WHOLE-MISSION AUDIT — REQUEST CHANGES 2026-08-03 (Fable, independent)
+
+_Commissioned by the human, mission-wide, licensed to overturn prior verdicts. Verdict:
+**"The shipped code is good. The analysis on top of it is not — and the human is about to
+make the P1–P4 call on it."** Scorecard: Security 3 · Architecture 2 · Efficiency 2 ·
+DX 2 · UX 2 · **QA 1**. All three gates re-run green; **every headline reproduces
+byte-for-byte** on the untouched baseline (churn 1,707,036 · Σ chars 2,659,518 · band
+1.99–3.24 · gate +28.0%/+149.1% · ratchet PASS · 4 collapses · `isCompactSummary` 1)._
+
+**A1 — §6's invariance argument is PROVABLY WRONG (defect, from the code).** §6 says the
+gate FAIL "bounds but does not block" a share decision because numerator and denominator
+move together under a uniform scale error. **They no longer do.** P0.5 retired the churn
+ratio as converter (`context-attrib.mjs:371`, "DIAGNOSTIC ONLY") and replaced it with the
+output-side envelope (`:380`, `q = chars ÷ output_tokens`); the numerator now rides
+**`output_tokens` only** while the denominator is Σ prompt-deltas of
+`input+cache_creation+cache_read` (`:131`). **Orthogonal.** The argument was inherited
+verbatim from the *pre-repair* D1 package (where it was correct) into the *post-repair*
+package (where the repair had just invalidated it). **Consequence: a ~28% prompt-series
+inflation deflates every share by ~28%. The gate FAIL DOES bound the share decision.**
+
+**A2 — the D7 straddle is MANUFACTURED by a quantile choice, not measured.** `envSamples`
+(n=594) tail is smooth — 2.88, 2.98, 3.08, 3.20, 3.24 — **no outlier**, so p90's robustness
+rationale has nothing to guard against, and **59 of 594 samples already exceed the p90
+endpoint**. Reviewer share: at max **1.92%**, p95 2.81%, p99 2.26%; the ratio needed to
+reach 3% is ~2.075 (≈p92). Even with A1's ~28% correction ≈ **2.46%**. **D7 does not
+straddle under any defensible endpoint — it is below 3%**, agreeing with the architect's
+independent 1.23–1.62%. §7's "UNDECIDABLE… closes only with a tokenizer or a second
+transcript" is **overstated**, and it was escalated to the human and put on the status page.
+
+**A3 — THE FOURTH BUG.** The D7 3% trigger is a **bare literal duplicated in three prose
+strings and pinned by ZERO cases**. Mutating `shareHi > 3` → `> 1` (`:574-577`):
+**selftest clean, exit 0**, and on the real corpus the tool prints
+`reviewer return share = 1.92–3.13%` immediately followed by `reading: the WHOLE band is
+above 3% — the trigger condition reads as MET`. **A self-contradicting governance verdict
+with all gates green.** Contrast `GATE_PCT = 15` (`:467`) — named constant, case-pinned
+both directions. Same instrument, two conventions.
+
+**A4 — a lever ~1.5× P1's, filed under "do not act on".** `attach: other` is **NOT**
+over-stated; the instrument's warning at `:748` is a guess and is **wrong**. The 77
+fallbacks are lean payload objects with no uuid/timestamp/session metadata. What is
+actually in there: **registry/definition injections** — `deferred_tools_delta` 79,463 +
+`agent_listing_delta` 58,194 + `mcp_instructions_delta` 14,319 + `invoked_skills` 11,800.
+**With `skill_listing` 208,338 that is 372,114 chars = 14.0% of appended chars, vs P1's
+Write/Edit at 243,578 = 9.2%.** §9 sizes the "free lever" at `skill_listing` alone; it is
+**1.8× that** — and it is *this plugin's own surface* (13 subagent types, skills, deferred
+tools).
+
+**A5 — the mission's own machinery is a top-5 consumer, unmeasured.** `hook_success`
+113,672 + `hook_additional_context` 19,362 + `task_reminder` 10,655 = **143,689 chars =
+5.4%** — larger than anything P1–P4 can save. **P3 shipped another injecting hook without
+measuring its footprint.**
+
+**A6 — 34% of transcript records are excluded with no counter.** `last-prompt`, `mode`,
+`ai-title`, `pr-link`, `file-history-snapshot` (770KB raw) — 1,583 records the taxonomy
+never touches, while `badJson` and `sidechain` **are** counted and printed. Probably
+correct to exclude; **nobody verified**, and it feeds the 35–60% UNATTRIBUTED. Also the
+assistant content loop (`:297-325`) has **no `else` residual branch** unlike the user loop
+(`:344`) — a schema change silently drops mass.
+
+**A7 — corroboration nobody stated (the mission's best evidence).** All **480 thinking
+blocks carry `thinking: ""`** — zero persisted chars. That is *why* median q = 1.04, and it
+strongly validates the estimator's premise.
+
+**A8 — dogfooding gap.** `## Standing steers` — the convention S5 shipped — is `(none)` in
+the ledger of the mission that shipped it, while D10–D14 record human decisions in
+**paraphrase**.
+
+**A9 — reading trap in the package.** The bands are **asymmetric**: the mission's levers sit
+at the *low* end and the unexplained mass at the *high* end **simultaneously**, so reading
+midpoints flatters the mission in both directions at once. Honest reading of the
+instrument's own data: Write/Edit ≈5.6%, UNATTRIBUTED ≈60%, **char-free ≈48.5% — ~10× every
+lever, owned by no phase.**
+
+**A10 — recommendation: WRAP AT P4. Drop P1 or re-point it at A4.** P1's premise is
+retracted and D13 already strips its savings claim, leaving pure contract hygiene — which
+does not need a phase. _(Judgment, not defect.)_ P4 should ship and record these corrections.
+
+**Process ruling: sound, not theatrical — with a structural blind spot.** The catches were
+real and load-bearing (the S2 dimensional inversion, the namespace-blind D7 lookup, two
+inert guards, the fixture-vs-assertion inversion, the instrument re-deciding D7 in its own
+voice); re-run mutations confirm those guards are live. **But mutation testing only covers
+what a session touched** — the D7 threshold was never edited, so it was never pinned (A3) —
+**and no mutation can test taxonomy completeness** (A4, A6). The coverage model is "what we
+changed", not "what decides".
+
+**Minor:** `analyze` is exported but the module has **no entry-point guard** (`:1210-1234`),
+so importing it runs the CLI and `process.exit(1)`s — the export is unusable.
+**Ship-safety: SAFE.** Hooks use `jq -n --arg`, never eval ledger text; `${CLAUDE_PLUGIN_ROOT}`
+quoted; all paths exit 0; matcher exactly `["compact"]` with a stdin `.source` re-check.
+**One fail-open, low:** with `jq` absent both hooks go **silently inert** — the P3 backstop
+disappears with no signal; disclosed in `/doctor` but not in the hook's own contract.
+
+**NOT verified:** the `/context` 401,400 comparator (hand-recorded, single-moment — **nobody
+can say whether the +28% is instrument or comparator**); whether the excluded record types
+are context-bearing (needs a schema owner); collapse #4 (−270,711 @ line 4,222); and
+**n = 1 stands** — one transcript from one planning-heavy session that was the source of its
+own measurement. **D4b remains the only real confirmation.**
+
+## `ckpt-p2` findings — REQUEST CHANGES 2026-08-03 (corrective NOT run; mission paused)
+
+_Both rulings the checkpoint owed went in S5b's favour, **proven not argued**:_
+**HELD-as-parked is the genuine minimum** — the real ledger has a *non-candidate*
+`- [ ] S4 — **HELD**` above `ckpt-p2`, so the narrower "exempt only skipped candidates"
+alternative does **not** fix the motivating case; `BARRIER_THEN_HELD_THEN_DUE` is SILENT in
+both states and deleting rule (ii) turns it green→red, i.e. suppression was **re-scoped, not
+weakened**. **`beat-enforcer-pretooluse.sh`: split the doc row NOW, port the scan LATER** as
+its own session (a second always-on hook with only 4 harness cases — not this phase's fix).
+
+**Corrective scope, one retry (F1 + F2 required, F5 welcome):**
+- **F1 [Med]** `docs/WORKFLOW.md:190` + `templates/WORKFLOW.md:198` — the reworded row lists
+  silence as "unfinished work, or an unreleased ⛔/HARD PAUSE barrier" and **drops HELD**, but
+  rule (ii) still treats `- [~] … HELD` as a barrier. Ledger `- [~] S1 — **HELD**` above
+  `- [ ] Checkpoint` → hook **SILENT** while the row predicts a nudge. The old generic
+  "unreleased blocker" was true; the new precise wording is precisely wrong. README:197 is fine.
+- **F2 [Med, LIVE]** the **PreToolUse** enforcer contradicts the row it shares. Hand-dispatched
+  unmodified in this repo, `git commit` emits ``⏳ Beat pending … ckpt-p1 — **HELD**`` —
+  **it nudges toward HELD, unauthorized P1 work.** 5 of 8 test ledgers diverge from the Stop
+  backstop. Pre-existing, but S5b sharpened the shared row to "scans top-down, nudges the
+  first due" without scoping it to Stop. **This is the nudge seen on ~30 turns this session.**
+- **F5 [Low/QA]** no harness case pins the non-candidate `- [ ] … HELD` row — the exact class
+  whose semantics changed, and the one the real ledger relies on.
+
+**Deferred to the human, not the implementer:**
+- **F3 [Low] `tools/lint.mjs:489-490` FAILS OPEN** — a `Next up:` whose beat wraps to the next
+  line keys to `''`, is filtered, and with <2 keyed sites **the file is skipped silently**.
+  Reproduced: trailer beat moved to line 2 and changed to `S8`, header still `ckpt-p2` → lint
+  clean. The drift check has a hole in exactly the shape of the drift it exists to catch.
+- **F4 [Low] `tools/lint.mjs:~458` id-existence fallback too loose** — `\b<id>\b` anywhere in
+  checklist text, so `(ckpt s5)` (a *session*) and `(ckpt 2)` both PASS, though the comment
+  claims the id "must name a checkpoint that actually exists".
+- **F6 [Info] beat-key false-pass, by design** — `Next up: ckpt-p2 is DONE — now S7` agrees
+  with a header saying `ckpt-p2` (first id only). Recorded so it isn't "discovered" later.
+- Port due-ness to `beat-enforcer-pretooluse.sh` — own session + mutations.
+
+_Verification depth: 7/7 enforcer mutations killed (5 only by the new cases); all six S5 lint
+mutations pass under base `lint.mjs` (anti-inert holds); injection smoke with `$(…)`/`;rm` in
+ledger prose **and** path → no artifact, valid JSON, exit 0; legacy ledgers exempt per OQ4 and
+green; no mirrors — all Stop cases dispatch the real script; `.plans/` mutated only inside a
+throwaway worktree, restored and verified._
 
 ## D14 — P2 authorized (locked 2026-08-03 by the human)
 
