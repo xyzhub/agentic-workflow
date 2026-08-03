@@ -145,6 +145,16 @@ const HARD_PAUSE_PARKED = ledger(
 // …and on an unreleased [ ] row. Rule (iii) steps over marker-carrying rows, so
 // this is pinned by rule (ii)'s `[ ]` branch ALONE: drop that branch and an
 // unreleased hard pause leaks through.
+// A NON-CANDIDATE `- [ ]` row carrying HELD above a due checkpoint (F5, ckpt-p2):
+// the exact class S5b re-scoped. Rule (ii) used to have a `[ ]`-carrying-HELD
+// branch that walled off everything beneath; now (iii) filters marker-carrying
+// rows, so a parked session is stepped over and the checkpoint below is DUE.
+// This is the shape this repo's own ledger relies on (`- [ ] S4 — **HELD**` above
+// `ckpt-p2`), and no case pinned it — restore the old branch and only this fails.
+const HELD_SESSION_ABOVE = ledger(
+  '- [x] S1 — build',
+  '- [ ] S4 — **HELD** — parked pending the human',
+  '- [ ] Checkpoint — phase 2 review');
 const HARD_PAUSE_NOT_STARTED = ledger(
   '- [x] S1 — build',
   '- [ ] ⛔ **D1 HARD PAUSE** — awaiting the human',
@@ -238,6 +248,11 @@ const HARD_PAUSE_NOT_STARTED = ledger(
   const r = runHook({ event: 'Stop', desc: STOP, input: { stop_hook_active: false }, ledgers: HARD_PAUSE_PARKED });
   check('Stop: unreleased [~] HARD PAUSE row above → silent', r.code === 0 && !nudged(r), `stdout=${JSON.stringify(r.stdout)}`);
 }
+{ // F5: a parked NON-CANDIDATE [ ] HELD row is stepped over, not a barrier.
+  const r = runHook({ event: 'Stop', desc: STOP, input: { stop_hook_active: false }, ledgers: HELD_SESSION_ABOVE });
+  check('Stop: [ ] HELD session above (non-candidate) → still nudges the due checkpoint',
+    r.code === 0 && nudged(r) && /phase 2/.test(r.stdout), `stdout=${JSON.stringify(r.stdout)}`);
+}
 {
   const r = runHook({ event: 'Stop', desc: STOP, input: { stop_hook_active: false }, ledgers: HARD_PAUSE_NOT_STARTED });
   check('Stop: unreleased [ ] HARD PAUSE row above → silent', r.code === 0 && !nudged(r), `stdout=${JSON.stringify(r.stdout)}`);
@@ -328,6 +343,16 @@ const reReadDirective = (r) => /just COMPACTED/.test(r.stdout);
 {
   const r = runHook({ event: 'PreToolUse', desc: PRE, input: { tool_input: { command: 'ls -la' } }, ledgers: NOT_STARTED });
   check('PreToolUse: non-closing command → silent', r.code === 0 && !nudged(r), `stdout=${JSON.stringify(r.stdout)}`);
+}
+{ // F2 (ckpt-p2): this enforcer has NO due-ness scan — it reports the FIRST
+  // not-started beat, held or not, where the Stop backstop steps over it. The
+  // §3 doc rows are split to say exactly that; this case pins the divergence so
+  // the split stays honest. When due-ness is ported here (own session), this
+  // case flips to the Stop expectation AND the PreToolUse doc row must change
+  // with it — that coupling is the point.
+  const r = runHook({ event: 'PreToolUse', desc: PRE, input: commit, ledgers: HELD_BEAT_THEN_DUE });
+  check('PreToolUse: HELD beat above a due one → names the HELD one (no due-ness scan yet)',
+    r.code === 0 && nudged(r) && /ckpt-p1/.test(r.stdout) && !/phase 2/.test(r.stdout), `stdout=${JSON.stringify(r.stdout)}`);
 }
 
 if (failures.length) {
