@@ -351,7 +351,173 @@ function checkMarkerMutation() {
   }
 }
 
-for (const check of [checkManifests, checkAgents, checkCommands, checkCrossRefs, checkTemplateRefs, checkSections, checkFrontmatterYaml, checkTemplateFrontmatter, checkHooks, checkObfuscation, checkHookBehavior, checkMarkerMutation]) {
+// ── 10. Context-attribution instrument (tier-1.5, context-economy Phase 0) ──
+// tools/context-attrib.mjs measures where a session's context goes, and the
+// mission's decisions (the write firewall, D7's reviewer test) are argued from
+// its numbers — so a silently-broken instrument would ship a false split. Lint
+// can't check it against a transcript (CI has none, and they are 3-12 MB), so it
+// delegates to the script's own synthetic-fixture selftest, which asserts the
+// four measured landmines: usage deduped by requestId, categories + residual
+// summing exactly, a DERIVED chars/token ratio (never `/4`), and attachments
+// sized on the injected field. Fail-closed: a MISSING instrument fails the gate.
+function checkContextAttrib() {
+  const runner = path.join(ROOT, 'tools/context-attrib.mjs');
+  if (!existsSync(runner)) {
+    fail(runner, null, 'context-attribution harness missing — tools/context-attrib.mjs must exist so the gate proves the measurement instrument dedups usage, balances its residual, derives its chars/token ratio, and sizes attachments on the injected field (do not silently drop the check)');
+    return;
+  }
+  // --selftest only: it builds its own throwaway fixture and must never need a
+  // real transcript (CI has none).
+  const res = spawnSync('node', [runner, '--selftest'], { encoding: 'utf8' });
+  if (res.status !== 0) {
+    const detail = `${res.stdout ?? ''}${res.stderr ?? ''}`
+      .split('\n').filter((l) => /FAIL|failure|Error/.test(l)).join(' | ');
+    fail(runner, null, `context-attribution selftest failed — run \`node tools/context-attrib.mjs --selftest\`: ${detail || '(no detail)'}`);
+  }
+}
+
+// ── Mission-ledger helpers (checks 11 + 12) ─────────────────────────────────
+// Both ledger checks read `.plans/*.state.md` — deployed ledgers, not templates.
+// A repo with no `.plans/` (a fresh consumer) simply has nothing to check.
+const stateLedgers = () => {
+  const dir = path.join(ROOT, '.plans');
+  if (!existsSync(dir)) return [];
+  return readdirSync(dir).filter((f) => f.endsWith('.state.md')).map((f) => path.join(dir, f));
+};
+// Lines of the `## <name>` section, with their 1-based line numbers. Ends at the
+// next `## ` heading (or EOF). Returns null when the section is absent.
+function sectionLines(text, heading) {
+  const lines = text.split('\n');
+  const start = lines.findIndex((l) => l.trim() === `## ${heading}`);
+  if (start === -1) return null;
+  const out = [];
+  for (let i = start + 1; i < lines.length; i++) {
+    if (/^## /.test(lines[i])) break;
+    out.push({ n: i + 1, text: lines[i] });
+  }
+  return out;
+}
+
+// ── 11. Standing steers grammar (context-economy Phase 2) ───────────────────
+// The ledger preserves decisions but loses taste, so `## Standing steers` holds
+// the human's own words. Its whole value is that the words are VERBATIM and
+// attributable — a paraphrase or an unattributed line is indistinguishable from
+// an agent's own inference, which is the failure this block exists to prevent.
+// So: mandatory grammar `- YYYY-MM-DD (ckpt <id>) — "<exact words>"`, and the
+// <id> must name a checkpoint that actually exists in the file's `## Checklist`.
+// OQ4: only ledgers that ALREADY carry the block are validated (legacy ledgers
+// have none and must keep passing); the block itself is required only of the
+// template, so every new mission inherits it.
+function checkStandingSteers() {
+  const HEADING = 'Standing steers';
+  const GRAMMAR = /^- (?:~~)?(\d{4}-\d{2}-\d{2}) \(ckpt ([A-Za-z0-9][A-Za-z0-9.-]*)\) — "[^"]+"(?:~~)?$/;
+
+  const tpl = path.join(PLUGIN, 'templates/mission-state.md');
+  const tplText = read(tpl);
+  if (!sectionLines(tplText, HEADING))
+    fail(tpl, 1, `missing "## ${HEADING}" section — every mission ledger must inherit the standing-steers block (verbatim human steers, captured at checkpoints only)`);
+
+  for (const file of stateLedgers()) {
+    const text = read(file);
+    const block = sectionLines(text, HEADING);
+    if (!block) continue; // OQ4: legacy ledgers without the block are exempt
+    const checklist = sectionLines(text, 'Checklist') ?? [];
+    const checklistText = checklist.map((l) => l.text).join('\n');
+    const ckptIds = new Set();
+    for (const m of checklistText.matchAll(/\bckpt-([A-Za-z0-9][A-Za-z0-9.-]*)/g)) {
+      ckptIds.add(m[1].toLowerCase());
+      ckptIds.add(`ckpt-${m[1].toLowerCase()}`);
+    }
+    // Fold wrapped continuation lines into their bullet so a long verbatim quote
+    // may wrap; report against the bullet's own first line.
+    const bullets = [];
+    for (const { n, text: line } of block) {
+      if (/^- /.test(line)) bullets.push({ n, text: line });
+      else if (bullets.length && /^\s+\S/.test(line) && !/^\s*$/.test(line))
+        bullets[bullets.length - 1].text += ' ' + line.trim();
+    }
+    for (const b of bullets) {
+      const m = b.text.match(GRAMMAR);
+      if (!m) {
+        fail(file, b.n, `standing steer does not match the mandatory grammar \`- YYYY-MM-DD (ckpt <id>) — "<exact words>"\` (verbatim, straight double quotes, em dash; retire by ~~strikethrough~~, never delete) — got: ${b.text.slice(0, 72)}`);
+        continue;
+      }
+      const id = m[2].toLowerCase();
+      if (ckptIds.size && !ckptIds.has(id) && !ckptIds.has(`ckpt-${id}`) && !new RegExp(`\\b${id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i').test(checklistText))
+        fail(file, b.n, `standing steer cites checkpoint "${id}", which is not in this ledger's \`## Checklist\` — a steer must be attributable to a real checkpoint`);
+    }
+  }
+}
+
+// ── 12. `Next up:` two-site agreement (context-economy Phase 2) ─────────────
+// A ledger states "what to do next" in two places — a header note and a trailing
+// block — and nothing used to enforce that they agree. This file drifted three
+// times during the context-economy mission, caught every time by a human, never
+// by a gate. Since the ledger's whole claim is "a fresh agent resumes from this
+// file alone", a stale site sends a cold session to re-run committed work.
+// Comparison rule: reduce each site to a BEAT KEY — the first session/checkpoint
+// id in it (`S5`, `S0.5-1`, `ckpt-p2`), else the first non-stop word — and require
+// every site to agree. Prose after the id is free to differ; exact string
+// equality across two prose blocks would be pure noise. One site (or none) is
+// fine — this checks disagreement, not the presence of two sites.
+function checkNextUpAgreement() {
+  const STOP = new Set(['the', 'a', 'an', 'then', 'next', 'is', 'now']);
+  const beatKey = (raw) => {
+    const plain = raw.replace(/[`*_~\[\]]/g, ' ').replace(/\s+/g, ' ').trim();
+    const id = plain.match(/\b(?:ckpt[-\s]?[A-Za-z0-9][A-Za-z0-9.-]*|S\d+(?:\.\d+)?[A-Za-z]*(?:-fix)?)\b/);
+    if (id) return id[0].toLowerCase().replace(/^ckpt[-\s]?/, 'ckpt-').replace(/[.,;:]+$/, '');
+    for (const w of plain.split(' ')) {
+      const word = w.toLowerCase().replace(/[^a-z0-9-]/g, '');
+      if (word && !STOP.has(word)) return word;
+    }
+    return '';
+  };
+
+  for (const file of stateLedgers()) {
+    const lines = read(file).split('\n');
+    const sites = [];
+    lines.forEach((line, i) => {
+      // Split on backticks: even segments are outside inline code, so prose
+      // *about* `Next up:` (always backticked in house style) is not a site.
+      let offset = 0;
+      line.split('`').forEach((seg, s) => {
+        const at = s % 2 === 0 ? seg.indexOf('Next up:') : -1;
+        if (at !== -1) {
+          // Continuation: the rest of the paragraph (up to 2 more lines, stopping
+          // at a blank line) — a wrapped `Next up:` states its beat on line 2.
+          const cont = [];
+          for (let j = i + 1; j < lines.length && cont.length < 2; j++) {
+            if (!lines[j].trim()) break;
+            cont.push(lines[j]);
+          }
+          sites.push({ n: i + 1, rest: line.slice(offset + at + 'Next up:'.length), cont });
+        }
+        offset += seg.length + 1;
+      });
+    });
+    if (sites.length < 2) continue; // one site (or none) cannot disagree
+    // FAIL CLOSED (ckpt-p2 F3): this used to `.filter((s) => s.key)` and skip the
+    // file when fewer than 2 sites keyed — so a `Next up:` whose beat wrapped to
+    // the next line keyed to '', was dropped, and a REAL disagreement went
+    // unreported. A wrapped site is now keyed from its continuation lines, and a
+    // site that still yields no beat is a finding, not a silent pass.
+    const keyed = sites.map((s) => {
+      let key = beatKey(s.rest);
+      for (let k = 0; !key && k < s.cont.length; k++) key = beatKey(s.cont[k]);
+      return { ...s, key };
+    });
+    for (const site of keyed.filter((s) => !s.key))
+      fail(file, site.n, '`Next up:` names no session/checkpoint beat (nothing keyable on this line or the rest of its paragraph) — an unkeyable site cannot be checked for agreement, so it is a finding, not a pass');
+    const [first, ...rest] = keyed.filter((s) => s.key);
+    if (!first) continue;
+    for (const site of rest) {
+      if (site.key !== first.key)
+        fail(file, site.n, `\`Next up:\` disagrees with the site at line ${first.n}: "${site.key}" vs "${first.key}" — every \`Next up:\` site must name the same next beat, or a resuming session re-runs committed work`);
+    }
+  }
+}
+
+for (const check of [checkManifests, checkAgents, checkCommands, checkCrossRefs, checkTemplateRefs, checkSections, checkFrontmatterYaml, checkTemplateFrontmatter, checkHooks, checkObfuscation, checkHookBehavior, checkMarkerMutation, checkContextAttrib, checkStandingSteers, checkNextUpAgreement]) {
   check();
 }
 

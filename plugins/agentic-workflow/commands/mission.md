@@ -67,6 +67,14 @@ to `[x]` on APPROVE — or leave `[~]` if it is APPROVE-but-merge-pending. The
 beat-enforcer keys on the glyph (`[ ]` not started → it may nudge; `[~]`/`[x]` →
 silent), so keeping marks current stops it nudging about work already in hand.
 
+**Capture standing steers here.** If the human says anything at the checkpoint
+about *how* the work should be done — taste, tone, what to stop doing — append it
+**verbatim** to the ledger's `## Standing steers` block, tagged with this
+checkpoint's id: `- YYYY-MM-DD (ckpt <id>) — "<exact words>"`. Quote, never
+paraphrase; retire a superseded steer by strikethrough, never delete it. This
+happens **only at a checkpoint** — never mid-brief, and never for your own
+inferences.
+
 - **APPROVE** → apply the gate policy. `human-merge` (default): pause for the
   **human to merge** the phase branch (never merge the default branch yourself;
   merging often deploys) — unless the project's §10 **Merge policy** is
@@ -88,13 +96,19 @@ silent), so keeping marks current stops it nudging about work already in hand.
 After each brief/checkpoint, spawn the **chronicler** to update the record,
 then republish the status page via the Artifact tool (subagents cannot
 publish). The ledger is ground truth: `continue` mode simply
-re-reads `Next up:` and proceeds, losing nothing across interruptions.
+re-reads `Next up:` **and the `## Standing steers` block** (steers bind every
+session that follows the checkpoint that captured them) and proceeds, losing
+nothing across interruptions.
 
 **Loop mode**: long missions run well as a recurring loop —
 `/loop /mission "<name>" continue`, or a scheduled agent. When invoked as a
 loop tick, execute exactly ONE brief or checkpoint, update the ledger, and
-end; don't try to finish the mission in a tick. Fresh context per tick means
-the transcript never bloats and a crashed tick loses nothing.
+end; don't try to finish the mission in a tick. A `/loop` tick does NOT reset
+the context window — `/loop` is session-scoped, and ticks accrete in the same
+transcript; genuine fresh context requires `/clear`, a new session, or a
+scripted `claude -p`. What makes loop mode safe is that **state lives in
+files**: any tick can be run from a fresh context without losing anything, and
+a crashed tick loses nothing.
 
 ## Output
 

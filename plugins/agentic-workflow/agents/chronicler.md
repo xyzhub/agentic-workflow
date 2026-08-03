@@ -102,6 +102,11 @@ record it. Everything you write is a fact from the record with a PR behind it â€
 moment a line would read as a benefit or a pitch, it is out of scope and belongs to
 `marketing`.
 
+**PR bodies (on request).** When the caller asks for one, write the PR body to a
+file (e.g. under the mission's artifacts directory) and return its **path** â€” the
+caller opens the PR with `gh pr create --body-file <path>`, so the prose is
+authored here and never transits a caller-composed command line.
+
 ## Invocation contract
 
 The invoking prompt supplies: what landed (or the checkpoint/stage event), PR

@@ -29,8 +29,12 @@ skeleton/CI → `.plans/` ledger → audits → launch prep), and `/agentic-work
 Resume at the first stage whose exit gate isn't met. Losing the transcript
 must never lose the venture. `continue` is also the **loop mode**: driven
 recurringly (`/loop /autopilot continue`, or a scheduled agent), each tick
-advances one clean stage boundary in a fresh context, then ends — same rules,
-better token economics than one long transcript.
+advances one clean stage boundary, then ends — same rules. A `/loop` tick does
+NOT reset the context window: `/loop` is session-scoped, and ticks accrete in
+the same transcript, so the context discipline above still applies. Genuine
+fresh context requires `/clear`, a new session, or a scripted `claude -p`.
+What makes loop mode safe is that state lives in files: any tick can be run
+from a fresh context without losing anything.
 
 ## 0. Get the flight plan (the only upfront ask)
 

@@ -1,6 +1,6 @@
 # The Workflow — one agentic protocol from idea to viable product
 
-<!-- protocol-master: v1.39.0 -->
+<!-- protocol-master: v1.42.0 -->
 
 ## Quick reference — humans start here
 
@@ -17,8 +17,9 @@
 **The daily loop**: `/agentic-workflow:start` → build → `/agentic-workflow:end` → PR → human merges.
 Small isolated fix → `/agentic-workflow:fix`. Bigger than one sitting → `/agentic-workflow:mission "<goal>"`.
 Long missions and autopilot are **loop-friendly**: drive them with a recurring
-`/loop … continue` or a scheduled agent — each tick resumes from files with a
-fresh context. Once live, schedule `/agentic-workflow:operate` weekly.
+`/loop … continue` or a scheduled agent — each tick resumes from files, so any
+tick can be run from a fresh context (`/loop` itself is session-scoped and does
+not reset the window). Once live, schedule `/agentic-workflow:operate` weekly.
 
 **Stages at a glance**: V0 validate → V1 define → V2 foundation → V3 build →
 V4 harden → V5 launch → V6 operate.
@@ -189,7 +190,9 @@ Shipped by this plugin as hooks. Advisory except where marked:
 | `Write`/`Edit` | Reminder to update docs when high-impact files change |
 | Prompt submit | **Router** (governance) — an un-prefixed work request gets a soft "route it through the protocol — hand to `intake`" nudge; silent on plain chat, never blocks |
 | Prompt submit | **Thread-keeper** (governance) — injects the active ledger's phase + `Next up:` + first unchecked beat each turn; silent when no active ledger, never blocks |
-| `git commit` / turn end | **Beat-enforcer** (governance) — nudges a required-but-unchecked ledger beat (`chronicler` at close, `reviewer` at a checkpoint) at the overdue moment; advisory, never blocks |
+| turn end | **Beat-enforcer backstop** (governance, `Stop`) — nudges a required-but-unchecked ledger beat (`chronicler` at close, `reviewer` at a checkpoint) at the overdue moment; it scans the open beats top-down and nudges the **first due** one — a beat whose own row is held is stepped over, not treated as a wall — and stays silent when nothing is due, i.e. when unfinished work, an unreleased ⛔/HARD PAUSE row, or an unreleased `[~]` **HELD** row sits above every candidate (a `[ ]` HELD row is parked, not a barrier: the scan steps over it); advisory, never blocks |
+| `git commit` / `gh pr create` / `gh pr merge` | **Beat-enforcer** (governance, `PreToolUse`) — the same nudge at the closing action, but with **no due-ness scan yet**: it reports the **first** not-started beat outright, so it can name one that is held or behind unfinished work (the due-ness port is pending); advisory, never blocks |
+| After a compaction | **Compact-resume** (governance) — on `SessionStart` with matcher `compact` only, injects a short directive to re-read the active ledger and the last handoff **verbatim** rather than resume from the summary; silent when there's no active mission, never blocks |
 
 Blockers exit 2 (hard stop); reminders exit 0. Guardrails catch autopilot
 mistakes; they never replace judgment. Checks evaluate in the command's
@@ -221,12 +224,15 @@ end a session). For a long *interactive* session with no natural session end,
 `/agentic-workflow:handoff` writes a fresh-self re-read manifest so the reset stays lossless
 (§6.2) — never lean on the auto-summary.
 
-**Reflex backstops** — two §3 governance hooks keep a session on-protocol without
-being read: the *thread-keeper* surfaces the active ledger's phase + `Next up:` +
-first open beat every turn, and the *beat-enforcer* nudges a required-but-unchecked
-beat (`chronicler` at close, `reviewer` at a checkpoint) at the moment you try to
-close or advance. Both are advisory — they steer the session back to the ledger,
-never block it.
+**Reflex backstops** — three §3 governance hooks keep a *running* session
+on-protocol without being read: the *thread-keeper* surfaces the active ledger's
+phase + `Next up:` + first open beat every turn; the *beat-enforcer* nudges a
+required-but-unchecked beat (`chronicler` at close, `reviewer` at a checkpoint) at
+the moment you try to close or advance; and *compact-resume* fires the moment the
+context window is compacted, telling you to re-read the ledger verbatim instead of
+resuming from a summary of a summary. All three are advisory — they steer the
+session back to the ledger, never block it. (§3's fourth governance hook, the
+*router*, fires before the work starts rather than during it.)
 
 ## 5. Mission lifecycle (multi-session work)
 
@@ -273,11 +279,15 @@ reviewers raises its confidence. Routine checkpoints stay single-reviewer —
 this is where review cost is spent deliberately, not everywhere.
 
 **Loop mode.** The ledger makes missions loop-drivable: a recurring
-`/loop /mission "<name>" continue` (or a scheduled agent) gives every tick a
-FRESH context that reads the ledger, executes exactly one brief or checkpoint,
-writes the handoff, and ends. Context never bloats across phases, a crashed
-tick loses nothing, and the human can stop the loop at any gate. The same
-applies to `/agentic-workflow:autopilot continue` at venture scale (§11).
+`/loop /mission "<name>" continue` (or a scheduled agent) has every tick read
+the ledger, execute exactly one brief or checkpoint, write the handoff, and
+end. A `/loop` tick does NOT reset the context window — `/loop` is
+session-scoped, and ticks accrete in the same transcript; genuine fresh context
+requires `/clear`, a new session, or a scripted `claude -p`. What makes loop
+mode safe is that **state lives in files**: any tick can be run from a fresh
+context without losing anything, a crashed tick loses nothing, and the human
+can stop the loop at any gate. The same applies to
+`/agentic-workflow:autopilot continue` at venture scale (§11).
 
 The trio is authored by the `planner` agent and driven by the bundled `/agentic-workflow:mission`
 command (plan · run · continue · replan). Technical open questions may be routed
@@ -473,6 +483,15 @@ back. The caller ingests conclusions, not corpora (§2, principle 2), and pulls
 detail from the named files on demand into its own budget. `advisor` (one page)
 and `chronicler` (≤10 lines) are the model.
 
+**Bounded writes.** The firewall has a write side. The orchestrating session
+**authors only the ledger**, plus edits of roughly fifteen lines or fewer; any
+longer document — a PR body, a report, a spec — is authored by a **subagent and
+comes back as a path, not as content**. The reason is fidelity and division of
+labour: the reading a document needs belongs in the window of the agent that
+writes it, and a document the caller composes out of a subagent's distillate
+sits one paraphrase further from the source files. This is discipline, not a
+gate — nothing checks it for you.
+
 **The fresh-self handoff.** The interactive main session is context-disciplined
 too — the same "ledger outlives the transcript" rule (§2, principle 1) and loop
 mode (§5) that protect missions apply here. Externalize durable state to files
@@ -643,8 +662,11 @@ stage artifacts, status page), it ends cleanly at a stage boundary when its
 context fills, and `/agentic-workflow:autopilot continue` re-derives the current stage from
 those files and resumes — locked decisions stay decided. That makes autopilot
 **loop-drivable**: a recurring `/loop /autopilot continue` (or a scheduled
-agent) advances the venture one clean stage boundary per tick, each tick a
-fresh context. Human confirmations may arrive through the verified **owner
+agent) advances the venture one clean stage boundary per tick. `/loop` is
+session-scoped and does not reset the context window, so the stage-boundary
+stop still matters — but because state lives in files, any tick can be run
+from a fresh context (`/clear`, a new session, or a scripted `claude -p`)
+without losing anything. Human confirmations may arrive through the verified **owner
 channel** (§12) — another input device for the same human; the boundary list
 above is unchanged.
 

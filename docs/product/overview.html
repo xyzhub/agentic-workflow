@@ -1,4 +1,6 @@
-<!-- artifact-url: https://claude.ai/code/artifact/d139a6f0-76dc-4c02-b10b-673a8109724f -->
+<!-- artifact-url: https://claude.ai/code/artifact/0946f50d-b5ef-4077-b995-16406c46c0b0 -->
+<!-- Re-minted 2026-08-02: the previous artifact (d139a6f0-…) returned "not found" —
+     deleted or never reachable. Republish to the URL above from now on. -->
 <!-- Owner status page TEMPLATE (Agentic Workflow). /init-workflow copies this,
      fills the project name + data:* regions, and publishes it. Thereafter the
      Chronicler agent updates ONLY the data:* regions between the marked comments,
@@ -145,7 +147,7 @@
     <!-- data:meta -->
     <div class="meta">
       <span class="stagebadge"><span class="pulse"></span>V6 · Operate &amp; Evolve</span>
-      <span>Updated 2026-07-08 · adopted via /adopt fill</span>
+      <span>Updated 2026-08-03 · context-economy mission COMPLETE (wraps at Phase 4, D15) — awaiting the human's single integration merge</span>
     </div>
     <!-- /data:meta -->
   </header>
@@ -172,17 +174,18 @@
       <div class="card">
         <h3>In flight</h3>
         <div class="kv">
-          <div class="row"><span class="k">Active mission</span><span class="v">None — /adopt fill in review</span></div>
-          <div class="row"><span class="k">Next step</span><span class="v">Review the adoption pile, commit via PR, then /connect</span></div>
-          <div class="row"><span class="k">Deployed</span><span class="v">v1.30.0 on the marketplace (installs from main)</span></div>
+          <div class="row"><span class="k">Active mission</span><span class="v">context-economy — COMPLETE (D15, mission wraps at Phase 4). Phase 1 DROPPED (premise retracted); Phases 2, 3 and 4 shipped and merged into `mission/context-economy-integration`. Awaiting the human's single merge (S8c) into `main`.</span></div>
+          <div class="row"><span class="k">Next step</span><span class="v">S8c opens the integration PR against `main`; the human merges once. Nothing follows P4 — mission closes on merge.</span></div>
+          <div class="row"><span class="k">Deployed</span><span class="v">v1.41.0 on the marketplace (installs from main). v1.42.0 built on the context-economy integration branch, pending the human's S8c merge — not yet deployed.</span></div>
         </div>
       </div>
       <div class="card">
         <h3>Needs the owner</h3>
         <div class="actions">
-          <div class="action todo"><span class="dot"></span><span class="txt">Merge the self-adoption PR<small>docs/WORKFLOW.md · CHANGELOG · JOURNEY · idea.md · business/ · launch/ — reviewed, monetization locked-deferred</small></span></div>
-          <div class="action todo"><span class="dot"></span><span class="txt">Run /connect<small>Owner channel is none — gates currently reach you only at the terminal</small></span></div>
-          <div class="action todo"><span class="dot"></span><span class="txt">Schedule /audit all<small>V4-grade pillar audit never formally ran on this repo</small></span></div>
+          <div class="action todo"><span class="dot"></span><span class="txt">Merge `mission/context-economy-integration` into `main` (S8c PR)<small>The mission's only remaining step. Full honest record, including a retracted founding premise and a dropped Phase 1: `docs/product/engineering/context-economy-metrics.md`</small></span></div>
+          <div class="action todo"><span class="dot"></span><span class="txt">Settings action, outside this repo: prune `~/.claude/skills` (~140 skills) and unused MCP servers<small>The mission's own audit found this is a larger context lever than everything Phases 1–4 could deliver combined — minutes of settings work, not engineering. Not scheduled by any session.</small></span></div>
+          <div class="action todo"><span class="dot"></span><span class="txt">Run /connect<small>Owner channel status last recorded as none — gates currently reach you only at the terminal</small></span></div>
+          <div class="action todo"><span class="dot"></span><span class="txt">Schedule /audit all<small>V4-grade pillar audit never formally ran on this repo; the lifecycle rail and pillars section below are stale since 2026-07-08 and were deliberately not rewritten this pass</small></span></div>
         </div>
       </div>
     </div>
@@ -205,6 +208,11 @@
     <div class="sec-head"><h2>Timeline</h2><span class="rule"></span></div>
     <!-- data:timeline -->
     <div class="timeline">
+      <div class="entry"><span class="date">2026-08-03</span><span class="body"><div class="title"><span class="tag ship">Milestone</span>context-economy mission wraps at Phase 4 — Phase 1 dropped, no savings claim</div><div class="desc">The mission re-ran its own measuring tool on its own working session and brought in an independent audit licensed to overturn earlier verdicts. It found a scale-invariance argument in the mission's own writeup that had quietly stopped being true after an earlier repair, a safety-threshold "straddle" manufactured by a statistical technicality rather than measured, and a governance threshold typed into the code three times and pinned by zero tests (now fixed and proven by deliberately breaking it). It also found the mission's biggest real lever sitting outside this repo entirely — the owner's own ~140-skill personal library — and that the mission's own tooling grew heavier while it ran. Phase 1 (the "write firewall") is DROPPED, not deferred: its premise was already retracted in Phase 0.5. Full record, no softening: `docs/product/engineering/context-economy-metrics.md`. Awaiting the human's single integration merge (S8c).</div></span></div>
+      <div class="entry"><span class="date">2026-08-03</span><span class="body"><div class="title"><span class="tag fix">Phase 3</span>`SessionStart:compact` re-read directive</div><div class="desc">A correctness fix, not a cost lever: after a mid-session compaction collapses the transcript, a new hook tells the agent to re-read the project's working ledger and honor any standing human decisions in it. This mission's own transcript once collapsed by more than tenfold in one step with nothing telling the agent to reorient. `ckpt-p3` [STRICT] APPROVE, merged.</div></span></div>
+      <div class="entry"><span class="date">2026-08-03</span><span class="body"><div class="title"><span class="tag ship">Phase 2</span>Standing steers + ledger self-consistency checks</div><div class="desc">Human decisions at checkpoints are now captured verbatim in the ledger instead of paraphrased; a new automated check catches the ledger's "what's next" line disagreeing with itself (it had already drifted three times); the background reminder system now skips parked/on-hold work instead of going silent behind it. `ckpt-p2` APPROVE after one corrective round, merged.</div></span></div>
+      <div class="entry"><span class="date">2026-08-02</span><span class="body"><div class="title"><span class="tag fix">Phase 0.5</span>Instrument repaired — the mission's own headline shrank</div><div class="desc">Four sessions fixed a `prompt = 0` phantom-reset bug (TOTAL 2,108,485 → 1,707,036 tok, −19.0%), added a zero-dependency chars/token band (1.99–3.24), and re-pointed the occupancy gate at the correct `/context` figure (still FAILS, +28.0%). Repaired numbers move the founding ~25%/10–15% write-firewall case to ~4.4–7.2% addressed / ~1.8–4.3% captured. Review caught an inert regression guard and abandoned code that re-decided a settled question in the tool's own voice. `ckpt-p05` APPROVE after one corrective round, merged (`f5fabc6`). Mission PARKS at the P1–P4 human decision point.</div></span></div>
+      <div class="entry"><span class="date">2026-08-02</span><span class="body"><div class="title"><span class="tag fix">Paused</span>context-economy Phase 0 — measurement built, sanity check failed</div><div class="desc">New `tools/context-attrib.mjs` context-attribution measurer + fail-closed lint gate; corrected a false "/loop tick = fresh context" doc claim at 12 sites. Baseline run on an 11.6 MiB transcript diverged 5.59× from the `/context` figure — two bugs caught by review (a calibration-ratio inversion, an inert regression guard), neither of which moved the headline gap. `ckpt-p0` APPROVE, merged into the integration branch (`273f1d3`). Mission STOPS at the ⛔ D1 hard pause pending 4 owner decisions — see "Needs the owner."</div></span></div>
       <div class="entry"><span class="date">2026-07-08</span><span class="body"><div class="title"><span class="tag plan">Milestone</span>The protocol adopted itself</div><div class="desc">/adopt fill on the plugin's own repo: §10 profile, records reconstructed, registered as row 1 of the portfolio registry (xyzhub/registry).</div></span></div>
       <div class="entry"><span class="date">2026-07-08</span><span class="body"><div class="title"><span class="tag ship">v1.30.0</span>Portfolio registry (§13)</div><div class="desc">Registry-repo mechanism, /operate portfolio mode, /adopt registration. PR #7.</div></span></div>
       <div class="entry"><span class="date">2026-07-07</span><span class="body"><div class="title"><span class="tag ship">v1.16→v1.29</span>The big arc</div><div class="desc">Guardrail hardening, merge delegation, 5 new agents (16 total), single-word commands, owner channel with tap-to-approve, loop mode, /doctor, /tune. Six PRs; evals 8/8 effective (~$8.60).</div></span></div>
