@@ -34,6 +34,18 @@ recommendations. Empty once the human has answered them all._
 
 (none)
 
+## Standing steers
+
+_File state preserves **decisions** but loses **taste** — how the human wants the
+work done. Captured **verbatim** at checkpoints only, never mid-brief, never from
+an agent's own inference. Quote exactly; a paraphrase is not a steer. Grammar, one
+line each:_ `- YYYY-MM-DD (ckpt <id>) — "<exact words>"` _where `<id>` is the
+checkpoint id from the `## Checklist` (e.g. `p2`, or `ckpt-p2` — either form).
+Retire by ~~strikethrough~~, **never delete**: a retired steer is the evidence for
+why the work changed. Every session re-reads this block before it starts._
+
+(none)
+
 ## Deviations
 
 _Any departure from a brief — logged here the moment it happens, with why.

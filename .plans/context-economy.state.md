@@ -36,7 +36,10 @@ beat-enforcer due-ness fix landed on `mission/context-economy-p3`.
 **`ckpt-p3` [STRICT] returned APPROVE (2026-08-03) and Phase 3 is MERGED (`8a3b4c7`).**
 **D14 (2026-08-03) authorized P2**, split into **S5** (standing steers + the `Next up:`
 two-site agreement check) and **S5b** (the `ckpt-p3` follow-ups, incl. the enforcer
-`first → first due` fix). **Next up: `S5`** on branch `mission/context-economy-p2`.
+`first → first due` fix). **`S5` is DONE (2026-08-03)** — standing-steers block, the
+§3-only append rule, and BOTH new lint checks (`checkStandingSteers`,
+`checkNextUpAgreement` — machinery defect (a) is now GUARDED).
+**Next up: `S5b`** on branch `mission/context-economy-p2`.
 **P1 and P4 remain HELD** and require a planner re-brief before they run.
 
 ## Checklist
@@ -59,7 +62,7 @@ checkpoint/reviewer/chronicler row — set `[~]` the moment a beat is picked up 
 - [x] ⛔ **DECISION POINT — DECIDED 2026-08-03 (D13).** Human authorized **P3 ONLY**, deliberately scoped to the remaining session budget. **P1, P2, P4 stay HELD** and unauthorized pending a session-limit refresh.
 - [ ] S4 — **HELD** — write firewall: extend the 30% rule to writes; no tool-list change anywhere, per D7 (branch `mission/context-economy-p1`). Premise retracted: Write/Edit is ≤15.9% char / **4.40–7.18% token** (S0.5-4 measured; supersedes the pre-repair "2.8–3.7%"), never 22.5%. See the P0.5 re-decision package §4.
 - [ ] Checkpoint `ckpt-p1` — **HELD** — phase 1 review + merge into integration
-- [ ] S5 — **AUTHORIZED (D14)** — standing steers: ledger block + §3-only append + lint grammar check (branch `mission/context-economy-p2`). Fidelity control; case unchanged by the new evidence. **+ folds in machinery defect (a): the `Next up:` two-site agreement check** (same `lint.mjs` work).
+- [x] S5 — **DONE 2026-08-03** (branch `mission/context-economy-p2`) — standing steers: `## Standing steers` in `templates/mission-state.md`, §3-only append rule in `mission.md` (+ §4 resume line), WORKFLOW §5 ledger row, and `checkStandingSteers()` in `lint.mjs` (OQ4: only ledgers that already carry the block). **+ machinery defect (a) folded in: `checkNextUpAgreement()`** — every `Next up:` site must name the same beat. Both mutation proofs run in both states.
 - [ ] S5b — **AUTHORIZED (D14)** — enforcer due-ness: `head -1` → first *due* candidate (the open [Med] from `ckpt-p3`), the §3 wording tighten, and the two low test-coverage gaps (multi-ledger `ls -t` for `compact-resume`; unreleased `HARD PAUSE` row). Same branch `mission/context-economy-p2`. **Split from S5 deliberately** — different file set (`hooks/lib/` + `hook-test.mjs` + WORKFLOW §3), and smaller sessions survive better.
 - [ ] Checkpoint `ckpt-p2` — **AUTHORIZED (D14)** — phase 2 review (covers S5 **and** S5b) + merge into integration
 - [x] S6 — **DONE 2026-08-03** (branch `mission/context-economy-p3`) — `hooks/lib/compact-resume.sh` + a `SessionStart` block whose matcher is `compact` and nothing else; **+ the beat-enforcer due-ness fix** (machinery defect (b)), contained to `hooks/lib/beat-enforcer-stop.sh`. Atomic-ref doc updates in the same commit. Harness **16 → 24 cases**; both mutation proofs run. Completed after the first attempt died on a usage limit.
@@ -181,8 +184,9 @@ not re-litigated by any later session._
   suppressed by rule **(i) alone**; rule (iii) was not needed for it. Consequence: (iii)
   subsumes the `[ ]` half of (ii), leaving (ii) useful only for `[~]` blockers — i.e.
   rule (ii)'s `[ ]` branch is now dead code.
-- **Still unguarded:** machinery defect (a), the `Next up:` two-site agreement check — its
-  home is P2, which is not authorized. Both sites were updated correctly by hand this phase.
+- ~~**Still unguarded:** machinery defect (a), the `Next up:` two-site agreement check~~ —
+  **CLOSED by `S5` (2026-08-03)**: `checkNextUpAgreement()` in `tools/lint.mjs` now fails
+  the gate when two `Next up:` sites name different beats.
 
 ## Standing steers
 
@@ -196,6 +200,20 @@ _Human steers captured **verbatim** at checkpoints only, never mid-brief. Gramma
 
 _Any departure from a brief — logged here the moment it happens, with why. Deviating is
 allowed; deviating silently is not (§4)._
+
+- 2026-08-03 (S5) — **scope addition beyond the brief, at the orchestrator's direction (D14):**
+  machinery defect (a), the `Next up:` two-site agreement check, was folded in as
+  `checkNextUpAgreement()` in `tools/lint.mjs`. It stayed a **contained** addition (one function,
+  two shared helpers, no new harness, no new file), so the brief's "stop and log it if it needs
+  more" trigger never fired.
+- 2026-08-03 (S5) — **two tolerances added to the brief's steer regex**, both to avoid the check
+  forbidding what the convention mandates: (1) an optional `~~…~~` wrapper, since retiring a steer
+  by strikethrough is required and a bare regex would reject the retired form; (2) the cited
+  `<id>` may be written `p2` **or** `ckpt-p2`, and the `## Checklist` existence test accepts either.
+  A ledger whose checklist names no `ckpt-*` id at all falls back to a plain token search rather
+  than failing — legacy-safe, per OQ4's spirit.
+- 2026-08-03 (S5) — **no planner re-brief for P2**, per D14: P2's brief was never premised on the
+  retracted 22.5% figure. Recorded as D14 directed.
 
 - 2026-08-03 (S6) — **the beat-enforcer fix is BROADER than "blocking-row awareness"** (D13's
   wording). It ships three suppression rules, not one: (i) the beat row itself carrying
@@ -426,6 +444,19 @@ allowed; deviating silently is not (§4)._
 
 _≤10 lines per entry: what this session did, the verify signal, the branch, and what the
 next session needs. Newest on top; crash-safe by write-ahead._
+
+- _2026-08-03 (`S5`, `backend`, branch `mission/context-economy-p2`): `## Standing steers` added to
+  `templates/mission-state.md` (verbatim-only, grammar `- YYYY-MM-DD (ckpt <id>) — "<exact words>"`,
+  retire by strikethrough); append rule in `mission.md` **§3 only** + a §4 resume line; WORKFLOW §5
+  ledger row. `lint.mjs` +2 checks: `checkStandingSteers()` (grammar + cited `ckpt` id must exist in
+  that file's `## Checklist`; OQ4 — only ledgers already carrying the block) and
+  `checkNextUpAgreement()` (defect (a)). **Rule: each site reduces to a beat key — first
+  session/checkpoint id, else first non-stop word; backticked mentions aren't sites.** Verified:
+  lint · hook-test · `context-attrib --selftest` 44 all green. **Mutations, both states:** 3 bad
+  steers (paraphrase / no date / `ckpt p99`) → 3 precise findings + valid control passed → restored
+  green; header `S5`→`S5b` vs trailer `S5` → `:989 vs line 39` → restored green. Both re-run
+  against HEAD's lint (checks reverted) and PASSED there → load-bearing. 3 legacy ledgers exempt +
+  green. Next: `S5b`, same branch._
 
 - _2026-08-03 (`S6`, `devops`, branch `mission/context-economy-p3`): shipped
   `hooks/lib/compact-resume.sh` — `SessionStart`, matcher **`compact` and nothing else** —
@@ -986,10 +1017,11 @@ attachment-schema check is pulled in or deferred.
   Baseline transcript identified and field-verified by grep (never read). Uncommitted,
   awaiting HITL review of OQ1–OQ5._
 
-Next up: **`S5` — standing steers + the `Next up:` two-site agreement check** (branch
-`mission/context-economy-p2`). Brief: `.plans/context-economy.sessions.md` → Phase 2.
-**Suits `backend`.** Then **`S5b`** (enforcer `first → first due` + §3 wording + two test
-gaps), then **`ckpt-p2`** covering both.
+Next up: **`S5b`** — enforcer `head -1` → first *due* candidate, the §3 wording tighten, and
+the two low test-coverage gaps (multi-ledger `ls -t` for `compact-resume`; unreleased
+`HARD PAUSE` row) — on the SAME branch `mission/context-economy-p2`. Scope: `hooks/lib/`,
+`tools/hook-test.mjs`, WORKFLOW §3, plugin README. **Suits `devops`.** Then **`ckpt-p2`**,
+which reviews `S5` **and** `S5b` together.
 
 Phases 0, 0.5 and 3 are COMPLETE, APPROVED and MERGED into
 `mission/context-economy-integration` (`273f1d3`, `f5fabc6`, `8a3b4c7`).
@@ -1005,9 +1037,10 @@ printed UNDECIDABLE (**D11 stands — do not re-decide**); **OQ7** (`--context-t
 shipped on the planner's standing yes with no human ruling (reviewer declined to overrule;
 removal is local); and **n = 1** — one transcript, one session, itself a planning mission.
 
-⚠️ **The `Next up:` two-site agreement check is still UNGUARDED** (its home is P2, not
-authorized). This file has drifted three times — a resuming session should confirm this
-block against the `## Checklist` rather than trust it blindly.
+✅ **The `Next up:` two-site agreement check is GUARDED as of `S5`** — `node tools/lint.mjs`
+fails when two `Next up:` sites name different beats (comparison is on the first
+session/checkpoint id at each site, so prose around it may differ freely). This file drifted
+three times before the gate existed; a resuming session may now trust these two sites.
 
 **Phase 0.5 is the ONLY authorized phase.** The D1 pause was released 2026-08-02 into a
 re-scope (D10/D11/D12 above), not into P1. **S4 and everything after it stay unauthorized**
