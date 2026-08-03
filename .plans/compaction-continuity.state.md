@@ -10,7 +10,12 @@ _The durable state that outlives any transcript (WORKFLOW.md §2, principle 1): 
 fresh agent resumes the mission from this file alone. Write-ahead — update it
 before ending a session._
 
-**⛔ NOT STARTED — planned 2026-08-03, blocked on OQ1–OQ7.** Nothing here has been
+**OQ1, OQ4 and OQ6 RESOLVED 2026-08-03 by the human** — all three planner
+recommendations accepted verbatim. **OQ2, OQ3, OQ5 and OQ7 stand on the planner's
+recommendation** absent a ruling (the human was shown them and did not override);
+any reviewer may challenge them at a checkpoint. **Execution is UNBLOCKED at S1.**
+
+**⛔ NOT STARTED — planned 2026-08-03.** Nothing here has been
 executed. This ledger becomes the newest-mtime file in `.plans/`, so the
 thread-keeper and compact-resume hooks will name it as the active thread — that
 is bookkeeping, not a claim that work is in flight. **The live thread until the
@@ -72,10 +77,10 @@ _Mirrored from `.plans/compaction-continuity.md` with their recommendations.
 **Execution does not start until all seven are answered.** Empty this section as
 each is resolved, recording the answer and its date._
 
-- **OQ1 — Branch dependency (PR #31 open, unmerged).** Wait for #31, or base off
-  `mission/context-economy-integration`? **Recommendation: base off the
-  integration branch**, hold the final PR until #31 merges, then retarget. Do not
-  fork off the default branch — the hook isn't there.
+- **OQ1 — RESOLVED 2026-08-03 (human): base off `mission/context-economy-integration`.**
+  Every phase branches from it; the final PR is held until **PR #31** merges, then
+  retargeted to the default branch. **Not** the default branch — `compact-resume.sh`
+  isn't there. Planner recommendation accepted verbatim.
 - **OQ2 — Byte thresholds and their evidence.** **Recommendation: derive in S2
   from the local transcript corpus** (compaction byte-point via `grep -n` +
   `awk … | wc -c`), ship two named bands (advisory ≈ 55%, urgent ≈ 80% of it);
@@ -84,20 +89,24 @@ each is resolved, recording the answer and its date._
 - **OQ3 — Does `session-handoff.md`'s format change?** **Recommendation: one
   provenance line** (`_Written: <ISO> · session <id> · branch <b>_`), no
   restructuring. If "no", S6 collapses into S5 (log the collapse as a deviation).
-- **OQ4 — How does the write trigger avoid being nagware?** **Recommendation:
-  four mechanical silencers** — one firing per band per session (`$TMPDIR` state
-  keyed by `session_id`), at most two bands, silent when the handoff is already
-  fresher than the crossing, silent when an active mission ledger exists — plus a
-  ≤3-line cap. If it still nags, raise the bands rather than add conditions.
+- **OQ4 — RESOLVED 2026-08-03 (human): four mechanical silencers.** One firing per
+  band per session (`$TMPDIR` state keyed by `session_id`), at most two bands, silent
+  when the handoff is already fresher than the crossing, silent when an active mission
+  ledger exists — plus a ≤3-line cap. **If it still nags, raise the bands; do NOT add
+  conditions.** Deterministic by design: the human must be able to predict exactly when
+  it fires. Planner recommendation accepted verbatim.
 - **OQ5 — What does "keeping it current" mean with no checkpoints?**
   **Recommendation: currency against the transcript, never the clock.** A handoff
   is current if written after the most recent band crossing; otherwise the
   directive labels it suspect and tells the agent to verify against
   `git log`/`git status` before trusting its **Next**.
-- **OQ6 — What fires when there is neither a ledger nor a handoff** (this repo's
-  literal state today)? **Recommendation: inject a distinct ≤6-line directive**
-  naming `git log -5`, `git status`, `.remember/now.md`, and instructing the agent
-  to tell the human the record is missing. Silence is the current bug.
+- **OQ6 — RESOLVED 2026-08-03 (human): inject a distinct ≤6-line directive.** When
+  there is neither a ledger nor a handoff (this repo's literal state today), name
+  `git log -5`, `git status`, `.remember/now.md`, and instruct the agent to **tell the
+  human the record is missing** rather than proceed on the summary. **Silence is the
+  current bug**, and this is the case the owner is in most of the time. It must **not**
+  instruct the agent to author a handoff on the spot — immediately after losing context
+  is the worst moment to write state. Planner recommendation accepted verbatim.
 - **OQ7 — Does the trigger fire during missions too?** **Recommendation: no —
   only when there is no active ledger.** Mission sessions already have the
   thread-keeper, the beat-enforcer and a working compact-resume; firing there adds
