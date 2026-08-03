@@ -15,6 +15,97 @@ protocol's own behavior the way a QA team would.
 
 ---
 
+## 2026-08-03 — Phases 2, 3 and 4: three small ships, and the mission's verdict on itself
+
+The context-economy mission closed out in three more pieces of work, then
+turned its own measuring instrument on itself one last time — and the
+self-audit is the part worth remembering.
+
+Phase 2 was small and mostly invisible to anyone outside the team: a place in
+the project's working ledger for the human's own decisions to be recorded
+word-for-word instead of paraphrased, and a check that catches the ledger
+contradicting itself about what to do next. That second piece mattered more
+than it sounds — the "what happens next" line lives in two places in the
+ledger, and it had already drifted out of sync three times before anyone
+built a check that would catch a fourth. A related fix made the system's own
+background reminders smarter: previously, if a piece of work was on hold for
+any reason, every reminder behind it went silent too, even work that had
+nothing to do with the hold. The reminder system now skips over parked work
+and finds the next thing that's actually due.
+
+Phase 3 fixed a real correctness gap, not a cost problem. Long AI sessions
+occasionally get automatically summarized to keep them from running forever
+— a process that can shrink the working context by more than tenfold in one
+step, as it did once during this very mission's own working session. Nothing
+told the agent afterward that this had happened or what to re-read to get
+back up to speed. Phase 3 adds a short automatic reminder that fires the
+moment a summarization happens, pointing the agent back at the project's
+working ledger. It is a safety net, not a savings feature, and it was framed
+that way from the start.
+
+Phase 4 was the reckoning. The mission re-ran its own measuring tool, this
+time on the transcript of the very session doing the measuring, and then
+brought in an independent reviewer with a mandate to overturn any earlier
+verdict if the evidence warranted it. It did. The review found a mathematical
+argument in the mission's own writeup — "the numbers are still roughly right
+even though a validity check is failing" — that had been true before an
+earlier repair and was quietly no longer true after it, because the repair
+had changed what the numerator and denominator of that argument actually
+measured. It found a safety threshold that looked like it was "too close to
+call" only because of a particular statistical technicality, and that a plain
+reading of the same data said it wasn't close at all. It found a threshold
+number, meant to trigger a safety review, that was typed into the code in
+three different places and never tested — and proved that by deliberately
+breaking it: the tool kept reporting green tests while printing a
+self-contradicting verdict about its own safety threshold. And it found that
+the mission's own machinery — the very apparatus built to measure and manage
+context — had grown noticeably heavier while the mission that built it was
+running.
+
+The most important finding was the simplest one. The mission had spent five
+sessions chasing a lever worth, at best, a few percent of one narrow category
+of context — and in the same measurement run, it surfaced a much bigger lever
+sitting entirely outside the codebase: the vast majority of one large context
+category turned out to be the project owner's own personal library of over a
+hundred AI skills, installed on their machine and loaded into every session
+regardless of what the session was about. Pruning that library is minutes of
+settings work for the owner, not an engineering project, and it is worth more
+than everything this five-week mission built combined. The team's own
+document doesn't soften this: "a lever roughly one and a half times the size
+of what this mission targeted, filed under 'do not act on.'"
+
+Given all of that, the original plan for this mission — a fourth phase
+building a "write firewall" to cap how much an AI agent could write directly
+into its own context — was formally dropped, not merely postponed. Its
+justification had already been retracted in Phase 0.5; Phase 4 confirmed
+there was nothing left to rebuild it on. What survives is a page of
+discipline text describing good practice (delegate long documents, keep the
+main agent's own writes short) with no performance claim attached to it,
+because the team had learned, twice now, not to publish a number it couldn't
+stand behind. Every figure in the mission's final written record carries an
+explicit caveat that it comes from a sample size of one — one transcript, one
+session, one operator — and the record says so on every page rather than
+once at the top where it could be missed.
+
+The mission's own status page had also gone stale in an ordinary,
+unglamorous way: nobody had touched its "what's deployed" line in a month,
+even though four real releases had shipped underneath it. This pass fixed
+that line. It deliberately did not repaint the rest of the page — the
+stage-by-stage lifecycle summary and the quality-pillar scorecard are a
+separate editorial job, logged and left for later rather than quietly
+patched over.
+
+What this phase leaves behind, honestly stated: a working measurement tool
+with a safety gate that fails closed if it's ever removed; a fix for a real
+correctness bug around AI session summarization; two small pieces of
+process discipline that make the project's own paper trail harder to drift;
+and a written record that says, in its own words, "the shipped code is good,
+the analysis on top of it was not — and admits exactly where and why." The
+team that built the instrument is not the team that gets to grade its own
+homework, and this phase made sure someone else did.
+
+---
+
 ## 2026-08-02 — Phase 0.5: the instrument got repaired, and the mission's own headline shrank with it
 
 The previous entry left the context-economy mission stopped at a hard pause: a

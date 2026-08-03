@@ -63,9 +63,16 @@ items table copied verbatim.
 **`S8a` is DONE (2026-08-03)** — the P1 residue (c) discipline lines shipped as contract
 text (**Bounded writes** in §6.2 of both WORKFLOW mirrors) plus the OQ3 PR-body line in the
 documentation-of-record agent's contract. No savings claim, no number, no new gate.
-**Next up: S8b** — the owed `chronicler` pass covering P2, P3 and P4 (CHANGELOG + JOURNEY +
-status page, then the orchestrator republishes via the Artifact tool) and the **minor**
-version bump, on branch `mission/context-economy-p4`.
+**`S8b` is DONE (2026-08-03)** — the owed documentation-of-record pass covering P2, P3 and
+P4: CHANGELOG (no savings figure), `docs/product/JOURNEY.md`, and the status-page data
+regions (version stamp fixed; lifecycle/pillars rewrite explicitly deferred). **Minor**
+version bump to **v1.42.0** in `plugins/agentic-workflow/.claude-plugin/plugin.json` and
+`docs/WORKFLOW.md:3`; `.claude-plugin/marketplace.json` carries no per-plugin version field
+to mirror (logged as a deviation, not invented). **Next up: S8c** — the integration PR:
+merge `mission/context-economy-p4` into `mission/context-economy-integration` on `ckpt-p4`
+APPROVE, `chronicler` authors the PR body to
+`.plans/context-economy.artifacts/p4-pr-body.md`, `gh pr create --body-file` against `main`.
+**The human merges once. No agent pushes to `main`.**
 
 ## Checklist
 
@@ -98,7 +105,29 @@ checkpoint/reviewer/chronicler row — set `[~]` the moment a beat is picked up 
 - [x] S7b — **DONE 2026-08-03** (branch `mission/context-economy-p4`) — measurement only, **no source change** (`git diff --stat` touches this ledger alone). Ran S7a's instrument on the untouched baseline (`2fa752c7…`, 4,612 lines / 12,211,203 B) and on this mission's own transcript (`b167727e…`, 1,501 lines / 3,283,782 B, identified by `grep -c "context-economy"` = 1,138 vs 159; **greps only, no `*.jsonl` was Read**). **Baseline reproduces the audit byte-for-byte** and **every A4/A5 hand figure lands exactly**; `attach: other` 343,579 → 179,803, a shrink of **163,776 = exactly** the four newly-named kinds. **A5 footprint 143,689 = 5.4% (baseline) / 87,070 = 9.3% (this mission)** — all three components were attachment kinds in **both**, so the `EXCLUDED` provenance branch never fired. **D4a recorded as an OBSERVATION, not a gate** (9.16% → 8.61% char share, −6.0% relative). **`isCompactSummary` true-records = 1 ⇒ D8 stays Option A.** Gate NOT evaluated (no fresh `/context` TOTAL). Full figures: **`## 📊 S7b MEASUREMENT BLOCK`**. **Suits:** `backend`.
 - [x] S7c — **DONE 2026-08-03** (branch `mission/context-economy-p4`) — `docs/product/engineering/context-economy-metrics.md` written, doc-only, no instrument run, no transcript touched. States **A1–A10 and the A4 correction honestly**, headline **~4.4–7.2% addressed / ~1.8–4.3% captured** vs a founding **~25% / 10–15%**, **n = 1 throughout**, D4a as an observation never a gate, D8 stays Option A with the `grep -l` = 11 artefact disclosed alongside the honest 1-record count, the A4 re-bucketing arithmetic (343,579 → 179,803, shrink = 163,776 exactly), and the tracked open items table copied verbatim. **Suits:** `analyst`.
 - [x] S8a — **DONE 2026-08-03** (branch `mission/context-economy-p4`) — the **Bounded writes** paragraph landed in §6.2 of both WORKFLOW mirrors (identical text, one commit) and the PR-body line landed in `plugins/agentic-workflow/agents/chronicler.md` (before `## Invocation contract`, naming `gh pr create --body-file`; **no `tools:` line touched**). No number, no `%`, no savings language, no gate. Originally — **P1 residue (c)**: the discipline lines as contract text in **WORKFLOW §6.2, both mirrors** (`docs/WORKFLOW.md:468-495`, `templates/WORKFLOW.md:476-503`) + the **OQ3** one-line PR-body addition to the documentation-of-record agent's contract (its agent file; no tool-list change — the brief names the exact ranges). **No savings claim, no new gate.** **Suits:** `writer`. _(Wording avoids the bare beat keyword so the enforcer does not read this writer session as a documentation beat — same reason as `037b36b`.)_
-- [ ] S8b — **AUTHORIZED (D15), re-briefed 2026-08-03** — `chronicler` pass covering **P2, P3 and P4** (the P2 and P3 passes were skipped to conserve budget and are **OWED**): CHANGELOG + JOURNEY + status page, then the orchestrator republishes via the Artifact tool. **Minor version bump** (new tool + new hook + protocol change). Status-page lifecycle/pillars staleness (stale since 2026-07-08): stamp fixed, rewrite **deferred** — the ledger must say which was done. **Suits:** main session + `chronicler`.
+- [x] S8b — **DONE 2026-08-03** (branch `mission/context-economy-p4`) — the owed `chronicler`
+  pass covering **P2, P3 and P4**: `CHANGELOG.md` (new `### Added`/`### Docs` blocks under
+  `## [Unreleased]`, tagged `v1.42.0`, grepped for `%`/`sav` — **zero hits**, no savings
+  figure), `docs/product/JOURNEY.md` (one new dated entry, posterity narrative, not
+  softened), and `docs/product/overview.html` data regions
+  (`data:meta`/`data:now`/`data:timeline` updated; **`data:stages` and `data:pillars` left
+  untouched — DEFERRED**, per the brief's explicit instruction, and flagged in `data:now`'s
+  action list as its own open item). **Minor version bump to `v1.42.0`**:
+  `plugins/agentic-workflow/.claude-plugin/plugin.json` and `docs/WORKFLOW.md:3`
+  (`S8a` deliberately left this stamp). **`.claude-plugin/marketplace.json` was NOT
+  touched** — it carries no per-plugin version field to mirror (only its own unrelated
+  top-level marketplace-schema `"version": "1.0"`, unchanged across ~40 prior plugin
+  version bumps per `git log`) — reported as a discrepancy between the brief and the repo,
+  not papered over. Status-page staleness: **fixed** the "Deployed" version stamp (now
+  states `v1.41.0` live / `v1.42.0` pending the S8c merge, honestly, since this bump is not
+  yet on `main`) and the mission's own `data:now`/`data:timeline` rows; **deferred** the
+  lifecycle rail (`data:stages`) and pillars (`data:pillars`) rewrite as a separate
+  editorial job (already a tracked open item). The status page still needs the orchestrator
+  to **republish it via the Artifact tool** to the URL in its `artifact-url` comment — this
+  session cannot publish. Verify: `node tools/lint.mjs` clean · `node tools/hook-test.mjs`
+  clean at **33** · `node tools/context-attrib.mjs --selftest` clean at **54** · version
+  consistent across `plugin.json`, `docs/WORKFLOW.md:3`, and the CHANGELOG heading tags ·
+  `git status --short` clean after commit. **Suits:** main session + `chronicler`.
 - [ ] S8c — **AUTHORIZED (D15), re-briefed 2026-08-03** — merge P4 into integration, `chronicler` authors the PR body to `.plans/context-economy.artifacts/p4-pr-body.md`, `gh pr create --body-file` against `main`. **The human merges once. No agent pushes to `main`.** **Suits:** main session + `chronicler`.
 - [ ] Checkpoint `ckpt-p4` — **AUTHORIZED (D15)** — final review of the whole `main..mission/context-economy-integration` diff: all gates green with the selftest count stated and **≥ 44**; **the metrics doc honest about what was and was not moved** (a doc that reads as a success story has failed this checkpoint); D4a nowhere presented as a gate; **D4b still `[~]`**; D7's untouched-tool-list invariant intact across the whole mission; the discipline lines carrying no savings claim; the A4 naming additive only; the tracked open items survived into both the ledger and the metrics doc. Then the **human merges once**. **Nothing follows P4.**
 - [~] D4b — cross-mission re-measurement on a later comparable mission (deferred, non-blocking, tracked)
@@ -458,6 +487,24 @@ _Human steers captured **verbatim** at checkpoints only, never mid-brief. Gramma
 _Any departure from a brief — logged here the moment it happens, with why. Deviating is
 allowed; deviating silently is not (§4)._
 
+- 2026-08-03 (S8b) — **the marketplace manifest mirror the brief named does not exist to be
+  bumped.** The brief said "the minor version bump… and the marketplace manifest mirror
+  (`.claude-plugin/marketplace.json`)". That file has no per-plugin version field — only its
+  own unrelated top-level marketplace-schema `"version": "1.0"`, which `git log -p` shows
+  has never moved across ~40 prior `plugin.json` version bumps. Rather than inventing a new
+  field or bumping the unrelated schema version, `.claude-plugin/marketplace.json` was left
+  untouched and the discrepancy is reported here, per the "report, don't paper over"
+  instruction. `tools/lint.mjs`'s `checkManifests` does not require a version field on it
+  either (`marketJson`'s required keys are `['name', 'plugins']` only), so nothing is
+  gate-unenforced by this.
+- 2026-08-03 (S8b) — **the status-page "Deployed" line states two versions, not one**, because
+  this session's own version bump (`v1.42.0`) lives on `mission/context-economy-p4`, not yet
+  merged to `main`. Stating only `v1.42.0` would have been dishonest (not actually deployed);
+  stating only the stale `v1.30.0` would have ignored four real releases already on `main`
+  (up to `v1.41.0`, per `plugin.json` before this session's edit). The line now reads
+  "v1.41.0 on the marketplace… v1.42.0 built on the integration branch, pending the human's
+  S8c merge — not yet deployed," matching the "keep it honest: blocked items show as
+  blocked, not omitted" instruction.
 - 2026-08-03 (S7b) — **the brief's `isCompactSummary` command does not return its stated
   value.** `grep -l isCompactSummary …/*.jsonl | wc -l` returns **11**, not the planning-time
   **1**. Diagnosis: memo M1's self-reference artefact has grown — the mission's own docs name
@@ -904,6 +951,28 @@ machinery is a larger consumer than anything P1–P4 can save, and it grew durin
 _≤10 lines per entry: what this session did, the verify signal, the branch, and what the
 next session needs. Newest on top; crash-safe by write-ahead._
 
+- _2026-08-03 (`S8b`, main session + `chronicler`, branch `mission/context-economy-p4`): the
+  owed documentation-of-record pass for **P2, P3 and P4 together**. `CHANGELOG.md` gained
+  two new blocks under `## [Unreleased]` (standing steers/`Next up:` guard, enforcer
+  due-ness, `SessionStart:compact`, the A4/A5 instrument extension, bounded writes + the
+  metrics doc, and the P1-dropped/mission-wraps note), every line tagged `v1.42.0`, grepped
+  clean for `%`/`sav` (**no savings figure**). `docs/product/JOURNEY.md` gained one new
+  dated entry, posterity-voiced, not softened (the audit's findings stated plainly, incl.
+  the owner-settings lever and the mission's own machinery growing). `docs/product/overview.html`
+  data regions updated: `data:meta`, `data:now` (mission COMPLETE, awaiting S8c's merge; the
+  "Deployed" line corrected `v1.30.0`→`v1.41.0` live/`v1.42.0` pending merge; a new owner
+  action item for the `~/.claude/skills` prune) and `data:timeline` (+3 entries, newest
+  first, total 9, within the ≤20 cap). **`data:stages` and `data:pillars` deliberately
+  UNTOUCHED** — DEFERRED, flagged as an open item in `data:now`, per the brief. **Version
+  bump — minor, v1.41.0 → v1.42.0**: `plugins/agentic-workflow/.claude-plugin/plugin.json`
+  and `docs/WORKFLOW.md:3`. **Deviation:** `.claude-plugin/marketplace.json` was NOT bumped
+  — `git log` shows it has never carried a per-plugin version field across ~40 prior plugin
+  version bumps (only an unrelated top-level marketplace-schema `"version": "1.0"`); nothing
+  existed to mirror, so nothing was invented. Verify: `node tools/lint.mjs` clean ·
+  `node tools/hook-test.mjs` clean at **33** · `node tools/context-attrib.mjs --selftest`
+  clean at **54** · `git status --short` clean after commit. **The orchestrator still owes
+  the Artifact-tool republish of `docs/product/overview.html`** to the URL in its
+  `artifact-url` comment — this session cannot publish. Next: **S8c**, the integration PR._
 - _2026-08-03 (`S8a`, `backend`, branch `mission/context-economy-p4`): **contract text only**
   — P1's residue (c). New **Bounded writes** paragraph in §6.2 of both WORKFLOW mirrors
   (`docs/WORKFLOW.md` + `plugins/agentic-workflow/templates/WORKFLOW.md`, byte-identical
@@ -1573,16 +1642,20 @@ attachment-schema check is pulled in or deferred.
   Baseline transcript identified and field-verified by grep (never read). Uncommitted,
   awaiting HITL review of OQ1–OQ5._
 
-Next up: **S8b** — the owed documentation pass covering **P2, P3 and P4** together (the P2
-and P3 passes were skipped to conserve budget): CHANGELOG + `docs/product/JOURNEY.md` +
-`docs/product/overview.html`, authored by the documentation-of-record agent and then
-republished by the orchestrator via the Artifact tool (subagents cannot publish). Plus the
-**minor** version bump in `plugins/agentic-workflow/.claude-plugin/plugin.json` and wherever
-the marketplace manifest mirrors it — `S8a` deliberately left `docs/WORKFLOW.md:3` alone, so
-the stamp is S8b's. The CHANGELOG entry must claim **no savings figure**; the status-page
-lifecycle/pillars rewrite is deferred (stamp + mission rows only) and the ledger must say
-so. Same branch `mission/context-economy-p4`. Brief: `.plans/context-economy.sessions.md`
-`## Phase 4` → `### S8b`.
+Next up: **S8c** — the integration PR. Merge `mission/context-economy-p4` into
+`mission/context-economy-integration` (batch policy, D3 — never the default branch),
+`chronicler` authors the PR body to `.plans/context-economy.artifacts/p4-pr-body.md`
+(honest headline, what shipped, what was dropped, what stays open, n = 1), then
+`gh pr create --base main --head mission/context-economy-integration --body-file
+.plans/context-economy.artifacts/p4-pr-body.md`. **Do not push to `main`. Do not merge. The
+human merges once.** Same branch `mission/context-economy-p4`. Brief:
+`.plans/context-economy.sessions.md` `## Phase 4` → `### S8c`, then `## Checkpoint ckpt-p4`.
+`S8b` (2026-08-03) is DONE — CHANGELOG (no savings figure), JOURNEY, and the status-page
+data regions are chronicled and the **minor** version bump to `v1.42.0` landed in
+`plugins/agentic-workflow/.claude-plugin/plugin.json` and `docs/WORKFLOW.md:3`;
+`.claude-plugin/marketplace.json` has no per-plugin version field to mirror (deviation
+logged, not invented). The status page still needs the **orchestrator** to republish it via
+the Artifact tool.
 
 Phases 0, 0.5, 2 and 3 are COMPLETE, APPROVED and MERGED (`273f1d3`, `f5fabc6`, `e5b6326`,
 `8a3b4c7`). **Phase 4 is the last phase — nothing follows it.**

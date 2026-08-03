@@ -5,6 +5,72 @@ here, in [Keep a Changelog](https://keepachangelog.com/) format. This repo
 has no tags — each version-stamped commit on `main` IS the release.
 
 ## [Unreleased]
+### Added
+- **Standing steers + `Next up:` two-site drift guard (v1.42.0).** The
+  mission-state ledger template gains a `## Standing steers` block — human
+  decisions captured verbatim at checkpoints only (never mid-brief), retired
+  by strikethrough, never deleted — plus a `mission.md` §3 append rule and a
+  `checkStandingSteers()` lint check (validates only ledgers that already
+  carry the block). A new `checkNextUpAgreement()` lint check fails the gate
+  when a ledger's two `Next up:` sites (header banner + handoff-trailer) name
+  different beats — closing a drift that had bitten this ledger three times.
+  (context-economy mission, Phase 2, `68c6e26`; corrective `939c287`/
+  `a4a4cd9`; `ckpt-p2` APPROVE, merged `e5b6326`)
+- **Beat-enforcer `Stop` backstop scans for the first *due* beat, not just the
+  first candidate (v1.42.0).** Previously any HELD or unreleased-blocker row
+  above an open checkpoint/reviewer/chronicler beat silenced the nudge for
+  every beat beneath it. The backstop now steps over parked (HELD/⛔/HARD
+  PAUSE) rows and nudges the first genuinely due one; an unreleased ⛔/HARD
+  PAUSE barrier still blocks every candidate beneath it. The `PreToolUse`
+  closing-action enforcer does **not** yet carry this fix (tracked open item —
+  it still nudges the first `[ ]` candidate regardless of due-ness).
+  (context-economy mission, Phase 2/3, `d09090b`, `8e4618f`; `ckpt-p2` merged
+  `e5b6326`, `ckpt-p3` [STRICT] merged `8a3b4c7`)
+- **`SessionStart:compact` re-read directive (v1.42.0).** New
+  `hooks/lib/compact-resume.sh`, matched only on `SessionStart` with matcher
+  `compact`: after a mid-session compaction, it emits a short directive
+  telling the agent to re-read the active `.plans/*.state.md` ledger and
+  `docs/product/session-handoff.md` verbatim, and to honor the ledger's
+  `## Standing steers`. Silent with no active ledger; never blocks. A
+  correctness fix, not a cost lever — this repo's own governance-hook count
+  goes from two to three (WORKFLOW §4 and both READMEs updated to match).
+  (context-economy mission, Phase 3, `d09090b`; `ckpt-p3` [STRICT] APPROVE,
+  merged `8a3b4c7`)
+- **`tools/context-attrib.mjs` names four attachment kinds it previously
+  collapsed into `attach: other`, and prints a mission-machinery footprint
+  table (v1.42.0).** `deferred_tools_delta`, `agent_listing_delta`,
+  `mcp_instructions_delta`, and `invoked_skills` are now their own reported
+  categories (additive re-bucketing only — no sizing logic changed). A new
+  per-attachment-kind table and a named `mission machinery footprint` line
+  (`hook_success` + `hook_additional_context` + `task_reminder`) make the
+  plugin's own hook output measurable for the first time. The reviewer-return
+  trigger threshold is now a named constant (`D7_TRIGGER_PCT`) pinned by
+  selftest cases in both directions, replacing a bare literal duplicated
+  across three prose strings. `--selftest` case count: 44 → 54.
+  (context-economy mission, Phase 4, `04df14a`)
+- **Bounded-writes contract text (WORKFLOW §6.2), and a PR-body line in the
+  `chronicler` contract (v1.42.0).** Both WORKFLOW mirrors now state
+  explicitly: the orchestrator authors only the ledger and edits of ~15 lines
+  or fewer; any longer document is authored by a subagent and returned as a
+  path, not as content. `chronicler` now also authors PR bodies (`gh pr
+  create --body-file`), closing a gap where that document previously
+  transited the orchestrator's own context uncounted. No tool-list changes.
+  (context-economy mission, Phase 4 — residue of the dropped Phase 1,
+  `41f046a`)
+- **`docs/product/engineering/context-economy-metrics.md`** — the
+  engineering-economics record of what the `context-economy` mission actually
+  measured against its own founding claim, including ten lettered findings
+  from an independent audit. (context-economy mission, Phase 4, `2cec196`)
+### Docs
+- **The `context-economy` mission wraps at Phase 4; Phase 1 dropped, not
+  shipped (v1.42.0).** The mission's founding premise — sized on orchestrator
+  `Write`/`Edit` — was retracted once the measuring instrument was repaired
+  (Phase 0.5); Phase 1 (a write firewall built on that premise) was dropped
+  rather than built on a retracted number, and its only surviving residue is
+  the discipline text listed above, which carries no savings claim. Full
+  honest numbers, method, and caveats:
+  `docs/product/engineering/context-economy-metrics.md`. (context-economy
+  mission, D15 `4720f56`; Phase 4 measurement `de78e84`/`2cec196`)
 ### Fixed
 - **Docs no longer claim a `/loop` tick gets fresh context.** The false claim that each
   tick of an unattended `/loop` run starts with a clean context window is corrected
