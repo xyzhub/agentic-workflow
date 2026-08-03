@@ -100,6 +100,24 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 
 // ── Taxonomy ─────────────────────────────────────────────────────────────
+// Attachment kinds that get a category of their own. Everything else collapses into
+// `attach: other`. The four delta/registry kinds after the first two were added in
+// S7a: the whole-mission audit (2026-08-03, A4) found them hiding inside
+// `attach: other` — `deferred_tools_delta`, `agent_listing_delta`,
+// `mcp_instructions_delta` and `invoked_skills` are registry/definition injections,
+// not the lean unknown payloads the fallback warning assumed. Naming them moves mass
+// OUT of `attach: other` and changes no sizing logic.
+// The CATS rows are DERIVED from this list so the dispatch and the taxonomy cannot
+// drift apart (a category with no row would silently NaN the whole split).
+const NAMED_ATTACH_KINDS = [
+  'skill_listing',
+  'hook_success',
+  'deferred_tools_delta',
+  'agent_listing_delta',
+  'mcp_instructions_delta',
+  'invoked_skills',
+];
+const attachCat = (kind) => (NAMED_ATTACH_KINDS.includes(kind) ? `attach: ${kind}` : 'attach: other');
 const CATS = [
   'human steers',
   'orchestrator prose',
@@ -107,8 +125,7 @@ const CATS = [
   'authored: Bash commands',
   'tool results',
   'subagent returns',
-  'attach: skill_listing',
-  'attach: hook_success',
+  ...NAMED_ATTACH_KINDS.map((k) => `attach: ${k}`),
   'attach: other',
 ];
 const WRITE_TOOLS = new Set(['Write', 'Edit', 'MultiEdit', 'NotebookEdit']);
@@ -194,9 +211,7 @@ export async function analyze(file) {
     // The field-picker order is an ASSUMPTION about the attachment schema; report the
     // MASS it mis-sizes, not just the count, so its blast radius is judgeable.
     if (fellBack) attachFallbackChars += n;
-    add(kind === 'skill_listing' ? 'attach: skill_listing'
-      : kind === 'hook_success' ? 'attach: hook_success'
-        : 'attach: other', n);
+    add(attachCat(kind), n);
     attachKinds.set(kind, (attachKinds.get(kind) || 0) + n);
   }
 
@@ -465,6 +480,17 @@ const bandPct = (lo, hi, total) => (lo == null || hi == null || total <= 0
 // TWO DIFFERENT QUANTITIES. Only occupancy can be validated against a `/context`
 // reading, because `/context` reports what is resident, not what accumulation cost.
 const GATE_PCT = 15;
+// D7's trigger, named here so it sits beside the other threshold this tool prints a
+// verdict against, and under the same convention: a named constant, pinned by cases in
+// BOTH directions. It was a bare literal duplicated across three prose strings and
+// pinned by ZERO cases until S7a — the whole-mission audit (2026-08-03, A3) mutated
+// `shareHi > 3` to `> 1`, kept the selftest clean, and got a self-contradicting
+// governance verdict on the real corpus: `share = 1.92–3.13%` printed directly above
+// `the WHOLE band is above 3% — the trigger condition reads as MET`.
+// DENOMINATOR: TOTAL prompt growth in TOKENS (`D7_DENOM_LABEL` below) — the trigger is a
+// token-domain share; the char-domain share is a different statistic (D11).
+// Naming it PINS the trigger; it does not move the verdict. D7 and D11 stay locked.
+const D7_TRIGGER_PCT = 3;
 // The prompt series is input + cache_creation + cache_read — i.e. EVERYTHING resident.
 // `/context` breaks the non-message parts out separately, so its *Messages* sub-total
 // excludes them. Comparing occupancy against that sub-total is the normalisation slip
@@ -553,6 +579,19 @@ function gateLines(r, contextTotal) {
 // reading one as the other is what produced the 4.0%-vs-1.2% reopen (memo §3, D11).
 // Naming the denominator AND printing its value is the whole point of this line.
 const D7_DENOM_LABEL = 'TOTAL prompt growth (Σ positive prompt-deltas over unique requests)';
+// The reading keys off the band's HIGH-token end, i.e. the conservative one: if the share
+// COULD exceed the trigger anywhere in the band, say so rather than quietly picking the
+// endpoint that keeps D7 shut. Extracted from `d7Lines` in S7a so the threshold appears
+// ONCE (as `D7_TRIGGER_PCT`) instead of in three prose strings, and so both directions of
+// the comparison can be pinned by cases without needing three transcripts.
+function d7Reading(shareLo, shareHi) {
+  if (shareHi > D7_TRIGGER_PCT) {
+    return shareLo > D7_TRIGGER_PCT
+      ? `the WHOLE band is above ${D7_TRIGGER_PCT}% — the trigger condition reads as MET`
+      : `the band STRADDLES ${D7_TRIGGER_PCT}% (below it at the low end, above it at the high end) — the trigger condition is UNDECIDABLE at this band width, and a band this wide cannot answer a threshold question`;
+  }
+  return `the whole band is at or under ${D7_TRIGGER_PCT}% — the trigger condition reads as NOT met`;
+}
 function d7Lines(r) {
   const revChars = [...r.agents.entries()]
     // subagent_type is plugin-NAMESPACED in real transcripts (`agentic-workflow:reviewer`);
@@ -564,29 +603,68 @@ function d7Lines(r) {
   if (!r.bandLo) {
     return ['    reviewer: chars/token band unavailable — D7 token-domain verdict SUPPRESSED (a char-domain share is not the trigger)'];
   }
-  // The reading keys off the band's HIGH-token end, i.e. the conservative one: if the
-  // share COULD exceed 3% anywhere in the band, say so rather than quietly picking the
-  // endpoint that keeps D7 shut.
   const tokLo = Math.round(revChars / r.bandHi);
   const tokHi = Math.round(revChars / r.bandLo);
   const shareLo = r.total > 0 ? (tokLo / r.total) * 100 : 0;
   const shareHi = r.total > 0 ? (tokHi / r.total) * 100 : 0;
-  const reading = shareHi > 3
-    ? (shareLo > 3
-      ? 'the WHOLE band is above 3% — the trigger condition reads as MET'
-      : 'the band STRADDLES 3% (below it at the low end, above it at the high end) — the trigger condition is UNDECIDABLE at this band width, and a band this wide cannot answer a threshold question')
-    : 'the whole band is at or under 3% — the trigger condition reads as NOT met';
+  const reading = d7Reading(shareLo, shareHi);
   return [
     `    reviewer return share = ${shareLo.toFixed(2)}–${shareHi.toFixed(2)}% of ${D7_DENOM_LABEL} = ${n0(r.total)} tok [EST/BAND ÷ MEASURED]`,
     `      DENOMINATOR: ${D7_DENOM_LABEL}. Value ${n0(r.total)} tok [MEASURED].`,
     `      NUMERATOR: reviewer return chars ${n0(revChars)} [MEASURED] ÷ the ${r.bandLo.toFixed(2)}–${r.bandHi.toFixed(2)} chars/token band = ${band(tokLo, tokHi)} tok [EST/BAND].`,
-    '      The D7 3% trigger is a TOKEN-DOMAIN SHARE OF TOTAL PROMPT GROWTH. A CHAR-DOMAIN SHARE IS NOT THE TRIGGER:',
+    `      The D7 ${D7_TRIGGER_PCT}% trigger is a TOKEN-DOMAIN SHARE OF TOTAL PROMPT GROWTH. A CHAR-DOMAIN SHARE IS NOT THE TRIGGER:`,
     `      for reference the char share is ${pct(revChars, r.charsSeen)} of ${n0(r.charsSeen)} appended chars — a DIFFERENT denominator, and reading it as the trigger is the normalisation error D11 recorded.`,
     `      reading: ${reading}.`,
     '      This line RE-DERIVES the trigger; it does not re-decide D7. D11 (2026-08-02, human) already',
     '      ruled: D7 STANDS and the reviewer keeps its no-Write structural guarantee. Reopening is the',
     '      human\'s act at a checkpoint, never this instrument\'s.',
   ];
+}
+
+// ── The attachment-kind footprint (A5, task S7a) ─────────────────────────
+// `attachKinds` has been collected and returned since S2 and was NEVER PRINTED. That
+// omission is the whole reason this mass stayed invisible until the whole-mission audit
+// (2026-08-03, A5) added it up by hand: the split table only ever showed the three
+// coarse `attach:` rows, so a top-5 consumer had no line anywhere in the report.
+// These three kinds are injected BY the workflow itself — hook stdout, hook additional
+// context, and the task reminder — so their sum is the mission's OWN footprint, as
+// distinct from the user's environment (skills, MCP servers).
+const MACHINERY_KINDS = ['hook_success', 'hook_additional_context', 'task_reminder'];
+// Provenance for a component this transcript does not carry AS AN ATTACHMENT KIND
+// (`task_reminder`, in particular, may arrive on another record shape). These figures
+// are the audit's HAND COUNT of one transcript — they are NEVER summed into the printed
+// footprint and never substitute for a measurement. They are cited so that an absent
+// component is VISIBLY absent: silently dropping it is the same failure class as the
+// suppressed verdict this instrument already guards against.
+const AUDIT_MACHINERY_CHARS = { hook_success: 113672, hook_additional_context: 19362, task_reminder: 10655 };
+const AUDIT_MACHINERY_SOURCE = 'whole-mission audit 2026-08-03, finding A5 (n = 1, hand-counted)';
+
+function attachKindLines(r) {
+  const out = ['  attachment kinds — every `attachment.type` seen, sized on its injected field [MEASURED]'];
+  const kinds = [...r.attachKinds.entries()].sort((a, b) => b[1] - a[1]);
+  if (!kinds.length) out.push('    (no attachment records in this transcript)');
+  else {
+    out.push(`    ${pad('attachment.type', 30)}${lpad('chars', 14)}${lpad('char %', 9)}   ${'category'}`);
+    for (const [k, chars] of kinds) {
+      out.push(`    ${pad(k, 30)}${lpad(n0(chars), 14)}${lpad(pct(chars, r.charsSeen), 9)}   ${attachCat(k)}`);
+    }
+  }
+  // The named line. Summed from what was MEASURED here, never from the audit constants.
+  const present = MACHINERY_KINDS.filter((k) => r.attachKinds.has(k));
+  const missing = MACHINERY_KINDS.filter((k) => !r.attachKinds.has(k));
+  const sum = present.reduce((n, k) => n + r.attachKinds.get(k), 0);
+  out.push('    mission machinery footprint — what the workflow injects into its own context (A5)');
+  for (const k of present) out.push(`      ${pad(k, 28)}${lpad(n0(r.attachKinds.get(k)), 14)} chars [MEASURED]`);
+  out.push(`      ${pad(present.length ? '= sum of the above' : '= (no machinery kind seen)', 28)}${lpad(n0(sum), 14)} chars = ${pct(sum, r.charsSeen)} of ${n0(r.charsSeen)} appended chars`);
+  for (const k of missing) {
+    out.push(`      ${pad(k, 28)}${lpad('—', 14)} NOT an attachment kind in this transcript: it carries no`);
+    out.push(`      ${pad('', 28)}${lpad('', 14)} \`attachment.type\` of that name, so it is EXCLUDED from the sum`);
+    out.push(`      ${pad('', 28)}${lpad('', 14)} above (it may arrive on another record shape this taxonomy`);
+    out.push(`      ${pad('', 28)}${lpad('', 14)} does not reach — see A6). For provenance only, ${AUDIT_MACHINERY_SOURCE}`);
+    out.push(`      ${pad('', 28)}${lpad('', 14)} counted ${n0(AUDIT_MACHINERY_CHARS[k])} chars [AUDIT, NOT measured here].`);
+  }
+  out.push('    n = 1: one transcript, one session. This is a footprint, not a budget.');
+  return out;
 }
 
 function report(r, opts = {}) {
@@ -738,6 +816,9 @@ function report(r, opts = {}) {
   }
   // The D7 line names its own denominator and its value (D11 follow-up) — see `d7Lines`.
   for (const l of d7Lines(r)) console.log(l);
+  console.log('');
+  // ── The per-kind attachment table + the machinery footprint (A5) ──────
+  for (const l of attachKindLines(r)) console.log(l);
   if (r.taskBlocks) console.log(`  warn: ${n0(r.taskBlocks)} \`Task\` tool_use block(s) seen — the spawn tool is \`Agent\`; taxonomy may have drifted`);
   if (r.attachFallbackSized) {
     const share = pct(r.attachFallbackChars, r.charsSeen);
@@ -757,8 +838,9 @@ function check(name, cond, detail) {
 }
 
 // A ~20-line synthetic transcript in a throwaway dir. No real transcript is ever
-// touched here — this and `buildRevivedRidFixture` are the ONLY fixtures the harness
-// knows, and the main one below carries every case except the revived-rid guard.
+// touched here — this, `buildRevivedRidFixture` and `buildAttachKindsFixture` (S7a) are
+// the ONLY fixtures the harness knows, and this main one carries every case except the
+// revived-rid guard and the attachment taxonomy.
 function buildFixture(dir) {
   const p = path.join(dir, 'fixture.jsonl');
   const usage = (input, cc, cr, out) => ({
@@ -855,6 +937,42 @@ function buildRevivedRidFixture(dir) {
   writeFileSync(p, recs.map((r) => JSON.stringify(r)).join('\n') + '\n');
   return p;
 }
+
+// A THIRD fixture, for the attachment taxonomy (S7a). Isolated for the same reason the
+// revived-rid one is: the main fixture's chars feed the band, the ratio and ~40 pinned
+// constants, so adding seven attachment records there would perturb cases that have
+// nothing to do with attachments. This one carries every kind the A4/A5 findings name —
+// the four registry/definition deltas, all three machinery kinds, and one unknown kind
+// that must be the ONLY thing left in `attach: other`. Every payload is a different
+// length, so a mis-routed kind cannot pass by coincidence.
+function buildAttachKindsFixture(dir) {
+  const p = path.join(dir, 'attach-kinds.jsonl');
+  const att = (type, content) => JSON.stringify({ type: 'attachment', attachment: { type, content } });
+  const recs = [
+    att('deferred_tools_delta', AK.deferredTools),
+    att('agent_listing_delta', AK.agentListing),
+    att('mcp_instructions_delta', AK.mcpInstructions),
+    att('invoked_skills', AK.invokedSkills),
+    att('hook_success', AK.hookSuccess),
+    att('hook_additional_context', AK.hookAdditional),
+    att('task_reminder', AK.taskReminder),
+    att('file_content', AK.unknownKind),
+  ];
+  writeFileSync(p, recs.join('\n') + '\n');
+  return p;
+}
+// Distinct lengths, deliberately (see above). Kept apart from `F` so nothing here can
+// drift into the main fixture's ratio constraints.
+const AK = {
+  deferredTools: 'D'.repeat(310),
+  agentListing: 'A'.repeat(290),
+  mcpInstructions: 'C'.repeat(270),
+  invokedSkills: 'S'.repeat(250),
+  hookSuccess: 'E'.repeat(230),
+  hookAdditional: 'N'.repeat(210),
+  taskReminder: 'R'.repeat(190),
+  unknownKind: 'U'.repeat(170),
+};
 
 // Fixture payloads. TWO sizing constraints, both load-bearing:
 //   (1) the true chars/token ratio is far from the folk 4.0, so a hardcoded `/4`
@@ -1050,6 +1168,77 @@ async function selftest() {
     check('attachment: unknown kind lands in attach: other',
       cat('attach: other') === F.otherAtt.length, `${cat('attach: other')}`);
 
+    // 4b. A4/A5 — the named delta kinds, the per-kind table, the machinery footprint.
+    // Isolated fixture (see `buildAttachKindsFixture`).
+    const ak = await analyze(buildAttachKindsFixture(dir));
+    const akCat = (n) => (ak.rows.find((x) => x.name === n)?.chars ?? null);
+    const akWant = {
+      deferred_tools_delta: AK.deferredTools.length,
+      agent_listing_delta: AK.agentListing.length,
+      mcp_instructions_delta: AK.mcpInstructions.length,
+      invoked_skills: AK.invokedSkills.length,
+    };
+    check('A4: each named delta kind lands in its OWN category, sized on its own payload',
+      Object.entries(akWant).every(([k, want]) => akCat(`attach: ${k}`) === want),
+      Object.keys(akWant).map((k) => `${k}=${akCat(`attach: ${k}`)}/${akWant[k]}`).join(' '));
+    // The mass MOVED, it was not created. `attach: other` still legitimately holds every
+    // kind that has no category — here the unknown one AND the two machinery kinds that
+    // S7a did not name (`hook_additional_context`, `task_reminder`); that collapse is
+    // exactly why the per-kind table below is the thing that makes A5 visible. What must
+    // have LEFT it is the four named kinds, by exactly their sum.
+    const akAttachRows = ak.rows.filter((x) => x.name.startsWith('attach: '));
+    const akAllAttachChars = [...ak.attachKinds.values()].reduce((a, b) => a + b, 0);
+    const akNamedSum = Object.values(akWant).reduce((a, b) => a + b, 0);
+    const akOtherResidue = AK.unknownKind.length + AK.hookAdditional.length + AK.taskReminder.length;
+    check('A4: attach: other is reduced by EXACTLY the four named kinds — no mass created or lost',
+      akCat('attach: other') === akOtherResidue
+      && (akOtherResidue + akNamedSum) - akCat('attach: other') === akNamedSum
+      && akAttachRows.reduce((n, x) => n + x.chars, 0) === akAllAttachChars,
+      `other=${akCat('attach: other')} expected=${akOtherResidue} namedSum=${akNamedSum} Σattach=${akAttachRows.reduce((n, x) => n + x.chars, 0)} Σkinds=${akAllAttachChars}`);
+    // Dispatch and taxonomy are derived from one list; a category with no row would NaN
+    // the whole split, so pin that they cannot drift apart.
+    check('A4: every named attachment kind has a CATS row and routes to it (no dispatch/taxonomy drift)',
+      NAMED_ATTACH_KINDS.every((k) => CATS.includes(`attach: ${k}`) && attachCat(k) === `attach: ${k}`)
+      && attachCat('file_content') === 'attach: other' && CATS.filter((c) => c.startsWith('attach: ')).length === NAMED_ATTACH_KINDS.length + 1,
+      `named=${NAMED_ATTACH_KINDS.length} rows=${CATS.filter((c) => c.startsWith('attach: ')).length}`);
+    const akLines = attachKindLines(ak).join('\n');
+    check('A5: the per-kind table PRINTS every attachment.type with its chars and its category',
+      [...ak.attachKinds.entries()].every(([k, c]) => new RegExp(`${k}\\s+${n0(c)}\\s`).test(akLines)
+        && new RegExp(`${k}[^\\n]*${attachCat(k).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`).test(akLines))
+      && /attachment kinds/.test(akLines),
+      akLines);
+    const akMach = AK.hookSuccess.length + AK.hookAdditional.length + AK.taskReminder.length;
+    check('A5: the mission machinery footprint sums the three machinery kinds and shares them against appended chars',
+      /mission machinery footprint/.test(akLines)
+      && akLines.includes(`= sum of the above`)
+      && akLines.includes(`${n0(akMach)} chars = ${pct(akMach, ak.charsSeen)} of ${n0(ak.charsSeen)} appended chars`)
+      && MACHINERY_KINDS.every((k) => akLines.includes(k)),
+      `expected ${akMach} chars = ${pct(akMach, ak.charsSeen)}\n${akLines}`);
+    // The defect being fixed is "collected, returned, NEVER PRINTED" — so one case pins
+    // the REPORT WIRING, not just the line builder. Without it, deleting the call in
+    // `report()` leaves every other attachment case green and the mass invisible again.
+    const captured = [];
+    const realLog = console.log;
+    console.log = (...a) => captured.push(a.join(' '));
+    try { report(r); } finally { console.log = realLog; }
+    const printed = captured.join('\n');
+    check('A5: report() PRINTS the per-kind table and the machinery line (the wiring, not just the builder)',
+      /attachment kinds — every `attachment\.type` seen/.test(printed)
+      && /mission machinery footprint/.test(printed)
+      && printed.includes(`${n0(F.hookOut.length)} chars = ${pct(F.hookOut.length, r.charsSeen)} of`),
+      printed.split('\n').filter((l) => /attach/.test(l)).join('\n'));
+    // The other branch, on the MAIN fixture (hook_success only): a component that is not
+    // an attachment kind here must be named as EXCLUDED and attributed, never dropped.
+    const mainLines = attachKindLines(r).join('\n');
+    check('A5: a machinery component that is NOT an attachment kind is named, EXCLUDED from the sum, and attributed to the audit',
+      /hook_additional_context[^\n]*NOT an attachment kind/.test(mainLines)
+      && /task_reminder[^\n]*NOT an attachment kind/.test(mainLines)
+      && /EXCLUDED from the sum/.test(mainLines)
+      && mainLines.includes(`${n0(AUDIT_MACHINERY_CHARS.task_reminder)} chars [AUDIT, NOT measured here]`)
+      && mainLines.includes(AUDIT_MACHINERY_SOURCE)
+      && mainLines.includes(`${n0(F.hookOut.length)} chars = ${pct(F.hookOut.length, r.charsSeen)} of`),
+      mainLines);
+
     // 5. D9 — an Agent result lands under its subagent_type (spawn tool = Agent).
     const rev = r.agents.get('agentic-workflow:reviewer');
     check('D9: Agent result attributed to its (namespaced) subagent_type',
@@ -1159,6 +1348,29 @@ async function selftest() {
       && d7.includes(`${pct(F.reviewReturn.length, r.charsSeen)} of ${n0(r.charsSeen)} appended chars`)
       && Math.abs((F.reviewReturn.length / r.charsSeen) * 100 - wantShareHi) > 0.5,
       `char share=${pct(F.reviewReturn.length, r.charsSeen)} token share=${wantShareLo.toFixed(2)}–${wantShareHi.toFixed(2)}%`);
+    // A3 — the trigger itself, pinned in BOTH directions, the way GATE_PCT's 14%/16%
+    // cases pin the gate. The expected strings carry the literal 3 INDEPENDENTLY of
+    // `D7_TRIGGER_PCT`, so mutating the constant fails a case instead of printing a
+    // self-contradicting verdict (share 1.92–3.13% under "the WHOLE band is above 3%").
+    check('D7: trigger pinned from BELOW — a band at or under 3% reads NOT met',
+      /the whole band is at or under 3% — the trigger condition reads as NOT met/.test(d7Reading(1.00, 2.90))
+      && /reads as NOT met/.test(d7Reading(3.00, 3.00))
+      && !/MET|STRADDLES/.test(d7Reading(1.00, 2.90)),
+      `${d7Reading(1.00, 2.90)} | ${d7Reading(3.00, 3.00)}`);
+    check('D7: trigger pinned from ABOVE — a band wholly over 3% reads MET, one crossing it STRADDLES',
+      /the WHOLE band is above 3% — the trigger condition reads as MET/.test(d7Reading(3.01, 4.00))
+      && /the band STRADDLES 3%/.test(d7Reading(2.90, 3.10))
+      && /UNDECIDABLE/.test(d7Reading(2.90, 3.10)),
+      `${d7Reading(3.01, 4.00)} | ${d7Reading(2.90, 3.10)}`);
+    // End-to-end: the verdict the REPORT prints for this fixture is the one a trigger of
+    // 3 demands of the fixture's own independently-derived shares — the pure-function
+    // cases above cannot catch a `d7Lines` that stops consulting the reading at all.
+    const wantVerdict = wantShareHi > 3
+      ? (wantShareLo > 3 ? 'reads as MET' : 'STRADDLES 3%')
+      : 'reads as NOT met';
+    check('D7: the PRINTED verdict is the one a 3% trigger demands of this fixture (end-to-end)',
+      new RegExp(`reading: [^\\n]*${wantVerdict.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`).test(d7),
+      `share=${wantShareLo.toFixed(2)}–${wantShareHi.toFixed(2)}% expected «${wantVerdict}»\n${d7}`);
     check('D7: the line RE-DERIVES the trigger and does not re-decide — D11 is named',
       /D11 \(2026-08-02, human\) already/.test(d7) && /does not re-decide D7/.test(d7)
       && /D7 STANDS/.test(d7) && !/REOPENS/.test(d7),

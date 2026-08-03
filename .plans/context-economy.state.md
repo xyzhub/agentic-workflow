@@ -48,8 +48,11 @@ wording tighten and the two test-coverage gaps.
 AUTHORIZED, the mission WRAPS at P4.** **Phase 4 was re-briefed by the planner on 2026-08-03**
 (`.plans/context-economy.md` `## Replan 2026-08-03`) and split six ways —
 `S7a` → `S7b` → `S7c` → `S8a` → `S8b` → `S8c`, then `ckpt-p4`.
-**Next up: S7a** — the instrument change (name the A4 delta kinds, print the attachment-kind
-footprint, pin the D7 3% trigger) on a new branch `mission/context-economy-p4`.
+**`S7a` is DONE (2026-08-03)** — the instrument names the four A4 delta kinds, PRINTS the
+per-attachment-kind table + the `mission machinery footprint` line, and the D7 trigger is a
+named constant pinned in both directions. Selftest **44 → 54**, no reported verdict moved.
+**Next up: S7b** — run the measurement against S7a's instrument and record the numbers (no
+code change) on the same branch `mission/context-economy-p4`.
 
 ## Checklist
 
@@ -78,7 +81,7 @@ checkpoint/reviewer/chronicler row — set `[~]` the moment a beat is picked up 
 - [x] Checkpoint `ckpt-p3` **[STRICT]** — **APPROVE** 2026-08-03, no corrective session needed. Scorecard: Security 3 · Efficiency 3 · UX 3 · QA 2 · Architecture 2 · DX 2. Reviewer hand-dispatched all three `SessionStart` matchers, re-ran both mutation proofs (preservation case green in BOTH states), and proved injection-resistance with shell metacharacters in ledger path + content (no artifacts, exit 0). Rule (iii) ruled IN BOUNDS. **Verdict surfaced to the human immediately** per batch gating. Merged into `mission/context-economy-integration`. **[Med] finding left OPEN for the human — see D13 follow-ups.**
 - [x] **S2-fix — DONE 2026-08-03** (branch `mission/context-economy-p2`) — the `ckpt-p2` corrective, all four findings: **F1** both WORKFLOW mirrors' §3 silence list now names the unreleased `[~]` HELD barrier (and states that a `[ ]` HELD row is parked, not a wall) · **F2** the shared row is SPLIT — a `Stop` backstop row with the due-ness scan and a closing-action row that states the PreToolUse enforcer's *missing* due-ness outright; the hook's behavior is untouched, the scan port remains its own session · **F5** the non-candidate `- [ ] … HELD` row and the PreToolUse divergence are both pinned in the harness · **F3 landed, not severed** — `checkNextUpAgreement()` keys a wrapped `Next up:` from its continuation lines and fails closed on an unkeyable site. Harness **31 → 33 cases**; 3 mutations in both states with anti-inert controls.
 - [x] Checkpoint `ckpt-p2` re-review — **APPROVE** 2026-08-03; merged into integration. Three items left open **by choice** for the human: the PreToolUse due-ness port (own session; the new harness case pins the doc-row coupling for when it lands), **F4** (loose ckpt-id fallback — `(ckpt s5)` / `(ckpt 2)` still pass), and **[Low] `plugins/agentic-workflow/README.md:199-202`** still describes one merged enforcer with stepping-over "at the moment you try to close or advance" — true of Stop only; becomes true when the port lands, or a one-line tweak before.
-- [ ] S7a — **AUTHORIZED (D15), re-briefed 2026-08-03** (branch `mission/context-economy-p4`) — instrument only, no measurement run: **P1 residue (a)** name the four A4 delta kinds so they stop collapsing into `attach: other` (`context-attrib.mjs:197-199`, ~3 additive lines); **P1 residue (b)** print the per-attachment-kind table (`attachKinds` is collected at `:200`, returned at `:445`, **never printed**) plus a named `mission machinery footprint` line; **A3** pin the D7 3% trigger as a named constant beside `GATE_PCT` with cases in both directions. Selftest **≥ 44 cases**, mutation-proven. **Suits:** `backend`.
+- [x] S7a — **DONE 2026-08-03** (branch `mission/context-economy-p4`) — instrument only, no measurement run: **P1 residue (a)** name the four A4 delta kinds so they stop collapsing into `attach: other` (`context-attrib.mjs:197-199`, ~3 additive lines); **P1 residue (b)** print the per-attachment-kind table (`attachKinds` is collected at `:200`, returned at `:445`, **never printed**) plus a named `mission machinery footprint` line; **A3** pin the D7 3% trigger as a named constant beside `GATE_PCT` with cases in both directions. Selftest **≥ 44 cases**, mutation-proven. **Suits:** `backend`.
 - [ ] S7b — **AUTHORIZED (D15), re-briefed 2026-08-03** — run the measurement on this mission's own transcript (greps only, **never a Read**): **D4a as an OBSERVATION with the OQ5 caveat, explicitly not gated on**; the `isCompactSummary` count (**planning-time value 1**, not the 20 a self-referential grep suggested — memo M1; ≥ 3 promotes D8 to Option B); the **A5** hook footprint; the **A4** delta-kind split. Numbers mirrored into this ledger. **Suits:** `backend`.
 - [ ] S7c — **AUTHORIZED (D15), re-briefed 2026-08-03** — write `docs/product/engineering/context-economy-metrics.md` (new directory), doc-only, numbers handed over from S7b. Must state **A1–A10 and the A4 correction honestly**, headline **~4.4–7.2% addressed / ~1.8–4.3% captured** vs a founding **~25% / 10–15%**, and **n = 1 throughout**. **Suits:** `analyst`.
 - [ ] S8a — **AUTHORIZED (D15), re-briefed 2026-08-03** — **P1 residue (c)**: the discipline lines as contract text in **WORKFLOW §6.2, both mirrors** (`docs/WORKFLOW.md:468-495`, `templates/WORKFLOW.md:476-503`) + the **OQ3** one-line PR-body addition to the documentation-of-record agent's contract (its agent file; no tool-list change — the brief names the exact ranges). **No savings claim, no new gate.** **Suits:** `writer`. _(Wording avoids the bare beat keyword so the enforcer does not read this writer session as a documentation beat — same reason as `037b36b`.)_
@@ -442,6 +445,19 @@ _Human steers captured **verbatim** at checkpoints only, never mid-brief. Gramma
 _Any departure from a brief — logged here the moment it happens, with why. Deviating is
 allowed; deviating silently is not (§4)._
 
+- 2026-08-03 (S7a) — **naming the four A4 kinds moves attributed tokens by ±1 (rounding), and
+  the brief did not anticipate it.** `attach: other` was ONE row rounded once; it is now five
+  rows rounded five times, so `attributed` and the char-free remainder shift by a token or two
+  at each band endpoint (synthetic check: char-free 75–81 → 76–80 tok on a 2,400-tok fixture).
+  **No sizing logic changed and no verdict moved** — the books still close in integers, and the
+  D7/gate/ratchet lines are byte-identical. Recorded because a figure moved, per the phase rule.
+- 2026-08-03 (S7a) — **a THIRD selftest fixture** (`buildAttachKindsFixture`), not an extension
+  of the main one. The main fixture's chars feed the band, the ≈2.8 ratio and ~40 pinned
+  constants; adding eight attachment records there would have perturbed cases unrelated to
+  attachments. Same isolation precedent as `buildRevivedRidFixture`. The stale "only two
+  fixtures" comment was corrected with it. Also **one case beyond the brief's list**: the
+  report WIRING (`report()` actually printing the table), because the defect being fixed is
+  "collected and returned but never printed" — a builder-only case would have been blind to it.
 - 2026-08-03 (S2-fix) — **two harness cases added, not one.** F5 asked for the non-candidate
   `- [ ] … HELD` case; a second case pins the **PreToolUse** enforcer's documented divergence
   (it names the HELD beat where the Stop backstop steps over it). Reason: F2 is discharged by
@@ -708,6 +724,23 @@ allowed; deviating silently is not (§4)._
 
 _≤10 lines per entry: what this session did, the verify signal, the branch, and what the
 next session needs. Newest on top; crash-safe by write-ahead._
+
+- _2026-08-03 (`S7a`, `backend`, branch `mission/context-economy-p4`): instrument only, **no
+  measurement run**. `tools/context-attrib.mjs`: **(A4)** `NAMED_ATTACH_KINDS` now names
+  `deferred_tools_delta`, `agent_listing_delta`, `mcp_instructions_delta`, `invoked_skills` —
+  CATS rows are DERIVED from that list, so dispatch and taxonomy cannot drift. **(A5)** the
+  per-kind attachment table and a `mission machinery footprint` line now PRINT; the footprint
+  sums only what it MEASURES and names any component that is **not** an attachment kind,
+  excluding it and citing the audit's hand figure as `[AUDIT, NOT measured here]`.
+  **(A3)** `D7_TRIGGER_PCT = 3` sits beside `GATE_PCT`, the three prose strings de-duplicated
+  into `d7Reading()`. Verified: selftest **44 → 54** exit 0 · lint clean · hook-test 33 clean.
+  **5 mutations, both states, each with the anti-inert control (pre-change checker 44/44 clean
+  under the same mutation — incl. the audit's own `> 3 → > 1`, which is A3 reproduced):**
+  dispatch reverted → the 2 A4 cases fail · print call deleted → the wiring case fails ·
+  `3 → 1` and `3 → 5` → the both-direction D7 cases fail · absent component silently omitted →
+  the provenance case fails. **No reported verdict moved** (D7/gate/ratchet byte-identical on a
+  synthetic run; only per-row token rounding shifts ±1, cause: 1 row → 5). **S7b** consumes this
+  instrument: run the measurement, and record which machinery components were attachment kinds._
 
 - _2026-08-03 (`S2-fix`, `devops`, branch `mission/context-economy-p2`): the `ckpt-p2` corrective —
   **all four findings landed; F3 NOT severed.** **F1** both §3 mirrors now name the unreleased
@@ -1309,12 +1342,12 @@ attachment-schema check is pulled in or deferred.
   Baseline transcript identified and field-verified by grep (never read). Uncommitted,
   awaiting HITL review of OQ1–OQ5._
 
-Next up: **S7a** — the Phase 4 instrument change on a **new branch
-`mission/context-economy-p4`** cut from `mission/context-economy-integration`: name the four
-A4 delta kinds (`context-attrib.mjs:197-199`), print the per-attachment-kind table plus the
-`mission machinery footprint` line (A5), and pin the D7 3% trigger as a named constant beside
-`GATE_PCT` with cases in both directions (A3). Selftest **≥ 44 cases**, mutation-proven, no
-measurement run. Brief: `.plans/context-economy.sessions.md` `## Phase 4`.
+Next up: **S7b** — run the measurement against the instrument `S7a` just shipped and record
+the numbers, on the SAME branch `mission/context-economy-p4`. No code change. The new output
+to read: the per-attachment-kind table, the `mission machinery footprint` line (note which
+components are/aren't attachment kinds), and the four now-named A4 delta rows — plus whether
+`attach: other` shrank by exactly their sum. Brief: `.plans/context-economy.sessions.md`
+`## Phase 4` → `### S7b`.
 
 Phases 0, 0.5, 2 and 3 are COMPLETE, APPROVED and MERGED (`273f1d3`, `f5fabc6`, `e5b6326`,
 `8a3b4c7`). **Phase 4 is the last phase — nothing follows it.**
