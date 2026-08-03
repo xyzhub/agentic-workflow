@@ -15,9 +15,9 @@ Master plan: `.plans/compaction-continuity.md` · Ledger:
 `.plans/compaction-continuity.state.md` · Brief:
 `docs/product/decisions/2026-08-03-compaction-continuity-brief.md`
 
-**Base**: every phase branches off `mission/context-economy-integration` (OQ1) and
-merges into `mission/compaction-continuity-integration` — **never** the default
-branch. **Phases run sequentially; none is parallel-safe** (P1, P2 and P3 all edit
+**Base**: every phase branches off **`main`** (OQ1, updated 2026-08-04 — PR #31 merged,
+so `compact-resume.sh` is on the default branch now) and merges into
+`mission/compaction-continuity-integration` — **never** the default branch. **Phases run sequentially; none is parallel-safe** (P1, P2 and P3 all edit
 the two `WORKFLOW.md` mirrors, and P2 depends on P1 being merged — see L2).
 
 **Two standing rules every brief inherits.** (1) **Never** `Read`/`cat`/`head`/`tail`
@@ -343,7 +343,8 @@ diff touches only.
 ### S11 — the integration PR body
 
 - **Reads**: `.plans/compaction-continuity.state.md` (whole, at whatever length it
-  has reached) · `git log --oneline mission/context-economy-integration..HEAD` ·
+  has reached) · `git log --oneline main..HEAD` (OQ1 updated 2026-08-04 — the base is
+  now `main`, not the retired `mission/context-economy-integration`) ·
   `docs/product/decisions/2026-08-03-compaction-continuity-brief.md` (this
   mission's brief).
 - **Do**: write the PR body to a file and open the PR from

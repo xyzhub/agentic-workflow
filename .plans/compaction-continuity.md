@@ -175,10 +175,11 @@ never has to end a session.
   the same two mirror files. → phases run **sequentially**, none is marked
   parallel-safe, and each doc session re-reads the mirrors at its own start
   rather than trusting a line number from this plan.
-- **PR #31 is unmerged** and carries the hook this mission extends (OQ1). → the
-  mission bases off `mission/context-economy-integration`; if #31 takes changes,
-  the mission's integration branch rebases (the touched files barely overlap
-  #31's remaining surface).
+- ~~**PR #31 is unmerged** and carries the hook this mission extends (OQ1).~~
+  **RETIRED 2026-08-04 — PR #31 MERGED** (2026-08-03T19:51Z, `main` = `2c8487f`,
+  `compact-resume.sh` verified present on the default branch). The risk expired;
+  every phase now bases off `main` and the final PR targets `main` with no hold
+  and no retarget. The plan branch was rebased onto `main`.
 - **OQ3/OQ6 land inside phase 2's shape.** If the human answers them late, S8's
   scope moves. → S8 is written to collapse into S9 if OQ3 resolves to "no format
   change", and the ledger records which way it went.
@@ -188,18 +189,18 @@ never has to end a session.
 _Each carries the planner's recommendation, so the human decides between digested
 choices. These go to the human **before** `/agentic-workflow:mission` drives execution._
 
-- **OQ1 — Branch dependency: PR #31 is open and unmerged, and
-  `compact-resume.sh` exists only on `mission/context-economy-integration`.
-  Wait for #31, or base off the integration branch?**
-  **Recommendation: base off `mission/context-economy-integration`.** Waiting
-  blocks this mission on a human merge with no deadline, and every phase of #31
-  is already reviewer-APPROVEd. Open
-  `mission/compaction-continuity-integration` off that branch, and hold the final
-  integration PR until #31 merges — then retarget/rebase onto `main`. If #31
-  takes review changes, the rebase is cheap: this mission's surface
-  (`handoff-budget.sh`, `hook-test.mjs` fixtures, §3/§4 doc rows) barely overlaps
-  what a #31 review would touch. **The one thing not to do is fork off `main`** —
-  the fallback would then be written against a hook that isn't there.
+- **OQ1 — RESOLVED, then SUPERSEDED BY REALITY. Base off `main`.**
+  _Original question (2026-08-03): PR #31 was open and unmerged, and
+  `compact-resume.sh` existed only on `mission/context-economy-integration`. The
+  human accepted the recommendation to base off that branch, hold the final PR,
+  and retarget after #31 merged._
+  **2026-08-04: PR #31 MERGED** (2026-08-03T19:51Z, `main` = `2c8487f`;
+  `compact-resume.sh` verified present on the default branch). The constraint that
+  produced the answer no longer exists, so the answer changes with it: **every
+  phase branches off `main`**, merges into `mission/compaction-continuity-integration`,
+  and the final PR targets `main` — **no hold, no retarget**. The plan branch was
+  rebased onto `main` and is a clean descendant. _Nothing about the decision's
+  substance changed; only its premise expired._
 
 - **OQ2 — What should the byte thresholds be, and on what evidence?**
   **Recommendation: derive, never guess — and ship two bands.** S2 measures the

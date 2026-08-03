@@ -34,9 +34,12 @@ Therefore **both `[STRICT]` verdicts (`ckpt-p1`, `ckpt-p2`) and any REQUEST
 CHANGES must be pushed to the human the moment they land** — owner channel or
 direct report — not held for the final PR.
 
-**Base branch (OQ1):** every phase branches off `mission/context-economy-integration`,
-because `hooks/lib/compact-resume.sh` — the file this mission extends — exists
-only there. Do **not** fork off the default branch.
+**Base branch (OQ1, updated 2026-08-04):** every phase branches off **`main`**.
+PR #31 merged 2026-08-03T19:51Z (`main` = `2c8487f`), so `hooks/lib/compact-resume.sh`
+— the file this mission extends — is now on the default branch. Phases merge into
+`mission/compaction-continuity-integration`; the final PR targets `main` directly,
+with **no hold and no retarget**. _(Superseded: the original "base off
+`mission/context-economy-integration`" existed only while #31 was open.)_
 
 **Two standing rules, inherited by every session:** never `Read`/`cat`/`head`/`tail`
 a `*.jsonl` (L10); nothing in this mission can be exercised live before merge +
@@ -77,10 +80,15 @@ _Mirrored from `.plans/compaction-continuity.md` with their recommendations.
 **Execution does not start until all seven are answered.** Empty this section as
 each is resolved, recording the answer and its date._
 
-- **OQ1 — RESOLVED 2026-08-03 (human): base off `mission/context-economy-integration`.**
-  Every phase branches from it; the final PR is held until **PR #31** merges, then
-  retargeted to the default branch. **Not** the default branch — `compact-resume.sh`
-  isn't there. Planner recommendation accepted verbatim.
+- **OQ1 — RESOLVED 2026-08-03, then SUPERSEDED 2026-08-04 by reality: base off `main`.**
+  The original resolution (base off `mission/context-economy-integration`, hold the PR,
+  retarget later) existed **only** because PR #31 was unmerged and `compact-resume.sh`
+  was not on the default branch. **PR #31 MERGED 2026-08-03T19:51Z** (`main` = `2c8487f`;
+  `compact-resume.sh` verified present). The dependency is gone: **every phase now
+  branches off `main`, the integration branch is `mission/compaction-continuity-integration`,
+  and the final PR targets `main` directly — no hold, no retarget.** The plan branch was
+  rebased onto `main` and is a clean descendant. _Nothing about the decision's substance
+  changed; its premise expired._
 - **OQ2 — Byte thresholds and their evidence.** **Recommendation: derive in S2
   from the local transcript corpus** (compaction byte-point via `grep -n` +
   `awk … | wc -c`), ship two named bands (advisory ≈ 55%, urgent ≈ 80% of it);
