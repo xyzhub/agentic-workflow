@@ -33,10 +33,11 @@ unchanged and re-verified byte-for-byte.** **`ckpt-p05` re-review returned APPRO
 **The DECISION POINT is DECIDED (D13, 2026-08-03): P3 ONLY is authorized.**
 **`S6` is DONE (2026-08-03)** — the `SessionStart:compact` re-read directive plus the
 beat-enforcer due-ness fix landed on `mission/context-economy-p3`.
-**Next up: `ckpt-p3` [STRICT]** — phase 3 review; the reviewer re-derives every claim,
-dispatches the hook by hand for all three `SessionStart` matchers, and the verdict is
-**surfaced to the human the moment it lands** (batch gating shows no merge prompt).
-**P1, P2 and P4 remain HELD** pending a session-limit refresh.
+**`ckpt-p3` [STRICT] returned APPROVE (2026-08-03) and Phase 3 is MERGED (`8a3b4c7`).**
+**D14 (2026-08-03) authorized P2**, split into **S5** (standing steers + the `Next up:`
+two-site agreement check) and **S5b** (the `ckpt-p3` follow-ups, incl. the enforcer
+`first → first due` fix). **Next up: `S5`** on branch `mission/context-economy-p2`.
+**P1 and P4 remain HELD** and require a planner re-brief before they run.
 
 ## Checklist
 
@@ -58,8 +59,9 @@ checkpoint/reviewer/chronicler row — set `[~]` the moment a beat is picked up 
 - [x] ⛔ **DECISION POINT — DECIDED 2026-08-03 (D13).** Human authorized **P3 ONLY**, deliberately scoped to the remaining session budget. **P1, P2, P4 stay HELD** and unauthorized pending a session-limit refresh.
 - [ ] S4 — **HELD** — write firewall: extend the 30% rule to writes; no tool-list change anywhere, per D7 (branch `mission/context-economy-p1`). Premise retracted: Write/Edit is ≤15.9% char / **4.40–7.18% token** (S0.5-4 measured; supersedes the pre-repair "2.8–3.7%"), never 22.5%. See the P0.5 re-decision package §4.
 - [ ] Checkpoint `ckpt-p1` — **HELD** — phase 1 review + merge into integration
-- [ ] S5 — **HELD** — standing steers: ledger block + §3-only append + lint grammar check (branch `mission/context-economy-p2`). Fidelity control; case unchanged by the new evidence.
-- [ ] Checkpoint `ckpt-p2` — **HELD** — phase 2 review + merge into integration
+- [ ] S5 — **AUTHORIZED (D14)** — standing steers: ledger block + §3-only append + lint grammar check (branch `mission/context-economy-p2`). Fidelity control; case unchanged by the new evidence. **+ folds in machinery defect (a): the `Next up:` two-site agreement check** (same `lint.mjs` work).
+- [ ] S5b — **AUTHORIZED (D14)** — enforcer due-ness: `head -1` → first *due* candidate (the open [Med] from `ckpt-p3`), the §3 wording tighten, and the two low test-coverage gaps (multi-ledger `ls -t` for `compact-resume`; unreleased `HARD PAUSE` row). Same branch `mission/context-economy-p2`. **Split from S5 deliberately** — different file set (`hooks/lib/` + `hook-test.mjs` + WORKFLOW §3), and smaller sessions survive better.
+- [ ] Checkpoint `ckpt-p2` — **AUTHORIZED (D14)** — phase 2 review (covers S5 **and** S5b) + merge into integration
 - [x] S6 — **DONE 2026-08-03** (branch `mission/context-economy-p3`) — `hooks/lib/compact-resume.sh` + a `SessionStart` block whose matcher is `compact` and nothing else; **+ the beat-enforcer due-ness fix** (machinery defect (b)), contained to `hooks/lib/beat-enforcer-stop.sh`. Atomic-ref doc updates in the same commit. Harness **16 → 24 cases**; both mutation proofs run. Completed after the first attempt died on a usage limit.
 - [x] Checkpoint `ckpt-p3` **[STRICT]** — **APPROVE** 2026-08-03, no corrective session needed. Scorecard: Security 3 · Efficiency 3 · UX 3 · QA 2 · Architecture 2 · DX 2. Reviewer hand-dispatched all three `SessionStart` matchers, re-ran both mutation proofs (preservation case green in BOTH states), and proved injection-resistance with shell metacharacters in ledger path + content (no artifacts, exit 0). Rule (iii) ruled IN BOUNDS. **Verdict surfaced to the human immediately** per batch gating. Merged into `mission/context-economy-integration`. **[Med] finding left OPEN for the human — see D13 follow-ups.**
 - [ ] S7 — **HELD** — re-measure (D4a), `isCompactSummary` count, `docs/product/engineering/context-economy-metrics.md` (branch `mission/context-economy-p4`). D4a's design and the doc's headline are both downstream of P0.5.
@@ -142,7 +144,22 @@ not re-litigated by any later session._
   confirmation** and needs a second transcript that does not yet exist.
   Recommended order when work resumes: **P2 → P1 → P4** (P3 already taken first).
 
-## Open follow-ups from `ckpt-p3` (surfaced 2026-08-03, NOT fixed — need human authorization)
+## D14 — P2 authorized (locked 2026-08-03 by the human)
+
+- **P2 is authorized; P1 and P4 remain HELD.** Recommended remaining order after P2:
+  **P1 → P4**, under D13's standing decisions (P1 ships as *discipline*, no savings claim;
+  D4a is an observation, not a gate).
+- **Split into two sessions on the orchestrator's judgment** (state it plainly if
+  overruled): **S5** = the standing-steers work as briefed **+ machinery defect (a)**, all
+  within `lint.mjs` / `templates/mission-state.md` / `mission.md` / WORKFLOW §5. **S5b** =
+  the `ckpt-p3` follow-ups, all within `hooks/lib/` / `hook-test.mjs` / WORKFLOW §3 /
+  README. Rationale: disjoint file sets, and five sessions have died mid-flight on
+  infrastructure limits — smaller sessions survive.
+- **No planner re-brief for S5.** P2's brief was never premised on the retracted 22.5%
+  figure (it is a fidelity control), so it runs as written, exactly as P3 did. **P1 and P4
+  still require a planner re-brief before they run.** Logged as a deviation.
+
+## Open follow-ups from `ckpt-p3` (surfaced 2026-08-03 — S5b now AUTHORIZED to fix these)
 
 - **[Med] The beat-enforcer evaluates only the FIRST `[ ]` beat** (`beat-enforcer-stop.sh`
   line 60, `head -1`), so **any HELD or blocking row above an open checkpoint permanently
@@ -969,17 +986,17 @@ attachment-schema check is pulled in or deferred.
   Baseline transcript identified and field-verified by grep (never read). Uncommitted,
   awaiting HITL review of OQ1–OQ5._
 
-Next up: **`ckpt-p3` [STRICT] — the phase 3 review** (branch
-`mission/context-economy-p3`). Brief: `.plans/context-economy.sessions.md` → Phase 3
-checkpoint. **`S6` is DONE** (2026-08-03). Phases 0 and 0.5 are COMPLETE, APPROVED and
-MERGED into `mission/context-economy-integration` (`273f1d3`, `f5fabc6`).
+Next up: **`S5` — standing steers + the `Next up:` two-site agreement check** (branch
+`mission/context-economy-p2`). Brief: `.plans/context-economy.sessions.md` → Phase 2.
+**Suits `backend`.** Then **`S5b`** (enforcer `first → first due` + §3 wording + two test
+gaps), then **`ckpt-p2`** covering both.
 
-**D13 (2026-08-03) authorized P3 ONLY** — scoped to the remaining session budget.
-**P1, P2 and P4 remain HELD**; the human re-decides them after a session-limit refresh,
-in the order **P2 → P1 → P4**. S6 additionally folded in the **beat-enforcer due-ness
-fix**. P3's brief was NOT written against the retracted 22.5% premise — it is a
-correctness control — so it runs from the existing brief; **P1/P2/P4 must be re-briefed
-through the planner before they run.**
+Phases 0, 0.5 and 3 are COMPLETE, APPROVED and MERGED into
+`mission/context-economy-integration` (`273f1d3`, `f5fabc6`, `8a3b4c7`).
+**D13 authorized P3 only; D14 (2026-08-03) authorized P2.** **P1 and P4 remain HELD** —
+under D13's standing decisions (P1 ships as *discipline*, no savings claim; D4a is an
+observation, not a gate) — and **both require a planner re-brief before they run**, since
+their briefs were written against the retracted 22.5% premise. P2's and P3's were not.
 
 **Four live threads belong to the human, not to any agent:** the **occupancy gate FAILS at
 +28.0%** vs `/context` **TOTAL** 401,400 (bounds absolute magnitudes; does not block a
