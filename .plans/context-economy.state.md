@@ -61,7 +61,7 @@ checkpoint/reviewer/chronicler row — set `[~]` the moment a beat is picked up 
 - [ ] S5 — **HELD** — standing steers: ledger block + §3-only append + lint grammar check (branch `mission/context-economy-p2`). Fidelity control; case unchanged by the new evidence.
 - [ ] Checkpoint `ckpt-p2` — **HELD** — phase 2 review + merge into integration
 - [x] S6 — **DONE 2026-08-03** (branch `mission/context-economy-p3`) — `hooks/lib/compact-resume.sh` + a `SessionStart` block whose matcher is `compact` and nothing else; **+ the beat-enforcer due-ness fix** (machinery defect (b)), contained to `hooks/lib/beat-enforcer-stop.sh`. Atomic-ref doc updates in the same commit. Harness **16 → 24 cases**; both mutation proofs run. Completed after the first attempt died on a usage limit.
-- [ ] Checkpoint `ckpt-p3` **[STRICT]** — **AUTHORIZED (D13)** — phase 3 review; **surface the verdict to the human immediately** (batch gating shows no merge prompt); merge into integration
+- [x] Checkpoint `ckpt-p3` **[STRICT]** — **APPROVE** 2026-08-03, no corrective session needed. Scorecard: Security 3 · Efficiency 3 · UX 3 · QA 2 · Architecture 2 · DX 2. Reviewer hand-dispatched all three `SessionStart` matchers, re-ran both mutation proofs (preservation case green in BOTH states), and proved injection-resistance with shell metacharacters in ledger path + content (no artifacts, exit 0). Rule (iii) ruled IN BOUNDS. **Verdict surfaced to the human immediately** per batch gating. Merged into `mission/context-economy-integration`. **[Med] finding left OPEN for the human — see D13 follow-ups.**
 - [ ] S7 — **HELD** — re-measure (D4a), `isCompactSummary` count, `docs/product/engineering/context-economy-metrics.md` (branch `mission/context-economy-p4`). D4a's design and the doc's headline are both downstream of P0.5.
 - [ ] S8 — **HELD** — chronicler + CHANGELOG + version bump + integration PR (branch `mission/context-economy-p4`)
 - [ ] Checkpoint `ckpt-p4` — **HELD** — final review of `main..mission/context-economy-integration`; **human merges once**
@@ -141,6 +141,31 @@ not re-litigated by any later session._
   instrument's own uncertainty band, so it cannot be gated on. **D4b remains the real
   confirmation** and needs a second transcript that does not yet exist.
   Recommended order when work resumes: **P2 → P1 → P4** (P3 already taken first).
+
+## Open follow-ups from `ckpt-p3` (surfaced 2026-08-03, NOT fixed — need human authorization)
+
+- **[Med] The beat-enforcer evaluates only the FIRST `[ ]` beat** (`beat-enforcer-stop.sh`
+  line 60, `head -1`), so **any HELD or blocking row above an open checkpoint permanently
+  silences everything below it**. Reproduced on this very ledger: `ckpt-p1` (HELD) is the
+  hit, so `ckpt-p3` was never considered. **Not a regression** — the enforcer never nudged
+  the right row in either state, so it went from wrong-alarm to no-alarm, and it is
+  **orthogonal to rule (iii)** (narrowing (iii) would not restore it). But with P1/P2/P4
+  HELD indefinitely the backstop is now **dead for the rest of this mission** and for any
+  consuming repo carrying a HELD row above an open checkpoint — a durable, *silent* failure.
+  **Fix:** `head -1` → scan candidates for the first *due* one. Small, `hooks/lib/` only.
+- **[Low] §3 wording overclaims** — `docs/WORKFLOW.md:191` and `templates/WORKFLOW.md:199`
+  say the beat-enforcer is "suppressed when the beat isn't due", implying per-beat
+  evaluation. Tighten when the fix above lands.
+- **[Low] No harness case pins multi-ledger `ls -t` selection for `compact-resume`** (the
+  beat-enforcer has one; the reviewer verified compact-resume's by hand).
+- **[Low] `HARD PAUSE` on an unreleased row** is matched by both rules but exercised by no
+  case (only `⛔` and `HELD` are).
+- **Reviewer's correction to S6's deviation note:** the observed ~20-turn defect is
+  suppressed by rule **(i) alone**; rule (iii) was not needed for it. Consequence: (iii)
+  subsumes the `[ ]` half of (ii), leaving (ii) useful only for `[~]` blockers — i.e.
+  rule (ii)'s `[ ]` branch is now dead code.
+- **Still unguarded:** machinery defect (a), the `Next up:` two-site agreement check — its
+  home is P2, which is not authorized. Both sites were updated correctly by hand this phase.
 
 ## Standing steers
 
