@@ -92,8 +92,12 @@ savings claim.
 ## Verification
 
 - `tools/hook-test.mjs` grew **33 → 64** cases across the mission, with the
-  pre-change case list diffed byte-for-byte unchanged after every phase (no
-  regression silently absorbed into a rewritten baseline).
+  pre-change case list diffed byte-for-byte unchanged after every phase — with
+  **one deliberate, disclosed exception**: at S5 (`21f1b71`), Phase 2 removed the
+  two baseline cases that asserted compact-resume's no-ledger *silence*, because
+  that silence is precisely the behavior P2 replaces (they were superseded by the
+  OQ6 branch-3 cases, and the rewrite is logged per-session in the ledger). No
+  other baseline case changed in any phase.
 - Every behavior change is mutation-proved **in both states**, each with an
   anti-inert control (the mutation re-run against the pre-change checker, to
   prove the new case — not a coincidence — is what catches it).
