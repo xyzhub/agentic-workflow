@@ -33,8 +33,12 @@ function hookCommand(event, descNeedle) {
 }
 
 // Run a hook command with the given stdin JSON, in a throwaway cwd optionally
-// holding .plans ledgers ({ 'name.state.md': 'content', ... }).
-function runHook({ event, desc, input = {}, ledgers }) {
+// holding .plans ledgers ({ 'name.state.md': 'content', ... }), arbitrary
+// staged files ({ 'rel/path.md': { content, mtime? } }), and/or a sized
+// transcript ({ bytes } | { lines }) whose absolute path is injected into the
+// stdin JSON as `transcript_path`. `command` (harness self-proof cases only)
+// dispatches a raw probe command in place of a hooks.json lookup.
+function runHook({ event, desc, command, input = {}, ledgers, files, transcript }) {
   const dir = mkdtempSync(path.join(tmpdir(), 'hooktest-'));
   try {
     if (ledgers) {
@@ -49,7 +53,30 @@ function runHook({ event, desc, input = {}, ledgers }) {
         utimesSync(p, t, t);
       });
     }
-    const r = spawnSync('bash', ['-c', hookCommand(event, desc)], {
+    if (files) {
+      // Arbitrary staged files, for hooks that look beyond .plans/ (e.g. a
+      // docs/product/session-handoff.md freshness check). Same deterministic-
+      // mtime trick as the ledgers above: filesystem timestamp resolution is
+      // too coarse for a hook comparing mtimes within one test run, so an
+      // explicit epoch-seconds `mtime`, when given, is stamped via utimesSync.
+      for (const [rel, spec] of Object.entries(files)) {
+        const p = path.join(dir, rel);
+        mkdirSync(path.dirname(p), { recursive: true });
+        writeFileSync(p, spec.content);
+        if (spec.mtime !== undefined) utimesSync(p, spec.mtime, spec.mtime);
+      }
+    }
+    if (transcript) {
+      // A throwaway file of the requested size, inside the temp cwd, passed to
+      // the hook as `transcript_path`. Plain text by construction — NEVER a
+      // *.jsonl fixture the hooks parse; only its SIZE is load-bearing.
+      const tPath = path.join(dir, 'transcript.txt');
+      writeFileSync(tPath, transcript.bytes !== undefined
+        ? Buffer.alloc(transcript.bytes, 'x')
+        : 'x\n'.repeat(transcript.lines));
+      input = { ...input, transcript_path: tPath };
+    }
+    const r = spawnSync('bash', ['-c', command ?? hookCommand(event, desc)], {
       cwd: dir, input: JSON.stringify(input), encoding: 'utf8',
       // Claude Code exports CLAUDE_PLUGIN_ROOT to hook processes; mirror it so a
       // hook that invokes `${CLAUDE_PLUGIN_ROOT}/hooks/lib/*.sh` resolves here.
@@ -353,6 +380,42 @@ const reReadDirective = (r) => /just COMPACTED/.test(r.stdout);
   const r = runHook({ event: 'PreToolUse', desc: PRE, input: commit, ledgers: HELD_BEAT_THEN_DUE });
   check('PreToolUse: HELD beat above a due one → names the HELD one (no due-ness scan yet)',
     r.code === 0 && nudged(r) && /ckpt-p1/.test(r.stdout) && !/phase 2/.test(r.stdout), `stdout=${JSON.stringify(r.stdout)}`);
+}
+
+// ── Harness self-proof (S1): the staging knobs are real, not inert ────────
+// Raw probe commands (`command:` override) OBSERVE the staged artifacts from
+// inside the throwaway cwd — the anti-inert control for the harness itself.
+// Without these, a no-op `files`/`transcript` knob would leave every later
+// case that stages such fixtures vacuously green.
+{ // `files`: content lands at the nested path AND the explicit mtime sticks.
+  // The handoff is staged strictly OLDER than the ledger (1e9 − 100), so the
+  // `-nt` probe fails if utimesSync were skipped (a freshly-written file would
+  // be newer than the 1e9-stamped ledger, not older).
+  const r = runHook({
+    command: 'test -f docs/product/session-handoff.md'
+      + ' && [ .plans/m.state.md -nt docs/product/session-handoff.md ]'
+      + ' && ls docs/product/session-handoff.md',
+    ledgers: NOT_STARTED, // staged at mtime 1_000_000_000 by the ledger path
+    files: { 'docs/product/session-handoff.md': { content: '# Session handoff\n', mtime: 999_999_900 } },
+  });
+  check('harness: staged `files` entry is visible to the dispatched command (test -f + mtime + ls)',
+    r.code === 0 && r.stdout.trim() === 'docs/product/session-handoff.md',
+    `code=${r.code} stdout=${JSON.stringify(r.stdout)}`);
+}
+{ // `transcript`: the dispatched command sees `transcript_path` in its stdin
+  // JSON and `wc` observes exactly the requested size — both variants.
+  const bytes = runHook({
+    command: 'wc -c < "$(jq -r .transcript_path)"',
+    transcript: { bytes: 4321 },
+  });
+  const lines = runHook({
+    command: 'wc -l < "$(jq -r .transcript_path)"',
+    transcript: { lines: 57 },
+  });
+  check('harness: staged transcript size observable via wc on `$transcript_path` (bytes + lines)',
+    bytes.code === 0 && bytes.stdout.trim() === '4321'
+      && lines.code === 0 && lines.stdout.trim() === '57',
+    `bytes=${JSON.stringify(bytes.stdout)} lines=${JSON.stringify(lines.stdout)}`);
 }
 
 if (failures.length) {

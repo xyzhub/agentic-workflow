@@ -15,12 +15,10 @@ recommendations accepted verbatim. **OQ2, OQ3, OQ5 and OQ7 stand on the planner'
 recommendation** absent a ruling (the human was shown them and did not override);
 any reviewer may challenge them at a checkpoint. **Execution is UNBLOCKED at S1.**
 
-**⛔ NOT STARTED — planned 2026-08-03.** Nothing here has been
-executed. This ledger becomes the newest-mtime file in `.plans/`, so the
-thread-keeper and compact-resume hooks will name it as the active thread — that
-is bookkeeping, not a claim that work is in flight. **The live thread until the
-human answers the open questions is `.plans/context-economy.state.md` (PR #31,
-open, unmerged).**
+**▶ IN FLIGHT — execution started at S1 on 2026-08-10** (phase 1, branch
+`mission/compaction-continuity-p1`). _(The 2026-08-03 "NOT STARTED / live thread
+is `context-economy`" note expired: PR #31 merged 2026-08-03 and this mission is
+now the active thread.)_
 
 Gate policy: **batch** (L1, recorded at mission start) — each phase branch
 `mission/compaction-continuity-p1…p4` merges into
@@ -50,15 +48,16 @@ Plan: `.plans/compaction-continuity.md` · Briefs:
 `.plans/compaction-continuity.sessions.md` · Brief:
 `docs/product/decisions/2026-08-03-compaction-continuity-brief.md`
 
-Next up: **S1** — harness fixtures in `tools/hook-test.mjs`, on
-`mission/compaction-continuity-p1`, once the human has answered OQ1–OQ7.
+Next up: **S2** — derive the byte thresholds from the local transcript corpus,
+on `mission/compaction-continuity-p1`. Measurement only: the diff touches this
+ledger alone (`## 📊 S2 THRESHOLD BLOCK`), no source change.
 
 ## Checklist
 
 _Glyphs: `[ ]` not started · `[~]` in-flight / deferred / awaiting owner · `[x]`
 done (verified, not merely written)._
 
-- [ ] S1 — harness fixtures: arbitrary files + a sized transcript in `runHook()` (branch `mission/compaction-continuity-p1`) — **Suits:** `backend`
+- [x] S1 — harness fixtures: arbitrary files + a sized transcript in `runHook()` (branch `mission/compaction-continuity-p1`) — **Suits:** `backend` — done 2026-08-10, 35 cases green, 3 mutations proved
 - [ ] S2 — derive the byte thresholds from real transcripts; measurement only, no source change (branch `mission/compaction-continuity-p1`) — **Suits:** `backend`
 - [ ] S3 — `hooks/lib/handoff-budget.sh` + `UserPromptSubmit` registration, named constants, four silencers (branch `mission/compaction-continuity-p1`) — **Suits:** `backend`
 - [ ] S4 — atomic-ref docs for the trigger: §3 row, §4 reflexes, plugin README, `hooks.json` description (branch `mission/compaction-continuity-p1`) — **Suits:** `writer`
@@ -134,12 +133,34 @@ _(none yet — no checkpoint has run.)_
 _Any departure from a brief — logged here the moment it happens, with why.
 Deviating is allowed; deviating silently is not (§4)._
 
-(none)
+- 2026-08-10 (S1) — the brief named **two** `runHook()` knobs (`files`,
+  `transcript`); a third optional `command:` override (raw probe command in place
+  of the hooks.json lookup, harness self-proof cases only) was added because the
+  brief's own Verify section requires probe cases (`test -f`/`ls`, `wc -c` on
+  `$transcript_path`) that no registered hook can dispatch. No hook behavior
+  touched; the override is documented in `runHook()`'s header comment.
+- 2026-08-10 (S1) — the anti-inert control was executed in its only applicable
+  form: the mutated staging code does not exist in the pre-change harness, so
+  each mutation cannot literally be "re-run against" it; instead, under each
+  mutation the **33 pre-change cases stayed green** (diffed byte-for-byte),
+  proving the pre-change suite is blind to all three mutations and only the new
+  self-proof cases detect them.
 
 ## Handoff log (newest first)
 
 _≤10 lines per entry: what this session did, the verify signal, the branch, and
 what the next session needs. Newest on top; crash-safe by write-ahead._
+
+- _2026-08-10 (S1, `backend`, branch `mission/compaction-continuity-p1`): extended
+  `tools/hook-test.mjs` `runHook()` with `files:` (arbitrary staged files, explicit
+  epoch-second mtimes via the ledgers' deterministic-mtime trick) and
+  `transcript: {bytes|lines}` (sized plain-text file, abs path injected as
+  `transcript_path`), plus a `command:` probe override for the two self-proof
+  cases (see Deviations). Harness 33 → **35 green**, baseline case list diffed
+  byte-for-byte unchanged. Mutations M1 files-skip / M2 mtime-skip / M3
+  transcript-skip each fail exactly one new case with all 33 pre-change cases
+  still green. `node tools/lint.mjs` clean; `context-attrib --selftest` 54 ok.
+  S2 needs nothing from this code — it is measurement-only, ledger-only diff._
 
 - _2026-08-03 (planning, `planner`, branch `plan/interactive-handoff`): mission
   shaped and decomposed — feature brief
@@ -150,9 +171,9 @@ what the next session needs. Newest on top; crash-safe by write-ahead._
   Phasing enforces L2 — the fallback never ships before the trigger. Verified
   `node tools/lint.mjs` green. **Nothing executed; blocked on OQ1–OQ7.**_
 
-Next up: **S1** — harness fixtures in `tools/hook-test.mjs`, branch
-`mission/compaction-continuity-p1` (created off the integration branch, which carries
-the trio; a clean descendant of `main`). **UNBLOCKED 2026-08-10**: OQ1/OQ4/OQ6 resolved
-by the human 2026-08-03 (OQ1 superseded 2026-08-04 → base `main`, PR #31 merged);
-OQ2/OQ3/OQ5/OQ7 stand on the planner's recommendation. Mission order per the
-portfolio-learning OQ1 (2026-08-10): **this mission runs first.** **Suits:** `backend`.
+Next up: **S2** — derive the byte thresholds from the local transcript corpus
+(`grep -c`/`grep -n` + `awk … | wc -c`, never a read of a `*.jsonl`), branch
+`mission/compaction-continuity-p1` (S1 landed the harness fixtures 2026-08-10;
+35 cases green). Measurement only — `git diff --stat` must touch this ledger
+alone; results land in a `## 📊 S2 THRESHOLD BLOCK` here, S3's only source.
+**Suits:** `backend`.
