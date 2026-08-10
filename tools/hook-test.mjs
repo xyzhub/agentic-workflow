@@ -404,6 +404,75 @@ const oq6Directive = (m) => typeof m === 'string'
     r.code === 0 && typeof m === 'string' && /Freshness: SUSPECT/.test(m) && r.stderr === '',
     `code=${r.code} stderr=${JSON.stringify(r.stderr)} stdout=${JSON.stringify(r.stdout)}`);
 }
+// ── S6 (P2): the `_Written:` provenance stamp beats the mtime proxy ───────
+// Format (defined in templates/session-handoff.md + commands/handoff.md):
+//   _Written: <ISO-8601 UTC, YYYY-MM-DDTHH:MM:SSZ> · session <id> · branch <b>_
+// The stamp is CONTENT, so it survives the copies/checkouts that perturb mtime;
+// when present and parseable it is the freshness source, and each stamped case
+// below stages the handoff MTIME pointing the OTHER way — so the case fails if
+// the hook consults mtime instead of the stamp. Absent/malformed stamps fall
+// back to the S5 mtime proxy, byte-identical, never an error.
+const isoNoMillis = (ms) => new Date(ms).toISOString().replace(/\.\d{3}Z$/, 'Z');
+const stamped = (iso) => `_Written: ${iso} · session s6-case · branch mission/x_\n\n# Session handoff\n`;
+{ // no-stamp CURRENT directive pinned BYTE-FOR-BYTE — the "S5 behavior is
+  // unchanged when no stamp exists" guarantee, stronger than the regex pins.
+  const r = runHook({ event: 'SessionStart', desc: COMPACT, input: { source: 'compact' },
+    transcript: { bytes: 2048 },
+    files: { [HANDOFF_REL]: { content: '# Session handoff\n', mtime: Math.floor(Date.now() / 1000) + 86_400 } } });
+  const expected = [
+    '♻️ Context was just COMPACTED — what you hold now is a summary, not the record.',
+    'No active mission ledger; the durable record is docs/product/session-handoff.md.',
+    'Freshness: CURRENT — written after the transcript\'s last append, so it postdates any budget-band crossing (currency is judged against the transcript, never the clock).',
+    'Re-read it VERBATIM (do not resume from the summary), then continue from its **Next** line.',
+  ].join('\n');
+  check('SessionStart(compact): no stamp → mtime path, CURRENT directive byte-for-byte the S5 text',
+    r.code === 0 && ctx(r) === expected, `got=${JSON.stringify(ctx(r))}`);
+}
+{ // stamp FRESH (future ISO) while the handoff MTIME is ancient: the mtime
+  // proxy would say SUSPECT — CURRENT proves the stamp is preferred.
+  const r = runHook({ event: 'SessionStart', desc: COMPACT, input: { source: 'compact' },
+    transcript: { bytes: 2048 },
+    files: { [HANDOFF_REL]: { content: stamped(isoNoMillis(Date.now() + 86_400_000)), mtime: 1_000_000_000 } } });
+  const m = ctx(r) || '';
+  check('SessionStart(compact): fresh `_Written:` stamp + STALE mtime → CURRENT (stamp beats mtime, ≤6 lines)',
+    r.code === 0 && /Freshness: CURRENT/.test(m) && !/SUSPECT/.test(m) && m.split('\n').length <= 6,
+    `stdout=${JSON.stringify(r.stdout)}`);
+}
+{ // stamp STALE (epoch 1e9) while the handoff MTIME is in the future: the
+  // mtime proxy would say CURRENT — SUSPECT proves the stamp wins both ways.
+  const r = runHook({ event: 'SessionStart', desc: COMPACT, input: { source: 'compact' },
+    transcript: { bytes: 2048 },
+    files: { [HANDOFF_REL]: { content: stamped('2001-09-09T01:46:40Z'), mtime: Math.floor(Date.now() / 1000) + 86_400 } } });
+  const m = ctx(r) || '';
+  check('SessionStart(compact): stale `_Written:` stamp + FRESH mtime → SUSPECT (stamp beats mtime, fail closed)',
+    r.code === 0 && /Freshness: SUSPECT/.test(m) && !/CURRENT/.test(m) && m.split('\n').length <= 6,
+    `stdout=${JSON.stringify(r.stdout)}`);
+}
+{ // malformed stamp → the mtime FALLBACK decides, in BOTH directions (a broken
+  // stamp must never fail closed to permanent-SUSPECT, and never error).
+  const fresh = runHook({ event: 'SessionStart', desc: COMPACT, input: { source: 'compact' },
+    transcript: { bytes: 2048 },
+    files: { [HANDOFF_REL]: { content: stamped('not-a-date'), mtime: Math.floor(Date.now() / 1000) + 86_400 } } });
+  const stale = runHook({ event: 'SessionStart', desc: COMPACT, input: { source: 'compact' },
+    transcript: { bytes: 2048 },
+    files: { [HANDOFF_REL]: { content: stamped('not-a-date'), mtime: 1_000_000_000 } } });
+  check('SessionStart(compact): malformed `_Written:` stamp → mtime fallback decides (fresh mtime CURRENT, stale mtime SUSPECT, exit 0)',
+    fresh.code === 0 && /Freshness: CURRENT/.test(ctx(fresh) || '')
+      && stale.code === 0 && /Freshness: SUSPECT/.test(ctx(stale) || ''),
+    `fresh=${JSON.stringify(fresh.stdout)} stale=${JSON.stringify(stale.stdout)}`);
+}
+{ // injection probe: metachar/garbage stamp content is inert — the stamp only
+  // passes through grep/cut and `jq --arg`, never a shell eval. Falls back to
+  // the (fresh) mtime, emits valid JSON, exit 0, empty stderr.
+  const evil = '_Written: $(touch HACK6) `touch HACK7`; rm -rf x · session $(id) · branch `pwd`_\n# h\n';
+  const r = runHook({ event: 'SessionStart', desc: COMPACT, input: { source: 'compact' },
+    transcript: { bytes: 2048 },
+    files: { [HANDOFF_REL]: { content: evil, mtime: Math.floor(Date.now() / 1000) + 86_400 } } });
+  const m = ctx(r);
+  check('SessionStart(compact): metachar `_Written:` stamp → inert (mtime fallback CURRENT, valid JSON, exit 0, empty stderr)',
+    r.code === 0 && typeof m === 'string' && /Freshness: CURRENT/.test(m) && r.stderr === '',
+    `code=${r.code} stderr=${JSON.stringify(r.stderr)} stdout=${JSON.stringify(r.stdout)}`);
+}
 // Multi-ledger: compact-resume must name the SAME active ledger the beat-enforcer
 // picks (newest-mtime with any open [ ]/[~] beat) — pointing a post-compaction
 // session at an abandoned mission is the whole failure this hook exists to avoid.

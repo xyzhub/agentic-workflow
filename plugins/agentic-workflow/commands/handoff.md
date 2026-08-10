@@ -21,6 +21,12 @@ Write `docs/product/session-handoff.md` (from
 `${CLAUDE_PLUGIN_ROOT}/templates/session-handoff.md` if missing) as a **re-read
 manifest — pointers, not corpora**:
 
+- **Provenance stamp** — the single line under the title, refreshed on EVERY
+  write: `_Written: <ISO-8601 UTC> · session <id> · branch <branch>_`. The
+  timestamp must be exactly `date -u +%Y-%m-%dT%H:%M:%SZ` — the compact-resume
+  hook parses this shape to judge freshness, preferring it over file mtime
+  (copies and checkouts perturb mtime; content survives). A malformed stamp
+  silently falls back to mtime, so a wrong stamp is worse than none.
 - **Goal** — what this session is achieving.
 - **Locked decisions + why** — so the fresh agent never reopens them.
 - **State** — done / in-flight (to what state) / **next** (the exact next step).
