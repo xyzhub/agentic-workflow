@@ -502,6 +502,18 @@ writes it, and a document the caller composes out of a subagent's distillate
 sits one paraphrase further from the source files. This is discipline, not a
 gate — nothing checks it for you.
 
+**Delegated reads.** The read side binds the driving session too — interactive
+work included, not just missions. Before pulling a large file or corpus into
+the window, ask whose window the reading belongs in: when what you need is a
+conclusion — a summary, an anchor list, a yes/no — spawn a subagent to do the
+reading in its own context and return a bounded distillate, and spend your own
+budget on ranged reads of only what you must see verbatim. Pulling a corpus
+into the very window you are trying to preserve is how an interactive session
+drifts toward compaction; the `Read` advisory reflex (§3) backstops the worst
+case — a whole-file read of a large file — but the discipline, not the reflex,
+is the lever. This is the same explore-once ethos that keeps a planner's briefs
+lean (§5), applied at the moment of each read.
+
 **The fresh-self handoff.** The interactive main session is context-disciplined
 too — the same "ledger outlives the transcript" rule (§2, principle 1) and loop
 mode (§5) that protect missions apply here. Externalize durable state to files

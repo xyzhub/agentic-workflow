@@ -37,9 +37,13 @@
 #               proxy as handoff-budget.sh, disclosed at ckpt-p1).
 #          Everything else — older stamp/handoff, missing or unreadable
 #          `transcript_path` — reads SUSPECT: verify against git log/git status
-#          before trusting its Next. A stale handoff is NEVER presented as
-#          current; fail closed toward suspect. A malformed stamp NEVER errors —
-#          it falls back, and every path still exits 0.
+#          before trusting its Next. The directive states WHY it is suspect
+#          (F3, ckpt-p2): STALE (the transcript was readable and the signal is
+#          older than its last append) vs UNPROVABLE (no readable transcript,
+#          so no comparison was ever made — the directive must not assert one).
+#          A stale handoff is NEVER presented as current; fail closed toward
+#          suspect. A malformed stamp NEVER errors — it falls back, and every
+#          path still exits 0.
 #       3. NEITHER (OQ6, human-locked) → a distinct directive naming
 #          `git log -5`, `git status`, `.remember/now.md`, telling the agent to
 #          TELL THE HUMAN the record is missing — and NOT to author a handoff on
@@ -87,7 +91,13 @@ elif [ -f "$HANDOFF" ]; then
   # transcript's last append; otherwise suspect — never silently trusted.
   TRANSCRIPT=$(printf '%s' "$INPUT" | jq -r '.transcript_path // ""' 2>/dev/null)
   FRESH=suspect
+  # WHY the suspicion (F3, ckpt-p2): `unprovable` until a readable transcript
+  # exists to compare against — only then can SUSPECT honestly mean `stale`
+  # (older than the transcript's last append). The two directives below state
+  # the matching reason; the operative instruction is identical in both.
+  SUSPECT_WHY=unprovable
   if [ -n "$TRANSCRIPT" ] && [ -f "$TRANSCRIPT" ]; then
+    SUSPECT_WHY=stale
     # Preferred source (S6): the `_Written:` provenance stamp. Defensive parse —
     # first `_Written: ` line, second field only, accepted ONLY in the exact
     # YYYY-MM-DDTHH:MM:SSZ shape, converted to epoch by jq (`fromdateiso8601`),
@@ -96,6 +106,7 @@ elif [ -f "$HANDOFF" ]; then
     # the S5 mtime proxy — malformed stamps fall back, they never error.
     STAMP_EPOCH=""
     STAMP_ISO=$(grep -m1 '^_Written: ' "$HANDOFF" 2>/dev/null | cut -d' ' -f2)
+    # F2 (ckpt-p2, note-only): mutations to this shape-gate regex are MASKED downstream — jq's `fromdateiso8601` and the numeric `case` guard reject what a loosened regex lets through; all three layers are deliberate, so don't judge the regex's coverage by mutation survival alone.
     if printf '%s' "$STAMP_ISO" | grep -qE '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$'; then
       STAMP_EPOCH=$(jq -rn --arg t "$STAMP_ISO" '$t | fromdateiso8601' 2>/dev/null)
       case "$STAMP_EPOCH" in ''|*[!0-9]*) STAMP_EPOCH="" ;; esac
@@ -122,10 +133,20 @@ elif [ -f "$HANDOFF" ]; then
 No active mission ledger; the durable record is docs/product/session-handoff.md.
 Freshness: CURRENT — written after the transcript's last append, so it postdates any budget-band crossing (currency is judged against the transcript, never the clock).
 Re-read it VERBATIM (do not resume from the summary), then continue from its **Next** line."
-  else
+  elif [ "$SUSPECT_WHY" = stale ]; then
+    # SUSPECT because PROVEN stale: the transcript was readable and the chosen
+    # freshness signal is older than its last append.
     MSG="♻️ Context was just COMPACTED — what you hold now is a summary, not the record.
 No active mission ledger; the last durable record is docs/product/session-handoff.md.
 Freshness: SUSPECT — it is OLDER than the transcript's last append, so it may predate the last compaction/band crossing; work may have happened after it was written.
+Re-read it VERBATIM, but do NOT trust its **Next** yet: verify against \`git log\` and \`git status\` first — treat the handoff as a lead, not the truth."
+  else
+    # SUSPECT because UNPROVABLE (F3): no readable transcript, so no age
+    # comparison was ever made — asserting "older" here would be a false claim.
+    # Same operative instruction as the stale text; only the reason differs.
+    MSG="♻️ Context was just COMPACTED — what you hold now is a summary, not the record.
+No active mission ledger; the last durable record is docs/product/session-handoff.md.
+Freshness: SUSPECT — UNPROVABLE: the transcript is missing or unreadable, so the handoff's age could not be judged against its last append; assume work may have happened after it was written.
 Re-read it VERBATIM, but do NOT trust its **Next** yet: verify against \`git log\` and \`git status\` first — treat the handoff as a lead, not the truth."
   fi
 else
