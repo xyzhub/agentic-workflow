@@ -200,11 +200,14 @@ the active ledger's phase + `Next up:` + first open beat each turn; the
 close, `reviewer` at a checkpoint) at the moment you try to close or advance —
 stepping over beats that aren't due (held, or behind unfinished work or an
 unreleased blocker) to reach the first one that is; **compact-resume** fires after a
-context compaction, telling the session to re-read the active ledger verbatim
-rather than resume from the summary; and **handoff-budget** nudges once
-cumulative transcript bytes — a loose proxy, never a token measurement — cross
-an advisory or urgent band, telling the session to write/refresh
-`docs/product/session-handoff.md` before compaction takes the window.
+context compaction and is never silent: with an active ledger it re-reads the
+ledger verbatim; otherwise it falls back to `docs/product/session-handoff.md`,
+stating its freshness, or — with neither record — names `git log`, `git status`
+and `.remember/now.md` and flags the gap to the human; and **handoff-budget**
+nudges once cumulative transcript bytes — a loose proxy, never a token
+measurement — cross an advisory or urgent band, telling the session to
+write/refresh `docs/product/session-handoff.md` before compaction takes the
+window.
 
 ## What the human always owns
 
