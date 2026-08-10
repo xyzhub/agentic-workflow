@@ -150,6 +150,9 @@ what the next session needs. Newest on top; crash-safe by write-ahead._
   Phasing enforces L2 — the fallback never ships before the trigger. Verified
   `node tools/lint.mjs` green. **Nothing executed; blocked on OQ1–OQ7.**_
 
-Next up: **S1** — harness fixtures in `tools/hook-test.mjs`. **Blocked**: the
-human must answer OQ1–OQ7 first, and OQ1 decides the base branch every phase
-forks from.
+Next up: **S1** — harness fixtures in `tools/hook-test.mjs`, branch
+`mission/compaction-continuity-p1` (created off the integration branch, which carries
+the trio; a clean descendant of `main`). **UNBLOCKED 2026-08-10**: OQ1/OQ4/OQ6 resolved
+by the human 2026-08-03 (OQ1 superseded 2026-08-04 → base `main`, PR #31 merged);
+OQ2/OQ3/OQ5/OQ7 stand on the planner's recommendation. Mission order per the
+portfolio-learning OQ1 (2026-08-10): **this mission runs first.** **Suits:** `backend`.
