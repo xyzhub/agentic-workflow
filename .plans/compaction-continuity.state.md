@@ -48,13 +48,12 @@ Plan: `.plans/compaction-continuity.md` · Briefs:
 `.plans/compaction-continuity.sessions.md` · Brief:
 `docs/product/decisions/2026-08-03-compaction-continuity-brief.md`
 
-Next up: **S4** — atomic-ref docs for the trigger, on
-`mission/compaction-continuity-p1` (S3 landed the hook 2026-08-10): §3 guardrail
-row + §4 reflex paragraph (four → five) in **both** WORKFLOW.md mirrors
-identically, plugin README count/sentence, and the `hooks.json` description
-check. The §3 row must call the signal **transcript bytes, a loose cumulative
-proxy** — never token math — and every behavioral claim must name its
-`hook-test.mjs` case in the commit body (L7). **Suits:** `writer`.
+Next up: **Checkpoint `ckpt-p1` [STRICT]** — phase 1 review + merge per gate
+policy (S4 landed the docs 2026-08-10, phase 1 code-complete). The independent
+`reviewer` re-runs all gates, diff-reviews `base..head`, hand-dispatches the
+silencer matrix, re-runs both mutation proofs incl. anti-inert controls, and
+probes injection-resistance with shell metacharacters in the transcript path.
+Verdict pushed to the human the moment it lands (batch gating, L1).
 
 ## Checklist
 
@@ -64,7 +63,7 @@ done (verified, not merely written)._
 - [x] S1 — harness fixtures: arbitrary files + a sized transcript in `runHook()` (branch `mission/compaction-continuity-p1`) — **Suits:** `backend` — done 2026-08-10, 35 cases green, 3 mutations proved
 - [x] S2 — derive the byte thresholds from real transcripts; measurement only, no source change (branch `mission/compaction-continuity-p1`) — **Suits:** `backend` — done 2026-08-10, n=1 compaction in the corpus, bands 3,700,000 / 5,380,000 B (see 📊 block), ledger-only diff, gates 35/54/lint green
 - [x] S3 — `hooks/lib/handoff-budget.sh` + `UserPromptSubmit` registration, named constants, four silencers (branch `mission/compaction-continuity-p1`) — **Suits:** `backend` — done 2026-08-10 (completed after an infra failure killed the first attempt post-script-write), harness 35 → 47 green, 6 mutations proved w/ anti-inert control
-- [ ] S4 — atomic-ref docs for the trigger: §3 row, §4 reflexes, plugin README, `hooks.json` description (branch `mission/compaction-continuity-p1`) — **Suits:** `writer`
+- [x] S4 — atomic-ref docs for the trigger: §3 row, §4 reflexes, plugin README, `hooks.json` description (branch `mission/compaction-continuity-p1`) — **Suits:** `writer` — pending orchestrator gate-run + commit
 - [ ] Checkpoint `ckpt-p1` **[STRICT]** — phase 1 review + merge per gate policy; verdict surfaced immediately
 - [ ] S5 — `compact-resume.sh` fallback: three branches, freshness stated in the directive (branch `mission/compaction-continuity-p2`) — **Suits:** `backend`
 - [ ] S6 — handoff provenance stamp, conditional on OQ3; collapses into S5 if OQ3 is "no format change" (branch `mission/compaction-continuity-p2`) — **Suits:** `writer`
@@ -246,6 +245,15 @@ Deviating is allowed; deviating silently is not (§4)._
 _≤10 lines per entry: what this session did, the verify signal, the branch, and
 what the next session needs. Newest on top; crash-safe by write-ahead._
 
+- _2026-08-10 (S4, `writer`, branch `mission/compaction-continuity-p1`): added
+  the §3 guardrail row + §4 reflex paragraph (four → five reflexes) identically
+  in both `docs/WORKFLOW.md` and `templates/WORKFLOW.md` (pre-existing
+  "required-but-unchecked"/"not-started" mirror wording drift left untouched,
+  out of scope — flagged, not fixed); updated the plugin README's count/sentence
+  to five. `hooks.json`'s handoff-budget description (written by S3) already
+  named all four silencers and both bands — verified, not rewritten. Text-only
+  session; no gates run (orchestrator's job). ckpt-p1 next._
+
 - _2026-08-10 (S3, `backend`, branch `mission/compaction-continuity-p1`): shipped
   `hooks/lib/handoff-budget.sh` + its `UserPromptSubmit` registration (completion
   session — see Deviations for the infra failure). Inherited script kept
@@ -286,11 +294,10 @@ what the next session needs. Newest on top; crash-safe by write-ahead._
   Phasing enforces L2 — the fallback never ships before the trigger. Verified
   `node tools/lint.mjs` green. **Nothing executed; blocked on OQ1–OQ7.**_
 
-Next up: **S4** — atomic-ref docs for the trigger, on
-`mission/compaction-continuity-p1` (S3 landed the hook + registration + 12 cases
-2026-08-10). Add the §3 guardrail row and the §4 reflex paragraph (four → five)
-in **both** WORKFLOW.md mirrors identically, update the plugin README's count,
-and confirm the `hooks.json` description names every silencer (S3 wrote one —
-verify, don't assume). State plainly that the signal is transcript **bytes, a
-loose cumulative proxy** (n=1), and map every behavioral claim to a named
-`hook-test.mjs` case in the commit body (L7). **Suits:** `writer`.
+Next up: **Checkpoint `ckpt-p1` [STRICT]** — phase 1 review + merge per gate
+policy, on `mission/compaction-continuity-p1` (S4 landed the docs 2026-08-10).
+The independent `reviewer` re-runs all gates, diff-reviews `base..head`,
+hand-dispatches the hook across the silencer matrix, re-runs both mutation
+proofs incl. anti-inert controls, and probes injection-resistance with shell
+metacharacters in the transcript path. Verdict pushed to the human the moment
+it lands (batch gating, L1). **Suits:** `reviewer`.

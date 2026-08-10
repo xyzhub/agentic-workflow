@@ -198,6 +198,7 @@ Shipped by this plugin as hooks. Advisory except where marked:
 | `Write`/`Edit` | Reminder to update docs when high-impact files change |
 | Prompt submit | **Router** (governance) — an un-prefixed work request gets a soft "route it through the protocol — hand to `intake`" nudge; silent on plain chat, never blocks |
 | Prompt submit | **Thread-keeper** (governance) — injects the active ledger's phase + `Next up:` + first unchecked beat each turn; silent when no active ledger, never blocks |
+| Prompt submit | **Handoff-budget** (governance) — nudges (≤3 lines) to write/refresh `docs/product/session-handoff.md` before compaction takes the window, once cumulative transcript **bytes** — a loose proxy, including tool results the window has already evicted, never a token measurement — cross an advisory (3,700,000 B) or urgent (5,380,000 B) band, boundary-inclusive; silent below the advisory band, once already fired for that band this session, while an active mission ledger exists, or once the handoff is already newer than the crossing; never blocks |
 | turn end | **Beat-enforcer backstop** (governance, `Stop`) — nudges a not-started ledger beat (`chronicler` at close, `reviewer` at a checkpoint) at the overdue moment; it scans the open beats top-down and nudges the **first due** one — a beat whose own row is held is stepped over, not treated as a wall — and stays silent when nothing is due, i.e. when unfinished work, an unreleased ⛔/HARD PAUSE row, or an unreleased `[~]` **HELD** row sits above every candidate (a `[ ]` HELD row is parked, not a barrier: the scan steps over it); advisory, never blocks |
 | `git commit` / `gh pr create` / `gh pr merge` | **Beat-enforcer** (governance, `PreToolUse`) — the same nudge at the closing action, but with **no due-ness scan yet**: it reports the **first** not-started beat outright, so it can name one that is held or behind unfinished work (the due-ness port is pending); advisory, never blocks |
 | After a compaction | **Compact-resume** (governance) — on `SessionStart` with matcher `compact` only, injects a short directive to re-read the active ledger and the last handoff **verbatim** rather than resume from the summary; silent when there's no active mission, never blocks |
@@ -232,15 +233,18 @@ end a session). For a long *interactive* session with no natural session end,
 `/agentic-workflow:handoff` writes a fresh-self re-read manifest so the reset stays lossless
 (§6.2) — never lean on the auto-summary.
 
-**Reflex backstops** — three §3 governance hooks keep a *running* session
+**Reflex backstops** — four §3 governance hooks keep a *running* session
 on-protocol without being read: the *thread-keeper* surfaces the active ledger's
 phase + `Next up:` + first open beat every turn; the *beat-enforcer* nudges a
 not-started beat (`chronicler` at close, `reviewer` at a checkpoint) at the moment
-you try to close or advance; and *compact-resume* fires the moment the context
+you try to close or advance; *compact-resume* fires the moment the context
 window is compacted, telling you to re-read the ledger verbatim instead of
-resuming from a summary of a summary. All three are advisory — they steer the
-session back to the ledger, never block it. (§3's fourth governance hook, the
-*router*, fires before the work starts rather than during it.)
+resuming from a summary of a summary; and *handoff-budget* nudges once cumulative
+transcript bytes — a loose proxy, never a token measurement — cross an advisory
+or urgent band, telling you to write/refresh the handoff before compaction takes
+the window. All four are advisory — they steer the session back to the ledger,
+never block it. (§3's fifth governance hook, the *router*, fires before the work
+starts rather than during it.)
 
 ## 5. Mission lifecycle (multi-session work)
 
