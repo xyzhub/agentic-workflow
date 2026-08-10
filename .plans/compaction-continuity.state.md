@@ -48,11 +48,13 @@ Plan: `.plans/compaction-continuity.md` · Briefs:
 `.plans/compaction-continuity.sessions.md` · Brief:
 `docs/product/decisions/2026-08-03-compaction-continuity-brief.md`
 
-Next up: **S3** — `hooks/lib/handoff-budget.sh` + `UserPromptSubmit` registration
-on `mission/compaction-continuity-p1`, with the two named constants taken **verbatim
-from the `## 📊 S2 THRESHOLD BLOCK` below** (`ADVISORY_BYTES=3700000`,
-`URGENT_BYTES=5380000`) — S3 re-measures nothing, and its constants' comment must
-carry the n=1 caveat, not just the numbers.
+Next up: **S4** — atomic-ref docs for the trigger, on
+`mission/compaction-continuity-p1` (S3 landed the hook 2026-08-10): §3 guardrail
+row + §4 reflex paragraph (four → five) in **both** WORKFLOW.md mirrors
+identically, plugin README count/sentence, and the `hooks.json` description
+check. The §3 row must call the signal **transcript bytes, a loose cumulative
+proxy** — never token math — and every behavioral claim must name its
+`hook-test.mjs` case in the commit body (L7). **Suits:** `writer`.
 
 ## Checklist
 
@@ -61,7 +63,7 @@ done (verified, not merely written)._
 
 - [x] S1 — harness fixtures: arbitrary files + a sized transcript in `runHook()` (branch `mission/compaction-continuity-p1`) — **Suits:** `backend` — done 2026-08-10, 35 cases green, 3 mutations proved
 - [x] S2 — derive the byte thresholds from real transcripts; measurement only, no source change (branch `mission/compaction-continuity-p1`) — **Suits:** `backend` — done 2026-08-10, n=1 compaction in the corpus, bands 3,700,000 / 5,380,000 B (see 📊 block), ledger-only diff, gates 35/54/lint green
-- [ ] S3 — `hooks/lib/handoff-budget.sh` + `UserPromptSubmit` registration, named constants, four silencers (branch `mission/compaction-continuity-p1`) — **Suits:** `backend`
+- [x] S3 — `hooks/lib/handoff-budget.sh` + `UserPromptSubmit` registration, named constants, four silencers (branch `mission/compaction-continuity-p1`) — **Suits:** `backend` — done 2026-08-10 (completed after an infra failure killed the first attempt post-script-write), harness 35 → 47 green, 6 mutations proved w/ anti-inert control
 - [ ] S4 — atomic-ref docs for the trigger: §3 row, §4 reflexes, plugin README, `hooks.json` description (branch `mission/compaction-continuity-p1`) — **Suits:** `writer`
 - [ ] Checkpoint `ckpt-p1` **[STRICT]** — phase 1 review + merge per gate policy; verdict surfaced immediately
 - [ ] S5 — `compact-resume.sh` fallback: three branches, freshness stated in the directive (branch `mission/compaction-continuity-p2`) — **Suits:** `backend`
@@ -225,12 +227,35 @@ Deviating is allowed; deviating silently is not (§4)._
   dir only. Per the standing rule the brief wins: only
   `~/.claude/projects/-Users-baker-Playground-venture-workflow-plugin/` was measured.
 
+- 2026-08-10 (S3) — the first S3 agent died on an API infrastructure error
+  immediately after writing `hooks/lib/handoff-budget.sh` (untracked, unverified;
+  nothing else landed — no registration, no cases, no ledger write). A completion
+  session reviewed the inherited script line-by-line and dispatched it across
+  every path: it matched the brief exactly, so it was kept **byte-for-byte
+  unchanged**; the completion added the registration, 12 harness cases, the
+  mutation proofs and this ledger write. Not a brief deviation — an
+  infrastructure one, logged so the two-agent history is on the record.
+- 2026-08-10 (S3) — the harness's once-per-band marker lives in the REAL
+  `$TMPDIR` (`runHook()` does not override it, and the brief forbade harness-
+  machinery changes), so the new cases mint a unique `session_id` per run to
+  keep prior runs' markers from suppressing firings; empty uniquely-named
+  markers are left to the OS tempdir cleanup. Documented in the case block.
+
 ## Handoff log (newest first)
 
 _≤10 lines per entry: what this session did, the verify signal, the branch, and
 what the next session needs. Newest on top; crash-safe by write-ahead._
 
-- _2026-08-10 (S2, `backend`, branch `mission/compaction-continuity-p1`): measured
+- _2026-08-10 (S3, `backend`, branch `mission/compaction-continuity-p1`): shipped
+  `hooks/lib/handoff-budget.sh` + its `UserPromptSubmit` registration (completion
+  session — see Deviations for the infra failure). Inherited script kept
+  unchanged: line-review + full-path dispatch found constants, four silencers,
+  ≤3-line nudges and exit-0 paths all per brief; nothing to fix. Harness 35 →
+  **47 green** (12 cases: both bands both directions, once-per-band, per-band ≤2,
+  active vs completed ledger, fresh vs stale handoff, three failure paths,
+  registration shape); 6 mutations (M1 below-band, M2 `-ge`→`-gt`, M3 marker, M4a/b
+  `-nt` removed/inverted, M5 ledger exit) each caught only by new cases, base-35
+  green under every one. Gates: lint clean · selftest 54. S4 next: docs only._
   the compaction byte-point from the local corpus (48 files / 21,793,788 B stamped
   2026-08-10T04:30:59Z). Exactly **one** true compaction exists (`2fa752c7…`, line
   2551, **6,727,626 B** through the record; cross-checked via `compact_boundary`).
@@ -261,10 +286,11 @@ what the next session needs. Newest on top; crash-safe by write-ahead._
   Phasing enforces L2 — the fallback never ships before the trigger. Verified
   `node tools/lint.mjs` green. **Nothing executed; blocked on OQ1–OQ7.**_
 
-Next up: **S3** — write `hooks/lib/handoff-budget.sh` and register it under
-`UserPromptSubmit` in the same commit, on `mission/compaction-continuity-p1`
-(S2 landed the thresholds 2026-08-10). The two named constants come **verbatim**
-from the `## 📊 S2 THRESHOLD BLOCK` (`ADVISORY_BYTES=3700000`,
-`URGENT_BYTES=5380000`) with the n=1 caveat in their comment — no re-measuring,
-no bare literals. Four silencers per OQ4/OQ7, exit 0 on every path, harness cases
-per the brief. **Suits:** `backend`.
+Next up: **S4** — atomic-ref docs for the trigger, on
+`mission/compaction-continuity-p1` (S3 landed the hook + registration + 12 cases
+2026-08-10). Add the §3 guardrail row and the §4 reflex paragraph (four → five)
+in **both** WORKFLOW.md mirrors identically, update the plugin README's count,
+and confirm the `hooks.json` description names every silencer (S3 wrote one —
+verify, don't assume). State plainly that the signal is transcript **bytes, a
+loose cumulative proxy** (n=1), and map every behavioral claim to a named
+`hook-test.mjs` case in the commit body (L7). **Suits:** `writer`.
