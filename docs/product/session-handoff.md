@@ -4,7 +4,7 @@ _The interactive counterpart to a mission ledger: what a resuming agent needs wh
 no active `.plans/*.state.md`. Read it **verbatim** before continuing, then verify against
 `git log --oneline -5` and `git status` before trusting **Next**._
 
-**Written:** 2026-08-04 · branch `plan/interactive-handoff` · repo `xyzhub/agentic-workflow`
+_Written: 2026-08-04T00:00:00Z · session unknown · branch plan/interactive-handoff_
 
 ---
 

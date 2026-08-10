@@ -48,12 +48,9 @@ Plan: `.plans/compaction-continuity.md` · Briefs:
 `.plans/compaction-continuity.sessions.md` · Brief:
 `docs/product/decisions/2026-08-03-compaction-continuity-brief.md`
 
-Next up: **Checkpoint `ckpt-p1` [STRICT]** — phase 1 review + merge per gate
-policy (S4 landed the docs 2026-08-10, phase 1 code-complete). The independent
-`reviewer` re-runs all gates, diff-reviews `base..head`, hand-dispatches the
-silencer matrix, re-runs both mutation proofs incl. anti-inert controls, and
-probes injection-resistance with shell metacharacters in the transcript path.
-Verdict pushed to the human the moment it lands (batch gating, L1).
+Next up: **Checkpoint `ckpt-p2` [STRICT]** — phase 2 review + merge per gate
+policy (branch `mission/compaction-continuity-p2`, **Suits:** `reviewer`). S7
+shipped the atomic-ref docs; verdict surfaced to the human immediately.
 
 ## Checklist
 
@@ -65,10 +62,10 @@ done (verified, not merely written)._
 - [x] S3 — `hooks/lib/handoff-budget.sh` + `UserPromptSubmit` registration, named constants, four silencers (branch `mission/compaction-continuity-p1`) — **Suits:** `backend` — done 2026-08-10 (completed after an infra failure killed the first attempt post-script-write), harness 35 → 47 green, 6 mutations proved w/ anti-inert control
 - [x] S4 — atomic-ref docs for the trigger: §3 row, §4 reflexes, plugin README, `hooks.json` description (branch `mission/compaction-continuity-p1`) — **Suits:** `writer` — pending orchestrator gate-run + commit
 - [x] Checkpoint `ckpt-p1` **[STRICT]** — **APPROVE** 2026-08-10 (Fable), no corrective needed. UX 3 · Security 3 · Efficiency 3 · Architecture 3 · DX 2 · QA 2. 18-path dispatch matrix all exit 0; 6 claimed + 6 adversarial mutations; **n=1 bands accepted on the merits** (owner owns the n=1 — re-measure if compaction changes upstream). Merged `c2e4648`. Folded forward into P2: **finding 1** (metachar-`session_id` harness case — the sanitizer currently has zero regression protection); **nit 3** (§3 "newer than the crossing" is OQ4's ideal; code implements the conservative newer-than-transcript proxy, disclosed). Drift-line ruling: leave, file-as-lesson for the portfolio-learning sweep. Verdict surfaced to the human immediately.
-- [ ] S5 — `compact-resume.sh` fallback: three branches, freshness stated in the directive (branch `mission/compaction-continuity-p2`) — **Suits:** `backend`
-- [ ] S6 — handoff provenance stamp, conditional on OQ3; collapses into S5 if OQ3 is "no format change" (branch `mission/compaction-continuity-p2`) — **Suits:** `writer`
-- [ ] S7 — atomic-ref docs for the fallback, incl. the now-false `hooks.json` silence claim (branch `mission/compaction-continuity-p2`) — **Suits:** `writer`
-- [ ] Checkpoint `ckpt-p2` **[STRICT]** — phase 2 review + merge per gate policy; verdict surfaced immediately
+- [x] S5 — `compact-resume.sh` fallback: three branches, freshness stated in the directive (branch `mission/compaction-continuity-p2`) — **Suits:** `backend` — done 2026-08-10, harness 47 → 54 green, 5 mutations proved both-states w/ anti-inert control, ckpt-p1 finding 1 (metachar `session_id` case) shipped, `hooks.json` SessionStart description fixed in-commit (per S7's "S5's own commit or this one")
+- [x] S6 — handoff provenance stamp, conditional on OQ3; collapses into S5 if OQ3 is "no format change" (branch `mission/compaction-continuity-p2`) — **Suits:** `writer` — done 2026-08-10 by `backend` (the brief's pair clause: the parse landed in the hook). Stamp line in the template + `/agentic-workflow:handoff` instruction + live handoff stamped; `compact-resume.sh` branch 2 prefers the stamp's ISO over mtime, mtime fallback byte-identical to S5 (pinned exact-string). Harness 54 → 59, 4 mutations both-states w/ anti-inert control, lint + selftest green
+- [x] S7 — atomic-ref docs for the fallback, incl. the now-false `hooks.json` silence claim (branch `mission/compaction-continuity-p2`) — **Suits:** `writer` — pending orchestrator gate-run + commit
+- [~] Checkpoint `ckpt-p2` **[STRICT]** — reviewer in flight 2026-08-10 (Fable) — phase 2 review + merge per gate policy; verdict surfaced immediately
 - [ ] S8 — frequency lever: named `Read` advisory threshold + the §6.2 interactive paragraph, no savings claim (branch `mission/compaction-continuity-p3`) — **Suits:** `backend`
 - [ ] S9 — phase-3 docs and the honest non-claim (branch `mission/compaction-continuity-p3`) — **Suits:** `writer`
 - [ ] Checkpoint `ckpt-p3` — phase 3 review + merge per gate policy (routine, single-reviewer)
@@ -234,6 +231,14 @@ Deviating is allowed; deviating silently is not (§4)._
   unchanged**; the completion added the registration, 12 harness cases, the
   mutation proofs and this ledger write. Not a brief deviation — an
   infrastructure one, logged so the two-agent history is on the record.
+- 2026-08-10 (S5) — the `hooks.json` SessionStart `description` rewrite (the
+  now-false "silent when no `.plans/` or no active ledger" claim) was listed
+  under S7's reads but executed in S5's commit — S7's brief explicitly allows
+  "S5's own commit or this one". S7 verifies the description, not rewrites it.
+- 2026-08-10 (S5) — S6 did NOT collapse: OQ3 stands on the planner's
+  recommendation (one provenance line = a format change), so S5 implemented
+  the mtime-only freshness path and left stamp-preference to S6. Logged
+  because the dispatching prompt made the collapse conditional on OQ3.
 - 2026-08-10 (S3) — the harness's once-per-band marker lives in the REAL
   `$TMPDIR` (`runHook()` does not override it, and the brief forbade harness-
   machinery changes), so the new cases mint a unique `session_id` per run to
@@ -244,6 +249,35 @@ Deviating is allowed; deviating silently is not (§4)._
 
 _≤10 lines per entry: what this session did, the verify signal, the branch, and
 what the next session needs. Newest on top; crash-safe by write-ahead._
+
+- _2026-08-10 (S7, `writer`, branch `mission/compaction-continuity-p2`): killed
+  the now-false "silent when no active mission" claim — §3 row + §4 reflex
+  sentence now describe all three branches, wording matched to compact-resume.sh's
+  shipped SUSPECT/CURRENT text; unified §6.2's fresh-self-handoff paragraph with
+  the fallback; fixed README's clause. Mirrors diff-clean (known drift only).
+  Two out-of-scope findings reported, not fixed: `hooks.json`'s description is
+  stale re: S6's stamp preference; CHANGELOG.md's P3-era "Silent with no active
+  ledger" line is the same false claim (S10's). Text-only. `ckpt-p2` next._
+
+- _2026-08-10 (S6, `backend`, branch `mission/compaction-continuity-p2`): stamp
+  shipped — `_Written: <ISO> · session <id> · branch <b>_` line in the template,
+  `/agentic-workflow:handoff` instructed to refresh it every write, live handoff
+  stamped with its HONEST original date (2026-08-04T00:00:00Z → reads SUSPECT,
+  truthfully). `compact-resume.sh` branch 2 prefers the stamp (exact-shape gate +
+  jq `fromdateiso8601`, shell-inert), mtime fallback byte-identical to S5.
+  Harness 54 → 59; M1–M4 both-states; anti-inert: pre-S6 hook fails exactly the
+  2 stamp cases. Lint + selftest green. S7 next: docs; stamp format per above._
+
+- _2026-08-10 (S5, `backend`, branch `mission/compaction-continuity-p2`):
+  `compact-resume.sh` now has THREE branches — active ledger → pre-P2 directive
+  byte-for-byte (pinned by an exact-string case); no ledger + handoff → ≤6-line
+  directive stating `Freshness: CURRENT` (handoff `-nt` transcript, the disclosed
+  conservative proxy) or `Freshness: SUSPECT` (older, or missing/unreadable
+  `transcript_path` — fail closed) with git log/git status verification ordered
+  before trusting **Next**; neither → OQ6 directive (git log -5 / git status /
+  .remember/now.md, tell the human, authoring-now forbidden). Harness 47 → 54;
+  5 mutations proved (M1 branch, M2a/b freshness, M3 text pin, M4 OQ6, M5
+  budget sanitizer); lint + selftest 54 green. S6 next: provenance stamp._
 
 - _2026-08-10 (S4, `writer`, branch `mission/compaction-continuity-p1`): added
   the §3 guardrail row + §4 reflex paragraph (four → five reflexes) identically
@@ -296,10 +330,6 @@ what the next session needs. Newest on top; crash-safe by write-ahead._
   Phasing enforces L2 — the fallback never ships before the trigger. Verified
   `node tools/lint.mjs` green. **Nothing executed; blocked on OQ1–OQ7.**_
 
-Next up: **Checkpoint `ckpt-p1` [STRICT]** — phase 1 review + merge per gate
-policy, on `mission/compaction-continuity-p1` (S4 landed the docs 2026-08-10).
-The independent `reviewer` re-runs all gates, diff-reviews `base..head`,
-hand-dispatches the hook across the silencer matrix, re-runs both mutation
-proofs incl. anti-inert controls, and probes injection-resistance with shell
-metacharacters in the transcript path. Verdict pushed to the human the moment
-it lands (batch gating, L1). **Suits:** `reviewer`.
+Next up: **Checkpoint `ckpt-p2` [STRICT]** on `mission/compaction-continuity-p2`
+(**Suits:** `reviewer`) — phase 2 review + merge per gate policy; verdict
+surfaced to the human immediately.
