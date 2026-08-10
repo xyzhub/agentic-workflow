@@ -367,19 +367,33 @@ const oq6Directive = (m) => typeof m === 'string'
     transcript: { bytes: 2048 },
     files: { [HANDOFF_REL]: { content: '# Session handoff\n', mtime: 1_000_000_000 } } });
   const m = ctx(r) || '';
-  check('SessionStart(compact): no ledger, handoff OLDER than transcript → SUSPECT directive (verify git log/git status before trusting Next, ≤6 lines, no CURRENT)',
+  // F3+F4 (ckpt-p2): the STALE sub-path's reason ("OLDER than the transcript's
+  // last append") is only honest when a readable transcript was actually
+  // compared — pin that phrase HERE (where the comparison happened), pin that
+  // the UNPROVABLE reason does NOT appear, and pin the "Re-read it VERBATIM"
+  // operative fragment (previously unpinned — droppable without a failure).
+  check('SessionStart(compact): no ledger, handoff OLDER than transcript → SUSPECT stating the STALE reason (OLDER-than phrase, no UNPROVABLE, re-read VERBATIM, verify before Next, ≤6 lines, no CURRENT)',
     r.code === 0 && /Freshness: SUSPECT/.test(m) && !/CURRENT/.test(m)
+      && /it is OLDER than the transcript's last append/.test(m) && !/UNPROVABLE/.test(m)
+      && /Re-read it VERBATIM/.test(m)
       && /git log/.test(m) && /git status/.test(m) && /do NOT trust its \*\*Next\*\*/.test(m)
       && m.includes(HANDOFF_REL) && m.split('\n').length <= 6,
     `stdout=${JSON.stringify(r.stdout)}`);
 }
 { // Branch 2, freshness UNPROVABLE: no transcript_path at all. Even a handoff
-  // with a future mtime must read SUSPECT — fail closed, never current.
+  // with a future mtime must read SUSPECT — fail closed, never current. F3
+  // (ckpt-p2): with NO readable transcript no age comparison was ever made, so
+  // the directive must state the honest reason (UNPROVABLE — transcript
+  // missing/unreadable) and must NOT assert the stale sub-path's "OLDER than"
+  // claim. Same operative instruction as the stale text (F4 fragment pinned).
   const r = runHook({ event: 'SessionStart', desc: COMPACT, input: { source: 'compact' },
     files: { [HANDOFF_REL]: { content: '# Session handoff\n', mtime: Math.floor(Date.now() / 1000) + 86_400 } } });
   const m = ctx(r) || '';
-  check('SessionStart(compact): handoff present but no transcript_path → freshness unprovable → SUSPECT (fail closed)',
-    r.code === 0 && /Freshness: SUSPECT/.test(m) && !/CURRENT/.test(m),
+  check('SessionStart(compact): handoff present but no transcript_path → SUSPECT stating the UNPROVABLE reason (no false OLDER-than claim, re-read VERBATIM, fail closed, ≤6 lines)',
+    r.code === 0 && /Freshness: SUSPECT/.test(m) && !/CURRENT/.test(m)
+      && /UNPROVABLE/.test(m) && /missing or unreadable/.test(m) && !/OLDER than/.test(m)
+      && /Re-read it VERBATIM/.test(m) && /do NOT trust its \*\*Next\*\*/.test(m)
+      && m.split('\n').length <= 6,
     `stdout=${JSON.stringify(r.stdout)}`);
 }
 { // The source guard precedes the branching: startup/resume stay silent in the
@@ -400,8 +414,9 @@ const oq6Directive = (m) => typeof m === 'string'
     input: { source: 'compact', transcript_path: evil },
     files: { [HANDOFF_REL]: { content: '$(touch HACK4) `touch HACK5`; rm -rf x\n', mtime: 1_000_000_000 } } });
   const m = ctx(r);
-  check('SessionStart(compact): metachar transcript_path + handoff content → inert (valid JSON, SUSPECT, exit 0, empty stderr)',
-    r.code === 0 && typeof m === 'string' && /Freshness: SUSPECT/.test(m) && r.stderr === '',
+  check('SessionStart(compact): metachar transcript_path + handoff content → inert (valid JSON, SUSPECT with the UNPROVABLE reason — unreadable path, no OLDER-than claim — exit 0, empty stderr)',
+    r.code === 0 && typeof m === 'string' && /Freshness: SUSPECT/.test(m)
+      && /UNPROVABLE/.test(m) && !/OLDER than/.test(m) && r.stderr === '',
     `code=${r.code} stderr=${JSON.stringify(r.stderr)} stdout=${JSON.stringify(r.stdout)}`);
 }
 // ── S6 (P2): the `_Written:` provenance stamp beats the mtime proxy ───────
@@ -446,6 +461,28 @@ const stamped = (iso) => `_Written: ${iso} · session s6-case · branch mission/
   const m = ctx(r) || '';
   check('SessionStart(compact): stale `_Written:` stamp + FRESH mtime → SUSPECT (stamp beats mtime, fail closed)',
     r.code === 0 && /Freshness: SUSPECT/.test(m) && !/CURRENT/.test(m) && m.split('\n').length <= 6,
+    `stdout=${JSON.stringify(r.stdout)}`);
+}
+{ // F1 (ckpt-p2): the clock-blind gap. Every earlier stamp case staged its
+  // transcript seconds before dispatch (mtime≈now), so mutating the hook to
+  // compare the stamp against the WALL CLOCK (T_MTIME=$(date +%s)) survived
+  // all 59 pre-S8 cases. Here the TRANSCRIPT itself carries an OLD mtime
+  // (2001) — staged via the `files` knob, which has explicit-mtime staging the
+  // `transcript` knob lacks; a relative transcript_path resolves against the
+  // temp cwd, and the hook only ever tests/stats it — and the stamp (2015)
+  // sits BETWEEN that mtime and now. Correct comparison (stamp vs transcript
+  // mtime) ⇒ CURRENT; the clock mutation ⇒ SUSPECT and this case fails. The
+  // handoff's own mtime is staged OLDER than the transcript so the mtime
+  // fallback cannot rescue a broken stamp path.
+  const r = runHook({ event: 'SessionStart', desc: COMPACT,
+    input: { source: 'compact', transcript_path: 'transcript-old.txt' },
+    files: {
+      'transcript-old.txt': { content: 'x'.repeat(2048), mtime: 1_000_000_000 },
+      [HANDOFF_REL]: { content: stamped('2015-01-01T00:00:00Z'), mtime: 999_999_000 },
+    } });
+  const m = ctx(r) || '';
+  check('SessionStart(compact): OLD-mtime transcript, stamp newer than it but older than NOW → CURRENT (freshness judged against the transcript, never the clock)',
+    r.code === 0 && /Freshness: CURRENT/.test(m) && !/SUSPECT/.test(m) && m.split('\n').length <= 6,
     `stdout=${JSON.stringify(r.stdout)}`);
 }
 { // malformed stamp → the mtime FALLBACK decides, in BOTH directions (a broken
@@ -535,6 +572,48 @@ const stamped = (iso) => `_Written: ${iso} · session s6-case · branch mission/
   const r = runHook({ event: 'PreToolUse', desc: PRE, input: commit, ledgers: HELD_BEAT_THEN_DUE });
   check('PreToolUse: HELD beat above a due one → names the HELD one (no due-ness scan yet)',
     r.code === 0 && nudged(r) && /ckpt-p1/.test(r.stdout) && !/phase 2/.test(r.stdout), `stdout=${JSON.stringify(r.stdout)}`);
+}
+
+// ── PreToolUse Read advisory (S8): the named READ_ADVISORY_LINES threshold ─
+// The threshold is PINNED as a literal here on purpose (the A3 lesson, same as
+// the budget bands below): moving the constant in hooks.json must consciously
+// move it here too. These cases pin BEHAVIOR only (fires/silent at the
+// boundary) — no effect-size claim rides on this advisory (L11).
+const READ_DESC = 'context-discipline backstop';
+const READ_LINES = 800; // mirrors READ_ADVISORY_LINES in hooks.json
+const readNudge = (r) => /Large whole-file read/.test(r.stdout);
+{ // the S8 deliverable is the NAME: the comparison must go through the named
+  // constant, not a bare literal (which zero cases pinned pre-S8).
+  const cmd = hookCommand('PreToolUse', READ_DESC);
+  check('PreToolUse(read): threshold is the NAMED constant READ_ADVISORY_LINES=800, compared by name (no bare literal in the test)',
+    cmd.includes(`READ_ADVISORY_LINES=${READ_LINES};`) && cmd.includes('-gt "$READ_ADVISORY_LINES"'),
+    `cmd=${JSON.stringify(cmd)}`);
+}
+{ // one line OVER the threshold, whole-file read (no limit) → the advisory
+  // fires, names the observed line count AND the threshold, exit 0.
+  const r = runHook({ event: 'PreToolUse', desc: READ_DESC,
+    input: { tool_input: { file_path: 'big.txt' } },
+    files: { 'big.txt': { content: 'x\n'.repeat(READ_LINES + 1) } } });
+  check('PreToolUse(read): whole-file Read one line OVER the threshold → advisory fires (names count + threshold), exit 0',
+    r.code === 0 && readNudge(r)
+      && new RegExp(`\\b${READ_LINES + 1} lines\\b`).test(r.stdout)
+      && r.stdout.includes(String(READ_LINES)),
+    `code=${r.code} stdout=${JSON.stringify(r.stdout)}`);
+}
+{ // exactly AT the threshold → silent: the boundary is strictly-greater.
+  const r = runHook({ event: 'PreToolUse', desc: READ_DESC,
+    input: { tool_input: { file_path: 'big.txt' } },
+    files: { 'big.txt': { content: 'x\n'.repeat(READ_LINES) } } });
+  check('PreToolUse(read): whole-file Read exactly AT the threshold → silent (strictly-greater boundary)',
+    r.code === 0 && r.stdout === '', `stdout=${JSON.stringify(r.stdout)}`);
+}
+{ // a RANGED read (limit present) of the same over-threshold file → silent:
+  // the advisory targets whole-file pulls, not the discipline it recommends.
+  const r = runHook({ event: 'PreToolUse', desc: READ_DESC,
+    input: { tool_input: { file_path: 'big.txt', limit: 100 } },
+    files: { 'big.txt': { content: 'x\n'.repeat(READ_LINES + 200) } } });
+  check('PreToolUse(read): ranged read (limit set) of an over-threshold file → silent',
+    r.code === 0 && r.stdout === '', `stdout=${JSON.stringify(r.stdout)}`);
 }
 
 // ── Harness self-proof (S1): the staging knobs are real, not inert ────────

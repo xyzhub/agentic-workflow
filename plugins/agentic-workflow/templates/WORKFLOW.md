@@ -196,6 +196,7 @@ Shipped by this plugin as hooks. Advisory except where marked:
 | `gh pr merge` | **BLOCKS** unless the §10 **Merge policy** is `agent-may-merge` (fail closed when unset/absent); when delegated, reminds: merge only on a reviewer APPROVE |
 | `gh pr create` | Reminder to have run the gates |
 | `Write`/`Edit` | Reminder to update docs when high-impact files change |
+| `Read` (whole file, no `limit`) | **Read advisory** (context discipline) — nudges toward a ranged read or a delegating subagent (§6.2 Delegated reads) when a whole-file read targets a file over `READ_ADVISORY_LINES` (800 lines); a discipline line, not a measured optimum — this repo has no corpus to confirm an effect size, so none is claimed; never blocks |
 | Prompt submit | **Router** (governance) — an un-prefixed work request gets a soft "route it through the protocol — hand to `intake`" nudge; silent on plain chat, never blocks |
 | Prompt submit | **Thread-keeper** (governance) — injects the active ledger's phase + `Next up:` + first unchecked beat each turn; silent when no active ledger, never blocks |
 | Prompt submit | **Handoff-budget** (governance) — nudges (≤3 lines) to write/refresh `docs/product/session-handoff.md` before compaction takes the window, once cumulative transcript **bytes** — a loose proxy, including tool results the window has already evicted, never a token measurement — cross an advisory (3,700,000 B) or urgent (5,380,000 B) band, boundary-inclusive; silent below the advisory band, once already fired for that band this session, while an active mission ledger exists, or once the handoff is already newer than the crossing; never blocks |
@@ -509,6 +510,18 @@ labour: the reading a document needs belongs in the window of the agent that
 writes it, and a document the caller composes out of a subagent's distillate
 sits one paraphrase further from the source files. This is discipline, not a
 gate — nothing checks it for you.
+
+**Delegated reads.** The read side binds the driving session too — interactive
+work included, not just missions. Before pulling a large file or corpus into
+the window, ask whose window the reading belongs in: when what you need is a
+conclusion — a summary, an anchor list, a yes/no — spawn a subagent to do the
+reading in its own context and return a bounded distillate, and spend your own
+budget on ranged reads of only what you must see verbatim. Pulling a corpus
+into the very window you are trying to preserve is how an interactive session
+drifts toward compaction; the `Read` advisory reflex (§3) backstops the worst
+case — a whole-file read of a large file — but the discipline, not the reflex,
+is the lever. This is the same explore-once ethos that keeps a planner's briefs
+lean (§5), applied at the moment of each read.
 
 **The fresh-self handoff.** The interactive main session is context-disciplined
 too — the same "ledger outlives the transcript" rule (§2, principle 1) and loop

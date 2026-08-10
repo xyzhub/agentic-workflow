@@ -48,9 +48,10 @@ Plan: `.plans/compaction-continuity.md` · Briefs:
 `.plans/compaction-continuity.sessions.md` · Brief:
 `docs/product/decisions/2026-08-03-compaction-continuity-brief.md`
 
-Next up: **Checkpoint `ckpt-p2` [STRICT]** — phase 2 review + merge per gate
-policy (branch `mission/compaction-continuity-p2`, **Suits:** `reviewer`). S7
-shipped the atomic-ref docs; verdict surfaced to the human immediately.
+Next up: **`ckpt-p3`** — phase 3 review + merge (routine, single-reviewer). S9
+shipped the §3 Read-advisory row (both mirrors) + README clause, both stating
+plainly that the lever is unmeasured in this repo (no corpus to confirm an
+effect size).
 
 ## Checklist
 
@@ -66,9 +67,9 @@ done (verified, not merely written)._
 - [x] S6 — handoff provenance stamp, conditional on OQ3; collapses into S5 if OQ3 is "no format change" (branch `mission/compaction-continuity-p2`) — **Suits:** `writer` — done 2026-08-10 by `backend` (the brief's pair clause: the parse landed in the hook). Stamp line in the template + `/agentic-workflow:handoff` instruction + live handoff stamped; `compact-resume.sh` branch 2 prefers the stamp's ISO over mtime, mtime fallback byte-identical to S5 (pinned exact-string). Harness 54 → 59, 4 mutations both-states w/ anti-inert control, lint + selftest green
 - [x] S7 — atomic-ref docs for the fallback, incl. the now-false `hooks.json` silence claim (branch `mission/compaction-continuity-p2`) — **Suits:** `writer` — pending orchestrator gate-run + commit
 - [x] Checkpoint `ckpt-p2` **[STRICT]** — **APPROVE** 2026-08-10 (Fable), no corrective needed. Security 3 · Architecture 3 · DX 3 · QA 2 · UX 2. 33/33 dispatch paths; branch-1 byte-identical to the shipped hook; OQ6 verbatim; SUSPECT-wording probe clean. Merged `488b87a`. **Folded into P3/S8:** F1 clock-blind gap (add an old-mtime-transcript case — a `T_MTIME=$(date +%s)` mutation survives all 59 today); F2 note-only (stamp regex layer masked by jq/case guards); F3 the SUSPECT directive falsely asserts "OLDER than the transcript's last append" when SUSPECT came from a *missing* transcript — fix the wording per sub-path; F4 pin the "Re-read it VERBATIM" fragment. Verdict surfaced to the human immediately.
-- [ ] S8 — frequency lever: named `Read` advisory threshold + the §6.2 interactive paragraph, no savings claim (branch `mission/compaction-continuity-p3`) — **Suits:** `backend`
-- [ ] S9 — phase-3 docs and the honest non-claim (branch `mission/compaction-continuity-p3`) — **Suits:** `writer`
-- [ ] Checkpoint `ckpt-p3` — phase 3 review + merge per gate policy (routine, single-reviewer)
+- [x] S8 — frequency lever: named `Read` advisory threshold + the §6.2 interactive paragraph, no savings claim (branch `mission/compaction-continuity-p3`) — **Suits:** `backend` — done 2026-08-10: `READ_ADVISORY_LINES=800` named in hooks.json (evidence + explicit non-claim in its description), §6.2 **Delegated reads** paragraph byte-identical in both mirrors (pre-existing drift unchanged, `docs/WORKFLOW.md:3` untouched), ckpt-p2 F1–F4 all resolved; harness 59 → 64, 6 mutations both-states w/ anti-inert control (F1's clock mutation leaves the pre-S8 59 green, fails 1/64 now), zero savings-claim grep hits in added prose
+- [x] S9 — phase-3 docs and the honest non-claim (branch `mission/compaction-continuity-p3`) — **Suits:** `writer` — done 2026-08-10, gate-run + committed by the orchestrator at `cf21b67`; writer corrected the orchestrator's "measured-noisy" prompt framing to the brief's *unmeasured*
+- [x] Checkpoint `ckpt-p3` — **APPROVE** 2026-08-10 (Fable, routine). QA 3 · DX 3 · Architecture 3 · Security 3. F1–F4 re-derived closed (F1's clock mutation: 59/59 green pre-S8, 1/64 fail now); both its adversarial mutations killed; non-claim framing verified *unmeasured*, not measured-noisy. Merged into integration. Nit swept: S9's "pending gate-run" row text updated (the gate-run and commit happened at `cf21b67`).
 - [ ] S10 — the documentation-of-record pass: CHANGELOG, JOURNEY, status-page stamp (branch `mission/compaction-continuity-p4`) — **Suits:** `chronicler`
 - [ ] S11 — the integration PR body; retarget per OQ1 (branch `mission/compaction-continuity-p4`) — **Suits:** `writer`
 - [ ] Checkpoint `ckpt-p4` — end-of-mission review on the integration branch; human merges
@@ -250,6 +251,24 @@ Deviating is allowed; deviating silently is not (§4)._
 _≤10 lines per entry: what this session did, the verify signal, the branch, and
 what the next session needs. Newest on top; crash-safe by write-ahead._
 
+- _2026-08-10 (S9, `writer`, branch `mission/compaction-continuity-p3`): added
+  the §3 `Read`-advisory row (byte-identical in both mirrors, `docs/WORKFLOW.md:3`
+  untouched) naming `READ_ADVISORY_LINES` (800, from hooks.json) and stating
+  plainly this lever is unmeasured in this repo — no corpus to confirm an
+  effect size, none claimed; added the matching one-clause line to the plugin
+  README. Text-only; no gates run (orchestrator's job). `ckpt-p3` next._
+
+- _2026-08-10 (S8, `backend`, branch `mission/compaction-continuity-p3`): named
+  the Read advisory (`READ_ADVISORY_LINES=800`, rationale + explicit non-claim
+  in its hooks.json description) and added the §6.2 **Delegated reads**
+  paragraph to both mirrors, byte-identical, drift unchanged (no figure — L11).
+  ckpt-p2: F1 old-mtime-transcript case shipped — `T_MTIME=$(date +%s)` now
+  fails 1/64 while the pre-S8 59 stay green (gap reproduced, then closed);
+  F2 masking note at the stamp regex; F3 SUSPECT split per sub-path (stale
+  keeps OLDER-than; missing/unreadable transcript reads "SUSPECT — UNPROVABLE",
+  both case-pinned); F4 "Re-read it VERBATIM" pinned. Harness 59 → 64, 6
+  mutations both-states w/ anti-inert; lint + selftest 54 green. S9: docs._
+
 - _2026-08-10 (S7, `writer`, branch `mission/compaction-continuity-p2`): killed
   the now-false "silent when no active mission" claim — §3 row + §4 reflex
   sentence now describe all three branches, wording matched to compact-resume.sh's
@@ -330,6 +349,4 @@ what the next session needs. Newest on top; crash-safe by write-ahead._
   Phasing enforces L2 — the fallback never ships before the trigger. Verified
   `node tools/lint.mjs` green. **Nothing executed; blocked on OQ1–OQ7.**_
 
-Next up: **Checkpoint `ckpt-p2` [STRICT]** on `mission/compaction-continuity-p2`
-(**Suits:** `reviewer`) — phase 2 review + merge per gate policy; verdict
-surfaced to the human immediately.
+Next up: **`ckpt-p3`** — phase 3 review + merge (routine, single-reviewer).
