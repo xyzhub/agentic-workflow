@@ -48,10 +48,10 @@ Plan: `.plans/compaction-continuity.md` · Briefs:
 `.plans/compaction-continuity.sessions.md` · Brief:
 `docs/product/decisions/2026-08-03-compaction-continuity-brief.md`
 
-Next up: **`ckpt-p3`** — phase 3 review + merge (routine, single-reviewer). S9
-shipped the §3 Read-advisory row (both mirrors) + README clause, both stating
-plainly that the lever is unmeasured in this repo (no corpus to confirm an
-effect size).
+Next up: **`S11`** — the integration PR body, retargeting per OQ1 (branch
+`mission/compaction-continuity-p4`, `writer`). S10 shipped CHANGELOG/JOURNEY/
+status-page updates for P1–P3 (`c2e4648`/`488b87a`/`a14615f`) and fixed the
+stale "silent with no ledger" CHANGELOG claim.
 
 ## Checklist
 
@@ -70,7 +70,7 @@ done (verified, not merely written)._
 - [x] S8 — frequency lever: named `Read` advisory threshold + the §6.2 interactive paragraph, no savings claim (branch `mission/compaction-continuity-p3`) — **Suits:** `backend` — done 2026-08-10: `READ_ADVISORY_LINES=800` named in hooks.json (evidence + explicit non-claim in its description), §6.2 **Delegated reads** paragraph byte-identical in both mirrors (pre-existing drift unchanged, `docs/WORKFLOW.md:3` untouched), ckpt-p2 F1–F4 all resolved; harness 59 → 64, 6 mutations both-states w/ anti-inert control (F1's clock mutation leaves the pre-S8 59 green, fails 1/64 now), zero savings-claim grep hits in added prose
 - [x] S9 — phase-3 docs and the honest non-claim (branch `mission/compaction-continuity-p3`) — **Suits:** `writer` — done 2026-08-10, gate-run + committed by the orchestrator at `cf21b67`; writer corrected the orchestrator's "measured-noisy" prompt framing to the brief's *unmeasured*
 - [x] Checkpoint `ckpt-p3` — **APPROVE** 2026-08-10 (Fable, routine). QA 3 · DX 3 · Architecture 3 · Security 3. F1–F4 re-derived closed (F1's clock mutation: 59/59 green pre-S8, 1/64 fail now); both its adversarial mutations killed; non-claim framing verified *unmeasured*, not measured-noisy. Merged into integration. Nit swept: S9's "pending gate-run" row text updated (the gate-run and commit happened at `cf21b67`).
-- [ ] S10 — the documentation-of-record pass: CHANGELOG, JOURNEY, status-page stamp (branch `mission/compaction-continuity-p4`) — **Suits:** `chronicler`
+- [x] S10 — the documentation-of-record pass: CHANGELOG, JOURNEY, status-page stamp (branch `mission/compaction-continuity-p4`) — **Suits:** `chronicler` — done 2026-08-10: three commit-cited `## [Unreleased]` bullets (P1 `c2e4648`, P2 `488b87a`, P3 `a14615f`) + harness-growth note; fixed the stale "Silent with no active ledger" claim at the P3-era compact-resume entry (now points at the P2 fallback); one dated `JOURNEY.md` Milestone entry; `overview.html` `data:meta`/`data:now`/`data:timeline` updated (4 new timeline entries + corrected the stale "context-economy awaiting merge" line, since PR #31 already merged) — `data:stages`/`data:pillars` left deferred (their own tracked staleness item, unchanged since 2026-07-08). `node tools/lint.mjs` clean; no savings-claim grep hits beyond one descriptive mention of the A5 finding that motivated disclosure. No version bump (S11/release owns it).
 - [ ] S11 — the integration PR body; retarget per OQ1 (branch `mission/compaction-continuity-p4`) — **Suits:** `writer`
 - [ ] Checkpoint `ckpt-p4` — end-of-mission review on the integration branch; human merges
 
@@ -251,6 +251,17 @@ Deviating is allowed; deviating silently is not (§4)._
 _≤10 lines per entry: what this session did, the verify signal, the branch, and
 what the next session needs. Newest on top; crash-safe by write-ahead._
 
+- _2026-08-10 (S10, `chronicler`, branch `mission/compaction-continuity-p4`):
+  CHANGELOG `## [Unreleased]` gained three commit-cited bullets (handoff-budget
+  P1 `c2e4648`, compact-resume fallback P2 `488b87a`, Read-advisory-named P3
+  `a14615f`) plus a harness-growth note; fixed the stale "silent with no
+  active ledger" claim on the P3-era compact-resume entry. One dated
+  `JOURNEY.md` Milestone entry (fidelity-not-savings framing). `overview.html`
+  `data:meta`/`data:now`/`data:timeline` updated (4 new entries), correcting
+  the now-false "context-economy awaiting merge" line (PR #31 already
+  merged); `data:stages`/`data:pillars` left deferred, unchanged since
+  2026-07-08. `node tools/lint.mjs` clean. S11 next: PR body, per OQ1._
+
 - _2026-08-10 (S9, `writer`, branch `mission/compaction-continuity-p3`): added
   the §3 `Read`-advisory row (byte-identical in both mirrors, `docs/WORKFLOW.md:3`
   untouched) naming `READ_ADVISORY_LINES` (800, from hooks.json) and stating
@@ -349,4 +360,4 @@ what the next session needs. Newest on top; crash-safe by write-ahead._
   Phasing enforces L2 — the fallback never ships before the trigger. Verified
   `node tools/lint.mjs` green. **Nothing executed; blocked on OQ1–OQ7.**_
 
-Next up: **`ckpt-p3`** — phase 3 review + merge (routine, single-reviewer).
+Next up: **`S11`** — the integration PR body, retargeting per OQ1.

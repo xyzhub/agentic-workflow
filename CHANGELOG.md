@@ -6,6 +6,51 @@ has no tags — each version-stamped commit on `main` IS the release.
 
 ## [Unreleased]
 ### Added
+- **Handoff-budget nudge — write the session handoff before compaction takes it
+  (v1.42.0).** New `hooks/lib/handoff-budget.sh`, registered under
+  `UserPromptSubmit`: watches cumulative transcript bytes (a loose proxy, not a
+  token count) and nudges (≤3 lines) to write/refresh
+  `docs/product/session-handoff.md` once they cross an advisory (3,700,000 B) or
+  urgent (5,380,000 B) band — both derived from the one true compaction observed
+  in this repo's own transcript corpus (n=1, the conservative floor; the caveat
+  ships in the constants' comments). Four silencers keep it deterministic: fires
+  at most once per band per session, silent while an active mission ledger
+  exists, silent once the handoff is already newer than the crossing, and — like
+  every hook here — it never blocks. This repo's own governance-hook count goes
+  three → four; called out plainly because the mission's own prior audit
+  (context-economy A5) found the machinery's own footprint already a bigger
+  context cost than anything a savings lever could offset, so each addition is
+  disclosed rather than assumed free. (compaction-continuity mission, Phase 1,
+  `c2e4648`)
+- **`compact-resume.sh` no longer goes silent with no ledger — it falls back to
+  the handoff, then to a "the record is missing" directive (v1.42.0).**
+  Previously the hook emitted nothing unless an active mission ledger existed.
+  It now branches three ways: an active ledger still gets byte-for-byte the same
+  directive as before; no ledger but `docs/product/session-handoff.md` exists
+  gets a directive naming the handoff and stating its freshness (`CURRENT` only
+  if provably newer than the transcript's last append, else `SUSPECT`, fail-closed
+  on a missing/unreadable transcript) with an instruction to verify against
+  `git log`/`git status` before trusting its Next; neither record exists gets a
+  distinct directive naming `git log -5`, `git status`, and `.remember/now.md`,
+  telling the agent to report the gap to the human rather than proceed on the
+  compaction summary alone — never to author a handoff on the spot. The handoff
+  template also gained a one-line `_Written: <ISO> · session <id> · branch <b>_`
+  provenance stamp, preferred over file mtime when present. (compaction-continuity
+  mission, Phase 2, `488b87a`)
+- **`Read` advisory threshold named (`READ_ADVISORY_LINES = 800`), plus a §6.2
+  paragraph on delegating large reads (v1.42.0).** The whole-file-read nudge's
+  threshold was a bare `800`; it now carries a name and a comment citing its
+  evidence base. Both WORKFLOW mirrors gain a **Delegated reads** paragraph
+  stating the interactive case explicitly: prefer handing a large read to a
+  subagent that returns a distillate over pulling the corpus into the window it
+  is trying to preserve. No figure, no percentage, no gate — this lever is
+  **unmeasured** in this repo (no corpus exists to confirm an effect size), and
+  the text says so rather than implying one. (compaction-continuity mission,
+  Phase 3, `a14615f`)
+  - Harness coverage across the mission: `tools/hook-test.mjs` grew 33 → 64
+    cases; every behavior above is mutation-proved with an anti-inert control;
+    three checkpoints (`ckpt-p1` [STRICT], `ckpt-p2` [STRICT], `ckpt-p3`) all
+    returned APPROVE with zero corrective sessions.
 - **Standing steers + `Next up:` two-site drift guard (v1.42.0).** The
   mission-state ledger template gains a `## Standing steers` block — human
   decisions captured verbatim at checkpoints only (never mid-brief), retired
@@ -31,7 +76,9 @@ has no tags — each version-stamped commit on `main` IS the release.
   `compact`: after a mid-session compaction, it emits a short directive
   telling the agent to re-read the active `.plans/*.state.md` ledger and
   `docs/product/session-handoff.md` verbatim, and to honor the ledger's
-  `## Standing steers`. Silent with no active ledger; never blocks. A
+  `## Standing steers`. **No longer silent with no active ledger** — since
+  compaction-continuity Phase 2 it falls back to the handoff, then to a
+  missing-record directive (see the three-branch entry above); never blocks. A
   correctness fix, not a cost lever — this repo's own governance-hook count
   goes from two to three (WORKFLOW §4 and both READMEs updated to match).
   (context-economy mission, Phase 3, `d09090b`; `ckpt-p3` [STRICT] APPROVE,
