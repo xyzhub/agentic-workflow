@@ -189,8 +189,11 @@ hook-enforced); everything else stays human.
 Blocks pushes to or refspecs targeting the default branch; blocks PR merges
 unless the target repo's §10 Merge policy delegates them (fail closed); warns
 on tag pushes that may deploy; reminds on commit format, gates, and doc
-updates for high-impact files. Checks evaluate in the command's **target
-repo** and read pre-execution state.
+updates for high-impact files; nudges toward a ranged read or a delegating
+subagent when a whole-file read targets a large file — a discipline line,
+not a measured one, since this repo has no corpus to confirm an effect size.
+Checks evaluate in the command's **target repo** and read pre-execution
+state.
 
 Five **governance reflexes** (advisory, never block) keep a session on the
 protocol without it being read: the **router** nudges an un-prefixed work request
