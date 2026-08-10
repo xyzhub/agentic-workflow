@@ -15,6 +15,70 @@ protocol's own behavior the way a QA team would.
 
 ---
 
+## 2026-08-10 — compaction-continuity: a clean handoff instead of a silent one
+
+### Milestone: the owner's own working style got a safety net
+
+The owner doesn't end sessions the way the protocol assumes. He steers
+interactively for weeks in one long-running thread, and every so often the
+tool underneath silently summarizes that thread to keep it from running
+forever — a mechanical necessity of the tool, not a project decision. Before
+this mission, nothing warned him it was about to happen, and nothing spoke up
+honestly about what had been lost once it did. This mission closes that gap
+on both sides of the event, and it does it with a rule the team held itself
+to throughout: **fidelity, not savings.** Nothing shipped claims to make
+sessions cheaper; everything shipped is about making sure the record survives
+the moment the window empties.
+
+Three pieces shipped, in three phases, off the corpus of the project's own
+past transcripts:
+
+**Before it happens** — a new background nudge watches how much a working
+session has accumulated and, once it crosses a threshold, tells the agent to
+write down where things stand before the window fills. The threshold itself
+came from measuring the project's own history: only one real compaction event
+existed anywhere in the available transcripts to learn from, so the team
+treated that single data point as a conservative floor rather than pretending
+to a confidence the data didn't support, and said so plainly in the numbers
+themselves. The nudge is deliberately quiet — it fires once per threshold, it
+stays silent during already-managed multi-session work, and it never
+interrupts anything.
+
+**After it happens** — the automatic re-orientation message that used to fire
+only when a formal multi-session project ledger existed now also covers the
+much more common case: an interactive session with no ledger at all. It looks
+for the handoff note the first piece encouraged, tells the agent plainly
+whether that note looks trustworthy or stale, and — worst case, when neither
+a ledger nor a note exists — it says so outright and instructs the agent to
+tell the human the record is missing, rather than quietly guessing from
+whatever fragment of the old conversation survived the compaction. That
+last case was the real bug this mission fixed: **going silent used to be the
+default**, and the owner spends most of his time in exactly the kind of
+session where that used to happen.
+
+**In between** — a smaller, related fix: when an agent needs to read a large
+file, the standing advice now points more clearly toward handing that read to
+a helper that returns a short summary, rather than pulling the whole thing
+into the working conversation. This one ships with an unusual kind of
+honesty: the team explicitly declined to claim it saves anything, because no
+before-and-after measurement exists for it in this project. It's included on
+the merits of the practice, not on a number nobody can back up.
+
+The engineering behind all three pieces went through two of the strictest
+review gates the project uses, both cleared without a single round of
+corrections — a signal that the team resisted the urge to overreach on a
+mission that could easily have padded its claims. What went right: the team
+caught itself twice trying to lean on numbers that wouldn't hold up — once
+when the transcript history it planned to measure from had partly changed
+underneath it since the mission was first scoped, and once when double-
+checking whether the new nudge might fire during exactly the kind of
+supervised, multi-session work that already has its own safety net (it
+doesn't, by design). Both were resolved by remeasuring rather than assuming,
+and both are on the written record rather than smoothed over.
+
+One step remains before this reaches the owner: a single merge of the
+finished work into the main line of the project, which only the human does.
+
 ## 2026-08-03 — Phases 2, 3 and 4: three small ships, and the mission's verdict on itself
 
 The context-economy mission closed out in three more pieces of work, then
