@@ -33,8 +33,12 @@ function hookCommand(event, descNeedle) {
 }
 
 // Run a hook command with the given stdin JSON, in a throwaway cwd optionally
-// holding .plans ledgers ({ 'name.state.md': 'content', ... }).
-function runHook({ event, desc, input = {}, ledgers }) {
+// holding .plans ledgers ({ 'name.state.md': 'content', ... }), arbitrary
+// staged files ({ 'rel/path.md': { content, mtime? } }), and/or a sized
+// transcript ({ bytes } | { lines }) whose absolute path is injected into the
+// stdin JSON as `transcript_path`. `command` (harness self-proof cases only)
+// dispatches a raw probe command in place of a hooks.json lookup.
+function runHook({ event, desc, command, input = {}, ledgers, files, transcript }) {
   const dir = mkdtempSync(path.join(tmpdir(), 'hooktest-'));
   try {
     if (ledgers) {
@@ -49,7 +53,30 @@ function runHook({ event, desc, input = {}, ledgers }) {
         utimesSync(p, t, t);
       });
     }
-    const r = spawnSync('bash', ['-c', hookCommand(event, desc)], {
+    if (files) {
+      // Arbitrary staged files, for hooks that look beyond .plans/ (e.g. a
+      // docs/product/session-handoff.md freshness check). Same deterministic-
+      // mtime trick as the ledgers above: filesystem timestamp resolution is
+      // too coarse for a hook comparing mtimes within one test run, so an
+      // explicit epoch-seconds `mtime`, when given, is stamped via utimesSync.
+      for (const [rel, spec] of Object.entries(files)) {
+        const p = path.join(dir, rel);
+        mkdirSync(path.dirname(p), { recursive: true });
+        writeFileSync(p, spec.content);
+        if (spec.mtime !== undefined) utimesSync(p, spec.mtime, spec.mtime);
+      }
+    }
+    if (transcript) {
+      // A throwaway file of the requested size, inside the temp cwd, passed to
+      // the hook as `transcript_path`. Plain text by construction — NEVER a
+      // *.jsonl fixture the hooks parse; only its SIZE is load-bearing.
+      const tPath = path.join(dir, 'transcript.txt');
+      writeFileSync(tPath, transcript.bytes !== undefined
+        ? Buffer.alloc(transcript.bytes, 'x')
+        : 'x\n'.repeat(transcript.lines));
+      input = { ...input, transcript_path: tPath };
+    }
+    const r = spawnSync('bash', ['-c', command ?? hookCommand(event, desc)], {
       cwd: dir, input: JSON.stringify(input), encoding: 'utf8',
       // Claude Code exports CLAUDE_PLUGIN_ROOT to hook processes; mirror it so a
       // hook that invokes `${CLAUDE_PLUGIN_ROOT}/hooks/lib/*.sh` resolves here.
@@ -353,6 +380,166 @@ const reReadDirective = (r) => /just COMPACTED/.test(r.stdout);
   const r = runHook({ event: 'PreToolUse', desc: PRE, input: commit, ledgers: HELD_BEAT_THEN_DUE });
   check('PreToolUse: HELD beat above a due one → names the HELD one (no due-ness scan yet)',
     r.code === 0 && nudged(r) && /ckpt-p1/.test(r.stdout) && !/phase 2/.test(r.stdout), `stdout=${JSON.stringify(r.stdout)}`);
+}
+
+// ── Harness self-proof (S1): the staging knobs are real, not inert ────────
+// Raw probe commands (`command:` override) OBSERVE the staged artifacts from
+// inside the throwaway cwd — the anti-inert control for the harness itself.
+// Without these, a no-op `files`/`transcript` knob would leave every later
+// case that stages such fixtures vacuously green.
+{ // `files`: content lands at the nested path AND the explicit mtime sticks.
+  // The handoff is staged strictly OLDER than the ledger (1e9 − 100), so the
+  // `-nt` probe fails if utimesSync were skipped (a freshly-written file would
+  // be newer than the 1e9-stamped ledger, not older).
+  const r = runHook({
+    command: 'test -f docs/product/session-handoff.md'
+      + ' && [ .plans/m.state.md -nt docs/product/session-handoff.md ]'
+      + ' && ls docs/product/session-handoff.md',
+    ledgers: NOT_STARTED, // staged at mtime 1_000_000_000 by the ledger path
+    files: { 'docs/product/session-handoff.md': { content: '# Session handoff\n', mtime: 999_999_900 } },
+  });
+  check('harness: staged `files` entry is visible to the dispatched command (test -f + mtime + ls)',
+    r.code === 0 && r.stdout.trim() === 'docs/product/session-handoff.md',
+    `code=${r.code} stdout=${JSON.stringify(r.stdout)}`);
+}
+{ // `transcript`: the dispatched command sees `transcript_path` in its stdin
+  // JSON and `wc` observes exactly the requested size — both variants.
+  const bytes = runHook({
+    command: 'wc -c < "$(jq -r .transcript_path)"',
+    transcript: { bytes: 4321 },
+  });
+  const lines = runHook({
+    command: 'wc -l < "$(jq -r .transcript_path)"',
+    transcript: { lines: 57 },
+  });
+  check('harness: staged transcript size observable via wc on `$transcript_path` (bytes + lines)',
+    bytes.code === 0 && bytes.stdout.trim() === '4321'
+      && lines.code === 0 && lines.stdout.trim() === '57',
+    `bytes=${JSON.stringify(bytes.stdout)} lines=${JSON.stringify(lines.stdout)}`);
+}
+
+// ── UserPromptSubmit handoff-budget nudge (S3) ────────────────────────────
+// The bands are PINNED as literals on purpose (the A3 lesson: the D7 3% trigger
+// was a bare literal pinned by zero cases) — moving a constant in the hook must
+// consciously move it here too. Values verbatim from the S2 THRESHOLD BLOCK.
+const ADVISORY = 3_700_000;
+const URGENT = 5_380_000;
+const BUDGET = 'handoff-budget';
+const budgetNudge = (r) => /Handoff budget/.test(r.stdout);
+const urgent = (r) => /URGENT/.test(r.stdout);
+const le3Lines = (r) => r.stdout.trim().split('\n').length <= 3;
+// The hook's once-per-band marker lives in the REAL $TMPDIR keyed by session_id
+// (runHook does not override TMPDIR), so every case mints a unique session id —
+// a marker left by a previous harness run can never suppress this run's firings.
+// Cases that assert the once-per-band silencer reuse ONE minted id deliberately.
+// Leftover markers are empty, uniquely named, and OS-cleaned with the tempdir.
+let sidSeq = 0;
+const sid = (tag) => `hb-${tag}-${process.pid}-${Date.now()}-${sidSeq++}`;
+
+{ // registration shape: same structural discipline as the SessionStart matcher case.
+  const spec = JSON.parse(readFileSync(HOOKS, 'utf8'));
+  const group = (spec.hooks.UserPromptSubmit || [])
+    .find((g) => g.hooks.some((h) => (h.command || '').includes('handoff-budget.sh')));
+  check('UserPromptSubmit(budget): registered with matcher .* and quoted ${CLAUDE_PLUGIN_ROOT} lib call',
+    !!group && group.matcher === '.*'
+      && group.hooks[0].command === 'bash "${CLAUDE_PLUGIN_ROOT}/hooks/lib/handoff-budget.sh"',
+    `group=${JSON.stringify(group)}`);
+}
+{ // silencer 1, below-band direction: one byte under advisory says nothing.
+  const r = runHook({ event: 'UserPromptSubmit', desc: BUDGET,
+    input: { session_id: sid('below') }, transcript: { bytes: ADVISORY - 1 } });
+  check('UserPromptSubmit(budget): one byte below ADVISORY_BYTES → silent, exit 0',
+    r.code === 0 && r.stdout === '', `code=${r.code} stdout=${JSON.stringify(r.stdout)}`);
+}
+{ // advisory boundary (≥, not >) + the ≤3-line cap + names the handoff file.
+  const r = runHook({ event: 'UserPromptSubmit', desc: BUDGET,
+    input: { session_id: sid('adv') }, transcript: { bytes: ADVISORY } });
+  check('UserPromptSubmit(budget): at exactly ADVISORY_BYTES → advisory nudge (≤3 lines, names the handoff, not URGENT)',
+    r.code === 0 && budgetNudge(r) && !urgent(r) && le3Lines(r)
+      && /docs\/product\/session-handoff\.md/.test(r.stdout),
+    `code=${r.code} stdout=${JSON.stringify(r.stdout)}`);
+}
+{ // silencer 2: same band, same session → the second crossing is silent.
+  const s = sid('once');
+  const first = runHook({ event: 'UserPromptSubmit', desc: BUDGET,
+    input: { session_id: s }, transcript: { bytes: ADVISORY } });
+  const again = runHook({ event: 'UserPromptSubmit', desc: BUDGET,
+    input: { session_id: s }, transcript: { bytes: ADVISORY + 1000 } });
+  check('UserPromptSubmit(budget): advisory fires ONCE per session — second dispatch same session_id → silent',
+    first.code === 0 && budgetNudge(first) && again.code === 0 && again.stdout === '',
+    `first=${JSON.stringify(first.stdout)} again=${JSON.stringify(again.stdout)}`);
+}
+{ // urgent boundary, both directions: one under stays in the advisory band…
+  const r = runHook({ event: 'UserPromptSubmit', desc: BUDGET,
+    input: { session_id: sid('subu') }, transcript: { bytes: URGENT - 1 } });
+  check('UserPromptSubmit(budget): one byte below URGENT_BYTES → advisory band, not urgent',
+    r.code === 0 && budgetNudge(r) && !urgent(r), `stdout=${JSON.stringify(r.stdout)}`);
+}
+{ // …and at the constant the urgent band fires, still ≤3 lines.
+  const r = runHook({ event: 'UserPromptSubmit', desc: BUDGET,
+    input: { session_id: sid('urg') }, transcript: { bytes: URGENT } });
+  check('UserPromptSubmit(budget): at exactly URGENT_BYTES → URGENT nudge (≤3 lines)',
+    r.code === 0 && budgetNudge(r) && urgent(r) && le3Lines(r), `stdout=${JSON.stringify(r.stdout)}`);
+}
+{ // the marker is PER BAND (OQ4: "one firing per band", ≤2 total): an advisory
+  // firing must not consume the urgent band, and urgent then re-fires never.
+  const s = sid('bands');
+  const adv = runHook({ event: 'UserPromptSubmit', desc: BUDGET,
+    input: { session_id: s }, transcript: { bytes: ADVISORY } });
+  const urg = runHook({ event: 'UserPromptSubmit', desc: BUDGET,
+    input: { session_id: s }, transcript: { bytes: URGENT } });
+  const urg2 = runHook({ event: 'UserPromptSubmit', desc: BUDGET,
+    input: { session_id: s }, transcript: { bytes: URGENT + 1000 } });
+  check('UserPromptSubmit(budget): advisory then urgent in one session → both fire once each, third dispatch silent (≤2 total)',
+    adv.code === 0 && budgetNudge(adv) && !urgent(adv)
+      && urg.code === 0 && urgent(urg)
+      && urg2.code === 0 && urg2.stdout === '',
+    `adv=${JSON.stringify(adv.stdout)} urg=${JSON.stringify(urg.stdout)} urg2=${JSON.stringify(urg2.stdout)}`);
+}
+{ // silencer 4 (OQ7): an ACTIVE mission ledger silences even an urgent crossing.
+  const r = runHook({ event: 'UserPromptSubmit', desc: BUDGET,
+    input: { session_id: sid('ledger') }, transcript: { bytes: URGENT }, ledgers: NOT_STARTED });
+  check('UserPromptSubmit(budget): active ledger (open [ ] beat) → silent even past URGENT_BYTES',
+    r.code === 0 && r.stdout === '', `stdout=${JSON.stringify(r.stdout)}`);
+}
+{ // …but "active" means an OPEN beat, not mere .plans/ existence — a fully-done
+  // ledger must NOT silence (the thread-keeper predicate, both directions).
+  const r = runHook({ event: 'UserPromptSubmit', desc: BUDGET,
+    input: { session_id: sid('done') }, transcript: { bytes: ADVISORY },
+    ledgers: ledger('- [x] S1 — build') });
+  check('UserPromptSubmit(budget): fully-[x] ledger is not active → still nudges',
+    r.code === 0 && budgetNudge(r), `stdout=${JSON.stringify(r.stdout)}`);
+}
+{ // silencer 3, silent direction: a handoff FRESHER than the transcript (staged
+  // mtime in the future vs the just-written transcript) already postdates the
+  // band crossing — nothing to nudge.
+  const r = runHook({ event: 'UserPromptSubmit', desc: BUDGET,
+    input: { session_id: sid('fresh') }, transcript: { bytes: URGENT },
+    files: { 'docs/product/session-handoff.md': {
+      content: '# Session handoff\n', mtime: Math.floor(Date.now() / 1000) + 86_400 } } });
+  check('UserPromptSubmit(budget): session-handoff.md newer than the transcript → silent',
+    r.code === 0 && r.stdout === '', `stdout=${JSON.stringify(r.stdout)}`);
+}
+{ // silencer 3, firing direction: a STALE handoff (ancient mtime) does not silence.
+  const r = runHook({ event: 'UserPromptSubmit', desc: BUDGET,
+    input: { session_id: sid('stale') }, transcript: { bytes: ADVISORY },
+    files: { 'docs/product/session-handoff.md': {
+      content: '# Session handoff\n', mtime: 1_000_000_000 } } });
+  check('UserPromptSubmit(budget): stale session-handoff.md (older than the transcript) → still nudges',
+    r.code === 0 && budgetNudge(r), `stdout=${JSON.stringify(r.stdout)}`);
+}
+{ // failure paths — silent AND exit 0 on every one (L3): no transcript_path at
+  // all, a transcript_path that does not exist, and a missing session_id.
+  const none = runHook({ event: 'UserPromptSubmit', desc: BUDGET,
+    input: { session_id: sid('none') } });
+  const gone = runHook({ event: 'UserPromptSubmit', desc: BUDGET,
+    input: { session_id: sid('gone'), transcript_path: '/nonexistent/hooktest/transcript.txt' } });
+  const nosid = runHook({ event: 'UserPromptSubmit', desc: BUDGET,
+    input: {}, transcript: { bytes: URGENT } });
+  check('UserPromptSubmit(budget): missing/unreadable transcript_path or missing session_id → silent, exit 0',
+    none.code === 0 && none.stdout === '' && gone.code === 0 && gone.stdout === ''
+      && nosid.code === 0 && nosid.stdout === '',
+    `codes=${JSON.stringify([none.code, gone.code, nosid.code])} out=${JSON.stringify([none.stdout, gone.stdout, nosid.stdout])}`);
 }
 
 if (failures.length) {

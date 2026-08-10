@@ -15,12 +15,10 @@ recommendations accepted verbatim. **OQ2, OQ3, OQ5 and OQ7 stand on the planner'
 recommendation** absent a ruling (the human was shown them and did not override);
 any reviewer may challenge them at a checkpoint. **Execution is UNBLOCKED at S1.**
 
-**⛔ NOT STARTED — planned 2026-08-03.** Nothing here has been
-executed. This ledger becomes the newest-mtime file in `.plans/`, so the
-thread-keeper and compact-resume hooks will name it as the active thread — that
-is bookkeeping, not a claim that work is in flight. **The live thread until the
-human answers the open questions is `.plans/context-economy.state.md` (PR #31,
-open, unmerged).**
+**▶ IN FLIGHT — execution started at S1 on 2026-08-10** (phase 1, branch
+`mission/compaction-continuity-p1`). _(The 2026-08-03 "NOT STARTED / live thread
+is `context-economy`" note expired: PR #31 merged 2026-08-03 and this mission is
+now the active thread.)_
 
 Gate policy: **batch** (L1, recorded at mission start) — each phase branch
 `mission/compaction-continuity-p1…p4` merges into
@@ -50,19 +48,23 @@ Plan: `.plans/compaction-continuity.md` · Briefs:
 `.plans/compaction-continuity.sessions.md` · Brief:
 `docs/product/decisions/2026-08-03-compaction-continuity-brief.md`
 
-Next up: **S1** — harness fixtures in `tools/hook-test.mjs`, on
-`mission/compaction-continuity-p1`, once the human has answered OQ1–OQ7.
+Next up: **Checkpoint `ckpt-p1` [STRICT]** — phase 1 review + merge per gate
+policy (S4 landed the docs 2026-08-10, phase 1 code-complete). The independent
+`reviewer` re-runs all gates, diff-reviews `base..head`, hand-dispatches the
+silencer matrix, re-runs both mutation proofs incl. anti-inert controls, and
+probes injection-resistance with shell metacharacters in the transcript path.
+Verdict pushed to the human the moment it lands (batch gating, L1).
 
 ## Checklist
 
 _Glyphs: `[ ]` not started · `[~]` in-flight / deferred / awaiting owner · `[x]`
 done (verified, not merely written)._
 
-- [ ] S1 — harness fixtures: arbitrary files + a sized transcript in `runHook()` (branch `mission/compaction-continuity-p1`) — **Suits:** `backend`
-- [ ] S2 — derive the byte thresholds from real transcripts; measurement only, no source change (branch `mission/compaction-continuity-p1`) — **Suits:** `backend`
-- [ ] S3 — `hooks/lib/handoff-budget.sh` + `UserPromptSubmit` registration, named constants, four silencers (branch `mission/compaction-continuity-p1`) — **Suits:** `backend`
-- [ ] S4 — atomic-ref docs for the trigger: §3 row, §4 reflexes, plugin README, `hooks.json` description (branch `mission/compaction-continuity-p1`) — **Suits:** `writer`
-- [ ] Checkpoint `ckpt-p1` **[STRICT]** — phase 1 review + merge per gate policy; verdict surfaced immediately
+- [x] S1 — harness fixtures: arbitrary files + a sized transcript in `runHook()` (branch `mission/compaction-continuity-p1`) — **Suits:** `backend` — done 2026-08-10, 35 cases green, 3 mutations proved
+- [x] S2 — derive the byte thresholds from real transcripts; measurement only, no source change (branch `mission/compaction-continuity-p1`) — **Suits:** `backend` — done 2026-08-10, n=1 compaction in the corpus, bands 3,700,000 / 5,380,000 B (see 📊 block), ledger-only diff, gates 35/54/lint green
+- [x] S3 — `hooks/lib/handoff-budget.sh` + `UserPromptSubmit` registration, named constants, four silencers (branch `mission/compaction-continuity-p1`) — **Suits:** `backend` — done 2026-08-10 (completed after an infra failure killed the first attempt post-script-write), harness 35 → 47 green, 6 mutations proved w/ anti-inert control
+- [x] S4 — atomic-ref docs for the trigger: §3 row, §4 reflexes, plugin README, `hooks.json` description (branch `mission/compaction-continuity-p1`) — **Suits:** `writer` — pending orchestrator gate-run + commit
+- [~] Checkpoint `ckpt-p1` **[STRICT]** — reviewer in flight 2026-08-10 (Fable) — phase 1 review + merge per gate policy; verdict surfaced immediately
 - [ ] S5 — `compact-resume.sh` fallback: three branches, freshness stated in the directive (branch `mission/compaction-continuity-p2`) — **Suits:** `backend`
 - [ ] S6 — handoff provenance stamp, conditional on OQ3; collapses into S5 if OQ3 is "no format change" (branch `mission/compaction-continuity-p2`) — **Suits:** `writer`
 - [ ] S7 — atomic-ref docs for the fallback, incl. the now-false `hooks.json` silence claim (branch `mission/compaction-continuity-p2`) — **Suits:** `writer`
@@ -89,11 +91,16 @@ each is resolved, recording the answer and its date._
   and the final PR targets `main` directly — no hold, no retarget.** The plan branch was
   rebased onto `main` and is a clean descendant. _Nothing about the decision's substance
   changed; its premise expired._
-- **OQ2 — Byte thresholds and their evidence.** **Recommendation: derive in S2
-  from the local transcript corpus** (compaction byte-point via `grep -n` +
-  `awk … | wc -c`), ship two named bands (advisory ≈ 55%, urgent ≈ 80% of it);
-  if the spread is too wide for one constant, take the conservative floor and say
-  so in the doc row.
+- **OQ2 — RESOLVED-by-measurement 2026-08-10 (S2).** Derived from the local corpus
+  per the recommendation's method (`grep -nE '"isCompactSummary" *: *true'` +
+  `awk 'NR<=n' | wc -c`): **exactly one** transcript in the corpus contains a true
+  compaction record (`2fa752c7…`, record at line 2551 of 4,612), byte-point
+  **6,727,626 B** through the record. **n = 1 — the spread cannot be assessed**, so
+  the single observation IS the conservative floor and the two bands are cut from
+  it, rounded **down**: **`ADVISORY_BYTES = 3,700,000`** (55.0% of the point) and
+  **`URGENT_BYTES = 5,380,000`** (79.97%). Full derivation, commands and caveats in
+  `## 📊 S2 THRESHOLD BLOCK`; S3 takes the constants verbatim and must restate the
+  n=1 caveat in their comment. Any reviewer may still challenge at `ckpt-p1`.
 - **OQ3 — Does `session-handoff.md`'s format change?** **Recommendation: one
   provenance line** (`_Written: <ISO> · session <id> · branch <b>_`), no
   restructuring. If "no", S6 collapses into S5 (log the collapse as a deviation).
@@ -121,6 +128,68 @@ each is resolved, recording the answer and its date._
   machinery to the population that doesn't need it (the A5 mistake) and lets the
   trigger and the fallback share one `active ledger?` predicate.
 
+## 📊 S2 THRESHOLD BLOCK — 2026-08-10 (this is S3's only source; do not re-measure)
+
+_Corpus stamped **2026-08-10T04:30:59Z**: `~/.claude/projects/-Users-baker-Playground-venture-workflow-plugin/`,
+**48 `*.jsonl` files, Σ 21,793,788 bytes**. **No `*.jsonl` was ever `Read`/`cat`/`head`/`tail`-ed** —
+only `wc -c`/`wc -l`, `grep -c`/`grep -l`/`grep -n | cut`, and `awk 'NR<=n' | wc -c` (L10).
+Gates at run time, untouched: `node tools/lint.mjs` clean · `tools/hook-test.mjs` **35 ok** ·
+`context-attrib --selftest` **54 ok**._
+
+**Detection (the landmine, confirmed but not re-derived).** Bare
+`grep -l isCompactSummary` over the corpus returns **11** files — transcripts that
+*quote this mission's own docs* match the bare pattern. The authoritative form is
+value-anchored: `grep -lE '"isCompactSummary" *: *true'` → **1 file**. Cross-checked
+against two independent markers: `grep -l compact_boundary` → the **same 1 file**;
+`grep -l compactMetadata` → the same 1 file. No transcript matches any escaped-quote,
+spaced, or `:false` variant of the key. **Exactly one true compaction exists in the
+corpus. n = 1.**
+
+**The one compaction, measured** (`2fa752c7-9b89-4313-8729-ec63daee6496.jsonl` —
+reproduces the S7b/brief anchor **exactly**: 12,211,203 B / 4,612 lines):
+
+| quantity | value | command |
+|---|---|---|
+| true-record line | 2551 (of 4,612) | `grep -nE '"isCompactSummary" *: *true' F \| cut -d: -f1` |
+| `compact_boundary` line | 2550 (adjacent — same event) | `grep -n compact_boundary F \| cut -d: -f1` |
+| **byte-point through record** | **6,727,626 B** | `awk -v n=2551 'NR<=n' F \| wc -c` |
+| byte-point before record | 6,710,768 B (summary record ≈16.9 KB) | `awk -v n=2551 'NR<n' F \| wc -c` |
+| total file | 12,211,203 B / 4,612 lines | `wc -c F` · `wc -l F` |
+
+Distribution across the corpus: **min = median = max = 6,727,626 B, n = 1.** There is
+no spread to assess; per OQ2's conservative-floor rule the single observation is
+treated as the floor, and the bands are cut from it **rounded down** (firing early is
+the safe direction for a capped, silencer-guarded nudge; firing late is the failure
+mode):
+
+- **`ADVISORY_BYTES = 3,700,000`** — 0.55 × 6,727,626 = 3,700,194 → floor to 3,700,000 (54.997%)
+- **`URGENT_BYTES = 5,380,000`** — 0.80 × 6,727,626 = 5,382,101 → floor to 5,380,000 (79.97%)
+
+**Caveats S3 must carry into the constants' comments:**
+
+1. **n = 1** — one compaction, one session, one operator, one model/window config. Not
+   a distribution; a single anchor.
+2. **Bytes are a loose cumulative proxy, not a token measurement.** The transcript
+   accumulates tool results, JSON envelope and already-evicted content. At the observed
+   compaction the session's window held 999,816 tokens (S7b §1) → effective ratio
+   **≈6.73 transcript-bytes per window-token**, *not* the ~2 chars/token band (that band
+   is for model-authored text only). Never present the constants as token math.
+3. **The point is config-dependent**: a different context-window size, model, or
+   auto-compact margin moves it. If compaction behavior changes upstream, re-measure —
+   don't scale.
+4. **Transcripts are append-only and live**: `b167727e…` grew 5,032,698 → during this
+   very measurement (stamps 04:30:59Z vs 04:33:49Z); corpus totals are snapshots.
+5. **One brief anchor did NOT reproduce**: the sessions brief (written 2026-08-03)
+   claims `b167727e…` = 3,283,782 B / 1,501 lines with 1 true record; today the same
+   file is 5,032,698 B / 2,394 lines with **0** true records by every literal form
+   tested (exact, spaced, escaped, anchored regex), and the corpus shrank **87 → 48
+   files**. An append-only file cannot lose a record, so either the 2026-08-03 count
+   was itself a bare-grep artifact or the file was replaced during a cleanup that also
+   removed ~39 files. Unresolvable without reading content (forbidden). The derivation
+   above rests **only** on `2fa752c7…`, which reproduces byte-for-byte.
+6. Percent-of-final-file is a curiosity, not an input: 6,727,626 / 12,211,203 = 55.1%,
+   meaningless for thresholds because the file kept growing after compaction.
+
 ## Standing steers
 
 _Human steers, captured **verbatim** at checkpoints only (never mid-brief), in
@@ -134,12 +203,89 @@ _(none yet — no checkpoint has run.)_
 _Any departure from a brief — logged here the moment it happens, with why.
 Deviating is allowed; deviating silently is not (§4)._
 
-(none)
+- 2026-08-10 (S1) — the brief named **two** `runHook()` knobs (`files`,
+  `transcript`); a third optional `command:` override (raw probe command in place
+  of the hooks.json lookup, harness self-proof cases only) was added because the
+  brief's own Verify section requires probe cases (`test -f`/`ls`, `wc -c` on
+  `$transcript_path`) that no registered hook can dispatch. No hook behavior
+  touched; the override is documented in `runHook()`'s header comment.
+- 2026-08-10 (S1) — the anti-inert control was executed in its only applicable
+  form: the mutated staging code does not exist in the pre-change harness, so
+  each mutation cannot literally be "re-run against" it; instead, under each
+  mutation the **33 pre-change cases stayed green** (diffed byte-for-byte),
+  proving the pre-change suite is blind to all three mutations and only the new
+  self-proof cases detect them.
+
+- 2026-08-10 (S2) — the brief's corpus facts, measured 2026-08-03, no longer hold:
+  87 → **48** files, and the `b167727e…` anchor ("true-records = 1") returns **0**
+  today by every literal form (details: 📊 block, caveat 5). Measurement proceeded
+  per the brief's method on what exists; the derivation rests solely on `2fa752c7…`,
+  which reproduces exactly. Not a method deviation — an input-drift finding.
+- 2026-08-10 (S2) — the dispatching prompt allowed a multi-project corpus ("e.g.
+  `-Users-baker-Packages-orderly`"); the brief scopes S2 to this project's transcript
+  dir only. Per the standing rule the brief wins: only
+  `~/.claude/projects/-Users-baker-Playground-venture-workflow-plugin/` was measured.
+
+- 2026-08-10 (S3) — the first S3 agent died on an API infrastructure error
+  immediately after writing `hooks/lib/handoff-budget.sh` (untracked, unverified;
+  nothing else landed — no registration, no cases, no ledger write). A completion
+  session reviewed the inherited script line-by-line and dispatched it across
+  every path: it matched the brief exactly, so it was kept **byte-for-byte
+  unchanged**; the completion added the registration, 12 harness cases, the
+  mutation proofs and this ledger write. Not a brief deviation — an
+  infrastructure one, logged so the two-agent history is on the record.
+- 2026-08-10 (S3) — the harness's once-per-band marker lives in the REAL
+  `$TMPDIR` (`runHook()` does not override it, and the brief forbade harness-
+  machinery changes), so the new cases mint a unique `session_id` per run to
+  keep prior runs' markers from suppressing firings; empty uniquely-named
+  markers are left to the OS tempdir cleanup. Documented in the case block.
 
 ## Handoff log (newest first)
 
 _≤10 lines per entry: what this session did, the verify signal, the branch, and
 what the next session needs. Newest on top; crash-safe by write-ahead._
+
+- _2026-08-10 (S4, `writer`, branch `mission/compaction-continuity-p1`): added
+  the §3 guardrail row + §4 reflex paragraph (four → five reflexes) identically
+  in both `docs/WORKFLOW.md` and `templates/WORKFLOW.md` (pre-existing
+  "required-but-unchecked"/"not-started" mirror wording drift left untouched,
+  out of scope — flagged, not fixed); updated the plugin README's count/sentence
+  to five. `hooks.json`'s handoff-budget description (written by S3) already
+  named all four silencers and both bands — verified, not rewritten. Text-only
+  session; no gates run (orchestrator's job). ckpt-p1 next._
+
+- _2026-08-10 (S3, `backend`, branch `mission/compaction-continuity-p1`): shipped
+  `hooks/lib/handoff-budget.sh` + its `UserPromptSubmit` registration (completion
+  session — see Deviations for the infra failure). Inherited script kept
+  unchanged: line-review + full-path dispatch found constants, four silencers,
+  ≤3-line nudges and exit-0 paths all per brief; nothing to fix. Harness 35 →
+  **47 green** (12 cases: both bands both directions, once-per-band, per-band ≤2,
+  active vs completed ledger, fresh vs stale handoff, three failure paths,
+  registration shape); 6 mutations (M1 below-band, M2 `-ge`→`-gt`, M3 marker, M4a/b
+  `-nt` removed/inverted, M5 ledger exit) each caught only by new cases, base-35
+  green under every one. Gates: lint clean · selftest 54. S4 next: docs only._
+
+- _2026-08-10 S2 (`backend`, branch `mission/compaction-continuity-p1`): measured
+  the compaction byte-point from the local corpus (48 files / 21,793,788 B stamped
+  2026-08-10T04:30:59Z). Exactly **one** true compaction exists (`2fa752c7…`, line
+  2551, **6,727,626 B** through the record; cross-checked via `compact_boundary`).
+  n = 1, so per OQ2 the single point is the conservative floor; bands floored from
+  it: **`ADVISORY_BYTES = 3,700,000`**, **`URGENT_BYTES = 5,380,000`**. OQ2 resolved
+  in place; two deviations logged (corpus drift 87→48 + a brief anchor that no
+  longer reproduces; prompt-vs-brief corpus scope — brief won). Diff: this ledger
+  only. Gates untouched and green: lint clean · hook-test 35 · selftest 54. S3
+  takes the constants **verbatim from the 📊 block** and carries its caveats 1–3._
+
+- _2026-08-10 (S1, `backend`, branch `mission/compaction-continuity-p1`): extended
+  `tools/hook-test.mjs` `runHook()` with `files:` (arbitrary staged files, explicit
+  epoch-second mtimes via the ledgers' deterministic-mtime trick) and
+  `transcript: {bytes|lines}` (sized plain-text file, abs path injected as
+  `transcript_path`), plus a `command:` probe override for the two self-proof
+  cases (see Deviations). Harness 33 → **35 green**, baseline case list diffed
+  byte-for-byte unchanged. Mutations M1 files-skip / M2 mtime-skip / M3
+  transcript-skip each fail exactly one new case with all 33 pre-change cases
+  still green. `node tools/lint.mjs` clean; `context-attrib --selftest` 54 ok.
+  S2 needs nothing from this code — it is measurement-only, ledger-only diff._
 
 - _2026-08-03 (planning, `planner`, branch `plan/interactive-handoff`): mission
   shaped and decomposed — feature brief
@@ -150,6 +296,10 @@ what the next session needs. Newest on top; crash-safe by write-ahead._
   Phasing enforces L2 — the fallback never ships before the trigger. Verified
   `node tools/lint.mjs` green. **Nothing executed; blocked on OQ1–OQ7.**_
 
-Next up: **S1** — harness fixtures in `tools/hook-test.mjs`. **Blocked**: the
-human must answer OQ1–OQ7 first, and OQ1 decides the base branch every phase
-forks from.
+Next up: **Checkpoint `ckpt-p1` [STRICT]** — phase 1 review + merge per gate
+policy, on `mission/compaction-continuity-p1` (S4 landed the docs 2026-08-10).
+The independent `reviewer` re-runs all gates, diff-reviews `base..head`,
+hand-dispatches the hook across the silencer matrix, re-runs both mutation
+proofs incl. anti-inert controls, and probes injection-resistance with shell
+metacharacters in the transcript path. Verdict pushed to the human the moment
+it lands (batch gating, L1). **Suits:** `reviewer`.

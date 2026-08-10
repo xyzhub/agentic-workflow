@@ -192,16 +192,19 @@ on tag pushes that may deploy; reminds on commit format, gates, and doc
 updates for high-impact files. Checks evaluate in the command's **target
 repo** and read pre-execution state.
 
-Four **governance reflexes** (advisory, never block) keep a session on the
+Five **governance reflexes** (advisory, never block) keep a session on the
 protocol without it being read: the **router** nudges an un-prefixed work request
 to route through the workflow (hand to `intake`); the **thread-keeper** surfaces
 the active ledger's phase + `Next up:` + first open beat each turn; the
 **beat-enforcer** nudges a not-started ledger beat (`chronicler` at
 close, `reviewer` at a checkpoint) at the moment you try to close or advance —
 stepping over beats that aren't due (held, or behind unfinished work or an
-unreleased blocker) to reach the first one that is; and **compact-resume** fires after a
+unreleased blocker) to reach the first one that is; **compact-resume** fires after a
 context compaction, telling the session to re-read the active ledger verbatim
-rather than resume from the summary.
+rather than resume from the summary; and **handoff-budget** nudges once
+cumulative transcript bytes — a loose proxy, never a token measurement — cross
+an advisory or urgent band, telling the session to write/refresh
+`docs/product/session-handoff.md` before compaction takes the window.
 
 ## What the human always owns
 

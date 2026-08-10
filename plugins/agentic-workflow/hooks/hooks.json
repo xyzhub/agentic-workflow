@@ -30,6 +30,16 @@
             "description": "Thread-keeper (D3): inject the active ledger's Next up: line + first open [ ]/[~] beat every turn; active = newest-mtime non-complete .plans/*.state.md; silent when no .plans/ or no active ledger; never blocks"
           }
         ]
+      },
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/lib/handoff-budget.sh\"",
+            "description": "handoff-budget nudge (UserPromptSubmit): when the transcript_path byte count (wc -c — the only signal; a loose cumulative proxy, NOT tokens; bands derived from n=1 in S2) crosses ADVISORY_BYTES=3700000 or URGENT_BYTES=5380000, echo a ≤3-line nudge to write/refresh docs/product/session-handoff.md before compaction takes the window. Exactly four silencers (OQ4, human-locked): (1) at most two bands — below advisory, silence; (2) once per band per session ($TMPDIR marker keyed by session_id); (3) silent when session-handoff.md is newer than the transcript (the handoff already postdates the crossing); (4) silent when an active .plans/*.state.md ledger exists (OQ7; thread-keeper predicate verbatim). Advisory only — always exit 0, incl. missing transcript_path/session_id/jq. Body: hooks/lib/handoff-budget.sh"
+          }
+        ]
       }
     ],
     "PreToolUse": [
