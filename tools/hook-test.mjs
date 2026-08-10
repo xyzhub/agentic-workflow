@@ -297,10 +297,25 @@ const HARD_PAUSE_NOT_STARTED = ledger(
 }
 const COMPACT = 'compact-resume directive';
 const reReadDirective = (r) => /just COMPACTED/.test(r.stdout);
+// The emitted directive text, or null when the hook was silent / non-JSON.
+const ctx = (r) => { try { return JSON.parse(r.stdout).hookSpecificOutput.additionalContext; } catch { return null; } };
 {
   const r = runHook({ event: 'SessionStart', desc: COMPACT, input: { source: 'compact' }, ledgers: NOT_STARTED });
   check('SessionStart(compact): injects the re-read directive naming the active ledger',
     r.code === 0 && reReadDirective(r) && /m\.state\.md/.test(r.stdout), `stdout=${JSON.stringify(r.stdout)}`);
+}
+{ // S5 (P2): the active-ledger branch is pinned BYTE-FOR-BYTE — ckpt-p2 diffs
+  // this output against the pre-phase hook, so "a directive fired" is not enough.
+  const r = runHook({ event: 'SessionStart', desc: COMPACT, input: { source: 'compact' }, ledgers: NOT_STARTED });
+  const expected = [
+    '♻️ Context was just COMPACTED — what you hold now is a summary, not the record.',
+    'Before anything else, re-read these VERBATIM (do not resume from the summary):',
+    '  1. .plans/m.state.md — phase, `Next up:`, open beats, Deviations, and `## Standing steers` (honor them).',
+    '  2. docs/product/session-handoff.md — the last session handoff, if it exists.',
+    "Then re-state the current brief's remaining Do/Verify items before continuing.",
+  ].join('\n');
+  check('SessionStart(compact): active-ledger directive is byte-for-byte the pre-P2 text',
+    r.code === 0 && ctx(r) === expected, `got=${JSON.stringify(ctx(r))}`);
 }
 {
   const r = runHook({ event: 'SessionStart', desc: COMPACT, input: { source: 'startup' }, ledgers: NOT_STARTED });
@@ -310,13 +325,84 @@ const reReadDirective = (r) => /just COMPACTED/.test(r.stdout);
   const r = runHook({ event: 'SessionStart', desc: COMPACT, input: { source: 'resume' }, ledgers: NOT_STARTED });
   check('SessionStart(resume): silent', r.code === 0 && !reReadDirective(r), `stdout=${JSON.stringify(r.stdout)}`);
 }
-{
+// ── S5 (P2): the fallback branches. The two former "→ silent" pins below were
+// REWRITTEN deliberately, not deleted: with neither a ledger nor a handoff,
+// silence WAS the bug (OQ6, human-locked — the case the owner is in most often).
+const HANDOFF_REL = 'docs/product/session-handoff.md';
+// Branch-3 (OQ6) directive: names the ground truth, tells the human the record
+// is missing, and pins the PROHIBITION on authoring a handoff on the spot.
+const oq6Directive = (m) => typeof m === 'string'
+  && /git log -5/.test(m) && /git status/.test(m) && /\.remember\/now\.md/.test(m)
+  && /Tell the human the record is missing/.test(m)
+  && /do NOT author a handoff now/.test(m) // must forbid, never instruct, authoring
+  && !/[Ww]rite or refresh/.test(m)
+  && m.split('\n').length <= 6;
+{ // formerly "no .plans/ → silent" — now the OQ6 missing-record directive.
   const r = runHook({ event: 'SessionStart', desc: COMPACT, input: { source: 'compact' } });
-  check('SessionStart(compact): no .plans/ → silent, exit 0', r.code === 0 && !reReadDirective(r), `stdout=${JSON.stringify(r.stdout)}`);
+  check('SessionStart(compact): no ledger, no handoff → OQ6 directive (git log -5 / git status / .remember/now.md, tell the human, no author-now, ≤6 lines)',
+    r.code === 0 && oq6Directive(ctx(r)), `stdout=${JSON.stringify(r.stdout)}`);
 }
-{ // a fully-done ledger has no active mission — nothing to re-read.
+{ // formerly "no active ledger → silent" — a fully-[x] ledger is not active, so
+  // with no handoff staged this also falls through to the OQ6 directive.
   const r = runHook({ event: 'SessionStart', desc: COMPACT, input: { source: 'compact' }, ledgers: ledger('- [x] S1 — build') });
-  check('SessionStart(compact): no active ledger → silent, exit 0', r.code === 0 && !reReadDirective(r), `stdout=${JSON.stringify(r.stdout)}`);
+  check('SessionStart(compact): fully-[x] ledger (not active), no handoff → OQ6 directive, exit 0',
+    r.code === 0 && oq6Directive(ctx(r)), `stdout=${JSON.stringify(r.stdout)}`);
+}
+{ // Branch 2, FRESH: handoff staged NEWER than the transcript → the directive
+  // states CURRENT (OQ5: currency against the transcript, never the clock) and
+  // carries no suspect wording. ≤6-line cap asserted per branch.
+  const r = runHook({ event: 'SessionStart', desc: COMPACT, input: { source: 'compact' },
+    transcript: { bytes: 2048 },
+    files: { [HANDOFF_REL]: { content: '# Session handoff\n', mtime: Math.floor(Date.now() / 1000) + 86_400 } } });
+  const m = ctx(r) || '';
+  check('SessionStart(compact): no ledger, handoff NEWER than transcript → CURRENT directive naming the handoff (≤6 lines, no SUSPECT wording)',
+    r.code === 0 && /Freshness: CURRENT/.test(m) && !/SUSPECT/.test(m)
+      && m.includes(HANDOFF_REL) && /VERBATIM/.test(m) && /\*\*Next\*\*/.test(m)
+      && m.split('\n').length <= 6,
+    `stdout=${JSON.stringify(r.stdout)}`);
+}
+{ // Branch 2, STALE: handoff OLDER than the transcript's last append → SUSPECT,
+  // instructing git log/git status verification BEFORE trusting its Next.
+  const r = runHook({ event: 'SessionStart', desc: COMPACT, input: { source: 'compact' },
+    transcript: { bytes: 2048 },
+    files: { [HANDOFF_REL]: { content: '# Session handoff\n', mtime: 1_000_000_000 } } });
+  const m = ctx(r) || '';
+  check('SessionStart(compact): no ledger, handoff OLDER than transcript → SUSPECT directive (verify git log/git status before trusting Next, ≤6 lines, no CURRENT)',
+    r.code === 0 && /Freshness: SUSPECT/.test(m) && !/CURRENT/.test(m)
+      && /git log/.test(m) && /git status/.test(m) && /do NOT trust its \*\*Next\*\*/.test(m)
+      && m.includes(HANDOFF_REL) && m.split('\n').length <= 6,
+    `stdout=${JSON.stringify(r.stdout)}`);
+}
+{ // Branch 2, freshness UNPROVABLE: no transcript_path at all. Even a handoff
+  // with a future mtime must read SUSPECT — fail closed, never current.
+  const r = runHook({ event: 'SessionStart', desc: COMPACT, input: { source: 'compact' },
+    files: { [HANDOFF_REL]: { content: '# Session handoff\n', mtime: Math.floor(Date.now() / 1000) + 86_400 } } });
+  const m = ctx(r) || '';
+  check('SessionStart(compact): handoff present but no transcript_path → freshness unprovable → SUSPECT (fail closed)',
+    r.code === 0 && /Freshness: SUSPECT/.test(m) && !/CURRENT/.test(m),
+    `stdout=${JSON.stringify(r.stdout)}`);
+}
+{ // The source guard precedes the branching: startup/resume stay silent in the
+  // fallback branches too, not just when a ledger exists.
+  const codes = ['startup', 'resume'].map((source) => runHook({
+    event: 'SessionStart', desc: COMPACT, input: { source },
+    transcript: { bytes: 2048 },
+    files: { [HANDOFF_REL]: { content: '# Session handoff\n' } } }));
+  check('SessionStart(startup/resume): silent in the fallback branches too (handoff staged, no ledger)',
+    codes.every((r) => r.code === 0 && r.stdout === ''),
+    `outs=${JSON.stringify(codes.map((r) => r.stdout))}`);
+}
+{ // Injection probe: shell metacharacters in transcript_path (stdin-controlled)
+  // and in the handoff CONTENT are inert — values only pass through quoted
+  // tests and `jq -n --arg`, never a shell eval. Unreadable path ⇒ SUSPECT.
+  const evil = '/nope; touch HACK; $(touch HACK2) `touch HACK3` "d" \'s\'';
+  const r = runHook({ event: 'SessionStart', desc: COMPACT,
+    input: { source: 'compact', transcript_path: evil },
+    files: { [HANDOFF_REL]: { content: '$(touch HACK4) `touch HACK5`; rm -rf x\n', mtime: 1_000_000_000 } } });
+  const m = ctx(r);
+  check('SessionStart(compact): metachar transcript_path + handoff content → inert (valid JSON, SUSPECT, exit 0, empty stderr)',
+    r.code === 0 && typeof m === 'string' && /Freshness: SUSPECT/.test(m) && r.stderr === '',
+    `code=${r.code} stderr=${JSON.stringify(r.stderr)} stdout=${JSON.stringify(r.stdout)}`);
 }
 // Multi-ledger: compact-resume must name the SAME active ledger the beat-enforcer
 // picks (newest-mtime with any open [ ]/[~] beat) — pointing a post-compaction
@@ -540,6 +626,21 @@ const sid = (tag) => `hb-${tag}-${process.pid}-${Date.now()}-${sidSeq++}`;
     none.code === 0 && none.stdout === '' && gone.code === 0 && gone.stdout === ''
       && nosid.code === 0 && nosid.stdout === '',
     `codes=${JSON.stringify([none.code, gone.code, nosid.code])} out=${JSON.stringify([none.stdout, gone.stdout, nosid.stdout])}`);
+}
+{ // ckpt-p1 finding 1 (folded into P2): the session_id sanitizer
+  // (tr -c 'A-Za-z0-9._-' '_') had ZERO regression protection. A metachar sid
+  // must stay inert AND still land a valid marker — the once-per-band assertion
+  // is the pin: drop the sanitizer and the '/'-laden sid below makes marker
+  // creation fail silently, so the second dispatch nudges AGAIN and this fails.
+  const s = `${sid('meta')}/../nope; $(touch HACK) \`touch HACK2\` "d" 's'`;
+  const first = runHook({ event: 'UserPromptSubmit', desc: BUDGET,
+    input: { session_id: s }, transcript: { bytes: ADVISORY } });
+  const again = runHook({ event: 'UserPromptSubmit', desc: BUDGET,
+    input: { session_id: s }, transcript: { bytes: ADVISORY + 500 } });
+  check('UserPromptSubmit(budget): metachar session_id → sanitized (nudges once, second dispatch silent, exit 0, empty stderr)',
+    first.code === 0 && budgetNudge(first) && first.stderr === ''
+      && again.code === 0 && again.stdout === '',
+    `first=${JSON.stringify(first.stdout)} again=${JSON.stringify(again.stdout)} stderr=${JSON.stringify(first.stderr)}`);
 }
 
 if (failures.length) {
