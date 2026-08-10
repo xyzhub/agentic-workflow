@@ -64,7 +64,7 @@ done (verified, not merely written)._
 - [x] S2 — derive the byte thresholds from real transcripts; measurement only, no source change (branch `mission/compaction-continuity-p1`) — **Suits:** `backend` — done 2026-08-10, n=1 compaction in the corpus, bands 3,700,000 / 5,380,000 B (see 📊 block), ledger-only diff, gates 35/54/lint green
 - [x] S3 — `hooks/lib/handoff-budget.sh` + `UserPromptSubmit` registration, named constants, four silencers (branch `mission/compaction-continuity-p1`) — **Suits:** `backend` — done 2026-08-10 (completed after an infra failure killed the first attempt post-script-write), harness 35 → 47 green, 6 mutations proved w/ anti-inert control
 - [x] S4 — atomic-ref docs for the trigger: §3 row, §4 reflexes, plugin README, `hooks.json` description (branch `mission/compaction-continuity-p1`) — **Suits:** `writer` — pending orchestrator gate-run + commit
-- [ ] Checkpoint `ckpt-p1` **[STRICT]** — phase 1 review + merge per gate policy; verdict surfaced immediately
+- [~] Checkpoint `ckpt-p1` **[STRICT]** — reviewer in flight 2026-08-10 (Fable) — phase 1 review + merge per gate policy; verdict surfaced immediately
 - [ ] S5 — `compact-resume.sh` fallback: three branches, freshness stated in the directive (branch `mission/compaction-continuity-p2`) — **Suits:** `backend`
 - [ ] S6 — handoff provenance stamp, conditional on OQ3; collapses into S5 if OQ3 is "no format change" (branch `mission/compaction-continuity-p2`) — **Suits:** `writer`
 - [ ] S7 — atomic-ref docs for the fallback, incl. the now-false `hooks.json` silence claim (branch `mission/compaction-continuity-p2`) — **Suits:** `writer`
@@ -264,6 +264,8 @@ what the next session needs. Newest on top; crash-safe by write-ahead._
   registration shape); 6 mutations (M1 below-band, M2 `-ge`→`-gt`, M3 marker, M4a/b
   `-nt` removed/inverted, M5 ledger exit) each caught only by new cases, base-35
   green under every one. Gates: lint clean · selftest 54. S4 next: docs only._
+
+- _2026-08-10 S2 (`backend`, branch `mission/compaction-continuity-p1`): measured
   the compaction byte-point from the local corpus (48 files / 21,793,788 B stamped
   2026-08-10T04:30:59Z). Exactly **one** true compaction exists (`2fa752c7…`, line
   2551, **6,727,626 B** through the record; cross-checked via `compact_boundary`).
