@@ -10,7 +10,9 @@ _The durable state that outlives any transcript (WORKFLOW.md §2, principle 1):
 a fresh agent resumes the mission from this file alone. Write-ahead — update it
 before ending a session._
 
-**▶ IN FLIGHT — execution started at S1 on 2026-08-11.** PR #32 MERGED
+**▶ IN FLIGHT — Phase 1 built (S1 + S2) on 2026-08-11. Next up: S3 —
+`commands/settle.md` + restoring the slash forms S1 softened (after the p1 gate
+`ckpt-p1`).** PR #32 MERGED
 2026-08-11T05:02Z (`main` = `a75b844`); the plan branch was rebased onto it and the
 integration + p1 branches created off the plan branch (trio travels with the mission).
 OQ1's hold is released. _(Prior gate note below.)_
@@ -54,10 +56,11 @@ _Glyphs: `[ ]` not started · `[~]` in-flight / deferred / awaiting owner ·
 `[x]` done (verified, not merely written)._
 
 - [x] S1 — `## Closing` block + obligations register templates (branch
-  `mission/deferred-obligations-p1`) — **Suits:** `writer` — pending
-  orchestrator gate-run + commit
-- [ ] S2 — lint checks 13 + 14, mutation-proved, legacy-tolerant (branch
-  `mission/deferred-obligations-p1`) — **Suits:** `backend`
+  `mission/deferred-obligations-p1`) — **Suits:** `writer` — committed
+  `146667b`, gates green (settle-softening deviation logged below)
+- [x] S2 — lint checks 13 + 14, mutation-proved, legacy-tolerant (branch
+  `mission/deferred-obligations-p1`) — **Suits:** `backend` — 7 mutation
+  classes fail new lint / pass stashed pre-change lint; controls pass both
 - [ ] Checkpoint `ckpt-p1` — phase 1 gates + diff, legacy tolerance proven
   against the five pre-existing trios; merge to integration per L1
 - [ ] S3 — author `commands/settle.md` (probe ladder + reap algorithm +
@@ -138,16 +141,33 @@ remains; a `[~]` row must carry its `→ OB-<n>` promotion ref._
   built-in the checker doesn't know — left as prose; a checker allowlist for built-ins
   is a candidate lesson, not fixed here.
 
+- 2026-08-11 (S2) — the brief names no explicit forbidden `when:` time-word
+  list; shipped a bounded set derived from L3 (hourly, daily, nightly, weekly,
+  biweekly, fortnightly, monthly, quarterly, yearly, annually, soon, later,
+  eventually, someday, sometime, periodically, regularly, asap, tomorrow,
+  next week/month/quarter/sprint), matched only when it is the WHOLE `when:`
+  value. Check 14 also validates `templates/obligations.md` when present
+  (drift guard; the brief scoped it to `.plans/OBLIGATIONS.md`). Per the brief
+  (which wins over the session prompt), `[~]` without `→ OB-` fails only when
+  a `Closed:` stamp coexists — an in-flight `[~]` row is legal.
+
 _Any departure from a brief — logged the moment it happens, with why.
 Deviating is allowed; deviating silently is not (§4)._
-
-(none)
 
 ## Handoff log (newest first)
 
 _≤10 lines per entry: what the session did, the verify signal, the branch,
 what the next session needs. Newest on top; crash-safe by write-ahead._
 
+- 2026-08-11 S2 (backend): lint checks 13 `checkClosing` + 14
+  `checkObligationsRegister` added to `tools/lint.mjs` run-list (pure Node, no
+  shelling out). Mutation matrix, each anti-inert vs the stashed pre-change
+  lint: missing-`when:` row · `when: weekly` · stamp+`[ ]` · stamp+`[~]` sans
+  `→ OB-` · register row sans `·` separator · non-integer id `OB-x` · `[x]`
+  sans `· fired` — all fail new, pass old. Controls pass both: stamped fully
+  fired/promoted ledger, in-flight unticked ledger, deployed register template
+  + real rows; template placeholders and OB-a/b/c pass (repo-as-is green).
+  Gates: lint clean · hook-test 64 · selftest 54. S3: `commands/settle.md`.
 - 2026-08-11 S1 (writer): `## Closing` added to `templates/mission-state.md`
   (3 seeded rows: branch+worktree cleanup, docs/record synced, live-verify
   after reinstall) + new `templates/obligations.md` register template (OQ2).
@@ -159,4 +179,5 @@ what the next session needs. Newest on top; crash-safe by write-ahead._
   (off `main` = `2c8487f`, pre-#32 deliberately — zero file overlap with #32).
   `node tools/lint.mjs` green. Mission parked pending OQ1–OQ7 + the #32 merge.
 
-Next up: S2
+Next up: S3 — `commands/settle.md` + restore the slash-command forms S1
+softened, in the same commit (see Deviations); the p1 gate `ckpt-p1` runs first.
