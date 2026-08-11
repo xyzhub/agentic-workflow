@@ -124,6 +124,25 @@ the rules that informed their findings. It is a soft dependency, never a
 requirement: when absent, every agent proceeds exactly as today and never
 fabricates an impeccable citation.
 
+*Stage map (when present)*: impeccable's command grammar maps onto the
+lifecycle as **briefing vocabulary and human-session recommendations** —
+subagents cannot invoke slash commands. An agent may only run its detector
+CLI via Bash (the locally-installed binary if present, `npx impeccable
+detect` as fallback) and read its context files (`DESIGN.md`, `PRODUCT.md`)
+as plain files.
+
+| Workflow moment | Impeccable counterpart |
+|---|---|
+| V1 definition & design — directions, then the brand system | `shape` for direction exploration; `init`/`document` conventions author the spec-compliant `DESIGN.md`, with `PRODUCT.md` cross-referencing the PRD |
+| V3 UI build — a frontend slice returns | the frontend runs the detector CLI (`detect`) before returning any UI slice; findings with severities land in the hand-off |
+| V4 hardening — the UX audit | `audit`/`critique`/`harden` are the audit briefing's vocabulary; the refine set (`polish`, `quieter`, `live`, …) is recommended to the human, never invoked by an agent |
+| Checkpoint on a UI-touching diff | the reviewer's UX lens runs the detector CLI and reports findings with severities |
+
+The detector gate is **advisory and fail-open**: when the CLI errors or times
+out, the agent says so and continues — a peer tool's detector is never a
+blocking gate of this workflow, and it is never run when the probe says
+absent.
+
 **DX** — *a stranger clones the repo and ships a fix the same day.*
 - README quickstart with few commands incl. a one-command dev datastore;
   `.env.example` that works as-is.

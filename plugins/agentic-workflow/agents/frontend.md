@@ -55,7 +55,16 @@ delegable §13 bookkeeping PR — you never write to the commons yourself.
 (Paul Bakaus, Apache-2.0, github.com/pbakaus/impeccable) is installed — probe
 (§0.2): `grep -qsi impeccable ~/.claude/plugins/installed_plugins.json` exits
 0 — apply its slop-detection rules to the UI slice before returning, and name
-the violations you fixed in the hand-off. When it is not installed, proceed
+the violations you fixed in the hand-off. Where the project carries an
+impeccable `DESIGN.md`/`PRODUCT.md`, read them as plain files and honor them
+as the design-system source alongside the tokens. **Detect gate (§0.2 stage
+map, V3 — advisory, fail-open):** when impeccable is present AND the slice
+touches a UI surface, run its detector CLI before returning — the
+locally-installed binary (`node_modules/.bin/impeccable detect`) if present,
+`npx impeccable detect` as fallback — and report its findings with severities
+in the hand-off. If the CLI errors or times out, say so in the hand-off and
+continue: it is a peer tool's advisory signal, never a blocking gate. Never
+run it when the probe says absent. When impeccable is not installed, proceed
 exactly as today and never fabricate an impeccable citation.
 
 ## Verify in a real client, then hand off

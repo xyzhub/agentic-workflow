@@ -106,5 +106,11 @@ at V6: plan a growth mission). Then **offer to run that next command** for them
 spend/publish). Close with: "`/agentic-workflow:next` answers this question any
 time; the Quick reference at the top of docs/WORKFLOW.md has the full map."
 
+For a venture with a UI surface, when the impeccable plugin is installed —
+probe (§0.2): `grep -qsi impeccable ~/.claude/plugins/installed_plugins.json`
+exits 0 — also recommend `.impeccable/` scaffolding as a next step: name
+impeccable's `init` (the human or the main session runs it; subagents cannot
+invoke slash commands). When it is not installed, omit any impeccable mention.
+
 Do NOT commit — leave the changes staged-and-visible for the human to review,
 per the workflow's HITL rule.
