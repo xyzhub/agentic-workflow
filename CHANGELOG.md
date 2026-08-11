@@ -5,6 +5,10 @@ here, in [Keep a Changelog](https://keepachangelog.com/) format. This repo
 has no tags — each version-stamped commit on `main` IS the release.
 
 ## [Unreleased]
+
+_(empty)_
+
+## [1.43.0] — 2026-08-11
 ### Added
 - **Deferred obligations get a home, a prosecutor, and a refusal (v1.43.0,
   Phases 1–3).** The owner's diagnosis drove this mission: *everything done
