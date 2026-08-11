@@ -113,9 +113,14 @@ elif [ -f "$HANDOFF" ]; then
     fi
     T_MTIME=""
     if [ -n "$STAMP_EPOCH" ]; then
-      # BSD stat first (macOS), GNU stat second; a machine where both fail
-      # leaves T_MTIME empty and drops to the mtime proxy below.
-      T_MTIME=$(stat -f %m "$TRANSCRIPT" 2>/dev/null || stat -c %Y "$TRANSCRIPT" 2>/dev/null)
+      # GNU stat FIRST, BSD second — the order is load-bearing. On GNU, `-f`
+      # means "filesystem status" and its %m is the MOUNT POINT, so BSD-first
+      # SUCCEEDS on Linux with a path, short-circuits the ||, and the numeric
+      # guard then blanks T_MTIME — silently disabling the stamp path (the
+      # 3-case CI red on Ubuntu). BSD stat rejects `-c` outright (exit 1, no
+      # stdout), so GNU-first is unambiguous on both. A machine where both
+      # fail leaves T_MTIME empty and drops to the mtime proxy below.
+      T_MTIME=$(stat -c %Y "$TRANSCRIPT" 2>/dev/null || stat -f %m "$TRANSCRIPT" 2>/dev/null)
       case "$T_MTIME" in ''|*[!0-9]*) T_MTIME="" ;; esac
     fi
     if [ -n "$STAMP_EPOCH" ] && [ -n "$T_MTIME" ]; then

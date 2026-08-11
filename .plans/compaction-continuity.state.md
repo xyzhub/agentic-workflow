@@ -48,10 +48,10 @@ Plan: `.plans/compaction-continuity.md` · Briefs:
 `.plans/compaction-continuity.sessions.md` · Brief:
 `docs/product/decisions/2026-08-03-compaction-continuity-brief.md`
 
-Next up: **`ckpt-p4`** — end-of-mission review on the integration branch;
-human merges. S11 authored the PR body to a file
-(`.plans/compaction-continuity.artifacts/p4-pr-body.md`); the orchestrator
-merges P4 into the integration branch and opens the PR next.
+Next up: **`ckpt-p4`** — its re-verify is pending: the 2026-08-11 CI-fix
+(portable stamp/mtime `stat` order, see Deviations) landed on the integration
+branch after the review; the reviewer re-verifies the fix, CI must go green on
+Ubuntu, then the human merges PR #32.
 
 ## Checklist
 
@@ -240,6 +240,14 @@ Deviating is allowed; deviating silently is not (§4)._
   recommendation (one provenance line = a format change), so S5 implemented
   the mtime-only freshness path and left stamp-preference to S6. Logged
   because the dispatching prompt made the collapse conditional on OQ3.
+- 2026-08-11 (CI-fix) — **the mission shipped a platform bug past all 3
+  checkpoints**: S6's stamp-vs-transcript compare ordered `stat` BSD-first, and
+  GNU `stat -f %m` succeeds (mount point), so on Linux the stamp path NEVER
+  engaged — behavior silently degraded to the mtime proxy. Every local gate ran
+  on macOS only, so 64/64 green never covered the GNU branch; PR #32's Ubuntu CI
+  was the first cross-OS execution and caught it (3 cases). Fail-safe held (it
+  degraded, never errored, never mis-exited) — but a fresh-stamp/stale-mtime
+  handoff was mislabeled and a stale-stamp/fresh-mtime one inverted on Linux.
 - 2026-08-10 (S3) — the harness's once-per-band marker lives in the REAL
   `$TMPDIR` (`runHook()` does not override it, and the brief forbade harness-
   machinery changes), so the new cases mint a unique `session_id` per run to
@@ -250,6 +258,16 @@ Deviating is allowed; deviating silently is not (§4)._
 
 _≤10 lines per entry: what this session did, the verify signal, the branch, and
 what the next session needs. Newest on top; crash-safe by write-ahead._
+
+- _2026-08-11 (CI-fix, `backend`, branch `mission/compaction-continuity-integration`):
+  PR #32 lint job red on Ubuntu — 3 S6 stamp cases. Mechanism: `compact-resume.sh`
+  probed `stat -f %m` (BSD) FIRST; on GNU, `-f` means *filesystem* status and `%m`
+  is the MOUNT POINT, so it succeeds with a path, short-circuits the `||`, the
+  numeric guard blanks `T_MTIME`, and the stamp path silently degrades to the S5
+  mtime proxy on every Linux run. Fix: GNU-first order (`stat -c %Y || stat -f %m`;
+  BSD rejects `-c` with exit 1, so unambiguous both ways). `handoff-budget.sh`
+  audited: clean — only `-nt`/`wc -c`, no `stat`/`date`. hook-test 64 ok · lint
+  clean · selftest 54 ok. `ckpt-p4` re-verify + green CI still pending._
 
 - _2026-08-10 (S11, `writer`, branch `mission/compaction-continuity-p4`):
   authored the integration PR body to
@@ -369,4 +387,4 @@ what the next session needs. Newest on top; crash-safe by write-ahead._
   Phasing enforces L2 — the fallback never ships before the trigger. Verified
   `node tools/lint.mjs` green. **Nothing executed; blocked on OQ1–OQ7.**_
 
-Next up: **`ckpt-p4`** — end-of-mission review on the integration branch; human merges.
+Next up: **`ckpt-p4`** — re-verify pending after the 2026-08-11 CI-fix; CI green on Ubuntu, then human merges.
