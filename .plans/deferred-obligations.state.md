@@ -61,7 +61,7 @@ _Glyphs: `[ ]` not started · `[~]` in-flight / deferred / awaiting owner ·
 - [x] S2 — lint checks 13 + 14, mutation-proved, legacy-tolerant (branch
   `mission/deferred-obligations-p1`) — **Suits:** `backend` — 7 mutation
   classes fail new lint / pass stashed pre-change lint; controls pass both
-- [ ] Checkpoint `ckpt-p1` — phase 1 gates + diff, legacy tolerance proven
+- [~] Checkpoint `ckpt-p1` — reviewer in flight 2026-08-11 (Fable) — phase 1 gates + diff, legacy tolerance proven
   against the five pre-existing trios; merge to integration per L1
 - [ ] S3 — author `commands/settle.md` (probe ladder + reap algorithm +
   L4 gates) (branch `mission/deferred-obligations-p2`) — **Suits:** `backend`
