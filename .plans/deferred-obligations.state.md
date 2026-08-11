@@ -76,7 +76,7 @@ _Glyphs: `[ ]` not started · `[~]` in-flight / deferred / awaiting owner ·
   seeded OB-1/OB-2 (+ OB-3 parked); 3 concluded `mission/*-integration`
   branches KEPT per settle.md's protected set as written (deviation logged);
   gates green
-- [~] Checkpoint `ckpt-p2` **[STRICT]** — reviewer in flight 2026-08-11 (Fable) — audit every deletion against reflog +
+- [x] Checkpoint `ckpt-p2` **[STRICT]** — **APPROVE 2026-08-11 (Fable): every deletion clean — 41/41 local + 15/15 remote + 2 prunes re-derived from evidence, zero unjustified; all 13 PR-backed remote deletions checked fully.** Security 3 · Architecture 3 · Efficiency 3 · QA 2 · DX 2. Refusal gate fires with shipped wording. **Folded to P3/S6:** settle.md findings #2 (no-PR ladder sub-case) + #3 (full 40-char SHA) are command-doc defects that MUST land before ckpt-p4; minor lint leak `when: every day` (digitless cadence). **OB-3 stays parked for the human** (are concluded `mission/*-integration` branches reapable?). Merged into integration. — audit every deletion against reflog +
   `gh` + the dry-run listing; verdict to the human immediately
 - [ ] S5 — `hooks/lib/obligations-due.sh` + registration + harness cases
   (branch `mission/deferred-obligations-p3`) — **Suits:** `backend`
