@@ -10,9 +10,13 @@ _The durable state that outlives any transcript (WORKFLOW.md §2, principle 1):
 a fresh agent resumes the mission from this file alone. Write-ahead — update it
 before ending a session._
 
-**⛔ NOT STARTED — all seven OQs RESOLVED 2026-08-11 (human accepted every planner
+**▶ IN FLIGHT — execution started at S1 on 2026-08-11.** PR #32 MERGED
+2026-08-11T05:02Z (`main` = `a75b844`); the plan branch was rebased onto it and the
+integration + p1 branches created off the plan branch (trio travels with the mission).
+OQ1's hold is released. _(Prior gate note below.)_
+**⛔ (RELEASED) — all seven OQs RESOLVED 2026-08-11 (human accepted every planner
 recommendation, incl. OQ6 queue order: this mission runs BEFORE portfolio-learning).
-The ONLY remaining gate is OQ1's hold: execution starts when PR #32 merges.**
+The ONLY remaining gate was OQ1's hold: execution starts when PR #32 merges.**
 _(Original planning note below.)_
 (mirrored below with recommendations). Execution is blocked until they are
 answered; OQ1 additionally holds the start on PR #32's merge.
