@@ -24,6 +24,11 @@ Quick workflow health check. Report a traffic-light status at the end.
    version (`${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json`). Older or
    missing stamp → 🟡, recommend `/agentic-workflow:sync` (it re-copies the master,
    preserving §10 and the Local amendments section verbatim).
+8. **Deferred obligations** — grep-count unticked `- [ ] OB-` rows in
+   `.plans/OBLIGATIONS.md` plus unticked `- [ ]` rows inside any
+   `.plans/*.state.md` `## Closing` section (the obligations-due reflex's
+   predicate — count only, probe nothing). Any due → 🟡, recommend
+   `/agentic-workflow:settle` (which probes each row for real).
 
 ## Output
 

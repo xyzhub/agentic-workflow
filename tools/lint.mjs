@@ -581,6 +581,13 @@ function checkObRow(file, b, { strictLabel = false, placeholderOk = false } = {}
   // clock in different clothing; same L3 verdict.
   else if (/^(?:every|in)\s+\d+/.test(when))
     fail(file, b.n, `\`when: ${when}\` is a numeric period — a clock, not a condition (L3: condition-driven, never time-driven) — name an observable state a probe can check, or keep the cadence intent out of \`when:\` and use \`probe: manual\``);
+  // ckpt-p2 fold: `when: every day` sailed past both branches above — a
+  // digitless cadence ("every <time unit>") is the same clock without the
+  // number. The unit alternation is bounded to time/calendar units so a
+  // genuine condition shaped like `every phase PR is merged` never matches
+  // (anti-overreach: "phase" is not a time unit).
+  else if (/^every\s+(?:other\s+)?(?:sec(?:ond)?s?|min(?:ute)?s?|h(?:ou)?rs?|days?|weeks?|months?|quarters?|years?|mornings?|evenings?|nights?|weekends?|sprints?)\b/.test(when))
+    fail(file, b.n, `\`when: ${when}\` is a digitless cadence — a clock, not a condition (L3: condition-driven, never time-driven) — name an observable state a probe can check, or keep the cadence intent out of \`when:\` and use \`probe: manual\``);
 }
 
 // ── 13. `## Closing` grammar + close refusal (deferred-obligations Phase 1) ──
