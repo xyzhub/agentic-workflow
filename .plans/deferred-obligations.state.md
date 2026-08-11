@@ -10,9 +10,10 @@ _The durable state that outlives any transcript (WORKFLOW.md §2, principle 1):
 a fresh agent resumes the mission from this file alone. Write-ahead — update it
 before ending a session._
 
-**▶ IN FLIGHT — Phase 2: S3 built 2026-08-11 on
-`mission/deferred-obligations-p2`. Next up: S4 — dogfood the reap on this repo
-+ seed OB-1/OB-2 (the [STRICT] gate `ckpt-p2` follows).** PR #32 MERGED
+**▶ IN FLIGHT — Phase 2: S3 + S4 done 2026-08-11 on
+`mission/deferred-obligations-p2`. Next up: `ckpt-p2` [STRICT] — audit every
+deletion against reflog + `gh` + the dry-run table in "S4 reap evidence"
+below; verdict to the human immediately.** PR #32 MERGED
 2026-08-11T05:02Z (`main` = `a75b844`); the plan branch was rebased onto it and the
 integration + p1 branches created off the plan branch (trio travels with the mission).
 OQ1's hold is released. _(Prior gate note below.)_
@@ -67,8 +68,14 @@ _Glyphs: `[ ]` not started · `[~]` in-flight / deferred / awaiting owner ·
   L4 gates) (branch `mission/deferred-obligations-p2`) — **Suits:** `backend` —
   5 sections incl. the close-gate refusal; slash forms restored; F1–F3 fixed,
   mutation-proved; gates green
-- [ ] S4 — dogfood reap on this repo + seed OB-1/OB-2 (branch
-  `mission/deferred-obligations-p2`) — **Suits:** `devops`
+- [x] S4 — dogfood reap on this repo + seed OB-1/OB-2 (branch
+  `mission/deferred-obligations-p2`) — **Suits:** `devops` — live settle
+  2026-08-11: 41 merged locals + 15 merged remotes reaped (`-d` / `push
+  --delete`, per-branch rung evidence in "S4 reap evidence" below), 2 stale
+  worktree registrations pruned, 0 `worktree-agent-*` present; register
+  seeded OB-1/OB-2 (+ OB-3 parked); 3 concluded `mission/*-integration`
+  branches KEPT per settle.md's protected set as written (deviation logged);
+  gates green
 - [ ] Checkpoint `ckpt-p2` **[STRICT]** — audit every deletion against reflog +
   `gh` + the dry-run listing; verdict to the human immediately
 - [ ] S5 — `hooks/lib/obligations-due.sh` + registration + harness cases
@@ -135,6 +142,34 @@ remains; a `[~]` row must carry its `→ OB-<n>` promotion ref._
 
 ## Deviations
 
+- 2026-08-11 (S4, live dogfood) — **five places settle.md's text met reality;
+  none silently patched, all followed as written:**
+  1. **Protected-set blanket** — "integration branches (`mission/*-integration`)
+     and any branch with an open PR" shields concluded integrations forever:
+     the 3 whose PRs are merged + CI-green stayed, yet this ledger's own OB-a
+     promises deleting THIS mission's integration branch post-merge — the
+     command as written would refuse its own obligation. Kept all 3, parked
+     OB-3; wording refinement ("unconcluded missions") belongs to S6/S8 + the
+     human's ruling.
+  2. **The ladder assumes a PR** — rung 1's recipe (`gh pr list --state merged
+     --head <branch>`) returns empty for branches that reached `main` without
+     one (`plan/interactive-handoff`, `plan/orchestrator-context-economy` —
+     absorbed as ancestry when later missions built on them); "the merge
+     commit" is undefined there. Fired on rung 2 with: tip is ancestor of
+     `origin/main` (git proof) + `lint:success` on the tip commit itself + on
+     the carrying merge commit `a75b844`. settle.md should name the no-PR
+     sub-case.
+  3. **`gh run list --commit` needs the full 40-char SHA** — a short SHA
+     returns `[]` silently; with settle.md's bare `<sha>` placeholder that
+     wrongly surfaces green branches (fail-closed, so safe, but the recipe
+     should say full SHA).
+  4. **The local inventory lists the default branch as a candidate** —
+     `git branch --merged origin/<default> | grep -v '^\*'` includes `main`
+     itself; only the protected set catches it downstream. Minor, fail-closed.
+  5. **The §1 inventory awk shows only the first physical line of a wrapped
+     `- [ ]` row** — ledger Closing rows wrap at house width; counting is
+     correct, but the printed row is truncated mid-sentence. Cosmetic.
+
 - 2026-08-11 (owner clarification, mid-S3) — **the "status updates every 10 minutes"
   instance was a temporary, in-session request — not a durable obligation class.** The
   register is for obligations that OUTLIVE a session; ephemeral cadence asks stay
@@ -173,12 +208,132 @@ remains; a `[~]` row must carry its `→ OB-<n>` promotion ref._
 _Any departure from a brief — logged the moment it happens, with why.
 Deviating is allowed; deviating silently is not (§4)._
 
+## S4 reap evidence (dogfood, 2026-08-11)
+
+_The live `/agentic-workflow:settle` run, steps executed by hand exactly as
+S3 wrote them. Written ahead of execution (dry-run first), execution log
+appended after. §10 profile of this repo: CI (lint on push), no separate
+deploy — merge to `main` IS the release → **ladder rung 2**: CI green on the
+merge commit. `origin/main` = `a75b844` at run time; zero open PRs
+(`gh pr list --state open` → `[]`)._
+
+**Inventory (measured 2026-08-11, planning figures were 17R/37L/3W):**
+53 local branches (45 merged into `origin/main` incl. `main` itself, 8
+unmerged) · 22 remote branches excl. HEAD (18 merged excl. `origin/main`, 3
+unmerged + `origin/main`) · 3 worktrees (1 live + 2 prunable detached-HEAD
+scratchpad registrations: `wt-p2` @ `939c287`, `wt-pre` @ `421bffa`) · 0
+`worktree-agent-*` branches (planning predicted 0 here; the venture-repo
+instance is out of scope).
+
+### Dry-run — would-delete (remote, 15): rung-2 evidence per branch
+
+| Remote branch | tip | merged-PR → merge commit | CI on merge commit | action |
+|---|---|---|---|---|
+| chore/ci-checkout-v5 | 7842cb8 | #22 → 3fcbe85 | lint:success | delete |
+| chore/close-governance-ledger | 13af1f6 | #24 → 5be1c6a | lint:success | delete |
+| docs/council-roadmap | 1e267db | #27 → 7f6f8c6 | lint:success | delete |
+| docs/sync-workflow-v1.37.0 | bb57ded | #19 → ca7377e | lint:success | delete |
+| docs/sync-workflow-v1.39.0 | fc37b2a | #23 → 5fcc7f4 | lint:success | delete |
+| feat/beat-state-glyph | 7d7a32a | #29 → 98cb100 | lint:success | delete |
+| feat/hook-dispatch-harness | 1a9cdc7 | #26 → 31bcc0b | lint:success | delete |
+| feat/hooks-extract-sh | 3cffce2 | #28 → 4e4b7ac | lint:success | delete |
+| feat/ingest-registry-resolution | 176860a | #20 → 7f82b51 | lint:success | delete |
+| feat/orchestrator-governance | d55b36a | #21 → 4ae3320 | lint:success | delete |
+| feat/template-ingestion | eacc24b | #16 → 7463a83 | lint:success | delete |
+| fix/beat-enforcer-stop-hook-loop | 037a5a5 | #25 → 1ab65f8 | lint:success | delete |
+| security/lint-guard | 8a9cb91 | #18 → 7a2c1ca | lint:success | delete |
+| plan/interactive-handoff | bf74a58 | no PR — ancestor of `origin/main` | lint:success on tip `bf74a58` + on carrier `a75b844` | delete (rung-2, no-PR nuance → Deviations) |
+| plan/orchestrator-context-economy | 037b36b | no PR — ancestor of `origin/main` | lint:success on tip `037b36b` + on carrier `a75b844` | delete (rung-2, no-PR nuance → Deviations) |
+
+### Dry-run — would-delete (local, 41): `git branch -d` (git's merged check
+is the gate; locals carry no deploys — every one verified in
+`--merged origin/main`)
+
+Tips (recovery breadcrumbs): chore/ci-checkout-v5 `7842cb8` ·
+chore/close-governance-ledger `13af1f6` · docs/council-roadmap `1e267db` ·
+docs/sync-workflow-v1.37.0 `bb57ded` · docs/sync-workflow-v1.39.0 `fc37b2a` ·
+feat/beat-state-glyph `7d7a32a` · feat/hook-dispatch-harness `1a9cdc7` ·
+feat/hooks-extract-sh `3cffce2` · feat/ingest-registry-resolution `176860a` ·
+feat/orchestrator-governance `d55b36a` · feat/template-ingestion `eacc24b` ·
+fix/beat-enforcer-stop-hook-loop `037a5a5` ·
+mission/compaction-continuity-p1 `abec95b` · -p2 `344fcb0` · -p3 `4a98f8c` ·
+-p4 `6379e69` · mission/context-economy-p0 `dca7072` · -p05 `931c7e5` ·
+-p2 `bcaa935` · -p3 `d83823a` · -p4 `aadef40` ·
+mission/orchestrator-governance-p1 `6d931df` · -p2 `b2a532b` · -p3 `ab0b2d6` ·
+-p4 `bc300e7` · -p5 `d55b36a` · mission/portfolio-commons-p1 `527671d` ·
+-p2 `c728e6d` · -p3 `46d0bb7` · -p4 `acc563d` · -p5 `ace0c2b` ·
+mission/sales-doc-architecture-p0 `76aa414` · -p1 `2105ae9` · -p2 `c550aa2` ·
+-p3 `1fb2667` · -p4 `31a92c6` · -p5 `a25e7bb` ·
+plan/interactive-handoff `bf74a58` · plan/orchestrator-context-economy
+`037b36b` · plan/sales-doc-architecture `6ebc409` · security/lint-guard
+`8a9cb91`.
+
+### Dry-run — would-keep, each with its reason
+
+| Branch (L=local, R=remote) | Reason kept |
+|---|---|
+| main (L+R) | default branch — protected set |
+| mission/deferred-obligations-integration (L) `4262217` | this mission, unmerged — protected set |
+| mission/deferred-obligations-p1 (L) `b36003e` | this mission, unmerged |
+| mission/deferred-obligations-p2 (L) `2669b9d` | this mission, current branch, unmerged |
+| plan/deferred-obligations (L) `368bbfe` | this mission's plan branch, unmerged |
+| plan/portfolio-learning (L) `9ab34b0` | unmerged plan branch — protected per mission prompt |
+| feat/execution-core-templates (L+R) `2c66ed6` | unmerged into `origin/main` (pre-dates current workflow; likely squash-era) — surface, never delete |
+| feat/plan-command (L+R) `4267522` | unmerged (pre-dates current workflow) — surface, never delete |
+| security/purge-injection (L+R) `eafcc8f` | unmerged (2026-07 incident branch) — surface, never delete |
+| mission/compaction-continuity-integration (L `9753715` + R) | merged + PR closed + CI green, BUT settle.md's protected set shields `mission/*-integration` unconditionally — kept as written; finding in Deviations; parked as OB-3 |
+| mission/context-economy-integration (L `24646b5` + R) | same — protected-set literal; OB-3 |
+| mission/sales-doc-architecture-integration (L `c5a810d` + R) | same — protected-set literal; OB-3 |
+
+### Execution log (2026-08-11 — the dry-run above was written ahead)
+
+- `git worktree prune` → the 2 stale registrations cleared (`wt-p2` `939c287`,
+  `wt-pre` `421bffa`); `git worktree list` after = the main working tree only.
+- `worktree-agent-*` locals: none existed (0, as planning predicted).
+- Local: **41/41 `git branch -d` succeeded, zero refusals**; every
+  `Deleted branch … (was <sha>)` line matched the breadcrumb tips above.
+- Remote: **15/15 `git push origin --delete` succeeded.**
+- Counts before → after: local branches **53 → 12** · remote (excl. HEAD)
+  **22 → 7** · worktrees **3 → 1**.
+- Residue: `git branch -r --merged origin/main` minus main/HEAD = exactly the
+  3 protected integration branches. Local survivors: `main`, the 4
+  this-mission branches + `plan/deferred-obligations`,
+  `plan/portfolio-learning`, and 3 unmerged pre-workflow branches
+  (`feat/execution-core-templates` `2c66ed6`, `feat/plan-command` `4267522`,
+  `security/purge-injection` `eafcc8f`). Remote survivors: `origin/main`, the
+  3 integrations, the same 3 unmerged.
+
+### Obligations pass (settle.md steps 1–2 + 4, run over the real files)
+
+- Inventory (commands verbatim from settle.md §1): 3 register rows
+  (OB-1..OB-3) + 3 `## Closing` rows in this ledger (OB-a..OB-c); **no other
+  ledger has a `## Closing` block** — the legacy-tolerant skip confirmed on
+  all five pre-existing trios, live.
+- Fired: **none** — nothing was fireable. OB-a condition unmet (no
+  integration PR exists yet: `gh pr list --head
+  mission/deferred-obligations-integration` → `[]`); OB-c condition unmet
+  (the release is not on `main`). No row ticked; no row deleted.
+- **Surface list**: OB-1 (manual) · OB-2 (manual) · OB-3 (manual) · OB-b
+  (manual) · OB-a (condition not yet met) · OB-c (condition not yet met) ·
+  kept-not-deleted: the 3 unmerged pre-workflow branches and the 3 concluded
+  integration branches (protected-set literal, see Deviations).
+
 ## Handoff log (newest first)
 
 _≤10 lines per entry: what the session did, the verify signal, the branch,
 what the next session needs. Newest on top; crash-safe by write-ahead._
 
-- 2026-08-11 S3 (backend): `commands/settle.md` — 5 sections: inventory ·
+- 2026-08-11 S4 (devops): live settle on this repo's rot, steps executed by
+  hand per `commands/settle.md`. Reaped 41 merged locals (`-d`, zero
+  refusals) + 15 merged remotes (rung-2 evidence per branch: merged PR →
+  merge commit → `lint:success`; 2 no-PR plan branches via ancestry +
+  CI-on-tip) + 2 stale worktree registrations; 0 `worktree-agent-*` existed.
+  Counts: local 53→12, remote 22→7, worktrees 3→1; residue = protections
+  only, each named in the evidence block. Register seeded: OB-1 (n=1 band
+  re-measure), OB-2 (D4b corpus), OB-3 (concluded integrations, parked —
+  protected-set literal). Obligations pass: nothing fireable; 6-row surface
+  list. 5 settle.md text findings → Deviations. Gates: lint clean (check 14's
+  first real register) · hook-test 64 · selftest 54. Next: ckpt-p2 [STRICT].
   probe (OQ4 §10 ladder, 4 rungs, fail-closed) · reap (dry-run first, `-d`
   never `-D`, protected set per L4) · write-back · mission-close gate with
   verbatim refusal wording (check 13 backstop). S1's softened refs restored to
@@ -208,5 +363,6 @@ what the next session needs. Newest on top; crash-safe by write-ahead._
   (off `main` = `2c8487f`, pre-#32 deliberately — zero file overlap with #32).
   `node tools/lint.mjs` green. Mission parked pending OQ1–OQ7 + the #32 merge.
 
-Next up: S4 — dogfood the reap on this repo + seed OB-1/OB-2 into
-`.plans/OBLIGATIONS.md`; the [STRICT] gate `ckpt-p2` follows.
+Next up: `ckpt-p2` [STRICT] — audit every deletion against `git reflog`,
+`gh api` (the deleted remote refs), and the dry-run table in "S4 reap
+evidence"; verdict to the human immediately.
