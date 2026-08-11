@@ -133,6 +133,15 @@ remains; a `[~]` row must carry its `→ OB-<n>` promotion ref._
 
 ## Deviations
 
+- 2026-08-11 (owner clarification, mid-S3) — **the "status updates every 10 minutes"
+  instance was a temporary, in-session request — not a durable obligation class.** The
+  register is for obligations that OUTLIVE a session; ephemeral cadence asks stay
+  conversational and are deliberately NOT parked. This resolves the ckpt-p1 acceptance
+  note ("instance 3's lint backstop leaked") the other way: the F1 numeric-period
+  pattern is still correct — its job is now to keep clock-phrases OUT of the register
+  entirely (they don't belong there), not to represent them. S4/ckpt-p2 must not treat
+  timer-class surfacing as an acceptance gap.
+
 - 2026-08-11 (S1, orchestrator gate-run) — S1's templates named `/agentic-workflow:settle`
   before `commands/settle.md` exists (S3 ships it); lint's unknown-command check
   correctly failed. Softened to prose ("the `settle` command") to keep the gate green.
