@@ -106,7 +106,7 @@ _Glyphs: `[ ]` not started · `[~]` in-flight / deferred / awaiting owner ·
   mission's own settle close (tick/promote `## Closing` rows, `Closed:`
   stamp) is the orchestrator's to execute, not this session's (branch
   `mission/deferred-obligations-p4`) — **Suits:** `writer`
-- [ ] Checkpoint `ckpt-p4` — final pass over `main..integration`; then the
+- [~] Checkpoint `ckpt-p4` — reviewer in flight 2026-08-11 (Fable) — final pass over `main..integration`; then the
   human merges PR `mission/deferred-obligations-integration → main` once
 
 ## Open questions
