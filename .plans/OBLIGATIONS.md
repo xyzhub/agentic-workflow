@@ -25,6 +25,6 @@ command (backticked) or the literal word `manual` when no command can decide
 it. Rows are **never deleted**: a fired row keeps its line and appends
 `· fired YYYY-MM-DD (<evidence>)`._
 
-<!-- - [ ] OB-1 · added 2026-01-01 (planner) — do: re-measure the X threshold — when: a new Y record exists in the corpus — probe: `grep -c Y-marker .plans/*.log` -->
-
-(none)
+- [ ] OB-1 · added 2026-08-11 (.plans/compaction-continuity.state.md:75) — do: re-measure the handoff-budget n=1 compaction bands (the ≈6.73 bytes/token anchor and the trigger threshold are single-observation, config-dependent figures) — when: upstream compaction behavior changes OR the local transcript corpus gains ≥3 new true-compaction records — probe: manual
+- [ ] OB-2 · added 2026-08-11 (.plans/compaction-continuity.md:142) — do: run the D4b cross-mission token re-measurement so quoted figures outgrow n=1 per corpus — when: ≥2 further missions' transcripts exist post-v1.43 — probe: manual
+- [ ] OB-3 · added 2026-08-11 (.plans/deferred-obligations.state.md S4) — do: reap the three concluded integration branches (mission/compaction-continuity-integration, mission/context-economy-integration, mission/sales-doc-architecture-integration), local and remote — their merge PRs are closed and CI was green on each merge commit, but the protected set in commands/settle.md shields all mission/*-integration branches unconditionally — when: the human rules the concluded-integration class reapable (or the protected-set clause is refined to shield only unconcluded missions) — probe: manual
