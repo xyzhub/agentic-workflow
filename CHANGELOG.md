@@ -6,6 +6,44 @@ has no tags — each version-stamped commit on `main` IS the release.
 
 ## [Unreleased]
 ### Added
+- **Deferred obligations get a home, a prosecutor, and a refusal (v1.43.0,
+  Phases 1–3).** The owner's diagnosis drove this mission: *everything done
+  correctly had an immediate trigger; everything missed was deferred with
+  nothing to fire it.* Four pieces, in order: (1) a `## Closing` block
+  (mission-state ledger template) and `.plans/OBLIGATIONS.md` register
+  (`templates/obligations.md`) hold deferred obligations in a fixed grammar —
+  `do:` / `when:` (an observable condition, never a clock) / `probe:`
+  (command or `manual`) — plus two mutation-proved lint checks (13
+  `checkClosing`, 14 `checkObligationsRegister`, legacy-tolerant: the five
+  pre-existing ledgers pass byte-unchanged). (2) `/agentic-workflow:settle` —
+  a new command that inventories every open obligation, probes each against
+  a four-rung deploy-green ladder (degrading fail-closed when a repo has no
+  CI/deploy signal), fires the safe class (`git branch -d`, never `-D`;
+  remote deletes only for branches merged to the default AND condition-green,
+  dry-run listed and confirmed first), and writes back fired rows with
+  `· fired <date> (<evidence>)` — rows are never deleted. Dogfooded live on
+  this repo: **41 merged local + 15 merged remote branches reaped** (rung-2
+  evidence — merge PR → merge commit → CI green — per branch) plus 2 stale
+  worktree registrations pruned, with a `[STRICT]` checkpoint auditing every
+  deletion against `git reflog` and `gh api` and confirming zero unmerged,
+  protected, or open-PR branches were touched. (3) `hooks/lib/obligations-due.sh`
+  — a new `SessionStart` (`startup|resume`, never `compact`) advisory hook
+  that greps register + Closing-block unticked counts and names
+  `/agentic-workflow:settle`; four silencers (no obligations, zero unticked,
+  once per session, exit 0 always); no network, no probes. This repo's own
+  governance-hook count goes five → six. (4) A close-gate refusal wired into
+  `end.md`, `mission.md`, and `check.md`: a mission with unresolved `## Closing`
+  rows may not be reported closed — "zero open PRs" is explicitly not treated
+  as a completeness signal — enforced both procedurally (the command step)
+  and structurally (the `Closed:`-stamp lint check vetoes a stamp written
+  over any remaining `[ ]` row). A human ruling during the mission
+  clarified the boundary: ephemeral, in-session cadence requests (e.g. "post
+  updates every 10 minutes") are deliberately NOT parked — the register is
+  for obligations that outlive a session, not a durable-obligation
+  impersonation of a timer. Harness grew 64 → 73 cases; three checkpoints
+  (`ckpt-p1`, `ckpt-p2` `[STRICT]`, `ckpt-p3`) all returned APPROVE with zero
+  corrective sessions. (deferred-obligations mission, Phases 1–3, `4262217`
+  / `5daf851` / `c90f1fa`)
 - **Handoff-budget nudge — write the session handoff before compaction takes it
   (v1.42.0).** New `hooks/lib/handoff-budget.sh`, registered under
   `UserPromptSubmit`: watches cumulative transcript bytes (a loose proxy, not a

@@ -10,9 +10,9 @@ _The durable state that outlives any transcript (WORKFLOW.md §2, principle 1):
 a fresh agent resumes the mission from this file alone. Write-ahead — update it
 before ending a session._
 
-**▶ IN FLIGHT — Phase 3: S6 done 2026-08-11 on
-`mission/deferred-obligations-p3`. Next up: ckpt-p3 — phase 3 diff-review +
-gates + mirror discipline (no prose claim without a dispatched case).** PR #32 MERGED
+**▶ IN FLIGHT — Phase 4: S7 done 2026-08-11 on
+`mission/deferred-obligations-p4`. Next up: S8 — integration PR body + close
+this mission's own ledger through its own `## Closing` gate.** PR #32 MERGED
 2026-08-11T05:02Z (`main` = `a75b844`); the plan branch was rebased onto it and the
 integration + p1 branches created off the plan branch (trio travels with the mission).
 OQ1's hold is released. _(Prior gate note below.)_
@@ -90,8 +90,16 @@ _Glyphs: `[ ]` not started · `[~]` in-flight / deferred / awaiting owner ·
   mutation-proved; gates green
 - [x] Checkpoint `ckpt-p3` — **APPROVE 2026-08-11 (Fable).** Security 3 · Architecture 3 · Efficiency 3 · QA 2 · DX 2. Hook dispatched live (counts 3+3 independently re-derived); matcher cross-match proven both ways; S5's MASKED disclosure ruled structurally acceptable; settle recipes #2/#3 spot-run live; OB-3 branches confirmed intact pending S8; mirror drift 9→9. **Folded to P4:** F1 >140-char harness case · F2 a carrying-commit command for recipe #2 · F3 tighten the ledger's 9-hunk decomposition arithmetic. Merged into integration. — phase 3 gates + mirror discipline; no prose claim
   without a dispatched case
-- [ ] S7 — update the record: CHANGELOG + JOURNEY + status page (branch
-  `mission/deferred-obligations-p4`) — **Suits:** `chronicler`
+- [x] S7 — update the record: CHANGELOG + JOURNEY + status page (branch
+  `mission/deferred-obligations-p4`) — **Suits:** `chronicler` — CHANGELOG
+  Unreleased entry (Phases 1–3, commit-cited); JOURNEY milestone entry;
+  overview.html meta/now/timeline regions (mission at P4, ckpt-p4 + human
+  merge remaining); `docs/product/roadmap.md:42` stale count fixed 26→27
+  (verified against `commands/` directory); sales-kit fact regions (Artifact
+  4) not present in this repo — skipped, and moot regardless since no
+  deferred-obligations PR is merged yet (integration PR is S8's); ckpt-p3 F3
+  (ledger 9-hunk arithmetic) left untouched — outside S7's artifact scope,
+  not ledger prose; gates green
 - [ ] S8 — integration PR body + close this ledger through its own gate
   (branch `mission/deferred-obligations-p4`) — **Suits:** `writer`
 - [ ] Checkpoint `ckpt-p4` — final pass over `main..integration`; then the
@@ -362,6 +370,19 @@ plan/interactive-handoff `bf74a58` · plan/orchestrator-context-economy
 _≤10 lines per entry: what the session did, the verify signal, the branch,
 what the next session needs. Newest on top; crash-safe by write-ahead._
 
+- 2026-08-11 S7 (chronicler): documentation-of-record pass, one commit on
+  `mission/deferred-obligations-p4`. CHANGELOG `## [Unreleased]` gained one
+  entry (v1.43.0, Phases 1–3, commit-cited `4262217`/`5daf851`/`c90f1fa`,
+  dogfood reap figures cited); JOURNEY.md gained a dated milestone entry
+  (append-only, plain-language); overview.html data:meta/data:now/data:timeline
+  updated (mission at Phase 4, compaction-continuity noted merged v1.42.0,
+  4 new timeline entries, 17/20 total). `docs/product/roadmap.md:42` "26
+  commands" → verified 27 (`ls commands/` = 27) and fixed. Sales-kit fact
+  regions (Artifact 4) don't exist in this repo — skipped; no merged PR
+  exists yet for this mission's capabilities regardless. ckpt-p3's F3 (ledger
+  9-hunk arithmetic) is not ledger prose in my artifact set — left untouched
+  per the brief's own conditional. Gates: lint clean. Republish pending (main
+  session, artifact-url in overview.html). Next: S8.
 - 2026-08-11 S6 (writer): protocol integration, one commit. end.md new §3
   close fall-through (later sections →§4–6); mission.md §5 close subsection;
   check.md item 8 (grep-only due count). Both mirrors: §3 obligations-due row
@@ -421,5 +442,5 @@ what the next session needs. Newest on top; crash-safe by write-ahead._
   (off `main` = `2c8487f`, pre-#32 deliberately — zero file overlap with #32).
   `node tools/lint.mjs` green. Mission parked pending OQ1–OQ7 + the #32 merge.
 
-Next up: ckpt-p3 — phase 3 diff-review + gates + mirror discipline (no prose
-claim without a dispatched case).
+Next up: S8 — integration PR body + close this mission's own ledger through
+its own `## Closing` gate.
