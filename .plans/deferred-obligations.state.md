@@ -88,7 +88,7 @@ _Glyphs: `[ ]` not started · `[~]` in-flight / deferred / awaiting owner ·
   hooks.json); settle.md findings #2–#5 fixed; OB-3 protected-set amendment
   landed (reap stays parked); digitless-cadence lint leak closed,
   mutation-proved; gates green
-- [ ] Checkpoint `ckpt-p3` — phase 3 gates + mirror discipline; no prose claim
+- [~] Checkpoint `ckpt-p3` — reviewer in flight 2026-08-11 (Fable) — phase 3 gates + mirror discipline; no prose claim
   without a dispatched case
 - [ ] S7 — update the record: CHANGELOG + JOURNEY + status page (branch
   `mission/deferred-obligations-p4`) — **Suits:** `chronicler`
