@@ -517,7 +517,131 @@ function checkNextUpAgreement() {
   }
 }
 
-for (const check of [checkManifests, checkAgents, checkCommands, checkCrossRefs, checkTemplateRefs, checkSections, checkFrontmatterYaml, checkTemplateFrontmatter, checkHooks, checkObfuscation, checkHookBehavior, checkMarkerMutation, checkContextAttrib, checkStandingSteers, checkNextUpAgreement]) {
+// ── Shared OB-row grammar (checks 13 + 14, deferred-obligations Phase 1) ────
+// One obligation = one foldable line:
+//   `- [ ] OB-<n> · added YYYY-MM-DD (<source>) — do: <action> — when:
+//   <observable condition> — probe: <command | manual>`
+// A fired row ticks `[x]` and APPENDS `· fired YYYY-MM-DD (<evidence>)` — rows
+// are never deleted. Template placeholders keep the literal `YYYY-MM-DD`, so
+// the date alternation admits it (placeholder rows must still carry every
+// segment — the template is checked too, and drift there ships to every
+// consumer). L3 (owner lock): a `when:` names an observable state, NEVER a
+// clock — a bare time word as the whole condition is a finding, because a
+// clock-shaped row can neither be probed nor honestly fired.
+const OB_DATE = '(?:\\d{4}-\\d{2}-\\d{2}|YYYY-MM-DD)';
+const OB_ROW = new RegExp(
+  `^- \\[([ x~])\\] ([^·]+?) · added ${OB_DATE} \\(([^)]+)\\) — do: (.+?) — when: (.+?) — probe: (.+)$`
+);
+const OB_FIRED = new RegExp(`· fired ${OB_DATE} \\(.+\\)`);
+const BARE_TIME_WORDS = new Set([
+  'hourly', 'daily', 'nightly', 'weekly', 'biweekly', 'fortnightly',
+  'monthly', 'quarterly', 'yearly', 'annually', 'soon', 'later', 'eventually',
+  'someday', 'sometime', 'periodically', 'regularly', 'asap', 'tomorrow',
+  'next week', 'next month', 'next quarter', 'next sprint',
+]);
+// Fold wrapped continuation lines into their bullet (the check-11 model);
+// report against the bullet's own first line.
+function obBullets(blockLines) {
+  const bullets = [];
+  for (const { n, text: line } of blockLines) {
+    if (/^- /.test(line)) bullets.push({ n, text: line });
+    else if (bullets.length && /^\s+\S/.test(line))
+      bullets[bullets.length - 1].text += ' ' + line.trim();
+  }
+  return bullets;
+}
+// Validate one folded row. `strictLabel` (the register) additionally demands
+// the `OB-<n>` integer id; mission-ledger Closing rows may use a short name
+// (the template's seeded rows do) or any `OB-*` label.
+function checkObRow(file, b, { strictLabel = false } = {}) {
+  const m = b.text.match(OB_ROW);
+  if (!m) {
+    fail(file, b.n, 'obligation row does not match the grammar `- [ ] <id> · added YYYY-MM-DD (<source>) — do: … — when: … — probe: <command | manual>` (glyph, `·` separators, em-dashed segments in this order) — got: ' + b.text.slice(0, 72));
+    return;
+  }
+  const [, glyph, , , , whenSeg, probeSeg] = m;
+  if (strictLabel && !/^OB-\d+$/.test(m[2].trim()))
+    fail(file, b.n, `register row id "${m[2].trim()}" must be \`OB-<n>\` with <n> the next unused integer — mission-local names stay in the mission ledger; the register is the durable namespace`);
+  const fired = OB_FIRED.test(probeSeg);
+  if (glyph === 'x' && !fired)
+    fail(file, b.n, 'fired (`[x]`) obligation row must append `· fired YYYY-MM-DD (<evidence>)` — a tick without evidence is a claim, not a fire');
+  if (glyph !== 'x' && fired)
+    fail(file, b.n, 'row carries a `· fired …` suffix but is not ticked `[x]` — the tick and the evidence travel together');
+  const when = whenSeg.replace(/[_*`]/g, '').trim().toLowerCase().replace(/[.,;:!]+$/, '');
+  if (BARE_TIME_WORDS.has(when))
+    fail(file, b.n, `\`when: ${when}\` is a clock, not a condition (L3: condition-driven, never time-driven) — name an observable state a probe can check, or keep the clock-shaped intent out of \`when:\` and use \`probe: manual\``);
+}
+
+// ── 13. `## Closing` grammar + close refusal (deferred-obligations Phase 1) ──
+// A mission ledger's `## Closing` block is where "do X once Y happens" parks so
+// it is never lost to "zero open PRs" as a false completeness signal. Two
+// duties here: (a) every row in a block THAT EXISTS parses (a row the grammar
+// can't parse is a row no probe can fire); (b) the refusal backstop — a
+// `Closed: YYYY-MM-DD` stamp may not coexist with an open `[ ]` row, nor with
+// a deferred `[~]` row lacking its `→ OB-<n>` promotion ref (L2: the checklist
+// is the authority). Legacy-tolerant per the OQ4/check-11 precedent: ledgers
+// without the block are exempt and must not start failing; in-flight missions
+// (no stamp) do not fail on unticked rows — that is their normal state. The
+// TEMPLATE must carry the block, so every new mission inherits it.
+function checkClosing() {
+  const HEADING = 'Closing';
+  const tpl = path.join(PLUGIN, 'templates/mission-state.md');
+  const tplBlock = sectionLines(read(tpl), HEADING);
+  if (!tplBlock)
+    fail(tpl, 1, `missing "## ${HEADING}" section — every mission ledger must inherit the closing block (deferred obligations with an observable \`when:\`; the close gate refuses while a \`[ ]\` row remains)`);
+  else for (const b of obBullets(tplBlock)) checkObRow(tpl, b);
+
+  for (const file of stateLedgers()) {
+    const text = read(file);
+    const block = sectionLines(text, HEADING);
+    if (!block) continue; // legacy ledgers without the block are exempt
+    const rows = obBullets(block);
+    for (const b of rows) checkObRow(file, b);
+    // The stamp is a REAL date outside inline code — prose *about* the
+    // convention writes `Closed: YYYY-MM-DD` literally or backticks it, and
+    // neither may trip the refusal.
+    let stampLine = 0;
+    text.split('\n').forEach((line, i) => {
+      line.split('`').forEach((seg, s) => {
+        if (s % 2 === 0 && !stampLine && /\bClosed:\s*\d{4}-\d{2}-\d{2}\b/.test(seg)) stampLine = i + 1;
+      });
+    });
+    if (!stampLine) continue;
+    for (const b of rows) {
+      const glyph = b.text.match(/^- \[([ x~])\]/)?.[1];
+      if (glyph === ' ')
+        fail(file, b.n, `unticked \`[ ]\` obligation coexists with the \`Closed:\` stamp at line ${stampLine} — a mission may not be reported closed while an obligation is open: fire it (\`[x]\` + \`· fired …\`) or promote it (\`[~] … → OB-<n>\`)`);
+      else if (glyph === '~' && !/→ OB-/.test(b.text))
+        fail(file, b.n, `deferred \`[~]\` obligation lacks its \`→ OB-<n>\` promotion ref, yet the ledger is stamped \`Closed:\` (line ${stampLine}) — a deferral survives its mission only as a verbatim copy in \`.plans/OBLIGATIONS.md\``);
+    }
+  }
+}
+
+// ── 14. Obligations register grammar (deferred-obligations Phase 1) ─────────
+// `.plans/OBLIGATIONS.md` is the repo-level parking place a `[~]` ledger row
+// promotes into. When present, every visible row must parse with the strict
+// `OB-<n>` id; absence passes (a fresh consumer has no register yet). The
+// template is validated too so a drifted example never deploys. HTML-commented
+// lines (the template's example row ships commented) are not rows.
+function checkObligationsRegister() {
+  const files = [
+    path.join(ROOT, '.plans/OBLIGATIONS.md'),
+    path.join(PLUGIN, 'templates/obligations.md'),
+  ].filter(existsSync);
+  for (const file of files) {
+    let inComment = false;
+    const visible = [];
+    read(file).split('\n').forEach((line, i) => {
+      const open = line.includes('<!--');
+      if (!inComment && !open) visible.push({ n: i + 1, text: line });
+      if (open && !line.includes('-->')) inComment = true;
+      else if (line.includes('-->')) inComment = false;
+    });
+    for (const b of obBullets(visible)) checkObRow(file, b, { strictLabel: true });
+  }
+}
+
+for (const check of [checkManifests, checkAgents, checkCommands, checkCrossRefs, checkTemplateRefs, checkSections, checkFrontmatterYaml, checkTemplateFrontmatter, checkHooks, checkObfuscation, checkHookBehavior, checkMarkerMutation, checkContextAttrib, checkStandingSteers, checkNextUpAgreement, checkClosing, checkObligationsRegister]) {
   check();
 }
 
