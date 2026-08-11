@@ -10,7 +10,10 @@ _The durable state that outlives any transcript (WORKFLOW.md §2, principle 1):
 a fresh agent resumes the mission from this file alone. Write-ahead — update it
 before ending a session._
 
-**⛔ NOT STARTED — planned 2026-08-11, awaiting the human's answers to OQ1–OQ7**
+**⛔ NOT STARTED — all seven OQs RESOLVED 2026-08-11 (human accepted every planner
+recommendation, incl. OQ6 queue order: this mission runs BEFORE portfolio-learning).
+The ONLY remaining gate is OQ1's hold: execution starts when PR #32 merges.**
+_(Original planning note below.)_
 (mirrored below with recommendations). Execution is blocked until they are
 answered; OQ1 additionally holds the start on PR #32's merge.
 
