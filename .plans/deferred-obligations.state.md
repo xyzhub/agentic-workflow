@@ -101,12 +101,12 @@ _Glyphs: `[ ]` not started · `[~]` in-flight / deferred / awaiting owner ·
   deferred-obligations PR is merged yet (integration PR is S8's); ckpt-p3 F3
   (ledger 9-hunk arithmetic) left untouched — outside S7's artifact scope,
   not ledger prose; gates green
-- [x] S8 — done 2026-08-11: PR body authored to `.plans/deferred-obligations.artifacts/p4-pr-body.md` (writer, 207 lines); settle close executed by the orchestrator — OB-3 fired (3 integrations reaped L+R with rung evidence), OB-a/b/c promoted to OB-4/5/6, `Closed:` stamped, check 13 live-passed. One probe lesson: fabricated SHA tails 422 — derive from `gh pr view --json mergeCommit` (appended to OB-3 evidence).
+- [x] S8 — done 2026-08-11: PR body authored to `.plans/deferred-obligations.artifacts/p4-pr-body.md` (writer, 206 lines); settle close executed by the orchestrator — OB-3 fired (3 integrations reaped L+R with rung evidence), OB-a/b/c promoted to OB-4/5/6, `Closed:` stamped, check 13 live-passed. One probe lesson: fabricated SHA tails 422 — derive from `gh pr view --json mergeCommit` (appended to OB-3 evidence).
   `.plans/deferred-obligations.artifacts/p4-pr-body.md` (207 lines); the
   mission's own settle close (tick/promote `## Closing` rows, `Closed:`
   stamp) is the orchestrator's to execute, not this session's (branch
   `mission/deferred-obligations-p4`) — **Suits:** `writer`
-- [~] Checkpoint `ckpt-p4` — reviewer in flight 2026-08-11 (Fable) — final pass over `main..integration`; then the
+- [x] Checkpoint `ckpt-p4` — **APPROVE 2026-08-11 (Fable, final gate).** Security 3 · Architecture 3 · Efficiency 3 · QA 2 · DX 2. S8 reap audit clean (all three re-derived, probe lesson reproduced); close gate holds as stamped; PR body byte-equal + no overclaim; **acceptance: criteria 1/2/4 MET, 3 MET-with-caveat** (worktree-agent-* delete path never live-exercised — none existed). Its finding 1 — ckpt-p3's folds dropped without disposition, the mission's own failure class — **remedied by parking as OB-7** before the merge, with the two record nits (JOURNEY three-not-two, 206-not-207) fixed in the same commit. — final pass over `main..integration`; then the
   human merges PR `mission/deferred-obligations-integration → main` once
 
 ## Open questions

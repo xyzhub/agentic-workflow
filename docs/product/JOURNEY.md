@@ -45,7 +45,7 @@ branches and 15 stale remote branches were deleted**, each one individually
 proven merged and green before it went, with the full evidence trail written
 down branch by branch. A strict audit checked every single deletion against
 the actual git history afterward and found nothing wrong: no unmerged work
-touched, nothing still in review, nothing protected. Two branches that were
+touched, nothing still in review, nothing protected. Three branches that were
 already fully wrapped up but initially got caught by an over-cautious rule
 were flagged rather than silently deleted — the human made the final call on
 those, and the rule was corrected for next time.
