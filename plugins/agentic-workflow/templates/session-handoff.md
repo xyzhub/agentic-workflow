@@ -6,6 +6,8 @@ refresh-trigger: event
 
 # {{PROJECT_NAME}} — Session Handoff
 
+_Written: {{ISO_UTC}} · session {{SESSION_ID}} · branch {{BRANCH}}_
+
 _A **re-read manifest**, not a summary. Written by `/agentic-workflow:handoff` when the main
 agent's context is filling, so a FRESH session continues by reading the same
 verbatim files — never a diluted auto-summary of the old transcript (WORKFLOW.md

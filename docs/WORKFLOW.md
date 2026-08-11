@@ -188,11 +188,13 @@ Shipped by this plugin as hooks. Advisory except where marked:
 | `gh pr merge` | **BLOCKS** unless the §10 **Merge policy** is `agent-may-merge` (fail closed when unset/absent); when delegated, reminds: merge only on a reviewer APPROVE |
 | `gh pr create` | Reminder to have run the gates |
 | `Write`/`Edit` | Reminder to update docs when high-impact files change |
+| `Read` (whole file, no `limit`) | **Read advisory** (context discipline) — nudges toward a ranged read or a delegating subagent (§6.2 Delegated reads) when a whole-file read targets a file over `READ_ADVISORY_LINES` (800 lines); a discipline line, not a measured optimum — this repo has no corpus to confirm an effect size, so none is claimed; never blocks |
 | Prompt submit | **Router** (governance) — an un-prefixed work request gets a soft "route it through the protocol — hand to `intake`" nudge; silent on plain chat, never blocks |
 | Prompt submit | **Thread-keeper** (governance) — injects the active ledger's phase + `Next up:` + first unchecked beat each turn; silent when no active ledger, never blocks |
+| Prompt submit | **Handoff-budget** (governance) — nudges (≤3 lines) to write/refresh `docs/product/session-handoff.md` before compaction takes the window, once cumulative transcript **bytes** — a loose proxy, including tool results the window has already evicted, never a token measurement — cross an advisory (3,700,000 B) or urgent (5,380,000 B) band, boundary-inclusive; silent below the advisory band, once already fired for that band this session, while an active mission ledger exists, or once the handoff is already newer than the crossing; never blocks |
 | turn end | **Beat-enforcer backstop** (governance, `Stop`) — nudges a required-but-unchecked ledger beat (`chronicler` at close, `reviewer` at a checkpoint) at the overdue moment; it scans the open beats top-down and nudges the **first due** one — a beat whose own row is held is stepped over, not treated as a wall — and stays silent when nothing is due, i.e. when unfinished work, an unreleased ⛔/HARD PAUSE row, or an unreleased `[~]` **HELD** row sits above every candidate (a `[ ]` HELD row is parked, not a barrier: the scan steps over it); advisory, never blocks |
 | `git commit` / `gh pr create` / `gh pr merge` | **Beat-enforcer** (governance, `PreToolUse`) — the same nudge at the closing action, but with **no due-ness scan yet**: it reports the **first** not-started beat outright, so it can name one that is held or behind unfinished work (the due-ness port is pending); advisory, never blocks |
-| After a compaction | **Compact-resume** (governance) — on `SessionStart` with matcher `compact` only, injects a short directive to re-read the active ledger and the last handoff **verbatim** rather than resume from the summary; silent when there's no active mission, never blocks |
+| After a compaction | **Compact-resume** (governance) — on `SessionStart` with matcher `compact` only, injects a directive (≤6 lines) and is **never silent** (OQ6): active mission ledger → re-read the ledger and the last handoff **verbatim**; no ledger but `docs/product/session-handoff.md` exists → re-read it verbatim with freshness stated — its `_Written:` provenance stamp preferred over file mtime; **CURRENT** only if provably newer than the transcript's last append, else **SUSPECT** (older than the transcript's last append, or the transcript is missing/unreadable — fail closed): treat the handoff as a lead, not the truth, and verify against `git log`/`git status` before trusting its **Next**; neither record exists → names `git log -5`, `git status`, `.remember/now.md` and tells the agent to report the gap to the human, never to author a handoff on the spot; never blocks |
 
 Blockers exit 2 (hard stop); reminders exit 0. Guardrails catch autopilot
 mistakes; they never replace judgment. Checks evaluate in the command's
@@ -224,15 +226,24 @@ end a session). For a long *interactive* session with no natural session end,
 `/agentic-workflow:handoff` writes a fresh-self re-read manifest so the reset stays lossless
 (§6.2) — never lean on the auto-summary.
 
-**Reflex backstops** — three §3 governance hooks keep a *running* session
+**Reflex backstops** — four §3 governance hooks keep a *running* session
 on-protocol without being read: the *thread-keeper* surfaces the active ledger's
 phase + `Next up:` + first open beat every turn; the *beat-enforcer* nudges a
 required-but-unchecked beat (`chronicler` at close, `reviewer` at a checkpoint) at
-the moment you try to close or advance; and *compact-resume* fires the moment the
-context window is compacted, telling you to re-read the ledger verbatim instead of
-resuming from a summary of a summary. All three are advisory — they steer the
-session back to the ledger, never block it. (§3's fourth governance hook, the
-*router*, fires before the work starts rather than during it.)
+the moment you try to close or advance; *compact-resume* fires the moment the
+context window is compacted and is never silent (OQ6): with an active ledger it
+directs a verbatim re-read of the ledger and the last handoff; with no ledger it
+falls back to `docs/product/session-handoff.md`, stating freshness — stamp
+preferred, mtime fallback — so a stale handoff reads **SUSPECT** ("treat the
+handoff as a lead, not the truth") rather than being trusted outright; with
+neither record it names `git log -5`, `git status` and `.remember/now.md` and
+tells you to flag the gap to the human rather than proceed on the compaction
+summary; and *handoff-budget* nudges once cumulative
+transcript bytes — a loose proxy, never a token measurement — cross an advisory
+or urgent band, telling you to write/refresh the handoff before compaction takes
+the window. All four are advisory — they steer the session back to the ledger,
+never block it. (§3's fifth governance hook, the *router*, fires before the work
+starts rather than during it.)
 
 ## 5. Mission lifecycle (multi-session work)
 
@@ -492,6 +503,18 @@ writes it, and a document the caller composes out of a subagent's distillate
 sits one paraphrase further from the source files. This is discipline, not a
 gate — nothing checks it for you.
 
+**Delegated reads.** The read side binds the driving session too — interactive
+work included, not just missions. Before pulling a large file or corpus into
+the window, ask whose window the reading belongs in: when what you need is a
+conclusion — a summary, an anchor list, a yes/no — spawn a subagent to do the
+reading in its own context and return a bounded distillate, and spend your own
+budget on ranged reads of only what you must see verbatim. Pulling a corpus
+into the very window you are trying to preserve is how an interactive session
+drifts toward compaction; the `Read` advisory reflex (§3) backstops the worst
+case — a whole-file read of a large file — but the discipline, not the reflex,
+is the lever. This is the same explore-once ethos that keeps a planner's briefs
+lean (§5), applied at the moment of each read.
+
 **The fresh-self handoff.** The interactive main session is context-disciplined
 too — the same "ledger outlives the transcript" rule (§2, principle 1) and loop
 mode (§5) that protect missions apply here. Externalize durable state to files
@@ -501,6 +524,12 @@ run `/agentic-workflow:handoff` to write a **re-read manifest** (`docs/product/s
 human starts a fresh session that resumes from it. A new agent re-reading files
 is lossless where an auto-summary is not; a sharp agent at low context beats a
 tired one near the limit. Agents prepare the handoff; the human fires the reset.
+If context compacts before the human fires that fresh session, `compact-resume`
+(§3–§4) catches it automatically at the next `SessionStart`: absent an active
+mission ledger, it falls back to this same handoff file, states its freshness
+against the transcript, and re-reads it verbatim — the manual reset and the
+automatic fallback are one mechanism reading one file, just triggered at
+different moments.
 
 ## 7. Fulfilment: definition of done
 
