@@ -39,7 +39,7 @@ validate what's already shipped, before building more.**
   real use; dedupe the thread-keeper banner when unchanged if it reads as wallpaper.
 - **Consolidation release + surface-area freeze** — cut the Unreleased block into
   versioned releases; no net-new agent/command without retiring one (currently
-  ~20 agents / 26 commands); measure command usage and prune the unused.
+  ~20 agents / 27 commands); measure command usage and prune the unused.
 - **Modularize `WORKFLOW.md`** — core ≤ 400 lines; §11–§14 (autopilot / owner-channel
   / portfolio / publishing) as referenced opt-in sub-files.
 
