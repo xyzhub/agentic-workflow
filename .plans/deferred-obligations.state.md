@@ -10,9 +10,10 @@ _The durable state that outlives any transcript (WORKFLOW.md §2, principle 1):
 a fresh agent resumes the mission from this file alone. Write-ahead — update it
 before ending a session._
 
-**▶ IN FLIGHT — Phase 4: S7 done 2026-08-11 on
-`mission/deferred-obligations-p4`. Next up: S8 — integration PR body + close
-this mission's own ledger through its own `## Closing` gate.** PR #32 MERGED
+**▶ IN FLIGHT — Phase 4: S8 (body half) done 2026-08-11 on
+`mission/deferred-obligations-p4`. Next up: the settle close — run
+`/agentic-workflow:settle` for real, tick/promote every `## Closing` row,
+write the `Closed:` stamp, then `ckpt-p4`.** PR #32 MERGED
 2026-08-11T05:02Z (`main` = `a75b844`); the plan branch was rebased onto it and the
 integration + p1 branches created off the plan branch (trio travels with the mission).
 OQ1's hold is released. _(Prior gate note below.)_
@@ -100,8 +101,11 @@ _Glyphs: `[ ]` not started · `[~]` in-flight / deferred / awaiting owner ·
   deferred-obligations PR is merged yet (integration PR is S8's); ckpt-p3 F3
   (ledger 9-hunk arithmetic) left untouched — outside S7's artifact scope,
   not ledger prose; gates green
-- [ ] S8 — integration PR body + close this ledger through its own gate
-  (branch `mission/deferred-obligations-p4`) — **Suits:** `writer`
+- [x] S8 — done 2026-08-11: PR body authored to `.plans/deferred-obligations.artifacts/p4-pr-body.md` (writer, 207 lines); settle close executed by the orchestrator — OB-3 fired (3 integrations reaped L+R with rung evidence), OB-a/b/c promoted to OB-4/5/6, `Closed:` stamped, check 13 live-passed. One probe lesson: fabricated SHA tails 422 — derive from `gh pr view --json mergeCommit` (appended to OB-3 evidence).
+  `.plans/deferred-obligations.artifacts/p4-pr-body.md` (207 lines); the
+  mission's own settle close (tick/promote `## Closing` rows, `Closed:`
+  stamp) is the orchestrator's to execute, not this session's (branch
+  `mission/deferred-obligations-p4`) — **Suits:** `writer`
 - [ ] Checkpoint `ckpt-p4` — final pass over `main..integration`; then the
   human merges PR `mission/deferred-obligations-integration → main` once
 
@@ -143,16 +147,18 @@ closes through the gate it builds (grammar enforcement arrives with S2; this
 file is its first real consumer). `Closed:` stamp only when no `[ ]` row
 remains; a `[~]` row must carry its `→ OB-<n>` promotion ref._
 
-- [ ] OB-a · added 2026-08-11 (planner) — do: delete this mission's four phase
+- [~] OB-a → OB-4 · added 2026-08-11 (planner) — do: delete this mission's four phase
   branches + integration branch, local and remote — when: the integration PR
   is merged by the human AND CI concluded green on the merge commit — probe:
   `gh pr view <n> --json state,mergeCommit` + `gh run list --commit <sha>`
-- [ ] OB-b · added 2026-08-11 (planner) — do: live-verify the obligations-due
+- [~] OB-b → OB-5 · added 2026-08-11 (planner) — do: live-verify the obligations-due
   hook fires in a real session — when: the shipped version is installed
   (`/plugin update` + `/reload-plugins` post-merge) — probe: manual
-- [ ] OB-c · added 2026-08-11 (planner) — do: confirm the five legacy trios
+- [~] OB-c → OB-6 · added 2026-08-11 (planner) — do: confirm the five legacy trios
   still pass lint on the installed release — when: the release lands on
   `main` — probe: `node tools/lint.mjs` on a fresh checkout of `main`
+
+Closed: 2026-08-11 — settle close executed by the orchestrator: OB-3 fired (three concluded integrations reaped, evidence in `.plans/OBLIGATIONS.md`); OB-a/b/c promoted verbatim to OB-4/5/6 (conditions post-merge by construction). The stamp coexists with zero unticked `[ ]` rows — check 13's first live pass on a stamped ledger.
 
 ## Deviations
 
@@ -370,6 +376,14 @@ plan/interactive-handoff `bf74a58` · plan/orchestrator-context-economy
 _≤10 lines per entry: what the session did, the verify signal, the branch,
 what the next session needs. Newest on top; crash-safe by write-ahead._
 
+- 2026-08-11 S8 (writer, body half): authored
+  `.plans/deferred-obligations.artifacts/p4-pr-body.md` (207 lines) — owner's
+  diagnosis quoted, what-ships commit-cited (`4262217`/`5daf851`/`c90f1fa`),
+  full remote-15 deletion evidence table + STRICT verdict quoted verbatim,
+  OB-3's full lifecycle, proven-live/dispatch/fixture breakdown, OB-a/b/c
+  carried forward. Did NOT run `/settle` or stamp `Closed:` — that is the
+  orchestrator's execution, next. Gates: not re-run (no code touched). Next:
+  the settle close, then `ckpt-p4`.
 - 2026-08-11 S7 (chronicler): documentation-of-record pass, one commit on
   `mission/deferred-obligations-p4`. CHANGELOG `## [Unreleased]` gained one
   entry (v1.43.0, Phases 1–3, commit-cited `4262217`/`5daf851`/`c90f1fa`,
@@ -442,5 +456,6 @@ what the next session needs. Newest on top; crash-safe by write-ahead._
   (off `main` = `2c8487f`, pre-#32 deliberately — zero file overlap with #32).
   `node tools/lint.mjs` green. Mission parked pending OQ1–OQ7 + the #32 merge.
 
-Next up: S8 — integration PR body + close this mission's own ledger through
-its own `## Closing` gate.
+Next up: the settle close — run `/agentic-workflow:settle` for real,
+tick/promote every `## Closing` row, write the `Closed:` stamp, then
+`ckpt-p4`.
