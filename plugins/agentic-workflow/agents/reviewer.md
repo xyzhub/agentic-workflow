@@ -47,7 +47,12 @@ formatting in server-rendered HTML); verified in a real client with a clean
 console. No manipulation mechanics (§0.2): fabricated scarcity/urgency,
 confirm-shaming, exit friction beyond sign-up friction; rewards and progress
 indicators map to real user progress, and variable-ratio reward mechanics
-require a recorded human decision.
+require a recorded human decision. When the impeccable plugin (Paul Bakaus,
+Apache-2.0, github.com/pbakaus/impeccable) is installed — probe (§0.2):
+`grep -qsi impeccable ~/.claude/plugins/installed_plugins.json` exits 0 —
+also apply its anti-pattern rules to UI-touching diffs under this lens,
+citing the rules behind each finding; when it is not installed, review
+exactly as today and never fabricate an impeccable citation.
 
 **DX** — README/conventions file/docs still truthful after the change (stale-doc
 rule); new scripts/env vars documented in `.env.example`; tests stay fast and

@@ -23,6 +23,13 @@ command, or "run `/agentic-workflow:doctor fix`").
   Missing on a non-trivial repo is 🟡 (DX pillar: the repo legible to models).
 - **Stack toolchain** — whatever §10's gates need (node/pnpm, cargo, etc.)
   actually on PATH.
+- **impeccable (optional design-quality plugin)** — probe (§0.2):
+  `grep -qsi impeccable ~/.claude/plugins/installed_plugins.json` (exit 0 =
+  installed; fail-closed to absent). Absent while the venture has a UI
+  surface → 🟡 with the fix `/plugin marketplace add pbakaus/impeccable`
+  (Paul Bakaus's design-quality plugin, Apache-2.0). Present, or absent with
+  no UI surface → 🟢. In `fix` mode, OFFER that install command in the report
+  — never run it unprompted; installing a plugin is the owner's call.
 - **Owner channel** (§12) — if §10 records one: the named env vars resolve and
   the owner id is present. In `fix` mode, send a test message ("doctor test —
   reply not needed") and report whether the send succeeded; stale entries in

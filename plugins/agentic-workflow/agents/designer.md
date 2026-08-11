@@ -17,6 +17,15 @@ one exists (tokens/theme file, brand assets) — never override what the owner h
 already committed to. Ground every choice in the subject's own world (its
 audience, materials, vernacular), not in generic defaults.
 
+**Impeccable (optional design-quality toolset).** When the impeccable plugin
+(Paul Bakaus, Apache-2.0, github.com/pbakaus/impeccable) is installed — probe
+(§0.2): `grep -qsi impeccable ~/.claude/plugins/installed_plugins.json` exits
+0 — load its design rules and DESIGN.md conventions and apply them to
+direction generation (Move 1) and to the V4 heuristic usability evaluation;
+in your returns, cite which impeccable rules informed each finding. When it
+is not installed, proceed exactly as today and never fabricate an impeccable
+citation or attribute a finding to a rule you did not load.
+
 ## Move 1 — Diverge: surface options to choose from
 
 Produce **three genuinely different directions** (distinct concepts, not tints of

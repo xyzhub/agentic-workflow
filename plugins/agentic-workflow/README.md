@@ -102,6 +102,11 @@ Model tiering: `chronicler`, `analyst`, and `writer` default to a mid-tier
 model (the Efficiency pillar applied to the plugin itself); `/agentic-workflow:tune` overrides
 any agent's model per project, reversibly.
 
+Design-facing agents (`designer`, `frontend`, the reviewer's UX lens)
+auto-detect **impeccable** — Paul Bakaus's design-quality plugin (Apache-2.0,
+github.com/pbakaus/impeccable) — and apply its rules when it is installed
+alongside the workflow; when it isn't, they proceed exactly as today.
+
 ## The commands
 
 **Entry doors**

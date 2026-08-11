@@ -113,6 +113,17 @@ and speed wins at V0–V2 prototyping — say which mode you're in.
   — the gambling schedule — are excluded by default, and including them is an
   explicit human decision.
 
+*Design-quality toolset (optional)*: **impeccable** — Paul Bakaus's
+design-quality plugin (Apache-2.0, github.com/pbakaus/impeccable) — is the
+recommended toolset for this pillar when it is installed alongside the
+workflow. Presence probe (read-only, fail-closed to absent):
+`grep -qsi impeccable ~/.claude/plugins/installed_plugins.json` exits 0 when
+installed. When present, the design-facing agents (`designer`, `frontend`, the
+reviewer's UX lens) load its design rules and DESIGN.md conventions and cite
+the rules that informed their findings. It is a soft dependency, never a
+requirement: when absent, every agent proceeds exactly as today and never
+fabricates an impeccable citation.
+
 **DX** — *a stranger clones the repo and ships a fix the same day.*
 - README quickstart with few commands incl. a one-command dev datastore;
   `.env.example` that works as-is.
