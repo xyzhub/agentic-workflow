@@ -51,8 +51,16 @@ require a recorded human decision. When the impeccable plugin (Paul Bakaus,
 Apache-2.0, github.com/pbakaus/impeccable) is installed — probe (§0.2):
 `grep -qsi impeccable ~/.claude/plugins/installed_plugins.json` exits 0 —
 also apply its anti-pattern rules to UI-touching diffs under this lens,
-citing the rules behind each finding; when it is not installed, review
-exactly as today and never fabricate an impeccable citation.
+citing the rules behind each finding. On a UI-touching diff, also run its
+detector CLI (§0.2 stage map) — the locally-installed binary
+(`node_modules/.bin/impeccable detect <changed UI paths>`) if present,
+`npx impeccable detect <changed UI paths>`
+as fallback — and report its findings with severities in your review. That
+gate is advisory and fail-open: if the CLI errors or times out, say so and
+continue — it informs findings under this lens, never replaces your verdict,
+and never blocks on its own. When impeccable is not installed, review
+exactly as today, never run its CLI, and never fabricate an impeccable
+citation.
 
 **DX** — README/conventions file/docs still truthful after the change (stale-doc
 rule); new scripts/env vars documented in `.env.example`; tests stay fast and

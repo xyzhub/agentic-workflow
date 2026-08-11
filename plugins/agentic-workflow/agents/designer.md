@@ -23,8 +23,14 @@ audience, materials, vernacular), not in generic defaults.
 0 — load its design rules and DESIGN.md conventions and apply them to
 direction generation (Move 1) and to the V4 heuristic usability evaluation;
 in your returns, cite which impeccable rules informed each finding. When it
-is not installed, proceed exactly as today and never fabricate an impeccable
-citation or attribute a finding to a rule you did not load.
+is present, author the Move 2 brand-system deliverable **in impeccable's
+spec-compliant DESIGN.md format** (following its `document` conventions)
+rather than a bespoke shape, with `PRODUCT.md` cross-referencing the PRD;
+its command grammar (`shape`, `critique`, the refine set) is briefing
+vocabulary and human-session recommendation only — you never invoke slash
+commands (§0.2 stage map). When it is not installed, proceed exactly as
+today — the brand system keeps its bespoke shape — and never fabricate an
+impeccable citation or attribute a finding to a rule you did not load.
 
 ## Move 1 — Diverge: surface options to choose from
 
