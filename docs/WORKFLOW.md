@@ -195,6 +195,7 @@ Shipped by this plugin as hooks. Advisory except where marked:
 | turn end | **Beat-enforcer backstop** (governance, `Stop`) — nudges a required-but-unchecked ledger beat (`chronicler` at close, `reviewer` at a checkpoint) at the overdue moment; it scans the open beats top-down and nudges the **first due** one — a beat whose own row is held is stepped over, not treated as a wall — and stays silent when nothing is due, i.e. when unfinished work, an unreleased ⛔/HARD PAUSE row, or an unreleased `[~]` **HELD** row sits above every candidate (a `[ ]` HELD row is parked, not a barrier: the scan steps over it); advisory, never blocks |
 | `git commit` / `gh pr create` / `gh pr merge` | **Beat-enforcer** (governance, `PreToolUse`) — the same nudge at the closing action, but with **no due-ness scan yet**: it reports the **first** not-started beat outright, so it can name one that is held or behind unfinished work (the due-ness port is pending); advisory, never blocks |
 | After a compaction | **Compact-resume** (governance) — on `SessionStart` with matcher `compact` only, injects a directive (≤6 lines) and is **never silent** (OQ6): active mission ledger → re-read the ledger and the last handoff **verbatim**; no ledger but `docs/product/session-handoff.md` exists → re-read it verbatim with freshness stated — its `_Written:` provenance stamp preferred over file mtime; **CURRENT** only if provably newer than the transcript's last append, else **SUSPECT** (older than the transcript's last append, or the transcript is missing/unreadable — fail closed): treat the handoff as a lead, not the truth, and verify against `git log`/`git status` before trusting its **Next**; neither record exists → names `git log -5`, `git status`, `.remember/now.md` and tells the agent to report the gap to the human, never to author a handoff on the spot; never blocks |
+| Session start | **Obligations-due** (governance, `SessionStart` matcher `startup|resume` — never `compact`: compact-resume owns that beat, and the two directives must not compete) — grep-counts unticked `- [ ] OB-` rows in `.plans/OBLIGATIONS.md` plus unticked `- [ ]` rows inside any mission ledger's `## Closing` section, and injects a ≤3-line advisory naming both counts, the oldest unticked row (register first — it is append-only, so its first unticked row waited longest; bounded to 140 characters), and `/agentic-workflow:settle`; **grep-only, no network** — it never runs `gh` and probes no row's condition (the real probes live in `/agentic-workflow:settle`, `/agentic-workflow:end`, and `/agentic-workflow:check`); four silencers exactly: no register and no `## Closing` block anywhere → silent, zero unticked rows → silent, once per session (a silent dispatch does not consume the session's one advisory), always exit 0 on every path; advisory, never blocks |
 
 Blockers exit 2 (hard stop); reminders exit 0. Guardrails catch autopilot
 mistakes; they never replace judgment. Checks evaluate in the command's
@@ -217,7 +218,11 @@ logged in the ledger.
 `<mission>(S<n>): summary`); push the branch; PR with summary + test plan;
 **update the record** (§6.1 — spawn the `chronicler` agent, then republish the
 owner status page); **never merge the default branch yourself** — HITL merges
-(merging often auto-deploys).
+(merging often auto-deploys). **Finishing a mission** (its last checklist row
+ticking)? The close falls through to the settle close-gate first: read the
+ledger's `## Closing` block — while any `[ ]` obligation row remains, the
+mission may not be reported closed; `/agentic-workflow:settle` fires or
+promotes each row, and only then is the `Closed:` stamp written (§5).
 
 **Context discipline** — at ~25% usage, finish the current edit to a compiling
 state, verify, write the handoff, end. A clean half-session beats a degraded full
@@ -242,8 +247,10 @@ summary; and *handoff-budget* nudges once cumulative
 transcript bytes — a loose proxy, never a token measurement — cross an advisory
 or urgent band, telling you to write/refresh the handoff before compaction takes
 the window. All four are advisory — they steer the session back to the ledger,
-never block it. (§3's fifth governance hook, the *router*, fires before the work
-starts rather than during it.)
+never block it. (§3's other two governance hooks fire at the session's edges
+rather than during it: the *router* before the work starts, and
+*obligations-due* at session start — surfacing how many deferred obligations
+sit unticked so a due condition meets a session that can act on it.)
 
 ## 5. Mission lifecycle (multi-session work)
 
@@ -253,7 +260,7 @@ The plan trio, written by a dedicated planning session:
 |---|---|
 | `.plans/<mission>.md` | Master plan: numbered tasks with acceptance criteria, **locked decisions (dated)**, risks, open questions each with a recommendation |
 | `.plans/<mission>.sessions.md` | One brief per session: pre-resolved reads (file → measured line count → anchors), do/verify steps, read budget; phases with named branches |
-| `.plans/<mission>.state.md` | Ledger: checklist, deviations log, handoff log (≤10 lines each, newest first), `Next up:` |
+| `.plans/<mission>.state.md` | Ledger: checklist, deviations log, handoff log (≤10 lines each, newest first), `Next up:`. Every ledger also carries a `## Closing` block — deferred obligations in the OB grammar (`do:` / an observable `when:` / `probe: <command | manual>`), read by the mission-close gate below |
 
 Rules: briefs pre-resolve targets so execution sessions never explore; one branch
 per phase, merged at checkpoint per the **gate policy** below; migrations and
@@ -288,6 +295,25 @@ UX + DX / QA + architecture), instead of one. Merge conservatively: any
 REQUEST CHANGES blocks; findings are unioned; the same finding from two
 reviewers raises its confidence. Routine checkpoints stay single-reviewer —
 this is where review cost is spent deliberately, not everywhere.
+
+**Mission close & deferred obligations.** A promised action with an observable
+condition and no trigger yet ("reap the branches once the human's merge deploys
+green", "re-measure once the corpus grows") parks instead of evaporating: as a
+row in the active ledger's `## Closing` block — `- [ ] <id> · added YYYY-MM-DD
+(<source>) — do: <action> — when: <observable condition> — probe: <command |
+manual>`, where a `when:` names a state a probe can check, never a clock — or,
+when it outlives its mission, promoted (`[~] … → OB-<n>`) as a verbatim copy
+into the repo register `.plans/OBLIGATIONS.md`. Rows are never deleted: a fired
+row ticks `[x]` and appends `· fired YYYY-MM-DD (<evidence>)`. The close gate:
+a mission may not be reported closed while any `[ ]` Closing row remains —
+`/agentic-workflow:settle` is the close step (probe every row, fire the
+condition-met safe class — including branch reaping behind the deploy-green
+ladder — surface the rest, refuse the close otherwise), and only a fully
+fired-or-promoted block takes the `Closed: YYYY-MM-DD` stamp; the lint backstop
+enforces the same rule fail-closed. The obligations-due reflex (§3) surfaces
+due counts at session start; the `end` and `mission` commands route a finishing
+mission through this gate — the checklist is the authority, and "zero open PRs"
+is never a completeness signal.
 
 **Loop mode.** The ledger makes missions loop-drivable: a recurring
 `/loop /mission "<name>" continue` (or a scheduled agent) has every tick read

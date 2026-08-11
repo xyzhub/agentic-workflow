@@ -17,9 +17,15 @@ Collect every open obligation — the repo register plus every mission ledger's
 ```bash
 grep -n '^- \[ \] OB-' .plans/OBLIGATIONS.md 2>/dev/null
 for f in .plans/*.state.md; do
-  awk -v F="$f" '/^## Closing$/{c=1;next} /^## /{c=0} c&&/^- \[ \]/{print F": "$0}' "$f"
+  awk -v F="$f" '/^## Closing$/{c=1;next} /^## /{c=0}
+    c&&/^- \[ \]/{p=1; print F": "$0; next}
+    c&&p&&/^[[:space:]]+[^[:space:]]/{print F": "$0; next}
+    {p=0}' "$f"
 done 2>/dev/null
 ```
+
+(The awk prints a wrapped row's continuation lines too — ledger rows wrap at
+house width, and a row truncated mid-sentence hides its `when:`/`probe:`.)
 
 No register and no `## Closing` blocks → report "nothing to settle" and stop.
 
@@ -42,9 +48,21 @@ must name the rung used:
 1. **Deploy + CI in the profile** → checks green on the merge commit of the PR
    that carried the branch:
    `gh pr list --state merged --head <branch> --json number,mergeCommit` →
-   `gh run list --commit <sha> --json status,conclusion`.
+   `gh run list --commit <sha> --json status,conclusion` — `<sha>` must be the
+   **full 40-char SHA**: `gh run list --commit` with a short SHA returns `[]`
+   silently, which fail-closed surfaces a green branch instead of firing it.
 2. **CI but no separate deploy** (merging to the default branch IS the
    release) → CI green on the merge commit suffices.
+
+   **No-PR sub-case (rungs 1–2)**: a branch can reach the default branch
+   without a PR of its own — absorbed as ancestry when later work built on
+   it — so `gh pr list --state merged --head <branch>` returns empty and "the
+   merge commit" is undefined. The recipe: prove ancestry
+   (`git merge-base --is-ancestor <tip-sha> origin/<default>` exits 0), then
+   CI green on the **tip commit itself** AND on the **carrying commit** (the
+   default-branch commit whose history first contains the tip) — both via the
+   full-SHA `gh run list --commit` form above. Ancestry without that CI
+   evidence → surface, never delete.
 3. **Neither CI nor deploy** → merged into the default branch alone satisfies
    the condition — the evidence line says so explicitly.
 4. **`gh` missing, rate-limited, or ambiguous** → the branch is **surfaced,
@@ -58,10 +76,14 @@ confirm it, then act.
 
 ```bash
 git fetch --prune
-git branch --merged origin/<default> | grep -v '^\*'
+git branch --merged origin/<default> | grep -vE '^\* |^ *<default>$'
 git branch -r --merged origin/<default> | grep -v -e 'origin/<default>$' -e 'origin/HEAD'
 git worktree list
 ```
+
+(The local listing excludes the current branch AND the default branch itself —
+`git branch --merged` lists `<default>` as merged into its own upstream, and
+only the protected set would catch it downstream.)
 
 Then, in order:
 
@@ -82,8 +104,15 @@ force it** — `-D` is never used, under any circumstances.
 
 - the default branch;
 - anything unmerged (a `-d` refusal is a stop, not an obstacle);
-- integration branches (`mission/*-integration`) and any branch with an open
-  PR;
+- any branch with an open PR;
+- integration branches (`mission/*-integration`) of **open** missions — while
+  the mission's integration PR is unmerged, or its ledger's `## Closing` block
+  (where one exists) lacks the `Closed:` stamp, the branch is untouchable. A
+  **concluded** integration — PR merged, deploy concluded green per the step-2
+  ladder, and the ledger stamped `Closed:` where it carries the block (a
+  pre-grammar ledger with no `## Closing` block is judged by the PR +
+  deploy-green condition alone) — is NOT shielded: it falls through to the
+  ordinary ladder (human ruling 2026-08-11, OB-3);
 - branches the §10 profile protects, or pre-existing branches that pre-date
   this workflow in the repo — when in doubt, surface.
 

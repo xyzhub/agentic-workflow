@@ -196,7 +196,7 @@ not a measured one, since this repo has no corpus to confirm an effect size.
 Checks evaluate in the command's **target repo** and read pre-execution
 state.
 
-Five **governance reflexes** (advisory, never block) keep a session on the
+Six **governance reflexes** (advisory, never block) keep a session on the
 protocol without it being read: the **router** nudges an un-prefixed work request
 to route through the workflow (hand to `intake`); the **thread-keeper** surfaces
 the active ledger's phase + `Next up:` + first open beat each turn; the
@@ -207,11 +207,15 @@ unreleased blocker) to reach the first one that is; **compact-resume** fires aft
 context compaction and is never silent: with an active ledger it re-reads the
 ledger verbatim; otherwise it falls back to `docs/product/session-handoff.md`,
 stating its freshness, or — with neither record — names `git log`, `git status`
-and `.remember/now.md` and flags the gap to the human; and **handoff-budget**
+and `.remember/now.md` and flags the gap to the human; **handoff-budget**
 nudges once cumulative transcript bytes — a loose proxy, never a token
 measurement — cross an advisory or urgent band, telling the session to
 write/refresh `docs/product/session-handoff.md` before compaction takes the
-window.
+window; and **obligations-due** surfaces, once per session at session start
+(never after a compaction — compact-resume owns that beat), how many deferred
+obligations sit unticked in `.plans/OBLIGATIONS.md` and mission-ledger
+`## Closing` blocks, naming the oldest row and `/agentic-workflow:settle` —
+grep-only, no network, no conditions probed.
 
 ## What the human always owns
 
