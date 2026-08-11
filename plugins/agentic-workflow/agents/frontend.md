@@ -51,6 +51,13 @@ delegable §13 bookkeeping PR — you never write to the commons yourself.
   (`design/brand/copy-kit.md`, where one exists) — a string with no pattern is
   a kit gap to flag (or a `writer` convening), not an improvisation.
 
+**Impeccable (optional design-quality toolset).** When the impeccable plugin
+(Paul Bakaus, Apache-2.0, github.com/pbakaus/impeccable) is installed — probe
+(§0.2): `grep -qsi impeccable ~/.claude/plugins/installed_plugins.json` exits
+0 — apply its slop-detection rules to the UI slice before returning, and name
+the violations you fixed in the hand-off. When it is not installed, proceed
+exactly as today and never fabricate an impeccable citation.
+
 ## Verify in a real client, then hand off
 
 Run the project gates (test + typecheck/lint) green. Then verify the change **in
