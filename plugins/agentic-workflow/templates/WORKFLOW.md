@@ -589,7 +589,10 @@ drive the real flow, confirm monitoring is receiving, record the result).
   `/agentic-workflow:plan` (interview-driven feature planning: brief, journeys, memos,
   counsel, trio — in one command), `/agentic-workflow:counsel` (advisor red-team on a pending decision), `/agentic-workflow:audit` (on-demand
   adversarial pillar audit), `/agentic-workflow:release` (cut a version), `/agentic-workflow:verify` (post-deploy
-  verification, §7), `/agentic-workflow:operate` (the V6 loop), `/agentic-workflow:publish` (the §14 publishing
+  verification, §7), `/agentic-workflow:settle` (probe deferred obligations, fire the
+  condition-met safe class — merged-branch + worktree reaping behind the
+  deploy-green gate — surface the rest, and hold the mission-close gate),
+  `/agentic-workflow:operate` (the V6 loop), `/agentic-workflow:publish` (the §14 publishing
   pipeline — connect channels, stage the queue, fire under the Publish policy),
   `/agentic-workflow:sync` (bring
   docs/WORKFLOW.md up to the installed protocol master), `/agentic-workflow:next` (recommends

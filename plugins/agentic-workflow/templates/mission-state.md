@@ -61,7 +61,7 @@ obligation past this mission's close and MUST carry `→ OB-<n>` — the verbati
 promotion ref for the copy landed in `.plans/OBLIGATIONS.md` (the repo-level
 register, `templates/obligations.md`). `Closed: YYYY-MM-DD` is written only
 once every row above is `[x]` or `[~] … → OB-<n>` — never while a bare `[ ]`
-remains; the mission-close step (the `settle` command, P2) enforces this
+remains; the mission-close step (`/agentic-workflow:settle`) enforces this
 before the mission may be reported done._
 
 - [ ] branch + worktree cleanup · added YYYY-MM-DD (planner) — do: delete this
@@ -69,7 +69,7 @@ before the mission may be reported done._
   now-stale worktrees — when: the phase/integration PRs are merged AND the
   deploy that carried them concluded green per §10 — probe: `gh pr list
   --state merged` + `gh run list` _(deferred until deploy-green, via
-  the `settle` command)_
+  `/agentic-workflow:settle`)_
 - [ ] docs/record synced · added YYYY-MM-DD (planner) — do: _what changed_ —
   when: _observable condition_ — probe: _command | manual_
 - [ ] live-verify after reinstall · added YYYY-MM-DD (planner) — do: confirm

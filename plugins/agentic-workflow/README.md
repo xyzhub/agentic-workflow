@@ -2,7 +2,7 @@
 
 An **agentic operating protocol** that carries any project from a raw idea to
 a launched, viable product — and keeps operating it after launch. Packaged as
-a Claude Code plugin: 20 agents, 26 commands, guardrail hooks, a protocol
+a Claude Code plugin: 20 agents, 27 commands, guardrail hooks, a protocol
 document every project carries, and an eval suite that tests the prompts
 themselves.
 
@@ -136,6 +136,7 @@ any agent's model per project, reversibly.
 | `/agentic-workflow:audit` | The V4 adversarial multi-vote on demand: lens-partitioned fresh reviewers, conservative merge, findings ranked and routed |
 | `/agentic-workflow:release` | Cut a version on a release branch: changelog, PR, and the post-merge tag commands — the human fires them |
 | `/agentic-workflow:verify` | Post-deploy verification on the deployed instance: drive the real flow, confirm monitoring receives, record the result |
+| `/agentic-workflow:settle` | Probe every deferred obligation (`.plans/OBLIGATIONS.md` + mission ledgers' `## Closing`), fire the condition-met safe class — merged-branch and worktree reaping behind the deploy-green gate, never `-D` — surface what a probe can't prove, and refuse to close a mission while `[ ]` rows remain |
 | `/agentic-workflow:operate` | The V6 loop: analyst numbers → ops/marketing/business reviews → one report with a ranked backlog; in a registry repo it sweeps the whole portfolio |
 | `/agentic-workflow:publish` | The §14 publishing pipeline: connect channels, stage posts into the queue (marketing/writer), then fire — human-fired by default, or a scheduled run within a scoped, revocable `may-publish` delegation; paid always human-fired |
 | `/agentic-workflow:retro` | Turn lessons into protocol amendments, eval scenarios, hook proposals — via PR like any change |

@@ -8,7 +8,7 @@ refresh-trigger: event
 
 _The repo-level parking place for deferred obligations that outlive a single
 mission (WORKFLOW.md §5) — a promised action with an observable condition and
-no trigger yet, probed at beats (the `settle` command, the
+no trigger yet, probed at beats (`/agentic-workflow:settle`, the
 `obligations-due` hook, `check.md`) instead of being lost the moment a
 mission's own `## Closing` block closes. Deploys to `.plans/OBLIGATIONS.md`. A
 `[~]` row in any mission ledger's `## Closing` block promotes here with a

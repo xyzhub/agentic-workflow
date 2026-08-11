@@ -552,8 +552,12 @@ function obBullets(blockLines) {
 }
 // Validate one folded row. `strictLabel` (the register) additionally demands
 // the `OB-<n>` integer id; mission-ledger Closing rows may use a short name
-// (the template's seeded rows do) or any `OB-*` label.
-function checkObRow(file, b, { strictLabel = false } = {}) {
+// (the template's seeded rows do) or any `OB-*` label. `placeholderOk`
+// (templates only) admits the literal `YYYY-MM-DD` in fired-evidence — in a
+// real ledger a fire is an event that happened, so its date is known
+// (ckpt-p1 F2). The `added YYYY-MM-DD` placeholder stays admitted everywhere:
+// a fresh ledger deployed from the template carries it until filled.
+function checkObRow(file, b, { strictLabel = false, placeholderOk = false } = {}) {
   const m = b.text.match(OB_ROW);
   if (!m) {
     fail(file, b.n, 'obligation row does not match the grammar `- [ ] <id> · added YYYY-MM-DD (<source>) — do: … — when: … — probe: <command | manual>` (glyph, `·` separators, em-dashed segments in this order) — got: ' + b.text.slice(0, 72));
@@ -567,9 +571,16 @@ function checkObRow(file, b, { strictLabel = false } = {}) {
     fail(file, b.n, 'fired (`[x]`) obligation row must append `· fired YYYY-MM-DD (<evidence>)` — a tick without evidence is a claim, not a fire');
   if (glyph !== 'x' && fired)
     fail(file, b.n, 'row carries a `· fired …` suffix but is not ticked `[x]` — the tick and the evidence travel together');
+  if (!placeholderOk && /· fired YYYY-MM-DD\b/.test(b.text))
+    fail(file, b.n, 'fired-evidence carries the literal `YYYY-MM-DD` placeholder — a fire is an event that happened, so its date is known; the placeholder is template-only');
   const when = whenSeg.replace(/[_*`]/g, '').trim().toLowerCase().replace(/[.,;:!]+$/, '');
   if (BARE_TIME_WORDS.has(when))
     fail(file, b.n, `\`when: ${when}\` is a clock, not a condition (L3: condition-driven, never time-driven) — name an observable state a probe can check, or keep the clock-shaped intent out of \`when:\` and use \`probe: manual\``);
+  // ckpt-p1 F1: `when: every 10 minutes` sailed past the bare-word set — the
+  // owner's literal third instance. A numeric period ("every/in <n> …") is a
+  // clock in different clothing; same L3 verdict.
+  else if (/^(?:every|in)\s+\d+/.test(when))
+    fail(file, b.n, `\`when: ${when}\` is a numeric period — a clock, not a condition (L3: condition-driven, never time-driven) — name an observable state a probe can check, or keep the cadence intent out of \`when:\` and use \`probe: manual\``);
 }
 
 // ── 13. `## Closing` grammar + close refusal (deferred-obligations Phase 1) ──
@@ -589,7 +600,7 @@ function checkClosing() {
   const tplBlock = sectionLines(read(tpl), HEADING);
   if (!tplBlock)
     fail(tpl, 1, `missing "## ${HEADING}" section — every mission ledger must inherit the closing block (deferred obligations with an observable \`when:\`; the close gate refuses while a \`[ ]\` row remains)`);
-  else for (const b of obBullets(tplBlock)) checkObRow(tpl, b);
+  else for (const b of obBullets(tplBlock)) checkObRow(tpl, b, { placeholderOk: true });
 
   for (const file of stateLedgers()) {
     const text = read(file);
@@ -597,11 +608,16 @@ function checkClosing() {
     if (!block) continue; // legacy ledgers without the block are exempt
     const rows = obBullets(block);
     for (const b of rows) checkObRow(file, b);
-    // The stamp is a REAL date outside inline code — prose *about* the
-    // convention writes `Closed: YYYY-MM-DD` literally or backticks it, and
-    // neither may trip the refusal.
+    // The stamp is a REAL date outside inline code AND outside fenced blocks —
+    // prose *about* the convention writes `Closed: YYYY-MM-DD` literally or
+    // backticks it, and a handoff entry may paste command output (a settle
+    // transcript quoting a stamp) into a ``` fence; none of those may trip the
+    // refusal (ckpt-p1 F3).
     let stampLine = 0;
+    let fenced = false;
     text.split('\n').forEach((line, i) => {
+      if (/^\s*(?:```|~~~)/.test(line)) { fenced = !fenced; return; }
+      if (fenced) return;
       line.split('`').forEach((seg, s) => {
         if (s % 2 === 0 && !stampLine && /\bClosed:\s*\d{4}-\d{2}-\d{2}\b/.test(seg)) stampLine = i + 1;
       });
@@ -637,7 +653,8 @@ function checkObligationsRegister() {
       if (open && !line.includes('-->')) inComment = true;
       else if (line.includes('-->')) inComment = false;
     });
-    for (const b of obBullets(visible)) checkObRow(file, b, { strictLabel: true });
+    for (const b of obBullets(visible))
+      checkObRow(file, b, { strictLabel: true, placeholderOk: file.includes(path.sep + 'templates' + path.sep) });
   }
 }
 

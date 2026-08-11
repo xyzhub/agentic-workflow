@@ -10,9 +10,9 @@ _The durable state that outlives any transcript (WORKFLOW.md §2, principle 1):
 a fresh agent resumes the mission from this file alone. Write-ahead — update it
 before ending a session._
 
-**▶ IN FLIGHT — Phase 1 built (S1 + S2) on 2026-08-11. Next up: S3 —
-`commands/settle.md` + restoring the slash forms S1 softened (after the p1 gate
-`ckpt-p1`).** PR #32 MERGED
+**▶ IN FLIGHT — Phase 2: S3 built 2026-08-11 on
+`mission/deferred-obligations-p2`. Next up: S4 — dogfood the reap on this repo
++ seed OB-1/OB-2 (the [STRICT] gate `ckpt-p2` follows).** PR #32 MERGED
 2026-08-11T05:02Z (`main` = `a75b844`); the plan branch was rebased onto it and the
 integration + p1 branches created off the plan branch (trio travels with the mission).
 OQ1's hold is released. _(Prior gate note below.)_
@@ -63,8 +63,10 @@ _Glyphs: `[ ]` not started · `[~]` in-flight / deferred / awaiting owner ·
   classes fail new lint / pass stashed pre-change lint; controls pass both
 - [x] Checkpoint `ckpt-p1` — **APPROVE** 2026-08-11 (Fable, routine). QA 2 · Architecture 3 · DX 3 · Security 3 · Efficiency 3. All 7 mutation fixtures + 3 controls re-derived; 5 adversarial fixtures of its own — **`when: every 10 minutes` PASSES the lint** (the owner's literal third instance; bare words caught, numeric periods not). **Folded into S3:** F1 numeric-period pattern (`^(?:every|in)\s+\d+`, medium) · F2 literal `YYYY-MM-DD` accepted in fired-evidence of real ledgers (minor) · F3 fenced-block `Closed:` false positive (minor, fail-closed direction). F4 note: promotion-ref cross-check belongs to `settle` (P2). Acceptance mapping: instances 1–2 have homes; instance 3's prose ban is real but the lint backstop leaked. Merged into integration.
   against the five pre-existing trios; merge to integration per L1
-- [ ] S3 — author `commands/settle.md` (probe ladder + reap algorithm +
-  L4 gates) (branch `mission/deferred-obligations-p2`) — **Suits:** `backend`
+- [x] S3 — author `commands/settle.md` (probe ladder + reap algorithm +
+  L4 gates) (branch `mission/deferred-obligations-p2`) — **Suits:** `backend` —
+  5 sections incl. the close-gate refusal; slash forms restored; F1–F3 fixed,
+  mutation-proved; gates green
 - [ ] S4 — dogfood reap on this repo + seed OB-1/OB-2 (branch
   `mission/deferred-obligations-p2`) — **Suits:** `devops`
 - [ ] Checkpoint `ckpt-p2` **[STRICT]** — audit every deletion against reflog +
@@ -150,6 +152,14 @@ remains; a `[~]` row must carry its `→ OB-<n>` promotion ref._
   built-in the checker doesn't know — left as prose; a checker allowlist for built-ins
   is a candidate lesson, not fixed here.
 
+- 2026-08-11 (S3) — `settle.md` ships FIVE sections, not the sessions brief's
+  four: `## 5 The mission-close gate` (the refusal + `Closed:` stamp rule) —
+  per the feature brief's locked piece 1 and OQ5 (the command step is the
+  actor) and the orchestrator's S3 instruction; no conflict with S6, which
+  wires `end.md`/`mission.md` to invoke it. Also beyond "minimal list entry":
+  plugin README command count corrected 26→27 (a stale count is a false
+  claim); `docs/product/roadmap.md:42` still says 26 — left for S7.
+
 - 2026-08-11 (S2) — the brief names no explicit forbidden `when:` time-word
   list; shipped a bounded set derived from L3 (hourly, daily, nightly, weekly,
   biweekly, fortnightly, monthly, quarterly, yearly, annually, soon, later,
@@ -168,6 +178,16 @@ Deviating is allowed; deviating silently is not (§4)._
 _≤10 lines per entry: what the session did, the verify signal, the branch,
 what the next session needs. Newest on top; crash-safe by write-ahead._
 
+- 2026-08-11 S3 (backend): `commands/settle.md` — 5 sections: inventory ·
+  probe (OQ4 §10 ladder, 4 rungs, fail-closed) · reap (dry-run first, `-d`
+  never `-D`, protected set per L4) · write-back · mission-close gate with
+  verbatim refusal wording (check 13 backstop). S1's softened refs restored to
+  `/agentic-workflow:settle` in both templates, same commit; §9 mirrors +
+  READMEs got minimal mentions. ckpt-p1 folds fixed in `tools/lint.mjs`: F1
+  numeric-period · F2 placeholder-in-fired (real files only) · F3 fence-aware
+  stamp scan — 4 mutations + 3 controls, all anti-inert vs stashed pre-change
+  lint. Gates: lint clean · hook-test 64 · selftest 54. Inventory fragments
+  exercised live (found OB-a/b/c). S4: dogfood reap + seed OB-1/OB-2.
 - 2026-08-11 S2 (backend): lint checks 13 `checkClosing` + 14
   `checkObligationsRegister` added to `tools/lint.mjs` run-list (pure Node, no
   shelling out). Mutation matrix, each anti-inert vs the stashed pre-change
@@ -188,5 +208,5 @@ what the next session needs. Newest on top; crash-safe by write-ahead._
   (off `main` = `2c8487f`, pre-#32 deliberately — zero file overlap with #32).
   `node tools/lint.mjs` green. Mission parked pending OQ1–OQ7 + the #32 merge.
 
-Next up: S3 — `commands/settle.md` + restore the slash-command forms S1
-softened, in the same commit (see Deviations); the p1 gate `ckpt-p1` runs first.
+Next up: S4 — dogfood the reap on this repo + seed OB-1/OB-2 into
+`.plans/OBLIGATIONS.md`; the [STRICT] gate `ckpt-p2` follows.
