@@ -61,7 +61,7 @@ _Glyphs: `[ ]` not started · `[~]` in-flight / deferred / awaiting owner ·
 - [x] S2 — lint checks 13 + 14, mutation-proved, legacy-tolerant (branch
   `mission/deferred-obligations-p1`) — **Suits:** `backend` — 7 mutation
   classes fail new lint / pass stashed pre-change lint; controls pass both
-- [~] Checkpoint `ckpt-p1` — reviewer in flight 2026-08-11 (Fable) — phase 1 gates + diff, legacy tolerance proven
+- [x] Checkpoint `ckpt-p1` — **APPROVE** 2026-08-11 (Fable, routine). QA 2 · Architecture 3 · DX 3 · Security 3 · Efficiency 3. All 7 mutation fixtures + 3 controls re-derived; 5 adversarial fixtures of its own — **`when: every 10 minutes` PASSES the lint** (the owner's literal third instance; bare words caught, numeric periods not). **Folded into S3:** F1 numeric-period pattern (`^(?:every|in)\s+\d+`, medium) · F2 literal `YYYY-MM-DD` accepted in fired-evidence of real ledgers (minor) · F3 fenced-block `Closed:` false positive (minor, fail-closed direction). F4 note: promotion-ref cross-check belongs to `settle` (P2). Acceptance mapping: instances 1–2 have homes; instance 3's prose ban is real but the lint backstop leaked. Merged into integration.
   against the five pre-existing trios; merge to integration per L1
 - [ ] S3 — author `commands/settle.md` (probe ladder + reap algorithm +
   L4 gates) (branch `mission/deferred-obligations-p2`) — **Suits:** `backend`
