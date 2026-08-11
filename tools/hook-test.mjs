@@ -287,13 +287,18 @@ const HARD_PAUSE_NOT_STARTED = ledger(
 
 // ── SessionStart:compact re-read directive ───────────────────────────────
 // Matcher discipline is structural (the harness dispatches commands directly and
-// does not apply matchers), so assert the registered matcher set itself: `compact`
-// and nothing else — never `startup`, never `resume`.
+// does not apply matchers), so assert the registered matcher set itself.
+// Extended for S5 (P3): compact-resume stays pinned to `compact` and nothing
+// else — never `startup`, never `resume` — and obligations-due rides exactly
+// `startup|resume`, a regex that must NOT match the string `compact` (the two
+// beats may never compete on a post-compaction session start).
 {
   const spec = JSON.parse(readFileSync(HOOKS, 'utf8'));
   const matchers = (spec.hooks.SessionStart || []).map((g) => g.matcher);
-  check('SessionStart: matcher is exactly ["compact"]',
-    matchers.length === 1 && matchers[0] === 'compact', `matchers=${JSON.stringify(matchers)}`);
+  check('SessionStart: matchers are exactly ["compact","startup|resume"] — and "startup|resume" does not match "compact"',
+    matchers.length === 2 && matchers[0] === 'compact' && matchers[1] === 'startup|resume'
+      && !new RegExp(matchers[1]).test('compact'),
+    `matchers=${JSON.stringify(matchers)}`);
 }
 const COMPACT = 'compact-resume directive';
 const reReadDirective = (r) => /just COMPACTED/.test(r.stdout);
@@ -789,6 +794,173 @@ const sid = (tag) => `hb-${tag}-${process.pid}-${Date.now()}-${sidSeq++}`;
     first.code === 0 && budgetNudge(first) && first.stderr === ''
       && again.code === 0 && again.stdout === '',
     `first=${JSON.stringify(first.stdout)} again=${JSON.stringify(again.stdout)} stderr=${JSON.stringify(first.stderr)}`);
+}
+
+// ── SessionStart:startup|resume obligations-due advisory (S5, P3) ────────
+// Grep-only, no network (L5): the hook counts unticked `- [ ] OB-` rows in
+// .plans/OBLIGATIONS.md plus unticked `- [ ]` rows inside any ledger's
+// `## Closing` section, names both counts + the oldest row + /settle, and is
+// otherwise silent. Four silencers exactly (OQ3, L13); every case below pins
+// one of them in a direction, or a failure path's exit-0.
+const OBLIG = 'obligations-due advisory';
+const obFired = (r) => /Deferred obligations may be due/.test(r.stdout);
+const REG_REL = '.plans/OBLIGATIONS.md';
+// Register fixture: two unticked, one fired — count must be 2 and the OLDEST
+// must be the FIRST unticked row (the register is append-only, so first =
+// longest-waiting), not merely any unticked row.
+const REG_2DUE = [
+  '# Obligations register',
+  '- [ ] OB-1 · added 2026-08-01 (planner) — do: re-measure the bands — when: the corpus gains 3 new records — probe: manual',
+  '- [x] OB-2 · added 2026-08-02 (planner) — do: sync the docs — when: the PR is merged — probe: manual · fired 2026-08-10 (PR #9)',
+  '- [ ] OB-3 · added 2026-08-03 (planner) — do: reap the phase branches — when: the integration PR is merged — probe: manual',
+  '',
+].join('\n');
+const REG_ALL_FIRED = [
+  '# Obligations register',
+  '- [x] OB-1 · added 2026-08-01 (planner) — do: re-measure the bands — when: the corpus gains 3 new records — probe: manual · fired 2026-08-10 (corpus at 4)',
+  '',
+].join('\n');
+// Ledger fixture: ONE unticked Closing row. The unticked checklist beat above
+// the section and the stray `- [ ]` row after the next `## ` heading must NOT
+// count — any other heading closes the section (the scoping pin).
+const CLOSING_ONE_DUE = {
+  'm.state.md': [
+    '## Checklist',
+    '- [x] S1 — build',
+    '- [ ] S2 — polish (an open beat, NOT an obligation)',
+    '',
+    '## Closing',
+    '- [ ] OB-a · added 2026-08-01 (planner) — do: reap the phase branches — when: the integration PR is merged AND CI is green on its merge commit — probe: manual',
+    '- [~] OB-b · added 2026-08-01 (planner) — do: live-verify the hook — when: the shipped version is installed — probe: manual → OB-9',
+    '- [x] OB-c · added 2026-08-01 (planner) — do: republish the status page — when: the release is on main — probe: manual · fired 2026-08-10 (commit abc)',
+    '',
+    '## Handoff log',
+    '- [ ] a stray unticked row after the section closed — never an obligation',
+    '',
+  ].join('\n'),
+};
+const CLOSING_NONE_DUE = {
+  'm.state.md': [
+    '## Checklist',
+    '- [ ] S2 — polish',
+    '',
+    '## Closing',
+    '- [x] OB-a · added 2026-08-01 (planner) — do: reap the phase branches — when: the integration PR is merged — probe: manual · fired 2026-08-10 (PR #7)',
+    '',
+  ].join('\n'),
+};
+{ // fires: register + Closing together — both counts named, oldest = OB-1 (the
+  // register's FIRST unticked row wins over OB-3 and the ledger), /settle
+  // named, ≤3 lines, exit 0, valid additionalContext JSON.
+  const r = runHook({ event: 'SessionStart', desc: OBLIG,
+    input: { source: 'startup', session_id: sid('ob-both') },
+    ledgers: CLOSING_ONE_DUE, files: { [REG_REL]: { content: REG_2DUE } } });
+  const m = ctx(r) || '';
+  check('SessionStart(startup): register 2-due + Closing 1-due → advisory naming both counts, the oldest register row (OB-1), and /agentic-workflow:settle (≤3 lines)',
+    r.code === 0 && obFired(r)
+      && /2 register row\(s\)/.test(m) && /1 mission-ledger/.test(m)
+      && /Oldest: - \[ \] OB-1/.test(m) && !/OB-3/.test(m)
+      && /\/agentic-workflow:settle/.test(m) && /Grep-only advisory/.test(m)
+      && m.split('\n').length <= 3,
+    `stdout=${JSON.stringify(r.stdout)}`);
+}
+{ // fires: Closing rows alone (no register) — and the scoping pin: exactly ONE
+  // row counts despite two other unticked `- [ ]` lines outside the section.
+  const r = runHook({ event: 'SessionStart', desc: OBLIG,
+    input: { source: 'resume', session_id: sid('ob-clo') }, ledgers: CLOSING_ONE_DUE });
+  const m = ctx(r) || '';
+  check('SessionStart(resume): no register, Closing 1-due → advisory with 0 register + 1 Closing (checklist beats and post-section rows never count), oldest = the OB-a row',
+    r.code === 0 && obFired(r)
+      && /0 register row\(s\)/.test(m) && /1 mission-ledger/.test(m)
+      && /Oldest: - \[ \] OB-a/.test(m) && m.split('\n').length <= 3,
+    `stdout=${JSON.stringify(r.stdout)}`);
+}
+{ // silencer 1, silent direction: no register AND no `## Closing` anywhere —
+  // an active ledger full of open beats is not a parking place. Plus the
+  // bare-repo variant: no .plans/ at all.
+  const led = runHook({ event: 'SessionStart', desc: OBLIG,
+    input: { source: 'startup', session_id: sid('ob-noplace') }, ledgers: NOT_STARTED });
+  const bare = runHook({ event: 'SessionStart', desc: OBLIG,
+    input: { source: 'startup', session_id: sid('ob-bare') } });
+  check('SessionStart(startup): no register and no ## Closing section (open-beat ledger; and bare cwd) → silent, exit 0',
+    led.code === 0 && led.stdout === '' && bare.code === 0 && bare.stdout === '',
+    `led=${JSON.stringify(led.stdout)} bare=${JSON.stringify(bare.stdout)}`);
+}
+{ // silencer 2, silent direction: both parking places exist but every row is
+  // fired [x] or promoted [~] — zero unticked, nothing to say. (The firing
+  // direction is the two cases above.)
+  const r = runHook({ event: 'SessionStart', desc: OBLIG,
+    input: { source: 'startup', session_id: sid('ob-allfired') },
+    ledgers: CLOSING_NONE_DUE, files: { [REG_REL]: { content: REG_ALL_FIRED } } });
+  check('SessionStart(startup): register + Closing present but zero unticked ([x]/[~] only) → silent, exit 0',
+    r.code === 0 && r.stdout === '', `stdout=${JSON.stringify(r.stdout)}`);
+}
+{ // silencer 3: once per session — same session_id fires once, second dispatch
+  // silent; a DIFFERENT session_id still fires (the marker is per-session, not
+  // global).
+  const s = sid('ob-once');
+  const first = runHook({ event: 'SessionStart', desc: OBLIG,
+    input: { source: 'startup', session_id: s }, files: { [REG_REL]: { content: REG_2DUE } } });
+  const again = runHook({ event: 'SessionStart', desc: OBLIG,
+    input: { source: 'resume', session_id: s }, files: { [REG_REL]: { content: REG_2DUE } } });
+  const other = runHook({ event: 'SessionStart', desc: OBLIG,
+    input: { source: 'startup', session_id: sid('ob-other') }, files: { [REG_REL]: { content: REG_2DUE } } });
+  check('SessionStart(startup/resume): advisory fires ONCE per session — second dispatch same session_id silent, a different session_id still fires',
+    first.code === 0 && obFired(first) && again.code === 0 && again.stdout === ''
+      && other.code === 0 && obFired(other),
+    `first=${JSON.stringify(first.stdout)} again=${JSON.stringify(again.stdout)}`);
+}
+{ // silencer 3, the write-only-on-fire pin: a SILENT dispatch (zero due) must
+  // not burn the session's one advisory — the same session_id still fires once
+  // rows become due.
+  const s = sid('ob-noburn');
+  const quiet = runHook({ event: 'SessionStart', desc: OBLIG,
+    input: { source: 'startup', session_id: s }, files: { [REG_REL]: { content: REG_ALL_FIRED } } });
+  const later = runHook({ event: 'SessionStart', desc: OBLIG,
+    input: { source: 'resume', session_id: s }, files: { [REG_REL]: { content: REG_2DUE } } });
+  check('SessionStart(startup/resume): a silent zero-due dispatch does not consume the marker — the same session still gets its one advisory when rows are due',
+    quiet.code === 0 && quiet.stdout === '' && later.code === 0 && obFired(later),
+    `quiet=${JSON.stringify(quiet.stdout)} later=${JSON.stringify(later.stdout)}`);
+}
+{ // metachar session_id: sanitized into the marker path (the handoff-budget
+  // sanitizer pin, mirrored) — inert, fires once, second dispatch silent,
+  // empty stderr, exit 0.
+  const s = `${sid('ob-meta')}/../nope; $(touch HACK) \`touch HACK2\` "d" 's'`;
+  const first = runHook({ event: 'SessionStart', desc: OBLIG,
+    input: { source: 'startup', session_id: s }, files: { [REG_REL]: { content: REG_2DUE } } });
+  const again = runHook({ event: 'SessionStart', desc: OBLIG,
+    input: { source: 'startup', session_id: s }, files: { [REG_REL]: { content: REG_2DUE } } });
+  check('SessionStart(startup): metachar session_id → sanitized (fires once, second dispatch silent, exit 0, empty stderr)',
+    first.code === 0 && obFired(first) && first.stderr === ''
+      && again.code === 0 && again.stdout === '',
+    `first=${JSON.stringify(first.stdout)} again=${JSON.stringify(again.stdout)} stderr=${JSON.stringify(first.stderr)}`);
+}
+{ // failure paths, all silent AND exit 0 (silencer 4): missing session_id with
+  // due rows staged, and garbage stdin (a bare JSON string — jq's .session_id
+  // lookup fails, the guard exits).
+  const nosid = runHook({ event: 'SessionStart', desc: OBLIG,
+    input: { source: 'startup' }, files: { [REG_REL]: { content: REG_2DUE } } });
+  const garbage = runHook({ event: 'SessionStart', desc: OBLIG,
+    input: 'not json {{{ definitely-not-an-object' });
+  check('SessionStart(startup): missing session_id or garbage stdin → silent, exit 0',
+    nosid.code === 0 && nosid.stdout === '' && garbage.code === 0 && garbage.stdout === '',
+    `codes=${JSON.stringify([nosid.code, garbage.code])} out=${JSON.stringify([nosid.stdout, garbage.stdout])}`);
+}
+{ // injection probe: a register row full of shell metacharacters passes only
+  // through grep + `jq -n --arg` — the advisory is valid JSON carrying the text
+  // inert, never executing it; empty stderr, exit 0.
+  const evil = [
+    '# Obligations register',
+    '- [ ] OB-1 · added 2026-08-01 (planner) — do: $(touch HACK) `touch HACK2`; rm -rf x — when: "d" \'s\' $HOME — probe: manual',
+    '',
+  ].join('\n');
+  const r = runHook({ event: 'SessionStart', desc: OBLIG,
+    input: { source: 'startup', session_id: sid('ob-evil') }, files: { [REG_REL]: { content: evil } } });
+  const m = ctx(r);
+  check('SessionStart(startup): metachar register row → inert (valid JSON advisory carrying the text, exit 0, empty stderr)',
+    r.code === 0 && typeof m === 'string' && /Deferred obligations may be due/.test(m)
+      && /\$\(touch HACK\)/.test(m) && r.stderr === '',
+    `code=${r.code} stderr=${JSON.stringify(r.stderr)} stdout=${JSON.stringify(r.stdout)}`);
 }
 
 if (failures.length) {

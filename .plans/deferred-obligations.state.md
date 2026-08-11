@@ -10,10 +10,11 @@ _The durable state that outlives any transcript (WORKFLOW.md §2, principle 1):
 a fresh agent resumes the mission from this file alone. Write-ahead — update it
 before ending a session._
 
-**▶ IN FLIGHT — Phase 2: S3 + S4 done 2026-08-11 on
-`mission/deferred-obligations-p2`. Next up: `ckpt-p2` [STRICT] — audit every
-deletion against reflog + `gh` + the dry-run table in "S4 reap evidence"
-below; verdict to the human immediately.** PR #32 MERGED
+**▶ IN FLIGHT — Phase 3: S5 done 2026-08-11 on
+`mission/deferred-obligations-p3`. Next up: S6 — protocol integration
+(end/mission/check + both mirrors + README, atomic-ref) + the ckpt-p2 folds:
+settle.md findings #2/#3, the OB-3 protected-set amendment, and the
+`when: every day` digitless-cadence lint leak.** PR #32 MERGED
 2026-08-11T05:02Z (`main` = `a75b844`); the plan branch was rebased onto it and the
 integration + p1 branches created off the plan branch (trio travels with the mission).
 OQ1's hold is released. _(Prior gate note below.)_
@@ -78,8 +79,10 @@ _Glyphs: `[ ]` not started · `[~]` in-flight / deferred / awaiting owner ·
   gates green
 - [x] Checkpoint `ckpt-p2` **[STRICT]** — **APPROVE 2026-08-11 (Fable): every deletion clean — 41/41 local + 15/15 remote + 2 prunes re-derived from evidence, zero unjustified; all 13 PR-backed remote deletions checked fully.** Security 3 · Architecture 3 · Efficiency 3 · QA 2 · DX 2. Refusal gate fires with shipped wording. **Folded to P3/S6:** settle.md findings #2 (no-PR ladder sub-case) + #3 (full 40-char SHA) are command-doc defects that MUST land before ckpt-p4; minor lint leak `when: every day` (digitless cadence). **OB-3 stays parked for the human** (are concluded `mission/*-integration` branches reapable?). Merged into integration. — audit every deletion against reflog +
   `gh` + the dry-run listing; verdict to the human immediately
-- [ ] S5 — `hooks/lib/obligations-due.sh` + registration + harness cases
-  (branch `mission/deferred-obligations-p3`) — **Suits:** `backend`
+- [x] S5 — `hooks/lib/obligations-due.sh` + registration + harness cases
+  (branch `mission/deferred-obligations-p3`) — **Suits:** `backend` — 4
+  silencers dispatched-proven both directions; 6 mutants: 5 killed, 1
+  masked-by-design (noted in script); hook-test 64→73; live 3+3 counted
 - [ ] S6 — protocol integration: end/mission/check + both mirrors + README,
   atomic-ref (branch `mission/deferred-obligations-p3`) — **Suits:** `writer`
 - [ ] Checkpoint `ckpt-p3` — phase 3 gates + mirror discipline; no prose claim
@@ -142,6 +145,16 @@ remains; a `[~]` row must carry its `→ OB-<n>` promotion ref._
 
 ## Deviations
 
+- 2026-08-11 (S5) — **none from the brief; three notes.** (1) The launching
+  prompt floated a possible "in-flight mission session" silencer; OQ3's locked
+  set (the brief) has no such condition — the brief's four silencers were built
+  verbatim, and the brief wins. (2) Mutation M1b (silencer-1 removal) is MASKED
+  by silencer 2 — with no parking place both counts are 0, so the zero-unticked
+  guard also silences; recorded in the script per the compact-resume F2
+  precedent (deliberate layering; only silencer 1's INVERSION is
+  harness-killable — proven killed, 6 failures). (3) `printf '%.140s'`
+  truncates BYTES and split a multibyte char during the live dispatch (U+FFFD
+  in the JSON) — switched to jq codepoint slicing (`.[0:140]`) pre-commit.
 - 2026-08-11 (S4, live dogfood) — **five places settle.md's text met reality;
   none silently patched, all followed as written:**
   1. **Protected-set blanket** — "integration branches (`mission/*-integration`)
@@ -323,6 +336,15 @@ plan/interactive-handoff `bf74a58` · plan/orchestrator-context-economy
 _≤10 lines per entry: what the session did, the verify signal, the branch,
 what the next session needs. Newest on top; crash-safe by write-ahead._
 
+- 2026-08-11 S5 (backend): `hooks/lib/obligations-due.sh` + hooks.json
+  registration (SessionStart `startup|resume` — never `compact`), one commit.
+  Grep-only advisory (no network/gh/probes): register + Closing counts +
+  oldest row (140-codepoint cap) + `/agentic-workflow:settle`; 4 silencers;
+  exit 0 all paths. Harness 64→73; matcher pin extended to
+  `["compact","startup|resume"]` (regex proven not to match `compact`).
+  Mutants: 5 killed, M1b masked-by-design; each adds 0 failures under the
+  stashed pre-change harness. Live: 3+3 counted, re-fire suppressed. Gates:
+  lint clean · hook-test 73 · selftest 54. Next: S6.
 - 2026-08-11 S4 (devops): live settle on this repo's rot, steps executed by
   hand per `commands/settle.md`. Reaped 41 merged locals (`-d`, zero
   refusals) + 15 merged remotes (rung-2 evidence per branch: merged PR →
@@ -363,6 +385,9 @@ what the next session needs. Newest on top; crash-safe by write-ahead._
   (off `main` = `2c8487f`, pre-#32 deliberately — zero file overlap with #32).
   `node tools/lint.mjs` green. Mission parked pending OQ1–OQ7 + the #32 merge.
 
-Next up: `ckpt-p2` [STRICT] — audit every deletion against `git reflog`,
-`gh api` (the deleted remote refs), and the dry-run table in "S4 reap
-evidence"; verdict to the human immediately.
+Next up: S6 — protocol integration, atomic-ref (end.md close fall-through,
+mission.md close subsection, check.md item 8, both WORKFLOW mirrors §3/§4/§5,
+README reflexes) + the ckpt-p2 folds: settle.md findings #2 (no-PR ladder
+sub-case) + #3 (full 40-char SHA), the OB-3 protected-set amendment (concluded
+integrations reapable per the human's ruling), and the `when: every day`
+digitless-cadence lint leak.
