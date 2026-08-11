@@ -118,6 +118,16 @@
             "description": "compact-resume directive (D8, SessionStart): after a context compaction ONLY (matcher `compact` — never startup/resume; also silent when stdin's .source is present and not `compact`), inject a ≤6-line re-read directive with THREE branches, never silence (OQ6): (1) active .plans/*.state.md ledger (same newest-mtime rule as the beat-enforcer) → re-read the ledger + handoff VERBATIM, honor ## Standing steers; (2) no ledger but docs/product/session-handoff.md exists → re-read it VERBATIM with freshness stated in the directive (OQ5: freshness is stamp-first — a parseable `_Written:` ISO line beats mtime; malformed/absent stamp falls back to the mtime proxy; CURRENT only when the chosen signal is newer than the transcript — else SUSPECT, stating WHY per sub-path (stale: proven older than the transcript's last append; UNPROVABLE: transcript missing/unreadable, so no age comparison was made — F3, never a false 'older' claim), verify against git log/git status before trusting its Next); (3) neither → name git log -5, git status, .remember/now.md, tell the human the record is missing, and do NOT author a handoff now. Emits via hookSpecificOutput.additionalContext (jq-built so interpolated values are JSON-escaped, never executed); always exit 0 — NEVER exit 2. Body: hooks/lib/compact-resume.sh"
           }
         ]
+      },
+      {
+        "matcher": "startup|resume",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/lib/obligations-due.sh\"",
+            "description": "obligations-due advisory (OQ3, SessionStart): at session start ONLY (matcher `startup|resume` — never `compact`; compact-resume owns that beat and its directive must not compete), grep-count unticked `- [ ] OB-` rows in .plans/OBLIGATIONS.md plus unticked `- [ ]` rows inside any .plans/*.state.md `## Closing` section, and inject a ≤3-line advisory naming both counts, the oldest unticked row (register first — it is append-only, so its first unticked row waited longest; bounded to 140 chars), and /agentic-workflow:settle. GREP-ONLY, NO NETWORK (L5): never runs gh, never probes a row's condition — real probes live in /settle, end.md, and check.md. Exactly four silencers (L13): (1) no register AND no `## Closing` section in any ledger → silent; (2) zero unticked rows → silent; (3) once per session ($TMPDIR marker keyed by sanitized session_id, written only when the advisory fires); (4) always exit 0 on every path (missing files, missing jq, garbage stdin) — never blocks. Emits via hookSpecificOutput.additionalContext (jq-built so repo text is JSON-escaped, never executed). Body: hooks/lib/obligations-due.sh"
+          }
+        ]
       }
     ],
     "SessionEnd": [

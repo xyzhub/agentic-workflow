@@ -29,19 +29,36 @@ For a mission session use `<mission>(S<n>): summary` and update the ledger
 (`.plans/<mission>.state.md`): tick the checkbox, write the handoff entry (≤10
 lines, newest first), set `Next up:`.
 
-## 3. Update the record (§6.1)
+## 3. Finishing a mission? The close gate
+
+If this session ticks the mission's **last** checklist row — the run that would
+report the mission done — the close falls through to the settle close-gate
+before anything is reported: read the ledger's `## Closing` block.
+
+- Any `[ ]` obligation row → the mission may **NOT** be reported closed. Run
+  `/agentic-workflow:settle` — it probes each row's condition, fires what is
+  condition-met, and refuses the close otherwise. Fire (`[x]` +
+  `· fired YYYY-MM-DD (<evidence>)`) or promote (`[~] … → OB-<n>`, with the
+  verbatim copy landed in `.plans/OBLIGATIONS.md`) every row. The checklist is
+  the authority — "zero open PRs" is not a completeness signal.
+- Only when no `[ ]` row remains, write the `Closed: YYYY-MM-DD` stamp (the
+  lint backstop vetoes a stamp over an open row).
+
+Ordinary (non-finishing) sessions skip this step.
+
+## 4. Update the record (§6.1)
 
 Spawn the **chronicler** agent with a summary of what landed (PRs, deviations,
 incidents, any stage transition). It updates CHANGELOG.md, docs/product/JOURNEY.md,
 and docs/product/overview.html — then **republish the status page** via the
 Artifact tool to the URL in its `artifact-url` comment.
 
-## 4. Docs & issue
+## 5. Docs & issue
 
 - Conventions file / architecture docs updated if behavior/config changed.
 - If the work maps to a tracked issue, comment progress or link the PR.
 
-## 5. Push / hand off
+## 6. Push / hand off
 
 ```bash
 git push -u origin <branch>

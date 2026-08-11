@@ -110,6 +110,20 @@ scripted `claude -p`. What makes loop mode safe is that **state lives in
 files**: any tick can be run from a fresh context without losing anything, and
 a crashed tick loses nothing.
 
+## 5. Close the mission
+
+The run that would report the mission done goes through the close gate — the
+checklist is the authority, and "zero open PRs" is not a completeness signal.
+Read the ledger's `## Closing` block and run `/agentic-workflow:settle` as the
+close step: it probes each row's condition, fires the safe class, and refuses
+the close while any `[ ]` row remains. Fire (`[x]` + dated evidence) or promote
+(`[~] … → OB-<n>`, with the verbatim copy landed in `.plans/OBLIGATIONS.md`)
+every row, then — and only then — write the `Closed: YYYY-MM-DD` stamp (the
+lint backstop vetoes a stamp over an open row). Branch reaping usually outlives
+the mission: the phase/integration branches' delete condition (the human's
+merge concluded green) post-dates the close, so it parks as a `## Closing` row
+and fires at a later `/agentic-workflow:settle` run — never forced at close.
+
 ## Output
 
 Between phases: the phase completed, review verdict, what the human must merge,

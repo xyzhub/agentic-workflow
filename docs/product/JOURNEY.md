@@ -15,6 +15,64 @@ protocol's own behavior the way a QA team would.
 
 ---
 
+## 2026-08-11 — deferred-obligations: giving "we'll get to it" a home that doesn't forget
+
+### Milestone: the thing that gets missed finally has somewhere to live
+
+The owner named the pattern behind this project's own past misses in one
+sentence: *everything done correctly had an immediate trigger; everything
+missed was deferred with nothing to fire it.* A promise made mid-session — "do
+this once X happens" — had nowhere durable to go. It lived in a transcript
+that would eventually compact away, or in a person's memory, and either way
+the thing that was supposed to happen later quietly didn't. This mission
+built the four pieces that close that gap, in order, over three phases so far.
+
+**A parking place with real grammar.** Every mission's working ledger now
+carries a `## Closing` section, and the project gained a standing register
+(`.plans/OBLIGATIONS.md`) for obligations that outlive any single mission.
+Every row states what to do, what observable condition should trigger it, and
+how to check that condition — deliberately never a bare clock. "Weekly" isn't
+a condition; "a new compaction record exists in the corpus" is. Two new
+automated checks enforce the grammar and refuse to let a mission claim itself
+finished while an obligation sits unresolved.
+
+**A prosecutor, exercised on real evidence.** A new `/agentic-workflow:settle`
+command inventories every open obligation, checks each one against the
+project's actual deploy signal, and — only for the class that's provably safe
+— cleans it up itself. Rather than trusting the design on paper, the team ran
+it live against this repo's own years of branch debris: **41 stale local
+branches and 15 stale remote branches were deleted**, each one individually
+proven merged and green before it went, with the full evidence trail written
+down branch by branch. A strict audit checked every single deletion against
+the actual git history afterward and found nothing wrong: no unmerged work
+touched, nothing still in review, nothing protected. Three branches that were
+already fully wrapped up but initially got caught by an over-cautious rule
+were flagged rather than silently deleted — the human made the final call on
+those, and the rule was corrected for next time.
+
+**A reminder, not an interruption.** A small new background check now looks,
+once per session, at whether anything in the register or a ledger's closing
+list is overdue, and says so in three lines or less — silent the rest of the
+time, never blocking anything.
+
+**A refusal with teeth.** Perhaps the most important piece: a mission can no
+longer report itself "done" just because its pull requests are all merged.
+If its own closing list still has open rows, the closing step now stops and
+runs the prosecutor first. That refusal is backed up two ways — by the
+close-out procedure itself, and, as a backstop, by the same automated check
+that would catch a human trying to skip the procedure and stamp the ledger
+closed anyway. One clarification came out of a real conversation mid-mission:
+a one-off request like "post updates every ten minutes" is not the kind of
+thing this system is for — that's a live, in-session ask, not a promise that
+needs to survive past the conversation, and the register was deliberately
+built to leave those alone.
+
+Three review gates cleared this work, including one held to the project's
+strictest standard because it involved real, permanent deletions — all three
+approved with zero rounds of correction needed. What's left: the fourth and
+final phase, which is this record plus the paperwork for a single merge, and
+then the human merges the finished work into the main line once.
+
 ## 2026-08-10 — compaction-continuity: a clean handoff instead of a silent one
 
 ### Milestone: the owner's own working style got a safety net

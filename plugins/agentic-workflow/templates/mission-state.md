@@ -46,6 +46,36 @@ why the work changed. Every session re-reads this block before it starts._
 
 (none)
 
+## Closing
+
+_A promised action with an observable condition and no trigger yet — never
+lost, never left to "zero open PRs" as a false completeness signal (WORKFLOW.md
+§5). Grammar, one line each:_ `- [ ] OB-<n> · added YYYY-MM-DD (<source>) —
+do: <action> — when: <observable condition> — probe: <command | manual>`
+_where `<source>` names who added the row (an agent name or `planner`) and
+`<observable condition>` is a state a probe can check — **never a clock**
+("weekly" is not a condition; "the integration PR is merged and CI is green on
+its merge commit" is). Rows are **never deleted**: a fired row keeps its line
+and appends `· fired YYYY-MM-DD (<evidence>)`. A `[~]` row defers the
+obligation past this mission's close and MUST carry `→ OB-<n>` — the verbatim
+promotion ref for the copy landed in `.plans/OBLIGATIONS.md` (the repo-level
+register, `templates/obligations.md`). `Closed: YYYY-MM-DD` is written only
+once every row above is `[x]` or `[~] … → OB-<n>` — never while a bare `[ ]`
+remains; the mission-close step (`/agentic-workflow:settle`) enforces this
+before the mission may be reported done._
+
+- [ ] branch + worktree cleanup · added YYYY-MM-DD (planner) — do: delete this
+  mission's phase + integration branches (local and remote) and prune its
+  now-stale worktrees — when: the phase/integration PRs are merged AND the
+  deploy that carried them concluded green per §10 — probe: `gh pr list
+  --state merged` + `gh run list` _(deferred until deploy-green, via
+  `/agentic-workflow:settle`)_
+- [ ] docs/record synced · added YYYY-MM-DD (planner) — do: _what changed_ —
+  when: _observable condition_ — probe: _command | manual_
+- [ ] live-verify after reinstall · added YYYY-MM-DD (planner) — do: confirm
+  the shipped behavior fires in a real session — when: the release is
+  installed (plugin update + reload in the CLI, post-merge) — probe: manual
+
 ## Deviations
 
 _Any departure from a brief — logged here the moment it happens, with why.

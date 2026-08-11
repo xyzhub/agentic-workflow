@@ -2,7 +2,7 @@
 
 An **agentic operating protocol** that carries any project from a raw idea to
 a launched, viable product — and keeps operating it after launch. Packaged as
-a Claude Code plugin: 20 agents, 26 commands, guardrail hooks, a protocol
+a Claude Code plugin: 20 agents, 27 commands, guardrail hooks, a protocol
 document every project carries, and an eval suite that tests the prompts
 themselves.
 
@@ -136,6 +136,7 @@ any agent's model per project, reversibly.
 | `/agentic-workflow:audit` | The V4 adversarial multi-vote on demand: lens-partitioned fresh reviewers, conservative merge, findings ranked and routed |
 | `/agentic-workflow:release` | Cut a version on a release branch: changelog, PR, and the post-merge tag commands — the human fires them |
 | `/agentic-workflow:verify` | Post-deploy verification on the deployed instance: drive the real flow, confirm monitoring receives, record the result |
+| `/agentic-workflow:settle` | Probe every deferred obligation (`.plans/OBLIGATIONS.md` + mission ledgers' `## Closing`), fire the condition-met safe class — merged-branch and worktree reaping behind the deploy-green gate, never `-D` — surface what a probe can't prove, and refuse to close a mission while `[ ]` rows remain |
 | `/agentic-workflow:operate` | The V6 loop: analyst numbers → ops/marketing/business reviews → one report with a ranked backlog; in a registry repo it sweeps the whole portfolio |
 | `/agentic-workflow:publish` | The §14 publishing pipeline: connect channels, stage posts into the queue (marketing/writer), then fire — human-fired by default, or a scheduled run within a scoped, revocable `may-publish` delegation; paid always human-fired |
 | `/agentic-workflow:retro` | Turn lessons into protocol amendments, eval scenarios, hook proposals — via PR like any change |
@@ -195,7 +196,7 @@ not a measured one, since this repo has no corpus to confirm an effect size.
 Checks evaluate in the command's **target repo** and read pre-execution
 state.
 
-Five **governance reflexes** (advisory, never block) keep a session on the
+Six **governance reflexes** (advisory, never block) keep a session on the
 protocol without it being read: the **router** nudges an un-prefixed work request
 to route through the workflow (hand to `intake`); the **thread-keeper** surfaces
 the active ledger's phase + `Next up:` + first open beat each turn; the
@@ -206,11 +207,15 @@ unreleased blocker) to reach the first one that is; **compact-resume** fires aft
 context compaction and is never silent: with an active ledger it re-reads the
 ledger verbatim; otherwise it falls back to `docs/product/session-handoff.md`,
 stating its freshness, or — with neither record — names `git log`, `git status`
-and `.remember/now.md` and flags the gap to the human; and **handoff-budget**
+and `.remember/now.md` and flags the gap to the human; **handoff-budget**
 nudges once cumulative transcript bytes — a loose proxy, never a token
 measurement — cross an advisory or urgent band, telling the session to
 write/refresh `docs/product/session-handoff.md` before compaction takes the
-window.
+window; and **obligations-due** surfaces, once per session at session start
+(never after a compaction — compact-resume owns that beat), how many deferred
+obligations sit unticked in `.plans/OBLIGATIONS.md` and mission-ledger
+`## Closing` blocks, naming the oldest row and `/agentic-workflow:settle` —
+grep-only, no network, no conditions probed.
 
 ## What the human always owns
 
