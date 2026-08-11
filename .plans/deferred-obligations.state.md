@@ -53,8 +53,9 @@ Plan: `.plans/deferred-obligations.md` · Briefs:
 _Glyphs: `[ ]` not started · `[~]` in-flight / deferred / awaiting owner ·
 `[x]` done (verified, not merely written)._
 
-- [ ] S1 — `## Closing` block + obligations register templates (branch
-  `mission/deferred-obligations-p1`) — **Suits:** `writer`
+- [x] S1 — `## Closing` block + obligations register templates (branch
+  `mission/deferred-obligations-p1`) — **Suits:** `writer` — pending
+  orchestrator gate-run + commit
 - [ ] S2 — lint checks 13 + 14, mutation-proved, legacy-tolerant (branch
   `mission/deferred-obligations-p1`) — **Suits:** `backend`
 - [ ] Checkpoint `ckpt-p1` — phase 1 gates + diff, legacy tolerance proven
@@ -129,6 +130,14 @@ remains; a `[~]` row must carry its `→ OB-<n>` promotion ref._
 
 ## Deviations
 
+- 2026-08-11 (S1, orchestrator gate-run) — S1's templates named `/agentic-workflow:settle`
+  before `commands/settle.md` exists (S3 ships it); lint's unknown-command check
+  correctly failed. Softened to prose ("the `settle` command") to keep the gate green.
+  **S3 MUST restore the proper slash-command forms in both templates in the same commit
+  that creates `commands/settle.md`** (atomic-ref). Also: `/reload-plugins` is a CLI
+  built-in the checker doesn't know — left as prose; a checker allowlist for built-ins
+  is a candidate lesson, not fixed here.
+
 _Any departure from a brief — logged the moment it happens, with why.
 Deviating is allowed; deviating silently is not (§4)._
 
@@ -139,8 +148,15 @@ Deviating is allowed; deviating silently is not (§4)._
 _≤10 lines per entry: what the session did, the verify signal, the branch,
 what the next session needs. Newest on top; crash-safe by write-ahead._
 
+- 2026-08-11 S1 (writer): `## Closing` added to `templates/mission-state.md`
+  (3 seeded rows: branch+worktree cleanup, docs/record synced, live-verify
+  after reinstall) + new `templates/obligations.md` register template (OQ2).
+  Grammar: `- [ ] OB-<n> · added YYYY-MM-DD (<source>) — do: <action> —
+  when: <observable condition> — probe: <command | manual>`. Deviation: the
+  brief assigns seeding `.plans/OBLIGATIONS.md` (OB-1/OB-2) to S4, not S1 —
+  not created here. `node tools/lint.mjs`: pending orchestrator gate-run.
 - 2026-08-11 planning: trio + brief authored on `plan/deferred-obligations`
   (off `main` = `2c8487f`, pre-#32 deliberately — zero file overlap with #32).
   `node tools/lint.mjs` green. Mission parked pending OQ1–OQ7 + the #32 merge.
 
-Next up: S1
+Next up: S2
