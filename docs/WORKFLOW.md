@@ -126,7 +126,7 @@ as plain files.
 | Workflow moment | Impeccable counterpart |
 |---|---|
 | V1 definition & design — directions, then the brand system | `shape` for direction exploration; `init`/`document` conventions author the spec-compliant `DESIGN.md`, with `PRODUCT.md` cross-referencing the PRD |
-| V3 UI build — a frontend slice returns | the frontend runs the detector CLI (`detect`) before returning any UI slice; findings with severities land in the hand-off |
+| V3 UI build — a frontend slice returns | the frontend (UI-surface slices only) runs the detector CLI on the touched paths (`detect`) before returning any UI slice; findings with severities land in the hand-off |
 | V4 hardening — the UX audit | `audit`/`critique`/`harden` are the audit briefing's vocabulary; the refine set (`polish`, `quieter`, `live`, …) is recommended to the human, never invoked by an agent |
 | Checkpoint on a UI-touching diff | the reviewer's UX lens runs the detector CLI and reports findings with severities |
 

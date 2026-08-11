@@ -60,8 +60,10 @@ impeccable `DESIGN.md`/`PRODUCT.md`, read them as plain files and honor them
 as the design-system source alongside the tokens. **Detect gate (§0.2 stage
 map, V3 — advisory, fail-open):** when impeccable is present AND the slice
 touches a UI surface, run its detector CLI before returning — the
-locally-installed binary (`node_modules/.bin/impeccable detect`) if present,
-`npx impeccable detect` as fallback — and report its findings with severities
+locally-installed binary (`node_modules/.bin/impeccable detect <paths>`) if present,
+`npx impeccable detect <paths>` as fallback — scan the files the slice touched (or
+`.` for a whole-surface pass) — and report its findings with severities; report
+only what the CLI emitted, never synthesized findings
 in the hand-off. If the CLI errors or times out, say so in the hand-off and
 continue: it is a peer tool's advisory signal, never a blocking gate. Never
 run it when the probe says absent. When impeccable is not installed, proceed

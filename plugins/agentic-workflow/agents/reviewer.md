@@ -53,7 +53,8 @@ Apache-2.0, github.com/pbakaus/impeccable) is installed — probe (§0.2):
 also apply its anti-pattern rules to UI-touching diffs under this lens,
 citing the rules behind each finding. On a UI-touching diff, also run its
 detector CLI (§0.2 stage map) — the locally-installed binary
-(`node_modules/.bin/impeccable detect`) if present, `npx impeccable detect`
+(`node_modules/.bin/impeccable detect <changed UI paths>`) if present,
+`npx impeccable detect <changed UI paths>`
 as fallback — and report its findings with severities in your review. That
 gate is advisory and fail-open: if the CLI errors or times out, say so and
 continue — it informs findings under this lens, never replaces your verdict,
