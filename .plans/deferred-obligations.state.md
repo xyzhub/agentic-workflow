@@ -88,7 +88,7 @@ _Glyphs: `[ ]` not started · `[~]` in-flight / deferred / awaiting owner ·
   hooks.json); settle.md findings #2–#5 fixed; OB-3 protected-set amendment
   landed (reap stays parked); digitless-cadence lint leak closed,
   mutation-proved; gates green
-- [~] Checkpoint `ckpt-p3` — reviewer in flight 2026-08-11 (Fable) — phase 3 gates + mirror discipline; no prose claim
+- [x] Checkpoint `ckpt-p3` — **APPROVE 2026-08-11 (Fable).** Security 3 · Architecture 3 · Efficiency 3 · QA 2 · DX 2. Hook dispatched live (counts 3+3 independently re-derived); matcher cross-match proven both ways; S5's MASKED disclosure ruled structurally acceptable; settle recipes #2/#3 spot-run live; OB-3 branches confirmed intact pending S8; mirror drift 9→9. **Folded to P4:** F1 >140-char harness case · F2 a carrying-commit command for recipe #2 · F3 tighten the ledger's 9-hunk decomposition arithmetic. Merged into integration. — phase 3 gates + mirror discipline; no prose claim
   without a dispatched case
 - [ ] S7 — update the record: CHANGELOG + JOURNEY + status page (branch
   `mission/deferred-obligations-p4`) — **Suits:** `chronicler`
