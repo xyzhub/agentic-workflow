@@ -21,11 +21,18 @@ _(empty)_
   while **wrongly blocking 15 honest conditions** (`after the sprint review is
   signed off`; `after a second live-only defect reaches main`, which is OB-11's
   own condition one word away — `second` is an ordinal as well as a unit). One
-  `clockLeak()` now decides every form: bare words judged in the head or tail
-  clause (a clock is stated at an end; a bare word mid-list is being
-  *mentioned*), patterns judged in every clause and end-anchored — the anchor
-  is what keeps time-words-as-noun-modifiers out. The residual gap (`every day
-  at 09:00`) is stated in the code rather than papered over.
+  `clockLeak()` now decides every form: bare words judged by COUNT — exactly
+  one bare-word clause means a clock was stated, two or more means they are
+  being *enumerated* rather than used — and patterns judged in every clause,
+  end-anchored, which is what keeps time-words-as-noun-modifiers out. (The
+  first rule tried was positional, head-or-tail only; a pre-merge lens found
+  it reopened the smuggling hole for any condition with three or more clauses,
+  so counting replaced it.) The residual gaps are enumerated in the code
+  rather than papered over: a trailing qualifier (`every day at 09:00`),
+  weekday and quarter names, bare ISO dates, and clauses joined by
+  `then`/`or`/`unless`. Each is a measured decision, not an oversight — the
+  first is structural, the rest were judged not worth matching words that
+  appear in honest conditions ("the Friday deploy", "the Q3 numbers").
 - **The settle ladder's carrying-commit command returned the wrong commit in
   the only case it exists for.** `git rev-list --ancestry-path --reverse` was
   verified against two branches that both had their own merged PRs — the
@@ -42,9 +49,11 @@ _(empty)_
 ### Added
 - **`tools/lint-test.mjs` — a behavior harness for the clock guard**, wired
   into the gate as `checkClockGuard` and fail-closed on a missing harness
-  (`checkHookBehavior`'s shape). 44 cases, every one sourced from a reviewer's
+  (`checkHookBehavior`'s shape). 55 cases. Most come from a reviewer's
   counterexample, the original author's anti-overreach comment, or a real
-  `when:` value in this repo. Structural checks prove a row *parses*; this
+  `when:` value in this repo; the handful the implementer invented are marked
+  `(self)`/`orchestrator` in the file, because those are the ones least likely
+  to catch the next mistake. Structural checks prove a row *parses*; this
   proves the guard *decides*.
 - **A `version bumped + stamped` row in the mission-state `## Closing`
   template**, so the close gate that already refuses any unticked `[ ]` row
@@ -66,8 +75,13 @@ _(empty)_
 - **Deviation from the release convention, recorded rather than hidden.** The
   local amendment (2026-07-08) requires every `feat:`/`fix:` commit to bump
   `plugin.json` and stamp the version in its subject. The commits on this
-  branch predate the bump and are not retro-stamped — rewriting merged-branch
-  history to satisfy a convention would be worse than recording the miss. The
+  branch predate the bump and are not retro-stamped. The branch is unmerged, so
+  a rebase is technically available; the reason not to is stronger than
+  convenience — five of its SHAs are cited as evidence inside the register's own
+  fired rows, so rewriting them would invalidate the record this PR just
+  repaired. The same amendment's second clause (bump the `mission-batch-gate`
+  fixture's protocol stamp alongside) is also unmet: that stamp reads v1.32.0
+  and is pre-existing debt, named here rather than left implied. The
   manifest is bumped once here. Note the same convention was already missed by
   `75f5461` and `6fe8c4e`, which is what OB-12 exists to fix.
 

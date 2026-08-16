@@ -69,6 +69,9 @@ export const CASES = [
   // ── conditions that merely OPEN with a time word ──────────────────────
   ['pass',  'daily active users exceed 1000',                      'orchestrator'],
   ['pass',  'monthly invoice count exceeds 50',                    'self'],
+  // ── 3+ clause smuggling: the head/tail rule's own hole (re-review F5) ──
+  ['block', 'once ci is green, weekly, and the pr merges',         're-review F5'],
+  ['block', 'the corpus grows, and the build is green, and monthly', 're-review F5'],
   // ── forms the SHIPPED guard caught and the first rewrite lost ─────────
   // Found by comparing old against new on 18 alternate phrasings; the rewrite
   // regressed 3 of them by end-anchoring. Two are recovered by explicit

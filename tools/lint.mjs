@@ -588,11 +588,14 @@ const CLOCK_PATTERNS = [
 // `when` arrives normalized by the caller: markdown glyphs stripped, trimmed,
 // lowercased, trailing punctuation removed.
 //
-// Bare words are judged only in the HEAD or TAIL clause; the patterns are
-// judged in EVERY clause. The asymmetry is deliberate — a clock is stated at
-// one end of a condition (`weekly, once CI is green`), whereas a bare word in
-// the middle is usually being *mentioned*: `the L3 doc lists hourly, daily,
-// weekly, and nightly as banned` is a legitimate condition about the rule.
+// Bare words are judged by COUNT, not position. Exactly one bare-word clause
+// means a clock was stated (`once CI is green, weekly, and the PR merges`);
+// two or more means they are being ENUMERATED, i.e. mentioned rather than
+// used — `the L3 doc lists hourly, daily, weekly, and nightly as banned` is a
+// legitimate condition about the rule. Position was the first rule tried
+// (head/tail only) and it reopened the suffix-smuggling hole for any condition
+// with three or more clauses, which is the hole this guard exists to close.
+// The patterns are judged in EVERY clause regardless.
 //
 // Known limits, measured and stated rather than papered over. A sweep of 18
 // alternate phrasings found these still evading: a clock with a trailing
@@ -609,8 +612,8 @@ const CLOCK_PATTERNS = [
 // rather than by loosening the anchor. `tools/lint-test.mjs` pins all of it.
 function clockLeak(when) {
   const clauses = when.split(CLAUSE_SPLIT).map((c) => c.trim());
-  for (const end of [clauses[0], clauses[clauses.length - 1]])
-    if (BARE_TIME_WORDS.has(end)) return { clause: end, kind: 'bare clock word' };
+  const bare = clauses.filter((c) => BARE_TIME_WORDS.has(c));
+  if (bare.length === 1) return { clause: bare[0], kind: 'bare clock word' };
   for (const clause of clauses)
     for (const [kind, re] of CLOCK_PATTERNS)
       if (re.test(clause)) return { clause, kind };

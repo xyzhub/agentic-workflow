@@ -17,8 +17,8 @@ Three failure modes are already documented in this repo's own artifacts:
 
 | Failure mode | Evidence in this repo |
 |---|---|
-| **Measurement decay** — the sensor drifts while the dashboard stays green | Context-economy P0 "calibrated the fixtures" *during* a mission — tuning the test set to the system under test. OB-1/OB-2 are stuck on n=1 figures that cannot be honestly re-measured against a contaminated set. The Fable council ranked verification as **gap #1**. |
-| **Goodhart** — the optimized metric detaches from value | Context-economy optimized character count (−401.4k chars / −19%) with no paired counter-metric for output quality; the mission's premise was later **retracted** and P1 dropped. |
+| **Measurement decay** — the sensor drifts while the dashboard stays green | **(FALSIFIED — see Locked decisions)** Context-economy P0 "calibrated the fixtures" *during* a mission — tuning the test set to the system under test. OB-1/OB-2 are stuck on n=1 figures that cannot be honestly re-measured against a contaminated set. The Fable council ranked verification as **gap #1**. |
+| **Goodhart** — the optimized metric detaches from value | **(FALSIFIED — see Locked decisions)** Context-economy optimized character count (−401.4k chars / −19%) with no paired counter-metric for output quality; the mission's premise was later **retracted** and P1 dropped. |
 | **Inter-loop conflict** — one loop silently gates another | OB-9, verbatim: three merged PRs deferred the version bump, and *"OB-5/6/8's install conditions silently depended on it."* |
 
 A fourth mode, **upward blindness**, is already solved — the `compass` agent
@@ -83,7 +83,8 @@ OB-7 and OB-9. Both are folded in and fired as part of this mission:
 4. `.plans/OBLIGATIONS.md` grammar documents `depends-on: OB-<n>`, and lint
    **fails** on a `depends-on:` that references a non-existent row.
 5. OB-7's four sub-items are implemented; OB-7 and OB-9 are ticked `[x]` with
-   evidence lines. Register: 7 open → 5.
+   evidence lines. ~~Register: 7 open → 5.~~ **Superseded** — the pre-merge
+   council added OB-12 and OB-13, so the real end state is 7 open / 6 fired.
 6. Gates: `node tools/lint.mjs` clean and `node tools/hook-test.mjs` clean.
    Testing is layers 1–2 only — **no live install, no staging channel**
    (the staging gap is recorded separately as OB-11).
