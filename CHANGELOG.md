@@ -8,6 +8,69 @@ has no tags — each version-stamped commit on `main` IS the release.
 
 _(empty)_
 
+## [1.44.0] — 2026-08-16
+### Fixed
+- **The L3 clock guard was 25/44 wrong; it is now 0/44 — and the fix is a
+  method, not a regex.** `when:` must name an observable state, never a clock.
+  That rule had accreted three `^`-anchored branches, one per incident
+  (ckpt-p1 `every 10 minutes`, ckpt-p2 `every day`, ckpt-p4 `after 2 weeks`),
+  each verified only against the cases its author had in mind. Measured against
+  a corpus built from outside the implementer's head, the result **missed 10
+  real clocks** (`after two weeks`, `after three days`, `in three days`, and
+  every trailing-clause form — `once CI is green, every day` sailed through)
+  while **wrongly blocking 15 honest conditions** (`after the sprint review is
+  signed off`; `after a second live-only defect reaches main`, which is OB-11's
+  own condition one word away — `second` is an ordinal as well as a unit). One
+  `clockLeak()` now decides every form: bare words judged in the head or tail
+  clause (a clock is stated at an end; a bare word mid-list is being
+  *mentioned*), patterns judged in every clause and end-anchored — the anchor
+  is what keeps time-words-as-noun-modifiers out. The residual gap (`every day
+  at 09:00`) is stated in the code rather than papered over.
+- **The settle ladder's carrying-commit command returned the wrong commit in
+  the only case it exists for.** `git rev-list --ancestry-path --reverse` was
+  verified against two branches that both had their own merged PRs — the
+  ordinary rung-1/2 path — never against the no-PR absorbed-as-ancestry
+  sub-case the recipe was written for. There it returns an intermediate
+  feature-branch commit that never reached the default branch and has no CI
+  run, so `gh run list --commit` returns `[]` and a green branch is surfaced
+  forever. Corrected to `--merges --topo-order`, verified across four cases.
+  The recipe's claim that empty output means "not an ancestor" was also false:
+  it equally means the tip IS the head, or arrived by fast-forward.
+- **`checkClosing`'s promotion-ref guard accepted `→ OB-` with no integer**, so
+  a `[~]` row could promote to nothing and still clear the close gate.
+
+### Added
+- **`tools/lint-test.mjs` — a behavior harness for the clock guard**, wired
+  into the gate as `checkClockGuard` and fail-closed on a missing harness
+  (`checkHookBehavior`'s shape). 44 cases, every one sourced from a reviewer's
+  counterexample, the original author's anti-overreach comment, or a real
+  `when:` value in this repo. Structural checks prove a row *parses*; this
+  proves the guard *decides*.
+- **A `version bumped + stamped` row in the mission-state `## Closing`
+  template**, so the close gate that already refuses any unticked `[ ]` row
+  refuses an unversioned **mission**. Scope stated plainly in `settle.md` §5:
+  session-altitude ships have no ledger and are not covered — that half is
+  registered as OB-12.
+- **A >140-**codepoint** case in `tools/hook-test.mjs`**, pinning why
+  `obligations-due.sh` slices with `jq` rather than `printf '%.140s'` (bytes,
+  which splits multibyte characters). Proven discriminating: byte-slicing the
+  fixture yields invalid UTF-8 and the case fails.
+
+### Notes
+- **`depends-on: OB-<n>` was built, reviewed, and reverted before merge.** Five
+  review lenses found it inert in every documented authoring shape: the tail
+  was pushed off its `$` anchor by the mandatory `· fired …` append, and the
+  indented-continuation form its own architecture memo recommended was
+  invisible to both the row grammar and the raw scan. It returns as its own
+  change, with the positive-capture test that memo asked for.
+- **Deviation from the release convention, recorded rather than hidden.** The
+  local amendment (2026-07-08) requires every `feat:`/`fix:` commit to bump
+  `plugin.json` and stamp the version in its subject. The commits on this
+  branch predate the bump and are not retro-stamped — rewriting merged-branch
+  history to satisfy a convention would be worse than recording the miss. The
+  manifest is bumped once here. Note the same convention was already missed by
+  `75f5461` and `6fe8c4e`, which is what OB-12 exists to fix.
+
 ## [1.43.0] — 2026-08-11
 ### Added
 - **Deferred obligations get a home, a prosecutor, and a refusal (v1.43.0,

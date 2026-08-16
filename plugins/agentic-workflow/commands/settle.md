@@ -67,15 +67,26 @@ must name the rung used:
    Derive the carrying commit — do not eyeball it from the log:
 
    ```bash
-   git rev-list --ancestry-path --reverse <tip-sha>..origin/<default> | head -1
+   git rev-list --ancestry-path --reverse --merges --topo-order <tip-sha>..origin/<default> | head -1
    ```
 
-   `--ancestry-path` keeps only commits that actually descend from the tip
-   (plain `<tip>..<default>` would include unrelated commits), `--reverse`
-   puts the earliest such descendant first, and `rev-list` prints the **full
-   40-char SHA** the `gh run list --commit` form demands. Empty output means
-   the tip is not an ancestor at all — that is the ancestry proof failing, so
-   surface the branch rather than hunting for a carrier.
+   Every flag is load-bearing. `--ancestry-path` keeps only commits that
+   descend from the tip (plain `<tip>..<default>` includes unrelated
+   commits); **`--merges` is what makes it correct in the absorbed case** —
+   without it the first descendant is typically an intermediate commit on the
+   branch that absorbed the tip, which never landed on the default branch on
+   its own and has no CI run, so `gh run list --commit` returns `[]` and a
+   green branch is surfaced forever; `--topo-order` beats `rev-list`'s default
+   date order, which a back-dated commit can invert; and `rev-list` prints the
+   **full 40-char SHA** the `gh run list --commit` form demands.
+
+   **Empty output is not the ancestry proof failing.** It also means the tip
+   IS `origin/<default>`'s head, or reached it by fast-forward, in which case
+   no merge commit exists to carry it. `git merge-base --is-ancestor` is the
+   ancestry proof, and it is authoritative: if it exits 0 and this command is
+   empty, the tip is on the default branch already — check CI on the **tip
+   itself**. If `--is-ancestor` exits non-zero, the branch is unmerged and the
+   protected set applies: surface it, never delete.
 3. **Neither CI nor deploy** → merged into the default branch alone satisfies
    the condition — the evidence line says so explicitly.
 4. **`gh` missing, rate-limited, or ambiguous** → the branch is **surfaced,
@@ -163,12 +174,20 @@ done (the session-close fall-through in `end.md`, the close step in
   end of the block. The lint backstop (check 13) enforces the same rule
   fail-closed on every push — the stamp with an open row fails the gate.
 
-**The release rides the same gate (OB-9).** The template's seeded
-`version bumped + stamped` row means an unversioned ship cannot close: if the
-mission's CHANGELOG entry names a version, the row stays `[ ]` until the
-manifest carries it, and the refusal above fires. This is deliberate — v1.43.0
-was reached by three merged PRs each deferring the bump to "a release session"
-that had no trigger, and OB-5/6/8's install conditions silently depended on
-that session happening. A mission whose entry names no version fires the row
-immediately with `no version named` as its evidence; the row is never deleted
-to make it not apply.
+**The release rides the same gate — for missions only (OB-9).** The template's
+seeded `version bumped + stamped` row means an unversioned **mission** cannot
+close: if its CHANGELOG entry names a version, the row stays `[ ]` until the
+manifest carries it, and the refusal above fires. A mission whose entry names
+no version fires the row immediately with `no version named` as its evidence;
+the row is never deleted to make it not apply. `/agentic-workflow:release` is
+where the bump and the stamp actually happen, so the row is ticked there or at
+the settle that follows it.
+
+**State the limit plainly: this gate does not cover session-altitude work.** A
+`/agentic-workflow:start` → `/agentic-workflow:end` ship has no ledger and no
+`## Closing` block, so nothing refuses it — and every ship since v1.43.0 has
+been that shape. The incident OB-9 records (three merged PRs each deferring the
+bump to "a release session" that had no trigger, with OB-5/6/8's install
+conditions silently depending on it) is therefore only half-addressed. The
+session-altitude half is recorded as its own register row; do not read this
+paragraph as a claim that an unversioned ship is impossible.

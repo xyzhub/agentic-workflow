@@ -3,7 +3,7 @@
 **Date:** 2026-08-16
 **Branch:** `feat/graph-engineering-p1` (settle close committed at `6562f11`)
 **Class:** mission (2–3 sessions)
-**Status:** DRAFT — awaiting the single consolidated approval
+**Status:** SUPERSEDED — scope items 1 and 2 were falsified by the premise review and dropped; item 3 was built, reviewed and reverted. See `## Locked decisions`.
 
 ## Problem
 
@@ -117,4 +117,23 @@ at the approval gate.
 
 ## Locked decisions
 
-_(populated at the single approval gate — dated)_
+**2026-08-16 — approved scope: "Maintenance + depends-on"** (human, via the
+consolidated gate). NOT the briefed mission: the premise-lens advisor returned
+HOLD and the orchestrator verified its central claims against the repo.
+
+- **Scope item 1 (frozen eval fixtures) — DROPPED.** Its founding claim, that
+  context-economy calibrated the eval fixtures, is false: `git log --
+  evals/scenarios/` stops at 2026-07-23 and nothing under `evals/` was touched
+  in the 2026-08-01→03 window. `evals/results/` is gitignored with zero tracked
+  files, so there is no baseline to freeze against either. Acceptance criteria
+  1 and 2 above are void.
+- **Scope item 2 (paired-metric row) — DROPPED.** Its evidence was a misread:
+  the "−401.4k chars / −19%" figure is `/context`'s TOTAL in *tokens*, used as
+  a sanity-gate comparator (`.plans/context-economy.md:145`), never an
+  optimization result. Acceptance criterion 3 is void.
+- **Scope item 3 (`depends-on:`) — BUILT, THEN REVERTED before merge.** A
+  five-lens pre-merge council found it inert in every documented authoring
+  shape. Returns as its own change. Acceptance criterion 4 is deferred with it.
+- **Shipped instead:** OB-7's four folds (two of them on corrected
+  implementations), OB-9's mission-close version row, and a rebuilt clock guard
+  measured 25/44 wrong → 0/44 with a committed case harness.
