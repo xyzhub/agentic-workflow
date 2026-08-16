@@ -10,7 +10,8 @@ _(empty)_
 
 ## [1.44.0] — 2026-08-16
 ### Fixed
-- **The L3 clock guard was 25/44 wrong; it is now 0/44 — and the fix is a
+- **The L3 clock guard was 25/44 wrong on the corpus that exposed it; it is
+  now 0 wrong on 60 cases — and the fix is a
   method, not a regex.** `when:` must name an observable state, never a clock.
   That rule had accreted three `^`-anchored branches, one per incident
   (ckpt-p1 `every 10 minutes`, ckpt-p2 `every day`, ckpt-p4 `after 2 weeks`),
@@ -21,13 +22,18 @@ _(empty)_
   while **wrongly blocking 15 honest conditions** (`after the sprint review is
   signed off`; `after a second live-only defect reaches main`, which is OB-11's
   own condition one word away — `second` is an ordinal as well as a unit). One
-  `clockLeak()` now decides every form: bare words judged by COUNT — exactly
-  one bare-word clause means a clock was stated, two or more means they are
-  being *enumerated* rather than used — and patterns judged in every clause,
-  end-anchored, which is what keeps time-words-as-noun-modifiers out. (The
-  first rule tried was positional, head-or-tail only; a pre-merge lens found
-  it reopened the smuggling hole for any condition with three or more clauses,
-  so counting replaced it.) The residual gaps are enumerated in the code
+  `clockLeak()` now decides every form: **any** clause that is exactly a bare
+  time word is a finding, and the patterns are judged in every clause,
+  end-anchored — the anchor is what keeps time-words-as-noun-modifiers out.
+  Two narrower bare-word rules were tried and discarded first, each caught by a
+  pre-merge lens: head-or-tail position let `once CI is green, weekly, and the
+  PR merges` through, and a count-of-exactly-one let `weekly, monthly` through
+  — a condition with no observable clause at all. The surviving rule carries
+  one **accepted false positive**, stated in the code rather than hidden: a
+  condition that *enumerates* the banned words is now rejected too, because
+  nothing reliably separates mentioning a clock from stating one. A false
+  positive argues with an author; a false negative parks a promise nothing will
+  ever fire. The residual gaps are enumerated in the code
   rather than papered over: a trailing qualifier (`every day at 09:00`),
   weekday and quarter names, bare ISO dates, and clauses joined by
   `then`/`or`/`unless`. Each is a measured decision, not an oversight — the
@@ -49,7 +55,7 @@ _(empty)_
 ### Added
 - **`tools/lint-test.mjs` — a behavior harness for the clock guard**, wired
   into the gate as `checkClockGuard` and fail-closed on a missing harness
-  (`checkHookBehavior`'s shape). 55 cases. Most come from a reviewer's
+  (`checkHookBehavior`'s shape). 60 cases. Most come from a reviewer's
   counterexample, the original author's anti-overreach comment, or a real
   `when:` value in this repo; the handful the implementer invented are marked
   `(self)`/`orchestrator` in the file, because those are the ones least likely
@@ -71,7 +77,9 @@ _(empty)_
   was pushed off its `$` anchor by the mandatory `· fired …` append, and the
   indented-continuation form its own architecture memo recommended was
   invisible to both the row grammar and the raw scan. It returns as its own
-  change, with the positive-capture test that memo asked for.
+  change, registered as OB-13, with the positive-capture test the DX memo asked
+  for (the architecture memo recommends the shape; the capture rule is the DX
+  memo's).
 - **Deviation from the release convention, recorded rather than hidden.** The
   local amendment (2026-07-08) requires every `feat:`/`fix:` commit to bump
   `plugin.json` and stamp the version in its subject. The commits on this

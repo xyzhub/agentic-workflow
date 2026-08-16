@@ -6,7 +6,7 @@ fact; corrections show up as new entries, not edits to old ones.
 
 What this project is: an agentic operating protocol, packaged as a Claude
 Code plugin, that walks a project from a raw idea to a launched, viable
-product and keeps operating it afterward. It ships as 16 specialist agents
+product and keeps operating it afterward. It ships as 20 specialist agents
 (researcher, designer, architect, business, planner, advisor, marketing,
 ops, analyst, writer, reviewer, chronicler, and four implementers), roughly
 twenty slash commands, a set of guardrail hooks that stop the machinery from

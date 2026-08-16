@@ -588,14 +588,23 @@ const CLOCK_PATTERNS = [
 // `when` arrives normalized by the caller: markdown glyphs stripped, trimmed,
 // lowercased, trailing punctuation removed.
 //
-// Bare words are judged by COUNT, not position. Exactly one bare-word clause
-// means a clock was stated (`once CI is green, weekly, and the PR merges`);
-// two or more means they are being ENUMERATED, i.e. mentioned rather than
-// used — `the L3 doc lists hourly, daily, weekly, and nightly as banned` is a
-// legitimate condition about the rule. Position was the first rule tried
-// (head/tail only) and it reopened the suffix-smuggling hole for any condition
-// with three or more clauses, which is the hole this guard exists to close.
-// The patterns are judged in EVERY clause regardless.
+// ANY clause that is exactly a bare time word is a finding. Two narrower rules
+// were tried first and each left a cheaper hole than the one it closed:
+// head-or-tail position let `once CI is green, weekly, and the PR merges`
+// through, and a count of exactly one let `weekly, monthly` through — a
+// condition with no observable clause at all, which is precisely what L3
+// exists to reject.
+//
+// ACCEPTED FALSE POSITIVE, stated rather than hidden: a condition that
+// ENUMERATES the banned words — `the L3 doc lists hourly, daily, weekly, and
+// nightly as banned` — is now rejected, because nothing reliably separates
+// mentioning a clock from stating one. The trade is deliberate: this phrasing
+// is rare and reworded in seconds ("the L3 documentation enumerates the banned
+// cadence words"), whereas every rule that admitted it also admitted a dead
+// obligation. A false positive argues with an author; a false negative parks a
+// promise nothing will ever fire.
+//
+// The patterns are judged in every clause regardless.
 //
 // Known limits, measured and stated rather than papered over. A sweep of 18
 // alternate phrasings found these still evading: a clock with a trailing
@@ -612,8 +621,8 @@ const CLOCK_PATTERNS = [
 // rather than by loosening the anchor. `tools/lint-test.mjs` pins all of it.
 function clockLeak(when) {
   const clauses = when.split(CLAUSE_SPLIT).map((c) => c.trim());
-  const bare = clauses.filter((c) => BARE_TIME_WORDS.has(c));
-  if (bare.length === 1) return { clause: bare[0], kind: 'bare clock word' };
+  const bare = clauses.find((c) => BARE_TIME_WORDS.has(c));
+  if (bare) return { clause: bare, kind: 'bare clock word' };
   for (const clause of clauses)
     for (const [kind, re] of CLOCK_PATTERNS)
       if (re.test(clause)) return { clause, kind };

@@ -59,7 +59,20 @@ export const CASES = [
   ['pass',  'after a second live-only defect reaches main',        'regression lens H3'],
   ['pass',  'after the second live-only defect reaches main',      'regression lens H3'],
   // ── false positives from the em-dash / enumeration split ──────────────
-  ['pass',  'the l3 doc lists hourly, daily, weekly, and nightly as banned', 'regex lens F6'],
+  // ACCEPTED FALSE POSITIVE, flipped deliberately and not quietly. A reviewer
+  // first flagged this as a false positive of the em-dash splitter; removing
+  // the em-dash fixed the parenthetical case genuinely, but every rule that
+  // also let this enumeration through let a dead obligation through with it
+  // (`weekly, monthly`). Rejecting it is the cost of closing that class. The
+  // reword is trivial: "the L3 documentation enumerates the banned cadence
+  // words". Kept as a case so the trade stays visible instead of vanishing.
+  ['block', 'the l3 doc lists hourly, daily, weekly, and nightly as banned', 'regex lens F6 → accepted FP'],
+  // ── clock-only conditions with no observable clause (council F1) ──────
+  ['block', 'weekly, monthly',                                     'council F1'],
+  ['block', 'soon, eventually',                                    'council F1'],
+  ['block', 'next week, next month',                               'council F1'],
+  ['block', 'soon, eventually, once ci is green',                  'council F1'],
+  ['block', 'nightly, weekly, and the corpus grows',               'council F1'],
   ['pass',  "the owner's next working session — tomorrow — has installed the build", 'regex lens F6'],
   // ── anti-overreach cases the ORIGINAL author's comment named ──────────
   ['pass',  'every phase pr is merged',                            'pre-existing comment'],
