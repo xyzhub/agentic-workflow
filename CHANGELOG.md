@@ -35,8 +35,8 @@ _(empty)_
   positive argues with an author; a false negative parks a promise nothing will
   ever fire. The residual gaps are enumerated in the code
   rather than papered over: a trailing qualifier (`every day at 09:00`),
-  weekday and quarter names, bare ISO dates, and clauses joined by
-  `then`/`or`/`unless`. Each is a measured decision, not an oversight — the
+  weekday and quarter names, bare ISO dates, adverbial forms (`overnight`,
+  `twice a week`), and clauses joined by `then`/`or`/`unless`. Each is a measured decision, not an oversight — the
   first is structural, the rest were judged not worth matching words that
   appear in honest conditions ("the Friday deploy", "the Q3 numbers").
 - **The settle ladder's carrying-commit command returned the wrong commit in
@@ -82,15 +82,15 @@ _(empty)_
   memo's).
 - **Deviation from the release convention, recorded rather than hidden.** The
   local amendment (2026-07-08) requires every `feat:`/`fix:` commit to bump
-  `plugin.json` and stamp the version in its subject. The commits on this
-  branch predate the bump and are not retro-stamped. The branch is unmerged, so
+  `plugin.json` and stamp the version in its subject. The manifest is bumped once, at
+  `936aad7`; the commits before it predate the bump and four `fix:` commits
+  after it (`c75fc31`, `495b903`, `7ca5c1e`, `7ce7b41`) carry no stamp either. The branch is unmerged, so
   a rebase is technically available; the reason not to is stronger than
   convenience — five of its SHAs are cited as evidence inside the register's own
   fired rows, so rewriting them would invalidate the record this PR just
   repaired. The same amendment's second clause (bump the `mission-batch-gate`
   fixture's protocol stamp alongside) is also unmet: that stamp reads v1.32.0
-  and is pre-existing debt, named here rather than left implied. The
-  manifest is bumped once here. Note the same convention was already missed by
+  and is pre-existing debt, named here rather than left implied. Note the same convention was already missed by
   `75f5461` and `6fe8c4e`, which is what OB-12 exists to fix.
 
 ## [1.43.0] — 2026-08-11

@@ -62,10 +62,18 @@ parses; this proves the guard decides.
 ### The lesson, stated plainly
 
 A test suite proves you did not break what you listed. Only a differential
-proves you did not break what you forgot to list. Every defect in this session —
-the original three, and the three introduced while fixing them — has the same
-shape: a verification that ran, produced true output, and confirmed the wrong
-thing.
+proves you did not break what you forgot to list.
+
+That covers half of what the councils found. The verification defects — a
+guard measured against the cases its author had in mind, a command verified
+against the wrong case, a differential skipped — all share that shape. The
+other half were record defects, and they share a different one: asserting
+something about an artifact without opening it. A probe that pointed at a file
+that did not exist. A pointer to a §10 key that had never been added. A
+precedent cited for a rule it did not contain. A register condition rewritten
+in place against an append-only rule. Both halves are failures of checking, but
+only one is a failure of testing, and the second kind survived three rounds
+precisely because tests do not catch it.
 
 ---
 

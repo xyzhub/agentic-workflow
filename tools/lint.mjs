@@ -332,9 +332,9 @@ function checkHookBehavior() {
 // ── 8.5 Clock-guard behavior (tier-1.5) ──────────────────────────────────
 // The structural checks prove a row PARSES; they cannot prove the L3 clock
 // guard DECIDES correctly. It shipped three times as another `^`-anchored
-// branch, each verified only against cases its author had in mind, and a
-// five-lens review measured the result at 25/44 wrong on a corpus drawn from
-// outside the implementer's head. Delegate to the case harness, fail-closed on
+// branch, each verified only against cases its author had in mind. Measured on a
+// 44-case corpus drawn from five review lenses' counterexamples, the result was
+// 25/44 wrong (the lenses' own smaller probe had estimated 13/20). Delegate to the case harness, fail-closed on
 // a missing one — the same shape as checkHookBehavior.
 function checkClockGuard() {
   const runner = path.join(ROOT, 'tools/lint-test.mjs');

@@ -1,5 +1,10 @@
 # DX design — Graph-engineering P1 failure surface
 
+> **SUPERSEDED 2026-08-17.** This memo designs scope that the premise review
+> falsified and the owner dropped. It is kept as the record of what was
+> considered, not as a live design. See the brief's `## Locked decisions`
+> and `2026-08-17-graph-engineering-p1-council.md` for what actually shipped.
+
 **Date:** 2026-08-16
 **Branch:** `feat/graph-engineering-p1`
 **Companion to:** `docs/product/decisions/2026-08-16-graph-engineering-p1-brief.md`

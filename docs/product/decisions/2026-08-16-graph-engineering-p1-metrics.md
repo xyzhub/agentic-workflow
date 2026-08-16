@@ -6,6 +6,13 @@ refresh-trigger: event (re-run the §1 baseline commands once each of the three 
 
 # Graph-engineering P1 — measurement spec
 
+> **PARTIALLY SUPERSEDED 2026-08-17.** §1's measured baseline stands. The
+> acceptance-criteria and done-number sections describe scope that was dropped
+> (frozen fixtures, paired metrics) or reverted (`depends-on:`); the real end
+> state is 7 open / 6 fired / 13 rows, not 5 open / 11. This memo's own
+> refresh-trigger names a mission ledger that was never authored, so it cannot
+> fire — see `2026-08-17-graph-engineering-p1-council.md`, "Open for the owner".
+
 _Answers "how is this mission's success measured", per the brief
 (`docs/product/decisions/2026-08-16-graph-engineering-p1-brief.md`). This is a
 developer-tooling mission — lint checks, a template row, a register grammar

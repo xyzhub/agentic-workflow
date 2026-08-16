@@ -2,17 +2,20 @@
 // Behavior harness for lint.mjs's owner-locked L3 clock guard.
 //
 // WHY THIS EXISTS: the guard shipped in `be2f994`/`cc38924` was verified only
-// against cases its author had in mind while writing it — and a five-lens
-// review then found it 13/20 wrong, blocking honest conditions while letting
-// real clocks through. The structural checks in lint.mjs prove a row PARSES;
+// against cases its author had in mind while writing it. a five-lens review estimated it 13/20 wrong on its own 20-case probe; measured
+// against the 44-case corpus built from those lenses' counterexamples it was
+// 25/44 wrong — 10 real clocks missed, 15 honest conditions blocked. The structural checks in lint.mjs prove a row PARSES;
 // nothing proved the guard DECIDES correctly. This is that proof, in the shape
 // `checkHookBehavior` already established for hooks.
 //
-// EVERY case below is sourced from something outside the implementer's head:
-// a reviewer's counterexample, the pre-existing anti-overreach comment, or a
-// `when:` value that actually appears in this repo. Cases invented by the
-// implementer are marked `(self)` and are a minority on purpose — they are the
-// ones least likely to catch the next mistake.
+// MOST cases are sourced from outside the implementer's head — a reviewer's
+// counterexample (`regex lens`, `regression lens`, `council`, `re-review`), the
+// pre-existing anti-overreach comment (`pre-existing`), a real `when:` value in
+// this repo (`real row`), or an adversarial sweep run against a shipped version
+// (`adversarial sweep`, `old-vs-new diff`). The few the implementer invented are
+// marked `(self)`/`orchestrator` and are a minority on purpose: they are the
+// ones least likely to catch the next mistake. The `source` column is the
+// provenance claim — keep it honest when adding cases.
 import path from 'node:path';
 import { realpathSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
