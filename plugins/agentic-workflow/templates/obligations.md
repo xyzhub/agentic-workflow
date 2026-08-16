@@ -25,6 +25,15 @@ command (backticked) or the literal word `manual` when no command can decide
 it. Rows are **never deleted**: a fired row keeps its line and appends
 `· fired YYYY-MM-DD (<evidence>)`._
 
+_Optional tail — the declared edge:_ `— depends-on: OB-<n>` _closes the row when
+this obligation cannot honestly fire until another one has. Without it a real
+dependency between two deferred promises is unwritten and therefore
+unenforceable — one loop silently gates another. Lint resolves the reference
+against the rows in this file, rejects a self-reference, and rejects a row fired
+`[x]` while the row it names is still open `[ ]`. One hop only; transitive
+cycles are out of scope._
+
 <!-- - [ ] OB-1 · added 2026-01-01 (planner) — do: re-measure the X threshold — when: a new Y record exists in the corpus — probe: `grep -c Y-marker .plans/*.log` -->
+<!-- - [ ] OB-2 · added 2026-01-01 (planner) — do: install the shipped build — when: OB-1's re-measurement is recorded — probe: manual — depends-on: OB-1 -->
 
 (none)

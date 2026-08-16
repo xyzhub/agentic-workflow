@@ -530,7 +530,12 @@ function checkNextUpAgreement() {
 // clock-shaped row can neither be probed nor honestly fired.
 const OB_DATE = '(?:\\d{4}-\\d{2}-\\d{2}|YYYY-MM-DD)';
 const OB_ROW = new RegExp(
-  `^- \\[([ x~])\\] ([^·]+?) · added ${OB_DATE} \\(([^)]+)\\) — do: (.+?) — when: (.+?) — probe: (.+)$`
+  // The probe segment is LAZY and the `depends-on:` tail optional-but-greedy,
+  // in that order, on purpose. With a greedy `probe: (.+)$` an appended
+  // `— depends-on: OB-9` is swallowed INTO the probe capture: the row still
+  // parses, lint still passes, and the edge is never seen — the check would
+  // ship silently inert, which is the exact decay it exists to catch.
+  `^- \\[([ x~])\\] ([^·]+?) · added ${OB_DATE} \\(([^)]+)\\) — do: (.+?) — when: (.+?) — probe: (.+?)(?: — depends-on: (OB-\\d+))?$`
 );
 const OB_FIRED = new RegExp(`· fired ${OB_DATE} \\(.+\\)`);
 const BARE_TIME_WORDS = new Set([
@@ -593,7 +598,7 @@ function checkObRow(file, b, { strictLabel = false, placeholderOk = false } = {}
     fail(file, b.n, 'obligation row does not match the grammar `- [ ] <id> · added YYYY-MM-DD (<source>) — do: … — when: … — probe: <command | manual>` (glyph, `·` separators, em-dashed segments in this order) — got: ' + b.text.slice(0, 72));
     return;
   }
-  const [, glyph, , , , whenSeg, probeSeg] = m;
+  const [, glyph, , , , whenSeg, probeSeg, dependsOn] = m;
   if (strictLabel && !/^OB-\d+$/.test(m[2].trim()))
     fail(file, b.n, `register row id "${m[2].trim()}" must be \`OB-<n>\` with <n> the next unused integer — mission-local names stay in the mission ledger; the register is the durable namespace`);
   const fired = OB_FIRED.test(probeSeg);
@@ -625,6 +630,7 @@ function checkObRow(file, b, { strictLabel = false, placeholderOk = false } = {}
   // `after 3 phases are merged` names a countable state, not a clock.
   else if (new RegExp(`^after\\s+(?:\\d+|an?|the)\\s+${TIME_UNITS}\\b`).test(when))
     fail(file, b.n, `\`when: ${when}\` is an elapsed-time deadline — a clock, not a condition (L3: condition-driven, never time-driven) — name the observable state you expect to exist by then, or keep the timing intent out of \`when:\` and use \`probe: manual\``);
+  return { id: m[2].trim(), glyph, dependsOn: dependsOn ?? null };
 }
 
 // ── 13. `## Closing` grammar + close refusal (deferred-obligations Phase 1) ──
@@ -701,8 +707,33 @@ function checkObligationsRegister() {
       if (open && !line.includes('-->')) inComment = true;
       else if (line.includes('-->')) inComment = false;
     });
-    for (const b of obBullets(visible))
-      checkObRow(file, b, { strictLabel: true, placeholderOk: file.includes(path.sep + 'templates' + path.sep) });
+    const rows = obBullets(visible);
+    const parsed = rows
+      .map((b) => ({ b, r: checkObRow(file, b, { strictLabel: true, placeholderOk: file.includes(path.sep + 'templates' + path.sep) }) }))
+      .filter((x) => x.r);
+    // A `· depends-on:` line that did not fold is INVISIBLE to the row grammar:
+    // obBullets folds `- ` bullets and indented continuations only, so an
+    // unindented continuation is silently dropped — declared to a reader,
+    // absent to lint. Scan raw lines so the drop can never pass quietly.
+    for (const { n, text } of visible)
+      if (/^[·-]?\s*depends-on:/i.test(text))
+        fail(file, n, 'a `depends-on:` line that starts at column 0 does not fold into its row — obligation rows fold `- ` bullets and INDENTED continuations only, so this line is invisible to the grammar: indent it under its row, or append ` — depends-on: OB-<n>` to the row itself');
+    // Edge validation, one hop only (transitive cycles are out of scope). The
+    // id set comes from PARSED ROWS, never a file-wide `/OB-(\d+)/g` scan —
+    // prose carries ids too (OB-9's own text contains the string `OB-5/6/8`)
+    // and the template ships an example row inside an HTML comment, so a
+    // harvest would mint phantom targets and mask the dangling refs this
+    // check exists to find.
+    const declared = new Map(parsed.map(({ r }) => [r.id, r]));
+    for (const { b, r } of parsed) {
+      if (!r.dependsOn) continue;
+      if (r.dependsOn === r.id)
+        fail(file, b.n, `\`depends-on: ${r.dependsOn}\` names the row itself — an obligation cannot gate its own firing`);
+      else if (!declared.has(r.dependsOn))
+        fail(file, b.n, `\`depends-on: ${r.dependsOn}\` names no row in this register — a declared edge to nothing is worse than no edge: it reads as tracked while gating on a promise that was never written`);
+      else if (r.glyph === 'x' && declared.get(r.dependsOn).glyph === ' ')
+        fail(file, b.n, `row is fired \`[x]\` while \`depends-on: ${r.dependsOn}\` is still open \`[ ]\` — the dependency was the reason to wait, so either its fire is missing its own evidence or this one fired early (the v1.43.0 release deferred a version bump three PRs in a row on exactly this shape)`);
+    }
   }
 }
 
