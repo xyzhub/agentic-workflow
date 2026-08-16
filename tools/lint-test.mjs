@@ -1,0 +1,97 @@
+#!/usr/bin/env node
+// Behavior harness for lint.mjs's owner-locked L3 clock guard.
+//
+// WHY THIS EXISTS: the guard shipped in `be2f994`/`cc38924` was verified only
+// against cases its author had in mind while writing it — and a five-lens
+// review then found it 13/20 wrong, blocking honest conditions while letting
+// real clocks through. The structural checks in lint.mjs prove a row PARSES;
+// nothing proved the guard DECIDES correctly. This is that proof, in the shape
+// `checkHookBehavior` already established for hooks.
+//
+// EVERY case below is sourced from something outside the implementer's head:
+// a reviewer's counterexample, the pre-existing anti-overreach comment, or a
+// `when:` value that actually appears in this repo. Cases invented by the
+// implementer are marked `(self)` and are a minority on purpose — they are the
+// ones least likely to catch the next mistake.
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { clockLeak } from './lint.mjs';
+
+// must: 'block' — a clock in some costume; the L3 rule rejects it.
+//       'pass'  — an observable state a probe can check.
+export const CASES = [
+  // ── bare words (pre-existing behavior, must not regress) ──────────────
+  ['block', 'weekly',                                              'pre-existing'],
+  ['block', 'someday',                                             'pre-existing'],
+  ['block', 'next sprint',                                         'pre-existing'],
+  // ── suffix smuggling: the hole be2f994 set out to close ───────────────
+  ['block', 'weekly, once ci is green',                            'orchestrator'],
+  ['block', 'once ci is green, weekly',                            'orchestrator'],
+  // ── trailing-clause evasion: the half-closed gap (regex lens) ─────────
+  ['block', 'once ci is green, every 10 minutes',                  'regex lens'],
+  ['block', 'once ci is green, every day',                         'regex lens'],
+  ['block', 'once ci is green, after 2 weeks',                     'regex lens'],
+  ['block', 'every 10 minutes, once ci is green',                  'regex lens'],
+  // ── elapsed deadlines the shipped `after` branch MISSED (regex lens) ──
+  ['block', 'after two weeks',                                     'regex lens F8'],
+  ['block', 'after three days',                                    'regex lens F8'],
+  ['block', 'after a few days',                                    'regex lens F8'],
+  ['block', 'after several weeks',                                 'regex lens F8'],
+  ['block', 'after another week',                                  'regex lens F8'],
+  ['block', 'after some months',                                   'regex lens F8'],
+  ['block', 'after 2 weeks',                                       'regex lens'],
+  ['block', 'after a week',                                        'orchestrator'],
+  ['block', 'in three days',                                       'regex lens'],
+  ['block', 'every day',                                           'pre-existing'],
+  ['block', 'every other week',                                    'pre-existing'],
+  // ── honest conditions the shipped `after` branch WRONGLY BLOCKED ──────
+  ['pass',  'after the sprint review is signed off',               'regex lens F7'],
+  ['pass',  'after the quarter close is booked in the ledger',     'regex lens F7'],
+  ['pass',  'after the day-one launch checklist is signed',        'regex lens F7'],
+  ['pass',  'after a night-shift handoff is recorded',             'regex lens F7'],
+  ['pass',  'after the second review is merged',                   'regex lens F7'],
+  ['pass',  'after a second opinion is recorded',                  'regex lens F7'],
+  ['pass',  'after the year-end audit passes',                     'regex lens F7'],
+  ['pass',  'after the month-end close is booked',                 'regex lens F7'],
+  ['pass',  'after the weekend release is tagged',                 'regex lens F7'],
+  ['pass',  'after a morning standup logs the decision',           'regex lens F7'],
+  ['pass',  'after a second live-only defect reaches main',        'regression lens H3'],
+  ['pass',  'after the second live-only defect reaches main',      'regression lens H3'],
+  // ── false positives from the em-dash / enumeration split ──────────────
+  ['pass',  'the l3 doc lists hourly, daily, weekly, and nightly as banned', 'regex lens F6'],
+  ['pass',  "the owner's next working session — tomorrow — has installed the build", 'regex lens F6'],
+  // ── anti-overreach cases the ORIGINAL author's comment named ──────────
+  ['pass',  'every phase pr is merged',                            'pre-existing comment'],
+  ['pass',  'after 3 phases are merged',                           'pre-existing comment'],
+  ['pass',  'after 3 missions ship',                               'pre-existing comment'],
+  ['pass',  'every 3 phase prs are merged',                        'regex lens (pre-existing overreach)'],
+  // ── conditions that merely OPEN with a time word ──────────────────────
+  ['pass',  'daily active users exceed 1000',                      'orchestrator'],
+  ['pass',  'monthly invoice count exceeds 50',                    'self'],
+  // ── real `when:` values from this repo's own register ─────────────────
+  ['pass',  'a second live-only defect reaches main (the v1.39.1 stop-hook loop is the first)', 'real row OB-11'],
+  ['pass',  'impeccable is installed alongside a ui-surface venture session', 'real row OB-8'],
+  ['pass',  'upstream compaction behavior changes or the local transcript corpus gains ≥3 new true-compaction records', 'real row OB-1'],
+  ['pass',  '≥2 further missions\' transcripts exist post-v1.43',  'real row OB-2'],
+];
+
+// Guarded on being the entry point, so importing CASES (to score an older
+// implementation against the same corpus, say) does not run the suite.
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) run();
+
+function run() {
+let bad = 0;
+for (const [must, when, source] of CASES) {
+  const hit = clockLeak(when);
+  const got = hit ? 'block' : 'pass';
+  if (got !== must) {
+    bad++;
+    console.error(`  FAIL  want=${must} got=${got}${hit ? ` (matched "${hit.clause}" as ${hit.kind})` : ''}  [${source}]\n        when: ${when}`);
+  }
+}
+if (bad) {
+  console.error(`\nlint-test: ${bad} of ${CASES.length} wrong`);
+  process.exit(1);
+}
+console.log(`lint-test: clean (${CASES.length} clock-guard cases)`);
+}

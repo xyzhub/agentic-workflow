@@ -329,6 +329,24 @@ function checkHookBehavior() {
   }
 }
 
+// ── 8.5 Clock-guard behavior (tier-1.5) ──────────────────────────────────
+// The structural checks prove a row PARSES; they cannot prove the L3 clock
+// guard DECIDES correctly. It shipped three times as another `^`-anchored
+// branch, each verified only against cases its author had in mind, and a
+// five-lens review measured the result at 25/44 wrong on a corpus drawn from
+// outside the implementer's head. Delegate to the case harness, fail-closed on
+// a missing one — the same shape as checkHookBehavior.
+function checkClockGuard() {
+  const runner = path.join(ROOT, 'tools/lint-test.mjs');
+  if (!existsSync(runner)) {
+    fail(runner, null, 'clock-guard case harness missing — tools/lint-test.mjs must exist so the gate covers the L3 guard\'s verdicts, not just row syntax (do not silently drop the check)');
+    return;
+  }
+  const res = spawnSync('node', [runner], { encoding: 'utf8' });
+  if (res.status !== 0)
+    fail(runner, null, `clock-guard cases failed — run \`node tools/lint-test.mjs\`: ${`${res.stdout ?? ''}${res.stderr ?? ''}`.split('\n').filter((l) => /FAIL|wrong/.test(l)).join(' | ') || '(no detail)'}`);
+}
+
 // ── 9. Marker-only mutation (tier-1.5, Phase-3 [STRICT]) ─────────────────
 // The chronicler auto-writes the sales kit's `data:*` regions every ship. Lint
 // proves those templates parse; it can't prove an auto-write STAYS inside the
@@ -530,12 +548,7 @@ function checkNextUpAgreement() {
 // clock-shaped row can neither be probed nor honestly fired.
 const OB_DATE = '(?:\\d{4}-\\d{2}-\\d{2}|YYYY-MM-DD)';
 const OB_ROW = new RegExp(
-  // The probe segment is LAZY and the `depends-on:` tail optional-but-greedy,
-  // in that order, on purpose. With a greedy `probe: (.+)$` an appended
-  // `— depends-on: OB-9` is swallowed INTO the probe capture: the row still
-  // parses, lint still passes, and the edge is never seen — the check would
-  // ship silently inert, which is the exact decay it exists to catch.
-  `^- \\[([ x~])\\] ([^·]+?) · added ${OB_DATE} \\(([^)]+)\\) — do: (.+?) — when: (.+?) — probe: (.+?)(?: — depends-on: (OB-\\d+))?$`
+  `^- \\[([ x~])\\] ([^·]+?) · added ${OB_DATE} \\(([^)]+)\\) — do: (.+?) — when: (.+?) — probe: (.+)$`
 );
 const OB_FIRED = new RegExp(`· fired ${OB_DATE} \\(.+\\)`);
 const BARE_TIME_WORDS = new Set([
@@ -544,34 +557,49 @@ const BARE_TIME_WORDS = new Set([
   'someday', 'sometime', 'periodically', 'regularly', 'asap', 'tomorrow',
   'next week', 'next month', 'next quarter', 'next sprint',
 ]);
-// Bounded on purpose — the clock-leak branches below match a time unit only
-// after a cadence/deadline lead-in, so a genuine condition shaped like
-// `every phase PR is merged` or `after 3 missions ship` never trips them
-// ("phase" and "mission" are not time units).
 const TIME_UNITS = '(?:sec(?:ond)?s?|min(?:ute)?s?|h(?:ou)?rs?|days?|weeks?|months?|quarters?|years?|mornings?|evenings?|nights?|weekends?|sprints?)';
-// Does `when` smuggle a bare clock word? Returns the offending word, else null.
+// A quantity in front of a unit. Spelled numbers matter: this repo's own prose
+// prefers them ("three branches", "two sessions"), so a digits-only lead-in
+// misses the likelier authoring form.
+const COUNT = '(?:\\d+|an?|the|this|next|one|two|three|four|five|six|seven|eight|nine|ten|a few|several|another|some|couple of)';
+// A condition is split on ENUMERATION separators only. The em-dash is
+// deliberately NOT one: this repo's prose uses em-dashed parentheticals
+// heavily, so splitting on it flagged `… next working session — tomorrow — has
+// installed the build`, whose condition is "has installed the build".
+const CLAUSE_SPLIT = /\s*(?:,|;|\band\b)\s*/;
+// Each pattern must consume its WHOLE clause. That end-anchor is what keeps a
+// time word used as a noun modifier out: `after the sprint review is signed
+// off` and `after a second live-only defect reaches main` name observable
+// states, and an unanchored pattern rejected both (they were 2 of the 10
+// honest conditions a review found this guard blocking).
+const CLOCK_PATTERNS = [
+  ['numeric period',        new RegExp(`^(?:every|in)\\s+${COUNT}\\s+${TIME_UNITS}\\s*$`)],
+  ['cadence',               new RegExp(`^every\\s+(?:other\\s+)?${TIME_UNITS}\\s*$`)],
+  ['elapsed-time deadline', new RegExp(`^after\\s+${COUNT}\\s+${TIME_UNITS}\\s*$`)],
+];
+// Does `when` smuggle a clock? Returns `{ clause, kind }`, else null.
 //
 // `when` arrives normalized by the caller: markdown glyphs stripped, trimmed,
-// lowercased, trailing punctuation removed. The two pattern branches in
-// checkObRow are `^`-anchored and unaffected by this question — only the
-// bare-word set is whole-string, and that is the hole:
+// lowercased, trailing punctuation removed.
 //
-//   when: weekly                     → caught
-//   when: weekly, once CI is green   → NOT caught  (verified 2026-08-16)
+// Bare words are judged only in the HEAD or TAIL clause; the patterns are
+// judged in EVERY clause. The asymmetry is deliberate — a clock is stated at
+// one end of a condition (`weekly, once CI is green`), whereas a bare word in
+// the middle is usually being *mentioned*: `the L3 doc lists hourly, daily,
+// weekly, and nightly as banned` is a legitimate condition about the rule.
 //
-// Any suffix disarms the guard, so a clock-shaped row can be smuggled past
-// the L3 rule by appending a clause. Exact-match behavior is preserved below
-// so the gate keeps passing until the strictness policy is decided.
-// Clause-split rather than prefix-match, deliberately: a clause that is
-// EXACTLY a time word is always a clock, whereas a sentence that merely opens
-// with one usually is not — `daily active users exceed 1000` names a state a
-// probe can check, and a guard that blocked it would be training authors to
-// reword honest conditions to please a linter.
-function bareClockWord(when) {
-  for (const clause of when.split(/\s*(?:,|—|;|\band\b)\s*/)) {
-    const c = clause.trim();
-    if (BARE_TIME_WORDS.has(c)) return c;
-  }
+// Known limit, stated rather than papered over: a clock with a trailing
+// qualifier (`every day at 09:00`) evades, because the patterns are
+// end-anchored. Loosening the anchor is what produced the false positives
+// above, so the anchor stays and the gap is accepted. `tools/lint-test.mjs`
+// pins every case either way.
+function clockLeak(when) {
+  const clauses = when.split(CLAUSE_SPLIT).map((c) => c.trim());
+  for (const end of [clauses[0], clauses[clauses.length - 1]])
+    if (BARE_TIME_WORDS.has(end)) return { clause: end, kind: 'bare clock word' };
+  for (const clause of clauses)
+    for (const [kind, re] of CLOCK_PATTERNS)
+      if (re.test(clause)) return { clause, kind };
   return null;
 }
 // Fold wrapped continuation lines into their bullet (the check-11 model);
@@ -598,7 +626,7 @@ function checkObRow(file, b, { strictLabel = false, placeholderOk = false } = {}
     fail(file, b.n, 'obligation row does not match the grammar `- [ ] <id> · added YYYY-MM-DD (<source>) — do: … — when: … — probe: <command | manual>` (glyph, `·` separators, em-dashed segments in this order) — got: ' + b.text.slice(0, 72));
     return;
   }
-  const [, glyph, , , , whenSeg, probeSeg, dependsOn] = m;
+  const [, glyph, , , , whenSeg, probeSeg] = m;
   if (strictLabel && !/^OB-\d+$/.test(m[2].trim()))
     fail(file, b.n, `register row id "${m[2].trim()}" must be \`OB-<n>\` with <n> the next unused integer — mission-local names stay in the mission ledger; the register is the durable namespace`);
   const fired = OB_FIRED.test(probeSeg);
@@ -609,28 +637,14 @@ function checkObRow(file, b, { strictLabel = false, placeholderOk = false } = {}
   if (!placeholderOk && /· fired YYYY-MM-DD\b/.test(b.text))
     fail(file, b.n, 'fired-evidence carries the literal `YYYY-MM-DD` placeholder — a fire is an event that happened, so its date is known; the placeholder is template-only');
   const when = whenSeg.replace(/[_*`]/g, '').trim().toLowerCase().replace(/[.,;:!]+$/, '');
-  const clock = bareClockWord(when);
+  // ckpt-p1 F1 (`every 10 minutes`), ckpt-p2 (`every day`) and ckpt-p4/OB-7
+  // (`after 2 weeks`) each found the same clock in a new costume, and each was
+  // patched as another `^`-anchored branch until a review measured the pile at
+  // 13/20 wrong. One predicate now decides all of them, clause by clause, and
+  // `tools/lint-test.mjs` pins the verdicts.
+  const clock = clockLeak(when);
   if (clock)
-    fail(file, b.n, `\`when: ${clock}\` is a clock, not a condition (L3: condition-driven, never time-driven) — name an observable state a probe can check, or keep the clock-shaped intent out of \`when:\` and use \`probe: manual\``);
-  // ckpt-p1 F1: `when: every 10 minutes` sailed past the bare-word set — the
-  // owner's literal third instance. A numeric period ("every/in <n> …") is a
-  // clock in different clothing; same L3 verdict.
-  else if (/^(?:every|in)\s+\d+/.test(when))
-    fail(file, b.n, `\`when: ${when}\` is a numeric period — a clock, not a condition (L3: condition-driven, never time-driven) — name an observable state a probe can check, or keep the cadence intent out of \`when:\` and use \`probe: manual\``);
-  // ckpt-p2 fold: `when: every day` sailed past both branches above — a
-  // digitless cadence ("every <time unit>") is the same clock without the
-  // number. The unit alternation is bounded to time/calendar units so a
-  // genuine condition shaped like `every phase PR is merged` never matches
-  // (anti-overreach: "phase" is not a time unit).
-  else if (new RegExp(`^every\\s+(?:other\\s+)?${TIME_UNITS}\\b`).test(when))
-    fail(file, b.n, `\`when: ${when}\` is a digitless cadence — a clock, not a condition (L3: condition-driven, never time-driven) — name an observable state a probe can check, or keep the cadence intent out of \`when:\` and use \`probe: manual\``);
-  // ckpt-p4 fold (OB-7): `when: after 2 weeks` is a deadline rather than a
-  // cadence, so neither branch above saw it — same clock in a third costume.
-  // The unit alternation stays bounded for the same anti-overreach reason:
-  // `after 3 phases are merged` names a countable state, not a clock.
-  else if (new RegExp(`^after\\s+(?:\\d+|an?|the)\\s+${TIME_UNITS}\\b`).test(when))
-    fail(file, b.n, `\`when: ${when}\` is an elapsed-time deadline — a clock, not a condition (L3: condition-driven, never time-driven) — name the observable state you expect to exist by then, or keep the timing intent out of \`when:\` and use \`probe: manual\``);
-  return { id: m[2].trim(), glyph, dependsOn: dependsOn ?? null };
+    fail(file, b.n, `\`when: ${clock.clause}\` is a ${clock.kind} — a clock, not a condition (L3: condition-driven, never time-driven) — name the observable state you expect to exist by then, or keep the timing intent out of \`when:\` and use \`probe: manual\``);
 }
 
 // ── 13. `## Closing` grammar + close refusal (deferred-obligations Phase 1) ──
@@ -707,43 +721,25 @@ function checkObligationsRegister() {
       if (open && !line.includes('-->')) inComment = true;
       else if (line.includes('-->')) inComment = false;
     });
-    const rows = obBullets(visible);
-    const parsed = rows
-      .map((b) => ({ b, r: checkObRow(file, b, { strictLabel: true, placeholderOk: file.includes(path.sep + 'templates' + path.sep) }) }))
-      .filter((x) => x.r);
-    // A `· depends-on:` line that did not fold is INVISIBLE to the row grammar:
-    // obBullets folds `- ` bullets and indented continuations only, so an
-    // unindented continuation is silently dropped — declared to a reader,
-    // absent to lint. Scan raw lines so the drop can never pass quietly.
-    for (const { n, text } of visible)
-      if (/^[·-]?\s*depends-on:/i.test(text))
-        fail(file, n, 'a `depends-on:` line that starts at column 0 does not fold into its row — obligation rows fold `- ` bullets and INDENTED continuations only, so this line is invisible to the grammar: indent it under its row, or append ` — depends-on: OB-<n>` to the row itself');
-    // Edge validation, one hop only (transitive cycles are out of scope). The
-    // id set comes from PARSED ROWS, never a file-wide `/OB-(\d+)/g` scan —
-    // prose carries ids too (OB-9's own text contains the string `OB-5/6/8`)
-    // and the template ships an example row inside an HTML comment, so a
-    // harvest would mint phantom targets and mask the dangling refs this
-    // check exists to find.
-    const declared = new Map(parsed.map(({ r }) => [r.id, r]));
-    for (const { b, r } of parsed) {
-      if (!r.dependsOn) continue;
-      if (r.dependsOn === r.id)
-        fail(file, b.n, `\`depends-on: ${r.dependsOn}\` names the row itself — an obligation cannot gate its own firing`);
-      else if (!declared.has(r.dependsOn))
-        fail(file, b.n, `\`depends-on: ${r.dependsOn}\` names no row in this register — a declared edge to nothing is worse than no edge: it reads as tracked while gating on a promise that was never written`);
-      else if (r.glyph === 'x' && declared.get(r.dependsOn).glyph === ' ')
-        fail(file, b.n, `row is fired \`[x]\` while \`depends-on: ${r.dependsOn}\` is still open \`[ ]\` — the dependency was the reason to wait, so either its fire is missing its own evidence or this one fired early (the v1.43.0 release deferred a version bump three PRs in a row on exactly this shape)`);
-    }
+    for (const b of obBullets(visible))
+      checkObRow(file, b, { strictLabel: true, placeholderOk: file.includes(path.sep + 'templates' + path.sep) });
   }
 }
 
-for (const check of [checkManifests, checkAgents, checkCommands, checkCrossRefs, checkTemplateRefs, checkSections, checkFrontmatterYaml, checkTemplateFrontmatter, checkHooks, checkObfuscation, checkHookBehavior, checkMarkerMutation, checkContextAttrib, checkStandingSteers, checkNextUpAgreement, checkClosing, checkObligationsRegister]) {
-  check();
-}
+// `clockLeak` is exported so `tools/lint-test.mjs` can decide it directly. The
+// run below is guarded on being the entry point: importing this file for the
+// harness must not execute the whole gate (and must not `process.exit`).
+export { clockLeak };
 
-if (findings.length) {
-  console.error(`lint: ${findings.length} finding(s)\n`);
-  for (const f of findings) console.error('  ' + f);
-  process.exit(1);
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  for (const check of [checkManifests, checkAgents, checkCommands, checkCrossRefs, checkTemplateRefs, checkSections, checkFrontmatterYaml, checkTemplateFrontmatter, checkHooks, checkObfuscation, checkHookBehavior, checkClockGuard, checkMarkerMutation, checkContextAttrib, checkStandingSteers, checkNextUpAgreement, checkClosing, checkObligationsRegister]) {
+    check();
+  }
+
+  if (findings.length) {
+    console.error(`lint: ${findings.length} finding(s)\n`);
+    for (const f of findings) console.error('  ' + f);
+    process.exit(1);
+  }
+  console.log('lint: clean');
 }
-console.log('lint: clean');
