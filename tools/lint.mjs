@@ -539,6 +539,11 @@ const BARE_TIME_WORDS = new Set([
   'someday', 'sometime', 'periodically', 'regularly', 'asap', 'tomorrow',
   'next week', 'next month', 'next quarter', 'next sprint',
 ]);
+// Bounded on purpose — the clock-leak branches below match a time unit only
+// after a cadence/deadline lead-in, so a genuine condition shaped like
+// `every phase PR is merged` or `after 3 missions ship` never trips them
+// ("phase" and "mission" are not time units).
+const TIME_UNITS = '(?:sec(?:ond)?s?|min(?:ute)?s?|h(?:ou)?rs?|days?|weeks?|months?|quarters?|years?|mornings?|evenings?|nights?|weekends?|sprints?)';
 // Fold wrapped continuation lines into their bullet (the check-11 model);
 // report against the bullet's own first line.
 function obBullets(blockLines) {
@@ -586,8 +591,14 @@ function checkObRow(file, b, { strictLabel = false, placeholderOk = false } = {}
   // number. The unit alternation is bounded to time/calendar units so a
   // genuine condition shaped like `every phase PR is merged` never matches
   // (anti-overreach: "phase" is not a time unit).
-  else if (/^every\s+(?:other\s+)?(?:sec(?:ond)?s?|min(?:ute)?s?|h(?:ou)?rs?|days?|weeks?|months?|quarters?|years?|mornings?|evenings?|nights?|weekends?|sprints?)\b/.test(when))
+  else if (new RegExp(`^every\\s+(?:other\\s+)?${TIME_UNITS}\\b`).test(when))
     fail(file, b.n, `\`when: ${when}\` is a digitless cadence — a clock, not a condition (L3: condition-driven, never time-driven) — name an observable state a probe can check, or keep the cadence intent out of \`when:\` and use \`probe: manual\``);
+  // ckpt-p4 fold (OB-7): `when: after 2 weeks` is a deadline rather than a
+  // cadence, so neither branch above saw it — same clock in a third costume.
+  // The unit alternation stays bounded for the same anti-overreach reason:
+  // `after 3 phases are merged` names a countable state, not a clock.
+  else if (new RegExp(`^after\\s+(?:\\d+|an?|the)\\s+${TIME_UNITS}\\b`).test(when))
+    fail(file, b.n, `\`when: ${when}\` is an elapsed-time deadline — a clock, not a condition (L3: condition-driven, never time-driven) — name the observable state you expect to exist by then, or keep the timing intent out of \`when:\` and use \`probe: manual\``);
 }
 
 // ── 13. `## Closing` grammar + close refusal (deferred-obligations Phase 1) ──
@@ -634,7 +645,11 @@ function checkClosing() {
       const glyph = b.text.match(/^- \[([ x~])\]/)?.[1];
       if (glyph === ' ')
         fail(file, b.n, `unticked \`[ ]\` obligation coexists with the \`Closed:\` stamp at line ${stampLine} — a mission may not be reported closed while an obligation is open: fire it (\`[x]\` + \`· fired …\`) or promote it (\`[~] … → OB-<n>\`)`);
-      else if (glyph === '~' && !/→ OB-/.test(b.text))
+      // ckpt-p4 fold (OB-7): the ref must carry its integer. `→ OB-` alone
+      // satisfied the old digitless pattern, so a row could promote to nothing
+      // and still clear the close gate — the promise's destination is the
+      // whole point of the ref.
+      else if (glyph === '~' && !/→ OB-\d+/.test(b.text))
         fail(file, b.n, `deferred \`[~]\` obligation lacks its \`→ OB-<n>\` promotion ref, yet the ledger is stamped \`Closed:\` (line ${stampLine}) — a deferral survives its mission only as a verbatim copy in \`.plans/OBLIGATIONS.md\``);
     }
   }
