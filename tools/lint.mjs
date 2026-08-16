@@ -561,7 +561,12 @@ const TIME_UNITS = '(?:sec(?:ond)?s?|min(?:ute)?s?|h(?:ou)?rs?|days?|weeks?|mont
 // A quantity in front of a unit. Spelled numbers matter: this repo's own prose
 // prefers them ("three branches", "two sessions"), so a digits-only lead-in
 // misses the likelier authoring form.
-const COUNT = '(?:\\d+|an?|the|this|next|one|two|three|four|five|six|seven|eight|nine|ten|a few|several|another|some|couple of)';
+const COUNT = '(?:\\d+(?:st|nd|rd|th)?|an?|the|this|next|one|two|three|four|five|six|seven|eight|nine|ten|a few|several|another|some|couple of)';
+// Compact durations (`30d`, `2wk`, `6mo`) — a clock with the space removed.
+// The shipped guard caught these by accident, via a bare `^(?:every|in)\s+\d+`
+// with no unit requirement; end-anchoring the patterns lost them, so they are
+// matched explicitly rather than regained by loosening the anchor.
+const COMPACT = '\\d+\\s*(?:s|secs?|m|mins?|h|hrs?|d|w|wk|wks|mo|mos|q|y|yr|yrs)';
 // A condition is split on ENUMERATION separators only. The em-dash is
 // deliberately NOT one: this repo's prose uses em-dashed parentheticals
 // heavily, so splitting on it flagged `… next working session — tomorrow — has
@@ -575,7 +580,8 @@ const CLAUSE_SPLIT = /\s*(?:,|;|\band\b)\s*/;
 const CLOCK_PATTERNS = [
   ['numeric period',        new RegExp(`^(?:every|in)\\s+${COUNT}\\s+${TIME_UNITS}\\s*$`)],
   ['cadence',               new RegExp(`^every\\s+(?:other\\s+)?${TIME_UNITS}\\s*$`)],
-  ['elapsed-time deadline', new RegExp(`^after\\s+${COUNT}\\s+${TIME_UNITS}\\s*$`)],
+  ['elapsed-time deadline', new RegExp(`^(?:after|within)\\s+${COUNT}\\s+${TIME_UNITS}\\s*$`)],
+  ['compact duration',      new RegExp(`^(?:every|in|after|within)\\s+${COMPACT}\\s*$`)],
 ];
 // Does `when` smuggle a clock? Returns `{ clause, kind }`, else null.
 //
@@ -588,11 +594,19 @@ const CLOCK_PATTERNS = [
 // the middle is usually being *mentioned*: `the L3 doc lists hourly, daily,
 // weekly, and nightly as banned` is a legitimate condition about the rule.
 //
-// Known limit, stated rather than papered over: a clock with a trailing
-// qualifier (`every day at 09:00`) evades, because the patterns are
-// end-anchored. Loosening the anchor is what produced the false positives
-// above, so the anchor stays and the gap is accepted. `tools/lint-test.mjs`
-// pins every case either way.
+// Known limits, measured and stated rather than papered over. A sweep of 18
+// alternate phrasings found these still evading: a clock with a trailing
+// qualifier (`every day at 09:00`); weekday/quarter names (`by next Friday`,
+// `end of Q3`); bare ISO dates; adverbs (`overnight`, `twice a week`); and
+// clauses joined by `then`/`or`/`unless` rather than `,`/`;`/`and`. The first
+// is structural — catching it means allowing trailing text, which is exactly
+// what produced 15 false positives. The rest are judged not worth the
+// false-positive risk of matching weekday and quarter words that appear in
+// honest conditions ("the Friday deploy", "the Q3 numbers").
+//
+// The same sweep found 3 forms the PREVIOUS guard caught and this one lost;
+// two were recovered with explicit ordinal and compact-duration patterns
+// rather than by loosening the anchor. `tools/lint-test.mjs` pins all of it.
 function clockLeak(when) {
   const clauses = when.split(CLAUSE_SPLIT).map((c) => c.trim());
   for (const end of [clauses[0], clauses[clauses.length - 1]])

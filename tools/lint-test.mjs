@@ -69,6 +69,21 @@ export const CASES = [
   // ── conditions that merely OPEN with a time word ──────────────────────
   ['pass',  'daily active users exceed 1000',                      'orchestrator'],
   ['pass',  'monthly invoice count exceeds 50',                    'self'],
+  // ── forms the SHIPPED guard caught and the first rewrite lost ─────────
+  // Found by comparing old against new on 18 alternate phrasings; the rewrite
+  // regressed 3 of them by end-anchoring. Two are recovered by explicit
+  // patterns (ordinals, compact durations) rather than by loosening the
+  // anchor, which is what caused the false positives in the first place.
+  ['block', 'every 2nd week',                                      'old-vs-new diff'],
+  ['block', 'in 30d',                                              'old-vs-new diff'],
+  ['block', 'within 2 weeks',                                      'adversarial sweep'],
+  ['block', 'after 6mo',                                           'self (compact form)'],
+  // ── honest conditions built from time words, adversarial sweep ────────
+  ['pass',  'the weekly digest job reports zero failures',         'adversarial sweep'],
+  ['pass',  'the nightly build turns green',                       'adversarial sweep'],
+  ['pass',  'the second reviewer approves',                        'adversarial sweep'],
+  ['pass',  'monthly churn drops below 3%',                        'adversarial sweep'],
+  ['pass',  'the sprint board shows zero open beats',              'adversarial sweep'],
   // ── real `when:` values from this repo's own register ─────────────────
   ['pass',  'a second live-only defect reaches main (the v1.39.1 stop-hook loop is the first)', 'real row OB-11'],
   ['pass',  'impeccable is installed alongside a ui-surface venture session', 'real row OB-8'],
