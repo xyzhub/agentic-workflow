@@ -162,3 +162,13 @@ done (the session-close fall-through in `end.md`, the close step in
 - **Every row `[x]` or `[~] … → OB-<n>`** → write `Closed: YYYY-MM-DD` at the
   end of the block. The lint backstop (check 13) enforces the same rule
   fail-closed on every push — the stamp with an open row fails the gate.
+
+**The release rides the same gate (OB-9).** The template's seeded
+`version bumped + stamped` row means an unversioned ship cannot close: if the
+mission's CHANGELOG entry names a version, the row stays `[ ]` until the
+manifest carries it, and the refusal above fires. This is deliberate — v1.43.0
+was reached by three merged PRs each deferring the bump to "a release session"
+that had no trigger, and OB-5/6/8's install conditions silently depended on
+that session happening. A mission whose entry names no version fires the row
+immediately with `no version named` as its evidence; the row is never deleted
+to make it not apply.
