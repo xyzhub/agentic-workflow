@@ -544,6 +544,31 @@ const BARE_TIME_WORDS = new Set([
 // `every phase PR is merged` or `after 3 missions ship` never trips them
 // ("phase" and "mission" are not time units).
 const TIME_UNITS = '(?:sec(?:ond)?s?|min(?:ute)?s?|h(?:ou)?rs?|days?|weeks?|months?|quarters?|years?|mornings?|evenings?|nights?|weekends?|sprints?)';
+// Does `when` smuggle a bare clock word? Returns the offending word, else null.
+//
+// `when` arrives normalized by the caller: markdown glyphs stripped, trimmed,
+// lowercased, trailing punctuation removed. The two pattern branches in
+// checkObRow are `^`-anchored and unaffected by this question — only the
+// bare-word set is whole-string, and that is the hole:
+//
+//   when: weekly                     → caught
+//   when: weekly, once CI is green   → NOT caught  (verified 2026-08-16)
+//
+// Any suffix disarms the guard, so a clock-shaped row can be smuggled past
+// the L3 rule by appending a clause. Exact-match behavior is preserved below
+// so the gate keeps passing until the strictness policy is decided.
+// Clause-split rather than prefix-match, deliberately: a clause that is
+// EXACTLY a time word is always a clock, whereas a sentence that merely opens
+// with one usually is not — `daily active users exceed 1000` names a state a
+// probe can check, and a guard that blocked it would be training authors to
+// reword honest conditions to please a linter.
+function bareClockWord(when) {
+  for (const clause of when.split(/\s*(?:,|—|;|\band\b)\s*/)) {
+    const c = clause.trim();
+    if (BARE_TIME_WORDS.has(c)) return c;
+  }
+  return null;
+}
 // Fold wrapped continuation lines into their bullet (the check-11 model);
 // report against the bullet's own first line.
 function obBullets(blockLines) {
@@ -579,8 +604,9 @@ function checkObRow(file, b, { strictLabel = false, placeholderOk = false } = {}
   if (!placeholderOk && /· fired YYYY-MM-DD\b/.test(b.text))
     fail(file, b.n, 'fired-evidence carries the literal `YYYY-MM-DD` placeholder — a fire is an event that happened, so its date is known; the placeholder is template-only');
   const when = whenSeg.replace(/[_*`]/g, '').trim().toLowerCase().replace(/[.,;:!]+$/, '');
-  if (BARE_TIME_WORDS.has(when))
-    fail(file, b.n, `\`when: ${when}\` is a clock, not a condition (L3: condition-driven, never time-driven) — name an observable state a probe can check, or keep the clock-shaped intent out of \`when:\` and use \`probe: manual\``);
+  const clock = bareClockWord(when);
+  if (clock)
+    fail(file, b.n, `\`when: ${clock}\` is a clock, not a condition (L3: condition-driven, never time-driven) — name an observable state a probe can check, or keep the clock-shaped intent out of \`when:\` and use \`probe: manual\``);
   // ckpt-p1 F1: `when: every 10 minutes` sailed past the bare-word set — the
   // owner's literal third instance. A numeric period ("every/in <n> …") is a
   // clock in different clothing; same L3 verdict.
