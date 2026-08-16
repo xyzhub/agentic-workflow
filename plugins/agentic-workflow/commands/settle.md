@@ -63,6 +63,19 @@ must name the rung used:
    default-branch commit whose history first contains the tip) — both via the
    full-SHA `gh run list --commit` form above. Ancestry without that CI
    evidence → surface, never delete.
+
+   Derive the carrying commit — do not eyeball it from the log:
+
+   ```bash
+   git rev-list --ancestry-path --reverse <tip-sha>..origin/<default> | head -1
+   ```
+
+   `--ancestry-path` keeps only commits that actually descend from the tip
+   (plain `<tip>..<default>` would include unrelated commits), `--reverse`
+   puts the earliest such descendant first, and `rev-list` prints the **full
+   40-char SHA** the `gh run list --commit` form demands. Empty output means
+   the tip is not an ancestor at all — that is the ancestry proof failing, so
+   surface the branch rather than hunting for a carrier.
 3. **Neither CI nor deploy** → merged into the default branch alone satisfies
    the condition — the evidence line says so explicitly.
 4. **`gh` missing, rate-limited, or ambiguous** → the branch is **surfaced,
