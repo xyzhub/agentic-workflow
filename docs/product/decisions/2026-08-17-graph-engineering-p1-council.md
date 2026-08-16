@@ -23,7 +23,7 @@ their own internal `F<n>` sequences unrelated to any of these.
 |---|---|---|---|
 | 1 | `ea4155a` | premise · silent-inertness · regression/consumer · docs coherence · record integrity | 4 REQUEST CHANGES, 1 HOLD |
 | 2 | `936aad7` | record honesty (2 lenses died to host sleep; their scope was self-covered — see below) | PROCEED-WITH-CHANGES |
-| 3 | `7ca5c1e` | register/consumer · record honesty (1 lens still running at time of writing) | REQUEST CHANGES, PROCEED-WITH-CHANGES |
+| 3 | `7ca5c1e` | clock-guard adversarial · register/consumer · record honesty | 2 REQUEST CHANGES, 1 PROCEED-WITH-CHANGES — the clock lens then **APPROVED the tip** `7ce7b41` after re-verifying de novo |
 
 **Self-covered after agent deaths (round 2).** Three lenses died mid-run when
 the host slept. Their highest-risk items were executed directly rather than
@@ -63,9 +63,28 @@ independent review: three lenses' full scope was never run.
 | R3.rec.D | The count rule's inverse (≥2 bare words) passes | **ALREADY FIXED** by `7ce7b41` before the lens reported; verified `once ci is green, weekly, and nightly` → BLOCK | verified |
 | R3.rec.E | `lint-test.mjs`'s header says "EVERY case … outside the implementer's head" and then that invented cases are marked | **UPHELD** | see harness header |
 | R3.rec.G | OB-13 tells the next implementer to build the indented form without recording why it failed | **UPHELD** | OB-13 |
+| R3.clock.F2 | `CLAUSE_SPLIT`'s leading `\s*` backtracks quadratically — 2.5s at 40k chars, 11s at 80k; a gate that appears to hang | **UPHELD.** Split without the padding (clauses were trimmed anyway): 0.75ms at 40k. Pre-existing since `be2f994`; the author's own ReDoS probe missed it by using repeated characters with no interior whitespace | `f2d1dfc`+ |
+| R3.clock.F3 | Two must-pass harness cases are killed by no mutant — documentation, not coverage | **UPHELD.** Kept and labelled as such rather than counted as coverage | harness |
+| R3.clock.F4 | `7ce7b41`'s message names 2 of 3 over-reaches and misclassifies `in 5m of runtime` as over-reach when it is the trailing-qualifier structural gap | **UPHELD, uncorrectable in place** — a pushed commit message cannot be edited without rewriting SHAs the register cites as evidence. Corrected here: the third over-reach is `every 3 phase prs are merged`; `in 5m of runtime` belongs with `every day at 09:00` as a trailing-qualifier gap, not an over-reach | this row |
 | R3.rec.H | The JOURNEY entry's "every defect has the same shape" excludes the record-integrity half | **UPHELD** | JOURNEY |
 
 Nits folded without individual rows: prose/wording findings in R1.docs (F8, F9, F11–F14), R1.record (F5, F7–F9), R3.reg (F3, F4, F6–F8). All were either fixed in the commits above or are covered by the recommendations below.
+
+## The independent number
+
+The clock-guard lens ran a 1,445-case differential across every generation of
+the predicate, scored through the real `checkObRow` rather than a transcription:
+
+| Predicate | Missed clocks | False positives |
+|---|---|---|
+| `6562f11` (original) | 1103 | 6 |
+| `be2f994` | 526 | 38 |
+| `8b842ad` | 320 | 0 |
+| `7ca5c1e` (count rule) | 461 | 0 |
+| **tip** | **0** | **0** |
+
+It found **458** forms the count rule regressed; the author's own differential
+had found 5. That gap is the argument for independent review in one number.
 
 ## Open for the owner
 

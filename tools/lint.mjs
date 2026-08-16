@@ -571,7 +571,13 @@ const COMPACT = '\\d+\\s*(?:s|secs?|m|mins?|h|hrs?|d|w|wk|wks|mo|mos|q|y|yr|yrs)
 // deliberately NOT one: this repo's prose uses em-dashed parentheticals
 // heavily, so splitting on it flagged `… next working session — tomorrow — has
 // installed the build`, whose condition is "has installed the build".
-const CLAUSE_SPLIT = /\s*(?:,|;|\band\b)\s*/;
+// No leading/trailing `\s*` here: it backtracks QUADRATICALLY on a long run of
+// whitespace with no separator (measured 2.5s at 40k chars, 11s at 80k — a gate
+// that appears to hang). The clauses are trimmed below anyway, so the padding
+// was never load-bearing. The author's own ReDoS probe missed this because it
+// used repeated characters with no interior whitespace, which is the one shape
+// that cannot trigger it.
+const CLAUSE_SPLIT = /(?:,|;|\band\b)/;
 // Each pattern must consume its WHOLE clause. That end-anchor is what keeps a
 // time word used as a noun modifier out: `after the sprint review is signed
 // off` and `after a second live-only defect reaches main` name observable
