@@ -3,7 +3,7 @@
 // Zero dependencies; Node >= 18. Run: node tools/lint.mjs
 // Exit 0 = clean, 1 = findings (printed as `file:line — message`).
 
-import { readFileSync, readdirSync, existsSync } from 'node:fs';
+import { readFileSync, readdirSync, existsSync, realpathSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -731,7 +731,23 @@ function checkObligationsRegister() {
 // harness must not execute the whole gate (and must not `process.exit`).
 export { clockLeak };
 
-if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+// realpath BOTH sides: `import.meta.url` is already symlink-resolved, so a
+// plain `path.resolve(argv[1])` comparison fails when this file is invoked
+// through a symlink — and the failure mode is the gate printing nothing and
+// exiting 0. A check that silently reports success is the exact defect this
+// file exists to catch, so the comparison is made on resolved paths and any
+// resolution error falls back to running (never to skipping).
+const isEntryPoint = () => {
+  if (!process.argv[1]) return false;
+  const self = fileURLToPath(import.meta.url);
+  try {
+    return realpathSync(process.argv[1]) === realpathSync(self);
+  } catch {
+    return path.resolve(process.argv[1]) === self;
+  }
+};
+
+if (isEntryPoint()) {
   for (const check of [checkManifests, checkAgents, checkCommands, checkCrossRefs, checkTemplateRefs, checkSections, checkFrontmatterYaml, checkTemplateFrontmatter, checkHooks, checkObfuscation, checkHookBehavior, checkClockGuard, checkMarkerMutation, checkContextAttrib, checkStandingSteers, checkNextUpAgreement, checkClosing, checkObligationsRegister]) {
     check();
   }

@@ -14,6 +14,7 @@
 // implementer are marked `(self)` and are a minority on purpose — they are the
 // ones least likely to catch the next mistake.
 import path from 'node:path';
+import { realpathSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { clockLeak } from './lint.mjs';
 
@@ -77,7 +78,15 @@ export const CASES = [
 
 // Guarded on being the entry point, so importing CASES (to score an older
 // implementation against the same corpus, say) does not run the suite.
-if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) run();
+// realpath both sides — see the same guard in lint.mjs: a plain resolve()
+// comparison makes a symlinked invocation silently skip the suite.
+const isEntryPoint = () => {
+  if (!process.argv[1]) return false;
+  const self = fileURLToPath(import.meta.url);
+  try { return realpathSync(process.argv[1]) === realpathSync(self); }
+  catch { return path.resolve(process.argv[1]) === self; }
+};
+if (isEntryPoint()) run();
 
 function run() {
 let bad = 0;
