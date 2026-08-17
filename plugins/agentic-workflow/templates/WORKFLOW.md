@@ -696,6 +696,7 @@ concrete values.
 | **High-impact files** (docs-reminder targets) | _(conventions file, schema, architecture docs…)_ |
 | **Code index** | _(e.g. codegraph — HOW to query it: MCP tools and/or the CLI command agents run via Bash. `none` → grep-first)_ |
 | **Memory/recall store** (optional) | _(semantic memory MCP if one exists — an accelerator only; the repo record stays the system of record)_ |
+| **Version pin** | _(the file and key this project bumps on release — e.g. `package.json` `version`, `pyproject.toml` `project.version`, a plugin manifest. `none` → the project pins no version, and the mission-close `version bumped + stamped` row fires with "no version named" as its evidence — that row's condition is its own CHANGELOG entry, never this key; this row only records WHERE to bump when there is something to bump)_ |
 | **Owner channel** (§12) | _(private DM only — transport (Telegram bot / Slack), the send template with env-var NAMES for token + chat id (never values), the owner's user id for inbound verification, and how callbacks arrive (Telegram: getUpdates polling; Slack: interactivity endpoint, else text fallback). `none` → harness push notifications, else status page only)_ |
 | **Portfolio** (§13, optional) | _(path or remote of the registry repo this venture is registered in; `none` if standalone)_ |
 | **Issue tracker** | _(e.g. GitHub Issues via `gh`)_ |

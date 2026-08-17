@@ -8,6 +8,106 @@ has no tags — each version-stamped commit on `main` IS the release.
 
 _(empty)_
 
+## [1.44.0] — 2026-08-16
+### Fixed
+- **The L3 clock guard was 25/44 wrong on the corpus that exposed it; it is
+  now 0 wrong on 69 cases — and the fix is a
+  method, not a regex.** `when:` must name an observable state, never a clock.
+  That rule had accreted three `^`-anchored branches, one per incident
+  (ckpt-p1 `every 10 minutes`, ckpt-p2 `every day`, ckpt-p4 `after 2 weeks`),
+  each verified only against the cases its author had in mind. Measured against
+  a corpus built from outside the implementer's head, the result **missed 10
+  real clocks** (`after two weeks`, `after three days`, `in three days`, and
+  every trailing-clause form — `once CI is green, every day` sailed through)
+  while **wrongly blocking 15 honest conditions** (`after the sprint review is
+  signed off`; `after a second live-only defect reaches main`, which is OB-11's
+  own condition one word away — `second` is an ordinal as well as a unit). One
+  `clockLeak()` now decides every form: **any** clause that is exactly a bare
+  time word is a finding, and the patterns are judged in every clause,
+  end-anchored — the anchor is what keeps time-words-as-noun-modifiers out.
+  Two narrower bare-word rules were tried and discarded first, each caught by a
+  pre-merge lens: head-or-tail position let `once CI is green, weekly, and the
+  PR merges` through, and a count-of-exactly-one let `weekly, monthly` through
+  — a condition with no observable clause at all. The surviving rule carries
+  one **accepted false positive**, stated in the code rather than hidden: a
+  condition that *enumerates* the banned words is now rejected too, because
+  nothing reliably separates mentioning a clock from stating one. A false
+  positive argues with an author; a false negative parks a promise nothing will
+  ever fire. The residual gaps are enumerated in the code
+  rather than papered over: a trailing qualifier (`every day at 09:00`),
+  weekday and quarter names, bare ISO dates, adverbial forms (`overnight`,
+  `twice a week`), and clauses joined by `then`/`or`/`unless`. Those are
+  measured decisions — the first is structural, the rest were judged not
+  worth matching words that appear in honest conditions ("the Friday
+  deploy", "the Q3 numbers"). Not every gap was a decision: a pre-merge
+  review found three plain oversights — `each` absent beside `every` in the
+  cadence branch, `fortnight` absent from the unit list while `fortnightly`
+  was already a banned bare word, and `a couple of` absent while `couple of`
+  was present — closed with harness cases in both directions; and postfix
+  durations (`2 weeks from now`, `30 days out`) remain open as OB-16 rather
+  than as a silent hole.
+- **The settle ladder's carrying-commit command returned the wrong commit in
+  the only case it exists for.** `git rev-list --ancestry-path --reverse` was
+  verified against two branches that both had their own merged PRs — the
+  ordinary rung-1/2 path — never against the no-PR absorbed-as-ancestry
+  sub-case the recipe was written for. There it returns an intermediate
+  feature-branch commit that never reached the default branch and has no CI
+  run, so `gh run list --commit` returns `[]` and a green branch is surfaced
+  forever. A first correction (`--merges --topo-order`) survived a synthetic
+  seven-topology matrix but failed on this repo's own nested-merge history —
+  phase merges land on a mission integration branch before a PR carries them
+  to the default branch, so for real tip `b36003e` it returned `4262217` (a
+  `merge(P1)` on the integration branch, zero CI runs) instead of `513e40a`
+  (the PR #33 merge, CI green). The shipped recipe walks the default
+  branch's **first-parent line** oldest-first and returns the first commit
+  containing the tip, verified against three real absorbed tips, two real
+  direct-merge PRs, and the tip-is-head case. The recipe's claim that empty
+  output means "not an ancestor" was also false: it means the tip IS the
+  head.
+- **`checkClosing`'s promotion-ref guard accepted `→ OB-` with no integer**, so
+  a `[~]` row could promote to nothing and still clear the close gate.
+
+### Added
+- **`tools/lint-test.mjs` — a behavior harness for the clock guard**, wired
+  into the gate as `checkClockGuard` and fail-closed on a missing harness
+  (`checkHookBehavior`'s shape). 69 cases. Most come from a reviewer's
+  counterexample, the original author's anti-overreach comment, or a real
+  `when:` value in this repo; the handful the implementer invented are marked
+  `(self)`/`orchestrator` in the file, because those are the ones least likely
+  to catch the next mistake. Structural checks prove a row *parses*; this
+  proves the guard *decides*.
+- **A `version bumped + stamped` row in the mission-state `## Closing`
+  template**, so the close gate that already refuses any unticked `[ ]` row
+  refuses an unversioned **mission**. Scope stated plainly in `settle.md` §5:
+  session-altitude ships have no ledger and are not covered — that half is
+  registered as OB-12.
+- **A >140-**codepoint** case in `tools/hook-test.mjs`**, pinning why
+  `obligations-due.sh` slices with `jq` rather than `printf '%.140s'` (bytes,
+  which splits multibyte characters). Proven discriminating: byte-slicing the
+  fixture yields invalid UTF-8 and the case fails.
+
+### Notes
+- **`depends-on: OB-<n>` was built, reviewed, and reverted before merge.** Five
+  review lenses found it inert in every documented authoring shape: the tail
+  was pushed off its `$` anchor by the mandatory `· fired …` append, and the
+  indented-continuation form its own architecture memo recommended was
+  invisible to both the row grammar and the raw scan. It returns as its own
+  change, registered as OB-13, with the positive-capture test the DX memo asked
+  for (the architecture memo recommends the shape; the capture rule is the DX
+  memo's).
+- **Deviation from the release convention, recorded rather than hidden.** The
+  local amendment (2026-07-08) requires every `feat:`/`fix:` commit to bump
+  `plugin.json` and stamp the version in its subject. The manifest is bumped once, at
+  `936aad7`; the commits before it predate the bump and four `fix:` commits
+  after it (`c75fc31`, `495b903`, `7ca5c1e`, `7ce7b41`) carry no stamp either. The branch is unmerged, so
+  a rebase is technically available; the reason not to is stronger than
+  convenience — five of its SHAs are cited as evidence inside the register's own
+  fired rows, so rewriting them would invalidate the record this PR just
+  repaired. The same amendment's second clause (bump the `mission-batch-gate`
+  fixture's protocol stamp alongside) is also unmet: that stamp reads v1.32.0
+  and is pre-existing debt, named here rather than left implied. Note the same convention was already missed by
+  `75f5461` and `6fe8c4e`, which is what OB-12 exists to fix.
+
 ## [1.43.0] — 2026-08-11
 ### Added
 - **Deferred obligations get a home, a prosecutor, and a refusal (v1.43.0,

@@ -31,6 +31,10 @@ then. Ask questions only when a human is actually present to answer them.
   command agents run via Bash, and/or MCP tool names). None and the repo is
   beyond trivial size → recommend one in the report (DX pillar: the repo
   legible to models); `none` in the profile until then.
+- **Version pin** — where this project pins its version: a `version` key in
+  `package.json`/`plugin.json`, `project.version` in `pyproject.toml`, a
+  `VERSION` file. Read it from the same manifest that yielded the gates.
+  `none` when the project is unversioned — that is a real answer, not a gap.
 - **Memory/recall store** — optional; only record one that already exists.
 - **Owner channel** — cannot be inferred; leave `none` and recommend
   `/agentic-workflow:connect` in the report (it guides the setup and proves the round-trip).

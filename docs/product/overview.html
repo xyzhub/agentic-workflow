@@ -147,7 +147,7 @@
     <!-- data:meta -->
     <div class="meta">
       <span class="stagebadge"><span class="pulse"></span>V6 · Operate &amp; Evolve</span>
-      <span>Updated 2026-08-11 · compaction-continuity merged to `main` (PR #32, v1.42.0 shipped) · deferred-obligations mission Phase 4 in flight — S7 (this record) done, S8 (PR body + mission's own close-gate) remains, then `ckpt-p4` and the human's single integration merge</span>
+      <span>Updated 2026-08-17 · v1.43.0 shipped (PR #35); PR #36 and the impeccable v2 merge (PR #37) both landed past it unversioned — the gap OB-12 records · PR #38 open on `feat/graph-engineering-p1` — v1.44.0, awaiting the human's merge after a five-lens pre-merge council</span>
     </div>
     <!-- /data:meta -->
   </header>
@@ -176,7 +176,7 @@
         <div class="kv">
           <div class="row"><span class="k">Active mission</span><span class="v">deferred-obligations — Phases 1–3 (Closing block + obligations register + grammar-enforcing lint checks, `/agentic-workflow:settle` reap command, `obligations-due` session-start advisory, mission-close refusal gate) built, reviewed (`ckpt-p1`, `ckpt-p2` [STRICT], `ckpt-p3`, all APPROVE, zero correctives), and merged into `mission/deferred-obligations-integration`. Phase 4 in flight: S7 (this record) chronicles the work; S8 authors the integration PR body and closes this mission's own ledger through its own `## Closing` gate.</span></div>
           <div class="row"><span class="k">Next step</span><span class="v">S8 writes the PR body and closes the mission's own obligations through `/agentic-workflow:settle` before the `Closed:` stamp; `ckpt-p4` reviews `main..integration`; the human merges `mission/deferred-obligations-integration → main` once. The mission's own branch-reap obligation fires at the next `/settle` run after that merge deploys green — by design.</span></div>
-          <div class="row"><span class="k">Deployed</span><span class="v">v1.42.0 on `main` — compaction-continuity's Phases 1–3 merged (PR #32: handoff-budget nudge, compact-resume three-branch fallback, named Read-advisory threshold). deferred-obligations' work is not yet on `main`, pending S8 + `ckpt-p4` + the human's merge.</span></div>
+          <div class="row"><span class="k">Deployed</span><span class="v">v1.43.0 on `main` — deferred-obligations (PR #33: the register, `/settle`, the close refusal), compaction-continuity and the impeccable v2 integration (PR #37) are all merged. v1.44.0 is open as PR #38: a rebuilt L3 clock guard (measured 25 of 44 wrong on the corpus that exposed it, now 0 wrong on 60 cases) with a mutation-proved case harness, plus corrections to the settle ladder's carrying-commit recipe. Not yet merged.</span></div>
         </div>
       </div>
       <div class="card">

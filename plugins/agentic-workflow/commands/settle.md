@@ -63,6 +63,38 @@ must name the rung used:
    default-branch commit whose history first contains the tip) — both via the
    full-SHA `gh run list --commit` form above. Ancestry without that CI
    evidence → surface, never delete.
+
+   Derive the carrying commit — do not eyeball it from the log:
+
+   ```bash
+   git rev-list --first-parent --reverse <tip-sha>..origin/<default> |
+   while read c; do git merge-base --is-ancestor <tip-sha> "$c" && echo "$c" && break; done
+   ```
+
+   Walk the default branch's own first-parent line, oldest first; the first
+   commit on that line whose history contains the tip is the carrying commit.
+   The first-parent constraint is load-bearing: an unconstrained
+   `--ancestry-path --merges` walk returns the topologically first merge
+   descending from the tip, and under nested-merge topology (phase merges
+   landing on a mission integration branch that reaches the default branch by
+   PR) that is a merge on the *integration branch*, which never landed on the
+   default branch on its own and has no CI run — so `gh run list --commit`
+   returns `[]` and a green branch is surfaced forever. Real case from this
+   repo's history: tip `b36003e` gave `4262217` (`merge(P1)` on the
+   integration branch, zero CI runs) where the carrying commit is `513e40a`
+   (the PR #33 merge on the default branch, CI green). The filter reuses
+   `merge-base --is-ancestor` — the same primitive as the ancestry gate — and
+   `rev-list` prints the **full 40-char SHA** the `gh run list --commit` form
+   demands.
+
+   **Empty output is not the ancestry proof failing.** Given the ancestry gate
+   passed, the default branch's head itself contains the tip, so this pipeline
+   is empty only when the tip IS `origin/<default>`'s head — check CI on the
+   **tip itself**. (A tip that reached the line by fast-forward yields the
+   next commit on the line, which also contains it; the rung demands CI on
+   both the tip and the carrying commit either way.) If `--is-ancestor` exits
+   non-zero, the branch is unmerged and the protected set applies: surface it,
+   never delete.
 3. **Neither CI nor deploy** → merged into the default branch alone satisfies
    the condition — the evidence line says so explicitly.
 4. **`gh` missing, rate-limited, or ambiguous** → the branch is **surfaced,
@@ -149,3 +181,21 @@ done (the session-close fall-through in `end.md`, the close step in
 - **Every row `[x]` or `[~] … → OB-<n>`** → write `Closed: YYYY-MM-DD` at the
   end of the block. The lint backstop (check 13) enforces the same rule
   fail-closed on every push — the stamp with an open row fails the gate.
+
+**The release rides the same gate — for missions only (OB-9).** The template's
+seeded `version bumped + stamped` row means an unversioned **mission** cannot
+close: if its CHANGELOG entry names a version, the row stays `[ ]` until the
+manifest carries it, and the refusal above fires. A mission whose entry names
+no version fires the row immediately with `no version named` as its evidence;
+the row is never deleted to make it not apply. `/agentic-workflow:release` is
+where the bump and the stamp actually happen, so the row is ticked there or at
+the settle that follows it.
+
+**State the limit plainly: this gate does not cover session-altitude work.** A
+`/agentic-workflow:start` → `/agentic-workflow:end` ship has no ledger and no
+`## Closing` block, so nothing refuses it — and every ship since v1.43.0 has
+been that shape. The incident OB-9 records (three merged PRs each deferring the
+bump to "a release session" that had no trigger, with OB-5/6/8's install
+conditions silently depending on it) is therefore only half-addressed. The
+session-altitude half is recorded as its own register row; do not read this
+paragraph as a claim that an unversioned ship is impossible.

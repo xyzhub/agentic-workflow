@@ -75,6 +75,12 @@ before the mission may be reported done._
 - [ ] live-verify after reinstall · added YYYY-MM-DD (planner) — do: confirm
   the shipped behavior fires in a real session — when: the release is
   installed (plugin update + reload in the CLI, post-merge) — probe: manual
+- [ ] version bumped + stamped · added YYYY-MM-DD (planner) — do: bump the
+  version wherever this project pins it (§10's **Version pin** row if recorded,
+  else the project's own manifest) and stamp this
+  mission's CHANGELOG entry with it — when: this mission's CHANGELOG entry
+  names a version (fire immediately with "no version named" as the evidence
+  when it does not) — probe: manual
 
 ## Deviations
 

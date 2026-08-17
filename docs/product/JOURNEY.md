@@ -6,12 +6,89 @@ fact; corrections show up as new entries, not edits to old ones.
 
 What this project is: an agentic operating protocol, packaged as a Claude
 Code plugin, that walks a project from a raw idea to a launched, viable
-product and keeps operating it afterward. It ships as 16 specialist agents
-(researcher, designer, architect, business, planner, advisor, marketing,
-ops, analyst, writer, reviewer, chronicler, and four implementers), roughly
-twenty slash commands, a set of guardrail hooks that stop the machinery from
-doing dangerous things unsupervised, and an eval suite that grades the
-protocol's own behavior the way a QA team would.
+product and keeps operating it afterward. It ships as 20 specialist agents
+(researcher, brainstormer, designer, architect, business, planner, advisor,
+compass, intake, curator, marketing, ops, analyst, writer, reviewer,
+chronicler, and four implementers — backend, frontend, devops, security),
+roughly twenty slash commands, a set of guardrail hooks that stop the
+machinery from doing dangerous things unsupervised, and an eval suite that
+grades the protocol's own behavior the way a QA team would.
+
+---
+
+## 2026-08-17 — correction: two numbers in this file had drifted
+
+The entry below says the clock-guard harness holds 55 cases. That was true
+when written, but the same PR kept growing it — later review rounds and a
+pre-merge fix list added cases, and at today's tip `node tools/lint-test.mjs`
+reports 69. Per this file's own rule the original line stands and this entry
+corrects it. Separately, the preamble above claimed 20 specialist agents while
+naming only 16; `plugins/agentic-workflow/agents/` holds 20, and the preamble
+— a standing description of the present, not a dated entry — is corrected in
+place to name all of them (brainstormer, compass, intake, and curator were
+missing). This entry is the dated record of that in-place edit.
+
+---
+
+## 2026-08-17 — the day a council took a mission apart, and the guard failed both ways
+
+### Milestone: a review that deleted two thirds of its own mission
+
+A session that began as "how do we take advantage of graph engineering?" ended
+as a lesson in verification. The plan was three changes: freeze a held-out eval
+set, add a paired counter-metric row, and give the obligations register
+declared edges. A five-lens Opus council was convened before the merge, and the
+premise lens went first — at the evidence, not the code.
+
+Two of the three changes rested on claims that were false. The eval fixtures had
+never been contaminated: `git log -- evals/scenarios/` stops at 2026-07-23, and
+context-economy, which ran 2026-08-01→03, touched nothing under `evals/`. The
+"−401.4k chars / −19% Goodhart" evidence was a misread of a token comparator
+that was never optimised at all. Both changes were dropped. The third,
+`depends-on:`, was built, reviewed, and reverted: five lenses found it inert in
+every shape the repo's own documents tell an author to write — the mandatory
+`· fired …` append pushed its end-anchored tail off `$`, and the indented
+continuation form its own architecture memo had recommended was invisible to
+every check.
+
+### What actually shipped, and what it cost to learn
+
+The L3 clock guard — `when:` must name an observable state, never a clock — had
+grown three `^`-anchored branches, one per past incident, each verified against
+the cases its author had in mind. Measured against a corpus built from the
+reviewers' counterexamples instead, it scored **25 of 44 wrong**: it missed ten
+real clocks while blocking fifteen honest conditions, including OB-11's own
+`when:` one word away from its live text.
+
+The rewrite then made the same mistake twice more, in miniature, and both were
+caught by self-review rather than by a reviewer. The entry-point guard added to
+make the linter importable silently disabled the entire gate under a symlink —
+a check reporting success while checking nothing, shipped inside the fix for
+exactly that. And an old-versus-new differential showed the rewrite had lost
+three clock forms the previous guard caught; one had been documented, two were
+unknown. A late lens then found the replacement rule reopened the original
+smuggling hole for any condition with three or more clauses.
+
+The durable output is not the regex. It is `tools/lint-test.mjs` — 55 cases,
+most sourced from outside the implementer's head, mutation-proved in both
+directions, wired into the gate fail-closed. Structural checks prove a row
+parses; this proves the guard decides.
+
+### The lesson, stated plainly
+
+A test suite proves you did not break what you listed. Only a differential
+proves you did not break what you forgot to list.
+
+That covers half of what the councils found. The verification defects — a
+guard measured against the cases its author had in mind, a command verified
+against the wrong case, a differential skipped — all share that shape. The
+other half were record defects, and they share a different one: asserting
+something about an artifact without opening it. A probe that pointed at a file
+that did not exist. A pointer to a §10 key that had never been added. A
+precedent cited for a rule it did not contain. A register condition rewritten
+in place against an append-only rule. Both halves are failures of checking, but
+only one is a failure of testing, and the second kind survived three rounds
+precisely because tests do not catch it.
 
 ---
 

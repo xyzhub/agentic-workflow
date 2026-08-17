@@ -963,6 +963,30 @@ const CLOSING_NONE_DUE = {
     `code=${r.code} stderr=${JSON.stringify(r.stderr)} stdout=${JSON.stringify(r.stdout)}`);
 }
 
+{ // ckpt-p4 fold (OB-7): the oldest row is capped at 140 CODEPOINTS, not bytes.
+  // `printf '%.140s'` is bytes on both GNU and BSD and can split a multibyte
+  // char, leaving invalid UTF-8 in the JSON — obligations-due.sh:122 uses jq's
+  // `.[0:140]` for exactly that reason, and nothing pinned it. The row below is
+  // padded with em-dashes (3 bytes each) so that byte 140 lands INSIDE a
+  // character: under a bytes implementation this case yields a lone
+  // continuation byte, under codepoint slicing it yields 140 clean codepoints.
+  // That divergence is the whole point — a shorter or ASCII-only row would pass
+  // under either and prove nothing.
+  const LONG_ROW = '- [ ] OB-1 · added 2026-08-01 (planner) — do: '
+    + '—'.repeat(120) + ' — when: the corpus grows — probe: manual';
+  const cps = [...LONG_ROW];
+  const r = runHook({ event: 'SessionStart', desc: OBLIG,
+    input: { source: 'startup', session_id: sid('ob-long') },
+    files: { [REG_REL]: { content: `# Obligations register\n${LONG_ROW}\n` } } });
+  const m = ctx(r) || '';
+  const oldest = (m.split('\n').find((l) => l.startsWith('Oldest: ')) || '').slice(8);
+  check('SessionStart(startup): >140-codepoint register row → Oldest truncated to exactly 140 CODEPOINTS (multibyte-safe: byte 140 falls mid-char), still ≤3 lines, exit 0',
+    r.code === 0 && cps.length > 140 && Buffer.byteLength(LONG_ROW.slice(0, 140), 'utf8') !== 140
+      && [...oldest].length === 140 && oldest === cps.slice(0, 140).join('')
+      && !oldest.includes('�') && m.split('\n').length <= 3,
+    `cps=${cps.length} oldestCps=${[...oldest].length} oldest=${JSON.stringify(oldest.slice(-12))}`);
+}
+
 if (failures.length) {
   console.error(`\nhook-test: ${failures.length} failure(s)`);
   process.exit(1);
