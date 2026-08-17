@@ -11,7 +11,7 @@ _(empty)_
 ## [1.44.0] — 2026-08-16
 ### Fixed
 - **The L3 clock guard was 25/44 wrong on the corpus that exposed it; it is
-  now 0 wrong on 60 cases — and the fix is a
+  now 0 wrong on 69 cases — and the fix is a
   method, not a regex.** `when:` must name an observable state, never a clock.
   That rule had accreted three `^`-anchored branches, one per incident
   (ckpt-p1 `every 10 minutes`, ckpt-p2 `every day`, ckpt-p4 `after 2 weeks`),
@@ -36,9 +36,16 @@ _(empty)_
   ever fire. The residual gaps are enumerated in the code
   rather than papered over: a trailing qualifier (`every day at 09:00`),
   weekday and quarter names, bare ISO dates, adverbial forms (`overnight`,
-  `twice a week`), and clauses joined by `then`/`or`/`unless`. Each is a measured decision, not an oversight — the
-  first is structural, the rest were judged not worth matching words that
-  appear in honest conditions ("the Friday deploy", "the Q3 numbers").
+  `twice a week`), and clauses joined by `then`/`or`/`unless`. Those are
+  measured decisions — the first is structural, the rest were judged not
+  worth matching words that appear in honest conditions ("the Friday
+  deploy", "the Q3 numbers"). Not every gap was a decision: a pre-merge
+  review found three plain oversights — `each` absent beside `every` in the
+  cadence branch, `fortnight` absent from the unit list while `fortnightly`
+  was already a banned bare word, and `a couple of` absent while `couple of`
+  was present — closed with harness cases in both directions; and postfix
+  durations (`2 weeks from now`, `30 days out`) remain open as OB-16 rather
+  than as a silent hole.
 - **The settle ladder's carrying-commit command returned the wrong commit in
   the only case it exists for.** `git rev-list --ancestry-path --reverse` was
   verified against two branches that both had their own merged PRs — the
@@ -46,16 +53,24 @@ _(empty)_
   sub-case the recipe was written for. There it returns an intermediate
   feature-branch commit that never reached the default branch and has no CI
   run, so `gh run list --commit` returns `[]` and a green branch is surfaced
-  forever. Corrected to `--merges --topo-order`, verified across four cases.
-  The recipe's claim that empty output means "not an ancestor" was also false:
-  it equally means the tip IS the head, or arrived by fast-forward.
+  forever. A first correction (`--merges --topo-order`) survived a synthetic
+  seven-topology matrix but failed on this repo's own nested-merge history —
+  phase merges land on a mission integration branch before a PR carries them
+  to the default branch, so for real tip `b36003e` it returned `4262217` (a
+  `merge(P1)` on the integration branch, zero CI runs) instead of `513e40a`
+  (the PR #33 merge, CI green). The shipped recipe walks the default
+  branch's **first-parent line** oldest-first and returns the first commit
+  containing the tip, verified against three real absorbed tips, two real
+  direct-merge PRs, and the tip-is-head case. The recipe's claim that empty
+  output means "not an ancestor" was also false: it means the tip IS the
+  head.
 - **`checkClosing`'s promotion-ref guard accepted `→ OB-` with no integer**, so
   a `[~]` row could promote to nothing and still clear the close gate.
 
 ### Added
 - **`tools/lint-test.mjs` — a behavior harness for the clock guard**, wired
   into the gate as `checkClockGuard` and fail-closed on a missing harness
-  (`checkHookBehavior`'s shape). 60 cases. Most come from a reviewer's
+  (`checkHookBehavior`'s shape). 69 cases. Most come from a reviewer's
   counterexample, the original author's anti-overreach comment, or a real
   `when:` value in this repo; the handful the implementer invented are marked
   `(self)`/`orchestrator` in the file, because those are the ones least likely

@@ -7,11 +7,26 @@ fact; corrections show up as new entries, not edits to old ones.
 What this project is: an agentic operating protocol, packaged as a Claude
 Code plugin, that walks a project from a raw idea to a launched, viable
 product and keeps operating it afterward. It ships as 20 specialist agents
-(researcher, designer, architect, business, planner, advisor, marketing,
-ops, analyst, writer, reviewer, chronicler, and four implementers), roughly
-twenty slash commands, a set of guardrail hooks that stop the machinery from
-doing dangerous things unsupervised, and an eval suite that grades the
-protocol's own behavior the way a QA team would.
+(researcher, brainstormer, designer, architect, business, planner, advisor,
+compass, intake, curator, marketing, ops, analyst, writer, reviewer,
+chronicler, and four implementers — backend, frontend, devops, security),
+roughly twenty slash commands, a set of guardrail hooks that stop the
+machinery from doing dangerous things unsupervised, and an eval suite that
+grades the protocol's own behavior the way a QA team would.
+
+---
+
+## 2026-08-17 — correction: two numbers in this file had drifted
+
+The entry below says the clock-guard harness holds 55 cases. That was true
+when written, but the same PR kept growing it — later review rounds and a
+pre-merge fix list added cases, and at today's tip `node tools/lint-test.mjs`
+reports 69. Per this file's own rule the original line stands and this entry
+corrects it. Separately, the preamble above claimed 20 specialist agents while
+naming only 16; `plugins/agentic-workflow/agents/` holds 20, and the preamble
+— a standing description of the present, not a dated entry — is corrected in
+place to name all of them (brainstormer, compass, intake, and curator were
+missing). This entry is the dated record of that in-place edit.
 
 ---
 
