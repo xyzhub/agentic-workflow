@@ -103,6 +103,20 @@ export const CASES = [
   ['pass',  'the second reviewer approves',                        'adversarial sweep'],
   ['pass',  'monthly churn drops below 3%',                        'adversarial sweep'],
   ['pass',  'the sprint board shows zero open beats',              'adversarial sweep'],
+  // ── gaps a pre-merge fix list closed: each / fortnight / a couple of ──
+  // `each` was absent from the cadence alternation; `fortnight` from
+  // TIME_UNITS (while `fortnightly` was already a banned bare word — an
+  // internal inconsistency, not a judgment call); `a couple of` from COUNT
+  // (which had only the article-less `couple of`).
+  ['block', 'each week',                                           'pre-merge fix list'],
+  ['block', 'each morning',                                        'pre-merge fix list'],
+  ['block', 'every fortnight',                                     'pre-merge fix list'],
+  ['block', 'in two fortnights',                                   'pre-merge fix list'],
+  ['block', 'in a couple of weeks',                                'pre-merge fix list'],
+  ['block', 'after a couple of days',                              'pre-merge fix list'],
+  ['pass',  'each phase pr is merged',                             'pre-merge fix list'],
+  ['pass',  'the fortnightly digest job reports zero failures',    'pre-merge fix list'],
+  ['pass',  'after a couple of reviewers approve',                 'pre-merge fix list'],
   // ── real `when:` values from this repo's own register ─────────────────
   ['pass',  'a second live-only defect reaches main (the v1.39.1 stop-hook loop is the first)', 'real row OB-11'],
   ['pass',  'impeccable is installed alongside a ui-surface venture session', 'real row OB-8'],

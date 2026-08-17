@@ -557,11 +557,11 @@ const BARE_TIME_WORDS = new Set([
   'someday', 'sometime', 'periodically', 'regularly', 'asap', 'tomorrow',
   'next week', 'next month', 'next quarter', 'next sprint',
 ]);
-const TIME_UNITS = '(?:sec(?:ond)?s?|min(?:ute)?s?|h(?:ou)?rs?|days?|weeks?|months?|quarters?|years?|mornings?|evenings?|nights?|weekends?|sprints?)';
+const TIME_UNITS = '(?:sec(?:ond)?s?|min(?:ute)?s?|h(?:ou)?rs?|days?|weeks?|fortnights?|months?|quarters?|years?|mornings?|evenings?|nights?|weekends?|sprints?)';
 // A quantity in front of a unit. Spelled numbers matter: this repo's own prose
 // prefers them ("three branches", "two sessions"), so a digits-only lead-in
 // misses the likelier authoring form.
-const COUNT = '(?:\\d+(?:st|nd|rd|th)?|an?|the|this|next|one|two|three|four|five|six|seven|eight|nine|ten|a few|several|another|some|couple of)';
+const COUNT = '(?:\\d+(?:st|nd|rd|th)?|an?|the|this|next|one|two|three|four|five|six|seven|eight|nine|ten|a few|several|another|some|a couple of|couple of)';
 // Compact durations (`30d`, `2wk`, `6mo`) — a clock with the space removed.
 // The shipped guard caught these by accident, via a bare `^(?:every|in)\s+\d+`
 // with no unit requirement; end-anchoring the patterns lost them, so they are
@@ -585,7 +585,7 @@ const CLAUSE_SPLIT = /(?:,|;|\band\b)/;
 // honest conditions a review found this guard blocking).
 const CLOCK_PATTERNS = [
   ['numeric period',        new RegExp(`^(?:every|in)\\s+${COUNT}\\s+${TIME_UNITS}\\s*$`)],
-  ['cadence',               new RegExp(`^every\\s+(?:other\\s+)?${TIME_UNITS}\\s*$`)],
+  ['cadence',               new RegExp(`^(?:every|each)\\s+(?:other\\s+)?${TIME_UNITS}\\s*$`)],
   ['elapsed-time deadline', new RegExp(`^(?:after|within)\\s+${COUNT}\\s+${TIME_UNITS}\\s*$`)],
   ['compact duration',      new RegExp(`^(?:every|in|after|within)\\s+${COMPACT}\\s*$`)],
 ];
