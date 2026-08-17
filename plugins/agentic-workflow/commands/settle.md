@@ -67,26 +67,34 @@ must name the rung used:
    Derive the carrying commit — do not eyeball it from the log:
 
    ```bash
-   git rev-list --ancestry-path --reverse --merges --topo-order <tip-sha>..origin/<default> | head -1
+   git rev-list --first-parent --reverse <tip-sha>..origin/<default> |
+   while read c; do git merge-base --is-ancestor <tip-sha> "$c" && echo "$c" && break; done
    ```
 
-   Every flag is load-bearing. `--ancestry-path` keeps only commits that
-   descend from the tip (plain `<tip>..<default>` includes unrelated
-   commits); **`--merges` is what makes it correct in the absorbed case** —
-   without it the first descendant is typically an intermediate commit on the
-   branch that absorbed the tip, which never landed on the default branch on
-   its own and has no CI run, so `gh run list --commit` returns `[]` and a
-   green branch is surfaced forever; `--topo-order` beats `rev-list`'s default
-   date order, which a back-dated commit can invert; and `rev-list` prints the
-   **full 40-char SHA** the `gh run list --commit` form demands.
+   Walk the default branch's own first-parent line, oldest first; the first
+   commit on that line whose history contains the tip is the carrying commit.
+   The first-parent constraint is load-bearing: an unconstrained
+   `--ancestry-path --merges` walk returns the topologically first merge
+   descending from the tip, and under nested-merge topology (phase merges
+   landing on a mission integration branch that reaches the default branch by
+   PR) that is a merge on the *integration branch*, which never landed on the
+   default branch on its own and has no CI run — so `gh run list --commit`
+   returns `[]` and a green branch is surfaced forever. Real case from this
+   repo's history: tip `b36003e` gave `4262217` (`merge(P1)` on the
+   integration branch, zero CI runs) where the carrying commit is `513e40a`
+   (the PR #33 merge on the default branch, CI green). The filter reuses
+   `merge-base --is-ancestor` — the same primitive as the ancestry gate — and
+   `rev-list` prints the **full 40-char SHA** the `gh run list --commit` form
+   demands.
 
-   **Empty output is not the ancestry proof failing.** It also means the tip
-   IS `origin/<default>`'s head, or reached it by fast-forward, in which case
-   no merge commit exists to carry it. `git merge-base --is-ancestor` is the
-   ancestry proof, and it is authoritative: if it exits 0 and this command is
-   empty, the tip is on the default branch already — check CI on the **tip
-   itself**. If `--is-ancestor` exits non-zero, the branch is unmerged and the
-   protected set applies: surface it, never delete.
+   **Empty output is not the ancestry proof failing.** Given the ancestry gate
+   passed, the default branch's head itself contains the tip, so this pipeline
+   is empty only when the tip IS `origin/<default>`'s head — check CI on the
+   **tip itself**. (A tip that reached the line by fast-forward yields the
+   next commit on the line, which also contains it; the rung demands CI on
+   both the tip and the carrying commit either way.) If `--is-ancestor` exits
+   non-zero, the branch is unmerged and the protected set applies: surface it,
+   never delete.
 3. **Neither CI nor deploy** → merged into the default branch alone satisfies
    the condition — the evidence line says so explicitly.
 4. **`gh` missing, rate-limited, or ambiguous** → the branch is **surfaced,
