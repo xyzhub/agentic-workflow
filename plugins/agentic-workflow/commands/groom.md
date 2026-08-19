@@ -25,16 +25,34 @@ number,title,labels,body,updatedAt` (or the tracker's equivalent). Filter by the
 optional `label:` argument. Note items missing the queue labels (`type/*`,
 `size/*`) — they get labels in step 4.
 
-Then **detect hand-written backlog files** — you know where they live; the
-owner should not have to say: `BACKLOG.md`, `docs/product/backlog.md`,
-`TODO.md`, and an item-level `.plans/roadmap.md` (per-entry `R-NN` rows /
-`SHIPPED`·`DEFERRED` status tables). A file counts when it holds `- [ ]`
-checkbox items (or `R-NN` entries) and its first three lines do NOT say
-`generated view`. Every such file is an import source for step 5 (the same
-detection the conform ladder uses, so what the session-start advisory called
-"hand-written" is exactly what gets imported). `--from <file>` adds or
-overrides a path — it is never required. Under `--dry-run`, list the detected
-files and the count of blocks each would import.
+Then **detect hand-written queue files** — you know where they live; the
+owner should not have to say. Sweep the repo's markdown (`git ls-files '*.md'`
+plus untracked docs — never `node_modules`) and take a file as a **queue
+candidate** when either:
+
+- it holds **≥3 unticked `- [ ]` items** (a checkbox list is a queue by
+  shape), or
+- its path or first heading matches `backlog|todo|roadmap|punchlist|triage|
+  ideas|follow-?ups|deferred|wishlist|nits`, or it carries item-level `R-NN`
+  entries (a roadmap with per-entry `SHIPPED`·`DEFERRED` status tables),
+
+and its first three lines do NOT say `generated view`. **Excluded by
+role, never imported**: `.plans/*.state.md` (mission ledgers — their open
+rows are beats, not queue items), `.plans/OBLIGATIONS.md` (the obligations
+register — `/agentic-workflow:settle`'s domain), `docs/WORKFLOW.md`,
+`CHANGELOG.md`, `docs/product/JOURNEY.md`, `docs/product/session-handoff.md`,
+`.plans/*.sessions.md`/`*.md` master plans, decision memos under
+`docs/product/decisions/`, and anything under `docs/archive/`. Everything else
+that matched is listed with its unticked count and the sentence that made it
+match. `--from <file>` adds or overrides a path — it is never required.
+
+Present the candidate list **once**, per file: import / skip / it is a note,
+not a queue (AskUserQuestion when the human is present; `--dry-run` prints
+the list and stops; unattended runs import only the canonical names —
+`BACKLOG.md`, `docs/product/backlog.md`, `TODO.md`, item-level
+`.plans/roadmap.md` — and report the rest as candidates). Skipped files are
+remembered in the generated view's header (`skipped: <path> — <owner's
+word>`) so the next groom does not ask again.
 
 ## 2. Probe each item against the tree (evidence, not memory)
 
@@ -83,8 +101,10 @@ ancestor of the default branch (`git merge-base --is-ancestor <sha> <default>`).
 
 ## 5. Import the detected backlog files (one-time per file; `--from` adds a path)
 
-For each file detected in step 1 (plus any `--from`), parse its `- [ ] **Title**
-…` blocks (title = the bold run, else the first sentence; body = the whole
+For each file confirmed in step 1 (plus any `--from`), parse its `- [ ] **Title**
+…` blocks (a checkbox line without a bold run: title = the line's first
+sentence, ≤80 chars; the surrounding paragraph and any nested bullets are the
+body) (title = the bold run, else the first sentence; body = the whole
 block; keep the source line number) — for an item-level roadmap, each `R-NN`
 entry is a block whose title is its heading and whose status line decides
 whether it imports as open or is skipped as already shipped/deferred (a

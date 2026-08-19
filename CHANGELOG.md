@@ -10,10 +10,14 @@ _(empty)_
 
 ## [1.47.1] — 2026-08-19
 ### Fixed
-- **`/groom` detects hand-written backlog files itself** — `BACKLOG.md`,
-  `docs/product/backlog.md`, `TODO.md` with checkbox items, an item-level
-  `.plans/roadmap.md` (`R-NN` rows / SHIPPED·DEFERRED tables) — the same
-  detection the conform ladder uses; `--from` only overrides the path. It asks
+- **`/groom` finds hand-written queue files itself** — a repo sweep: any
+  markdown with ≥3 unticked `- [ ]` items, or named/headed
+  backlog|todo|roadmap|punchlist|triage|ideas|follow-ups|deferred, or an
+  item-level roadmap (`R-NN` rows / SHIPPED·DEFERRED tables); mission ledgers,
+  the obligations register, WORKFLOW/CHANGELOG/JOURNEY, handoffs, decision
+  memos and archives are excluded by role. Confirms per file (import / skip /
+  a note, not a queue) and remembers skips in the generated view; unattended
+  runs import only the canonical names. `--from` only overrides the path. It asks
   once before creating issues when a human is present (`--dry-run` answers
   without asking), records the §10 Issue tracker row when the remote is GitHub,
   and treats an item-level roadmap's SHIPPED entries as no-op and DEFERRED ones
