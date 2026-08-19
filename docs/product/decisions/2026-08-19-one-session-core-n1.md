@@ -1,6 +1,6 @@
 # n=1 validation — the one-session mission core (v1.45.0–v1.48.6)
 
-**Date**: 2026-08-19 · **Venture**: orderly · **Mission**: `guest-payment-status-authz` (#605, security fix) · **Verdict**: the refit holds; plugin stays enabled.
+**Date**: 2026-08-19 · **Venture**: orderly · **Mission**: `guest-payment-status-authz` (#605, security fix) · **Verdict**: the refit holds; plugin stays enabled. (Amended post-merge-gate — see "The correction that matters": the n=1 also exposed a real reviewer-tiering gap, now fixed in v1.49.0.)
 
 ## Why this measurement exists
 
@@ -31,6 +31,22 @@ end under the new rules.
   owner ruled it intended and it became a decision doc instead of a bug.
 - /settle reaped 7 branches on ci-wait evidence; /groom turned a 123 KB backlog into
   130 groomed issues + a 14 KB generated view.
+
+## The correction that matters (added after the merge gate)
+
+The mission reviewer (opus) APPROVEd #605 and verified the diff correctly — but
+a follow-up **Fable auth-critical review, asked for because the owner distrusted
+the merge**, found #605 only HALF closed: the diff stopped one `qrToken` leak,
+while a second path (`checkout-url.post.ts` + a bypassable `create-intent` gate)
+still returns the token (#730). ~74k Fable tokens bought the one question the
+opus pass never asked — "is the threat actually closed?" This is simultaneously
+the n=1's best evidence FOR the tiering principle (a cheap high-tier pass caught
+what a thorough same-tier diff review structurally could not) and its clearest
+gap: the mission's default single-opus review under-covers an auth-critical
+change. Both are now rules in v1.49.0 (reviewer tier keys on risk class, not
+diff size; a security review must close the threat, not just the diff). #605
+stays OPEN until #730 lands; #729 merges as a strict-reduction partial with its
+PR body corrected so it does not read as closure.
 
 ## Caveats (what n=1 does not prove)
 
