@@ -26,8 +26,8 @@
 #          it. An older handoff still gets the nudge; under-silencing (firing
 #          early) is the safe direction for a capped one-shot advisory;
 #       4. silent when an ACTIVE mission ledger exists (OQ7) — mission sessions
-#          already have the thread-keeper, beat-enforcer and compact-resume.
-#          Selection is the thread-keeper's predicate VERBATIM (newest-mtime
+#          already have the mission-budget, beat-enforcer and compact-resume.
+#          Selection is the mission-budget hook's predicate VERBATIM (newest-mtime
 #          .plans/*.state.md with an open [ ]/[~] beat) so the two hooks can
 #          never disagree about what "active" means.
 #
@@ -70,7 +70,7 @@ elif [ "$BYTES" -ge "$ADVISORY_BYTES" ]; then BAND=advisory
 else exit 0
 fi
 
-# Silencer 4 — an active mission ledger exists (OQ7). Thread-keeper predicate
+# Silencer 4 — an active mission ledger exists (OQ7). Mission-budget (ex thread-keeper) predicate
 # verbatim: newest-mtime .plans/*.state.md that still has an open [ ]/[~] beat.
 if [ -d .plans ]; then
   LEDGER=$(ls -t .plans/*.state.md 2>/dev/null | while IFS= read -r f; do
