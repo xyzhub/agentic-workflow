@@ -71,7 +71,7 @@ every ~3 beats. Write the ledger and decision log at every merge and gate
 verdict as they happen, not at stage end. Design-quality tooling (impeccable,
 §0.2) runs at the checkpoint cadence, never as a per-turn feed — if the
 venture's own impeccable `Stop` hook is on, ask the owner to quiet it for the
-autonomous run (`IMPECCABLE_HOOK_QUIET=1`) or note in the decision log that
+autonomous run (drop its `Stop` entry, or `IMPECCABLE_HOOK_DISABLED=1` — `IMPECCABLE_HOOK_QUIET` only mutes clean acks) or note in the decision log that
 its hints are advisory and not worked.
 
 Record this as `docs/product/flight-plan.md`, from the bundled template

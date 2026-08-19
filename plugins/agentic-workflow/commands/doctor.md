@@ -53,7 +53,7 @@ The profile is load-bearing and written once — verify it still tells the truth
 - **Design-tooling cadence (§0.2)**: if impeccable is present (any probe form)
   AND `.claude/settings*.json` registers its hook on `Stop`, report 🟡 "per-turn
   design deep pass is on — quiet it for autonomous runs
-  (`IMPECCABLE_HOOK_QUIET=1` / drop the Stop entry) and rely on the checkpoint
+  (drop the `Stop` entry, or `IMPECCABLE_HOOK_DISABLED=1` for the run — `IMPECCABLE_HOOK_QUIET` only mutes clean acks) and rely on the checkpoint
   gate"; a `PostToolUse`-only registration is 🟢.
 - **Mission budget fields**: every active `.plans/*.state.md` carries exactly
   one `Next up:` line and an `Estimate:` line; missing/duplicate → 🟡 with the

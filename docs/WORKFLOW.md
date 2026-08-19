@@ -146,8 +146,10 @@ density, polish). Only blocking findings may drive REQUEST CHANGES; advisory
 ones ride into the ledger as a backlog line. Ventures that install impeccable's
 own hooks (a `PostToolUse` per-edit pass and a `Stop` "deep pass" in
 `.claude/settings*.json`) should, for **autonomous runs** (missions, autopilot,
-loop ticks), silence the Stop pass — `IMPECCABLE_HOOK_QUIET=1` or drop the
-`Stop` entry — and rely on the checkpoint gate; `/agentic-workflow:doctor`
+loop ticks), drop the `Stop` entry from `.claude/settings*.json` (or set
+`IMPECCABLE_HOOK_DISABLED=1` for the run — note `IMPECCABLE_HOOK_QUIET` only
+silences the clean-file acks, it does NOT stop the deep-pass findings) — and
+rely on the checkpoint gate; `/agentic-workflow:doctor`
 reports the venture's impeccable hook configuration. Incident (orderly,
 2026-08-17→19): the Stop deep pass fired at every turn end of a two-day
 mission (110 firings in one transcript) inside a loop that treated every hint
