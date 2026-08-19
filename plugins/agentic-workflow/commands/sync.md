@@ -1,6 +1,6 @@
 ---
 description: Conform the project to the installed plugin — re-copy docs/WORKFLOW.md (preserving §10 + Local amendments) AND apply the structure ladder (tools/conform.mjs) so a project adopted on an older version gains the rows, ledger fields, roadmap, catalog and queue view the current plugin expects.
-allowed-tools: [Read, Write, Edit, Bash, Grep, Glob]
+allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, AskUserQuestion, SlashCommand]
 ---
 
 Bring the project up to the installed plugin — the protocol copy AND the
@@ -128,6 +128,25 @@ edit, never a rewrite of project prose:
 Re-run `node "${CLAUDE_PLUGIN_ROOT}/tools/conform.mjs"` and paste its output
 into the report: it must read "matches plugin vX" or list only the gaps whose
 fix is another command (`groom`, `adopt`) — those are the hand-off.
+
+## 3.8 Close the loop with the human (don't leave a to-do list)
+
+A hand-off list the human must retype is half a job (observed: the 1.48.3
+run on orderly printed five hand-offs and asked nothing — because this
+command previously could not ask). When a human is present:
+
+1. **`TBD — confirm` rows first** — ask them via AskUserQuestion, one
+   question per row, each with a recommended option and an explicit "leave
+   TBD" choice (e.g. Portfolio → recommend `none` while §13 is frozen;
+   Publish policy → recommend the `human-only` default). Write each answer
+   into §10 as given — never infer a delegation.
+2. **Then offer the next command** — the first remaining hand-off
+   (`/agentic-workflow:groom`, `adopt`, `settle`) via AskUserQuestion
+   (default yes) and, on yes, run it via SlashCommand — the `/agentic-workflow:next`
+   pattern. A no leaves the printed list, which is still the full record.
+
+Unattended runs (no human) skip this step and leave the list — never guess a
+`TBD` value.
 
 ## 4. Review & hand off
 

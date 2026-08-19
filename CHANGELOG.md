@@ -8,6 +8,16 @@ has no tags — each version-stamped commit on `main` IS the release.
 
 _(empty)_
 
+## [1.48.5] — 2026-08-19
+### Fixed
+- **`/sync` can now ask** (owner: "it didn't ask me anything, it just listed
+  hand-offs"): `AskUserQuestion`/`SlashCommand` were missing from its
+  allowed-tools, so it could only print a list. New step 3.8: collect the
+  `TBD — confirm` §10 rows one question at a time (each with a recommendation
+  and a "leave TBD" option; never infer a delegation), then offer to run the
+  first remaining hand-off via SlashCommand — the `/next` pattern. Unattended
+  runs still just leave the list.
+
 ## [1.48.4] — 2026-08-19
 ### Fixed
 - **`conform.mjs` `has10()` label match** (found by orderly's `/sync`, #57):
