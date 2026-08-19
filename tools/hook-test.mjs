@@ -383,9 +383,12 @@ const HARD_PAUSE_NOT_STARTED = ledger(
 {
   const spec = JSON.parse(readFileSync(HOOKS, 'utf8'));
   const matchers = (spec.hooks.SessionStart || []).map((g) => g.matcher);
-  check('SessionStart: matchers are exactly ["compact","startup|resume"] — and "startup|resume" does not match "compact"',
-    matchers.length === 2 && matchers[0] === 'compact' && matchers[1] === 'startup|resume'
-      && !new RegExp(matchers[1]).test('compact'),
+  // v1.47.0: a third SessionStart group (conform-check) shares the
+  // `startup|resume` matcher — the invariant is "compact is alone on its
+  // matcher and no other group can fire on compact", not a fixed count.
+  check('SessionStart: matchers are ["compact", then only "startup|resume" groups] — none of the others matches "compact"',
+    matchers.length >= 2 && matchers[0] === 'compact'
+      && matchers.slice(1).every((m) => m === 'startup|resume' && !new RegExp(m).test('compact')),
     `matchers=${JSON.stringify(matchers)}`);
 }
 const COMPACT = 'compact-resume directive';
@@ -1097,6 +1100,57 @@ const CLOSING_NONE_DUE = {
   const lines = (r) => { try { return JSON.parse(r.stdout).hookSpecificOutput.additionalContext.split('\n'); } catch { return []; } };
   check('compact-resume: no catalog → directive unchanged (no item 3)', e.code === 0 && !lines(e).some((l) => /catalog\/README/.test(l)) && lines(e).length <= 6, JSON.stringify(e.stdout));
   check('compact-resume: catalog README present → item 3 names it, still ≤6 lines', f.code === 0 && lines(f).some((l) => /3\. docs\/product\/catalog\/README\.md/.test(l)) && lines(f).length <= 6, JSON.stringify(f.stdout));
+}
+
+// ── SessionStart:startup|resume conform-check advisory (v1.47.0) ─────────
+// The "recognize" half of conformance: tools/conform.mjs --brief through the
+// hook. Fixtures build a project at various distances from the installed plugin.
+{
+  const CONF = 'conform-check advisory';
+  const pv = JSON.parse(readFileSync(path.join(PLUGIN, '.claude-plugin/plugin.json'), 'utf8')).version;
+  const ctxOf = (r) => { try { return JSON.parse(r.stdout).hookSpecificOutput.additionalContext; } catch { return ''; } };
+  const wf = (stamp, rows) => `# The Workflow\n\n<!-- protocol-master: v${stamp} -->\n\n## 10. Project profile\n\n| Key | Value |\n|---|---|\n${rows.map((r) => `| **${r}** | x |`).join('\n')}\n\n## 11. Autopilot mode\n`;
+  const FULL10 = ['Default branch', 'Staging', 'Issue tracker'];
+  const conformant = {
+    'docs/WORKFLOW.md': { content: wf(pv, FULL10) },
+    'docs/product/roadmap.md': { content: '# Roadmap (epic view)\n\n## Epics\n' },
+    'tools/catalog.mjs': { content: readFileSync(path.join(PLUGIN, 'tools/catalog.mjs'), 'utf8') },
+    'docs/product/catalog/README.md': { content: '# Product catalog\n' },
+    'docs/product/catalog/api.md': { content: '# API\n' },
+    'docs/product/catalog/data-model.md': { content: '# Data model\n' },
+    'docs/product/catalog/features.md': { content: '# Features\n' },
+  };
+  const sid = (t) => `conf-${t}-${process.pid}-${Date.now()}`;
+
+  { const r = runHook({ event: 'SessionStart', desc: CONF, input: { source: 'startup', session_id: sid('a') } });
+    check('conform-check: not an adopted project (no docs/WORKFLOW.md) → silent', r.code === 0 && r.stdout === '', r.stdout); }
+  { const r = runHook({ event: 'SessionStart', desc: CONF, input: { source: 'startup', session_id: sid('b') }, files: conformant });
+    check('conform-check: fully conformant project → silent', r.code === 0 && r.stdout === '', r.stdout); }
+  { const files = { ...conformant, 'docs/WORKFLOW.md': { content: wf('1.43.0', ['Default branch']) } };
+    delete files['tools/catalog.mjs']; delete files['docs/product/roadmap.md'];
+    const r = runHook({ event: 'SessionStart', desc: CONF, input: { source: 'startup', session_id: sid('c') }, files });
+    const m = ctxOf(r);
+    check('conform-check: v1.43 project (no Staging/Issue-tracker rows, no roadmap, no catalog tooling) → ≤3-line advisory naming gaps + /sync',
+      r.code === 0 && /behind the installed plugin/.test(m) && /v1\.43\.0 < plugin v/.test(m) && /profile-staging-row/.test(m) && /agentic-workflow:sync/.test(m) && m.split('\n').length <= 3, JSON.stringify(m)); }
+  { const files = { ...conformant };
+    const r = runHook({ event: 'SessionStart', desc: CONF, input: { source: 'startup', session_id: sid('d') }, files,
+      ledgers: { 'm.state.md': '- [ ] S1\nNext up: S1\nNext up: S2\n' } });
+    const m = ctxOf(r);
+    check('conform-check: active ledger without budget fields and with two Next up: → advisory names ledger gaps',
+      r.code === 0 && /ledger-budget-fields/.test(m) && /ledger-single-next-up/.test(m), JSON.stringify(m)); }
+  { const files = { ...conformant, 'BACKLOG.md': { content: '# Backlog\n- [ ] **thing** foo\n' } };
+    const r = runHook({ event: 'SessionStart', desc: CONF, input: { source: 'resume', session_id: sid('e') }, files });
+    check('conform-check: hand-written BACKLOG.md → backlog-is-generated-view gap (fires on resume too)', r.code === 0 && /backlog-is-generated-view/.test(ctxOf(r)), JSON.stringify(ctxOf(r))); }
+  { const files = { ...conformant, 'BACKLOG.md': { content: '# Backlog — generated view (do not edit)\n' } };
+    const r = runHook({ event: 'SessionStart', desc: CONF, input: { source: 'startup', session_id: sid('f') }, files });
+    check('conform-check: generated-view BACKLOG.md → silent', r.code === 0 && r.stdout === '', r.stdout); }
+  { const files = { ...conformant, 'docs/WORKFLOW.md': { content: wf('1.43.0', FULL10) } };
+    const id = sid('g');
+    const a = runHook({ event: 'SessionStart', desc: CONF, input: { source: 'startup', session_id: id }, files });
+    const b = runHook({ event: 'SessionStart', desc: CONF, input: { source: 'startup', session_id: id }, files });
+    check('conform-check: stale stamp only → one-line-ish advisory once per session (second dispatch silent)', a.code === 0 && /protocol-stamp/.test(ctxOf(a)) && b.code === 0 && b.stdout === '', `a=${JSON.stringify(ctxOf(a))} b=${JSON.stringify(b.stdout)}`); }
+  { const r = runHook({ event: 'SessionStart', desc: CONF, input: { source: 'compact', session_id: sid('h') }, files: { ...conformant, 'docs/WORKFLOW.md': { content: wf('1.43.0', ['Default branch']) } } });
+    check('conform-check: source=compact → silent (compact-resume owns that beat)', r.code === 0 && r.stdout === '', r.stdout); }
 }
 
 if (failures.length) {

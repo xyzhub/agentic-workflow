@@ -154,7 +154,7 @@ alongside the workflow; when it isn't, they proceed exactly as today.
 | `/agentic-workflow:doctor` | Machinery diagnosis: environment tools (codegraph, ripgrep, jq, gh), §10 truthfulness (rows must RESOLVE), records, orphaned ledgers; `fix` installs missing dev tools and repairs provably-wrong rows |
 | `/agentic-workflow:tune` | Upgrade an underperforming agent's model per project (shadow copy in `.claude/agents/`); `reset` restores the default |
 | `/agentic-workflow:connect` | Interactive owner-channel setup (Telegram or Slack): guided steps, auto-discovered IDs, a proven round-trip test |
-| `/agentic-workflow:sync` | Upgrade a project's protocol copy to the installed master — §10 and Local amendments preserved verbatim, new profile rows reconciled |
+| `/agentic-workflow:sync` | Conform a project to the installed plugin: re-copy the protocol master (§10 + Local amendments preserved verbatim) and apply the structure ladder (`tools/conform.mjs`) — missing §10 rows, ledger budget fields, roadmap epic view, catalog tooling/files; hands off to `groom`/`adopt` for what needs the tracker or a seed |
 | `/agentic-workflow:ingest` | Harvest a reusable first-party artifact into the §13 portfolio **commons**: copy it into the registry repo under `commons/code/<slug>/`, pin provenance, write its index entry — a delegable bookkeeping PR |
 
 ## What an adopted project carries
@@ -217,13 +217,17 @@ not a measured one, since this repo has no corpus to confirm an effect size.
 Checks evaluate in the command's **target repo** and read pre-execution
 state.
 
-Six **governance reflexes** (advisory, never block) keep a session on the
+Seven **governance reflexes** (advisory, never block) keep a session on the
 protocol without it being read: the **router** nudges an un-prefixed work request
 to route through the workflow (hand to `intake`); the **mission-budget** hook
 (supersedes the thread-keeper) surfaces the active ledger's `session k/N` +
 its first `Next up:` each turn and becomes the 🛑 OVERRUN stop once sessions
 reach 1.5× the planner's estimate — the orchestrator must give the owner a
 scope decision before building on (§5); the
+**conform-check** tells a session, once, when the project's structure is behind
+the installed plugin (stale stamp, missing §10 rows, ledgers without budget
+fields, no roadmap/catalog, hand-written backlog) and points at
+`/agentic-workflow:sync`, which applies the same ladder; the
 **beat-enforcer** nudges a not-started ledger beat (`chronicler` at
 close, `reviewer` at a checkpoint) at the moment you try to close or advance —
 stepping over beats that aren't due (held, or behind unfinished work or an

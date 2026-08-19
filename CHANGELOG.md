@@ -8,6 +8,41 @@ has no tags — each version-stamped commit on `main` IS the release.
 
 _(empty)_
 
+## [1.47.0] — 2026-08-19
+### Added — recognize and conform: a project on an older structure is told, and `/sync` fixes it
+Owner ask: after #39/#40 a project adopted on v1.43 kept running on v1.46 with
+ledgers lacking the budget fields (the overrun stop could not fire), no
+Staging/Issue-tracker rows, no catalog, no roadmap epic view, a hand-appended
+backlog — and nothing said so; `/sync` only re-copied WORKFLOW.md, and only when
+a human remembered.
+- **`tools/conform.mjs`** (ships in the plugin; filesystem-only, instant): a
+  versioned ladder of structural expectations — protocol stamp vs installed
+  plugin; §10 **Staging** / **Issue tracker** rows; active ledgers (open beat,
+  not `Closed:`) carrying `Estimate:`/`Sessions used:` and exactly one `Next
+  up:`; `docs/product/roadmap.md` without per-item status; a generated (not
+  hand-written) backlog view; `tools/catalog.mjs` present and identical to the
+  plugin's; the `docs/product/catalog/` files; the engineering folder. Each gap
+  names its fix. `--brief` (≤3 lines), `--json`, `--strict`. New §10 **Catalog**
+  row: `none — <why>` opts a repo with nothing to derive out of the catalog gaps.
+- **conform-check hook** (`SessionStart` `startup|resume`, never `compact`):
+  runs the ladder once per session and injects the ≤3-line advisory pointing at
+  `/agentic-workflow:sync`; silent when not adopted, conformant, or node/the
+  script is missing; always exit 0. 8 hook-test cases; the SessionStart matcher
+  invariant now reads "compact alone; every other group `startup|resume`".
+- **`/sync` applies the same ladder** (new step 0 measures, step 3.7 conforms,
+  idempotent): appends missing §10 rows with detected values, adds ledger
+  budget fields (`k` = done sessions, `N` = an honest floor) and dedups `Next
+  up:` (renaming superseded lines), seeds the roadmap epic view, copies/refreshes
+  `tools/catalog.mjs` + `features.md`, and hands off to `groom`/`adopt` for what
+  needs the tracker or a seed; re-runs the ladder into its report. `/check`
+  gains a conformance step.
+- This repo conformed itself (Catalog: none; budget fields on the last open
+  ledger); the ladder reads clean here.
+### Fixed
+- `conform.mjs`: JS has no `\Z` — the §10 section regex truncated at the first
+  capital Z; end-of-input is `(?![\s\S])`. Caught by the "conformant → silent"
+  hook case.
+
 ## [1.46.0] — 2026-08-19
 ### Added — one queue, the product catalog, catalog-driven marketing
 Owner asks after v1.45.0, all found while trying to pick one feature in a
