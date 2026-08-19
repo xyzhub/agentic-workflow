@@ -53,8 +53,12 @@ defects; three merges and a gate went unrecorded and a compaction erased them.
    notifications), and its running cost is re-quoted to the owner in the ledger
    every ~3 beats and killed the moment its remit ends. The reviewer flags any
    standing agent without that line.
-5. **Write the ledger at every merge and every gate result (LA-6)** — not at
-   session end. You have no session boundary to force a write-ahead; a
+5. **Write the ledger at every merge, every gate result, AND every gate
+   spawn (LA-6)** — not at session end. A long review's START is a recordable
+   beat: from outside, an unrecorded 13-minute Fable pass is indistinguishable
+   from a stall (observed live, 2026-08-19 — a watcher read a running
+   pre-promote gate as possible rot). One line at spawn — what was spawned, on
+   what range, when — then the verdict when it returns. You have no session boundary to force a write-ahead; a
    compaction can erase everything since the last write. After each merge to
    staging, each verify result, each review verdict, each PR opened: write the
    handoff entry, flip the glyph, advance `Next up:`, then continue.

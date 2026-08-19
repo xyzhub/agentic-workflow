@@ -405,10 +405,12 @@ mechanical half):
   finding.
   *Incident:* six supervisor beats ≈ 1.08M tokens, 94% of a session's Fable
   spend, against 70k for the one-shot review that found the real defects.
-- **Write-ahead at every merge and gate (LA-6).** Builders have a session
-  boundary that forces a write; the orchestrator does not. The ledger is
-  written at every merge to staging, every verify result, every review
-  verdict, every PR opened — not at session end. *Incident:* a checkpoint
+- **Write-ahead at every merge, gate result, and gate SPAWN (LA-6).** Builders
+  have a session boundary that forces a write; the orchestrator does not. The
+  ledger is written at every merge to staging, every verify result, every
+  review verdict, every PR opened — and one line when a long gate is SPAWNED
+  (what, on which range, when), because an unrecorded in-flight review is
+  indistinguishable from a stall to any watcher — not at session end. *Incident:* a checkpoint
   review, three merges and a verify went unrecorded; a compaction erased them.
 - **Exactly one `Next up:` (LA-7).** Supersede by renaming the old line
   (`SUPERSEDED next-up (historical):`); the hook reads the first and warns on
@@ -432,7 +434,13 @@ mechanical half):
   commit** (`node tools/ci-wait.mjs <full-sha>`, run in the background — exit 0
   is the only green; no-runs and a never-triggered expected workflow are
   failures; a PR-level check summary is not evidence, LA-8),
-  `/agentic-workflow:verify` runs against the staging URL,
+  `/agentic-workflow:verify` runs against the staging URL — and staging is
+  evidence only insofar as it exercises the SAME image/release/deploy commands
+  as production (*incident, orderly #586: `fly.staging.toml` ran an old inline
+  migrate command while `fly.toml` ran a wrapper script the Docker image never
+  contained — staging green while the prod release phase would have
+  MODULE_NOT_FOUND'd with zero of 7 migrations applied; a whole-range Fable
+  re-gate caught it at the merge*) —,
   and only then does the PR to the default branch open. The human merges that
   PR (or the agent under a delegated §10 Merge policy). Never straight from a
   phase branch to the default branch.

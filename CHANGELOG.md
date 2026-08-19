@@ -8,6 +8,10 @@ has no tags — each version-stamped commit on `main` IS the release.
 
 _(empty)_
 
+## [Unreleased]
+
+_(empty)_
+
 ## [1.49.2] — 2026-08-19
 ### Fixed
 - **Staging parity has a second dimension: connection topology.** Same
@@ -16,6 +20,18 @@ _(empty)_
   accepted by staging's direct Postgres and FATAL-rejected by prod's
   PgBouncer. §5 parity rule now names it; migrations run on the DIRECT
   database URL in every environment.
+## [1.49.1] — 2026-08-19
+### Fixed
+- **LA-6 extended to gate spawns**: the orchestrator writes one ledger line
+  when a long gate is SPAWNED (what, range, when), not only at its verdict —
+  an unrecorded in-flight review is indistinguishable from a stall to a
+  watcher (observed live).
+- **Staging-parity rule (§5)**: staging is evidence only insofar as it runs the
+  SAME image/release/deploy commands as production. Incident, orderly #586: a
+  release wrapper existed in fly.toml but not in the Docker image, and
+  staging's toml still ran the old inline command — staging green while prod's
+  release phase would have failed with zero of 7 migrations applied; caught by
+  a whole-range Fable re-gate at the merge.
 
 ## [1.49.0] — 2026-08-19
 ### Changed — reviewer tier keys on risk class, and a security review must close the threat
