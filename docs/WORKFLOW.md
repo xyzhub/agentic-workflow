@@ -1,6 +1,6 @@
 # The Workflow — one agentic protocol from idea to viable product
 
-<!-- protocol-master: v1.47.1 -->
+<!-- protocol-master: v1.47.2 -->
 
 ## Quick reference — humans start here
 
@@ -156,6 +156,20 @@ reports the venture's impeccable hook configuration. Incident (orderly,
 mission (110 firings in one transcript) inside a loop that treated every hint
 as work; sessions stretched and the mission consumed 38% of the owner's weekly
 quota. The detector was not wrong; the cadence was.
+
+**The conventions file (CLAUDE.md/AGENTS.md) — conventions with anchors, never
+state.** It is injected into every session, so it misleads at the highest
+leverage when stale. Rules: it holds conventions and invariants only — product
+state lives in the catalog (§6.1), protocol in this file (pointer, not copy),
+the queue in the tracker (§4). Every fact carries an **anchor** (a path, a
+package script, a symbol) so it can be checked; the conform ladder's
+`claude-md-anchors` entry verifies anchors at session start and
+`/agentic-workflow:sync` lists the dead ones. Writers
+(**`/agentic-workflow:retro`**, **`/agentic-workflow:end`**, a checkpoint steer that
+graduates into a durable convention) **rewrite the line they supersede in
+place** — never append a second truth. A diff that renames or deletes an
+anchor the conventions file names updates that line **in the same PR** — the
+reviewer's DX lens gates it exactly like a catalog row.
 
 **DX** — *a stranger clones the repo and ships a fix the same day.*
 - README quickstart with few commands incl. a one-command dev datastore;

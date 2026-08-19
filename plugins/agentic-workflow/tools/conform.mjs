@@ -66,6 +66,40 @@ function activeLedgers() {
 const catalogOptOut = () => /^\|\s*\*\*Catalog\*\*\s*\|\s*none\b/mi.test(section10());
 const has10 = (label) => new RegExp(`^\\|\\s*\\*\\*${label}\\*\\*`, 'm').test(section10());
 
+// The conventions file (CLAUDE.md/AGENTS.md) is injected into EVERY session, so
+// a dead anchor there misleads more than anywhere else. Check only tokens that
+// are unambiguously concrete: backticked repo paths (contain '/', have an
+// extension, no globs/placeholders/vars, not absolute/~/URL) and
+// `pnpm|npm run <script>` names against package.json. Advisory like the rest.
+function conventionsFile() {
+  for (const f of ['CLAUDE.md', 'AGENTS.md']) if (existsSync(at(f))) return f;
+  return null;
+}
+function deadClaudeMdAnchors() {
+  const f = conventionsFile();
+  if (!f) return [];   // absence is /doctor's business, not a broken anchor
+  const text = read(at(f)) || '';
+  const dead = [];
+  const seen = new Set();
+  for (const [, tok] of text.matchAll(/`([^`\n]+)`/g)) {
+    const t = tok.trim();
+    if (seen.has(t)) continue; seen.add(t);
+    const run = t.match(/^(?:pnpm|npm)\s+run\s+([A-Za-z0-9:_-]+)$/);
+    if (run) {
+      try {
+        const pkg = JSON.parse(read(at('package.json')) || '{}');
+        if (pkg.scripts && !(run[1] in pkg.scripts)) dead.push(`${t} (no such package script)`);
+      } catch { /* unparseable package.json → skip, not a CLAUDE.md problem */ }
+      continue;
+    }
+    if (!t.includes('/')) continue;
+    if (/[\s*<>{}$()\[\]|,]|^https?:|^~|^\//.test(t)) continue;
+    if (!/\.[A-Za-z0-9]{1,6}$/.test(t)) continue;
+    if (!existsSync(at(t))) dead.push(t);
+  }
+  return dead;
+}
+
 // ── the ladder ─────────────────────────────────────────────────────────────
 // { id, since, check: () => true | string(gap detail), fix }
 const LADDER = [
@@ -107,6 +141,9 @@ const LADDER = [
   { id: 'catalog-files', since: '1.46.0',
     check: () => { if (catalogOptOut()) return true; const miss = ['README.md', 'api.md', 'data-model.md', 'features.md'].filter((f) => !existsSync(at('docs/product/catalog', f))); return miss.length ? `docs/product/catalog/ missing ${miss.join(', ')} (sessions build on old knowledge without it)` : true; },
     fix: 'run `node tools/catalog.mjs` and seed features.md from templates/catalog-features.md (/agentic-workflow:adopt\'s catalog step)' },
+  { id: 'claude-md-anchors', since: '1.47.2',
+    check: () => { const dead = deadClaudeMdAnchors(); return dead.length ? `${conventionsFile()} names ${dead.length} anchor(s) that no longer resolve (it is injected into every session): ${dead.slice(0, 5).join(', ')}${dead.length > 5 ? ', …' : ''}` : true; },
+    fix: 'update or delete those lines — conventions carry anchors and are rewritten in place when the thing they name moves (§6.1); a diff that renames/deletes a named anchor updates the line in the same PR' },
   { id: 'catalog-tooling-current', since: '1.46.0',
     check: () => { const a = read(at('tools/catalog.mjs')), b = read(path.join(PLUGIN, 'tools/catalog.mjs')); if (!a || !b) return true; return a === b ? true : 'tools/catalog.mjs differs from the installed plugin\'s copy'; },
     fix: '/agentic-workflow:sync step 3.6 copies the newer script over and regenerates the derived files' },

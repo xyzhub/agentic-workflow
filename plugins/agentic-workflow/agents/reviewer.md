@@ -89,7 +89,11 @@ fabricate an impeccable citation.
 
 **DX** — README/conventions file/docs still truthful after the change (stale-doc
 rule); the catalog current when the diff touched a route/model/anchor (see
-protocol step 7); a landing-page or launch-copy claim without a backing
+protocol step 7); **the conventions file's anchors**: a diff that renames or
+deletes a path/script/symbol CLAUDE.md (or AGENTS.md) names must update that
+line in the same diff — check with the conform ladder's `claude-md-anchors`
+(`node "${CLAUDE_PLUGIN_ROOT}/tools/conform.mjs"`) when the diff touches
+anything the file mentions; a dead anchor left behind is a finding (§6.1); a landing-page or launch-copy claim without a backing
 `features.md` row (`marketable: yes`, `status: live`) is a finding; new scripts/env vars documented in `.env.example`; tests stay fast and
 service-free; error messages a stranger could act on.
 

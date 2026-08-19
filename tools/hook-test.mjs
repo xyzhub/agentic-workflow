@@ -1149,6 +1149,21 @@ const CLOSING_NONE_DUE = {
     const a = runHook({ event: 'SessionStart', desc: CONF, input: { source: 'startup', session_id: id }, files });
     const b = runHook({ event: 'SessionStart', desc: CONF, input: { source: 'startup', session_id: id }, files });
     check('conform-check: stale stamp only → one-line-ish advisory once per session (second dispatch silent)', a.code === 0 && /protocol-stamp/.test(ctxOf(a)) && b.code === 0 && b.stdout === '', `a=${JSON.stringify(ctxOf(a))} b=${JSON.stringify(b.stdout)}`); }
+  // claude-md-anchors (v1.47.2): dead anchors in the conventions file are a gap;
+  // resolving anchors, globs/placeholders/URLs, and a missing file are not.
+  { const files = { ...conformant,
+      'CLAUDE.md': { content: 'Run `pnpm run lint`; read `src/gone.ts`; skip `docs/*plan*`, `<x/y.md>`, `https://a.com/b.md`; real: `docs/WORKFLOW.md`.\n' },
+      'package.json': { content: '{"scripts":{"test":"x"}}' } };
+    const r = runHook({ event: 'SessionStart', desc: CONF, input: { source: 'startup', session_id: sid('i') }, files });
+    const m = ctxOf(r);
+    check('conform-check: CLAUDE.md dead script + dead path → claude-md-anchors gap (globs/URLs/placeholders skipped)',
+      r.code === 0 && /claude-md-anchors/.test(m), JSON.stringify(m)); }
+  { const files = { ...conformant,
+      'CLAUDE.md': { content: 'Read `docs/WORKFLOW.md` and run `pnpm run test`; routes like `/api/x/*` are fine.\n' },
+      'package.json': { content: '{"scripts":{"test":"x"}}' } };
+    const r = runHook({ event: 'SessionStart', desc: CONF, input: { source: 'startup', session_id: sid('j') }, files });
+    check('conform-check: CLAUDE.md with resolving anchors only → silent', r.code === 0 && r.stdout === '', r.stdout); }
+
   { const r = runHook({ event: 'SessionStart', desc: CONF, input: { source: 'compact', session_id: sid('h') }, files: { ...conformant, 'docs/WORKFLOW.md': { content: wf('1.43.0', ['Default branch']) } } });
     check('conform-check: source=compact → silent (compact-resume owns that beat)', r.code === 0 && r.stdout === '', r.stdout); }
 }
