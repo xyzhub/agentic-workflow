@@ -8,6 +8,21 @@ has no tags — each version-stamped commit on `main` IS the release.
 
 _(empty)_
 
+## [1.48.3] — 2026-08-19
+### Added — `/connect server <tailscale-host>`: one guided command to offload heavy work to a server
+Owner: "I don't know how to set that up… maybe a single command." Same
+pattern as the owner-channel `/connect`: one step at a time, verify before
+proceeding, record only after a proven round-trip. Collect hostname/user/path
+→ key + `~/.ssh/config` alias (`ssh-copy-id` run by the human — no passwords
+in the conversation) → server readiness (git/node/pnpm/docker, installs only
+with an okay) → repo cloned via a `gh repo deploy-key add` key (no password
+dance), `.env` scp'd → docker context (`host=ssh://<alias>`, every docker/
+compose command runs server-side) → four-probe round-trip → THEN record: §10
+**Remote executor** row, heavy gates rewritten in remote form (pushed-branch-
+tip only, LA-8), AUTH.md access recipe. `/doctor` probes the alias, remote
+repo, and docker context. Part of #53 (remainder: prefer-remote semantics,
+remote worktrees with #44).
+
 ## [1.48.2] — 2026-08-19
 ### Added — AUTH.md: test users and authenticated access, known to every session (owner ask)
 - `templates/auth.md` → `docs/AUTH.md`: seeded app test users (role, login,

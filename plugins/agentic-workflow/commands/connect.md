@@ -1,6 +1,6 @@
 ---
-description: Interactive owner-channel setup — pick Telegram or Slack, get walked through each step, have IDs discovered automatically, and end with a proven round-trip test. Writes the §10 row only after the test passes.
-argument-hint: [telegram | slack]
+description: Interactive setup with a proven round-trip before anything is recorded — the owner channel (telegram | slack), or a remote work server (server <tailscale-host>) so heavy work (Docker, integration suites, builds) runs off the local machine. Writes the §10 rows only after the tests pass.
+argument-hint: '[telegram | slack | server <tailscale-hostname>]'
 allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, AskUserQuestion, WebFetch]
 ---
 
@@ -22,6 +22,9 @@ never echo one. Tokens go into the human's env (shell profile export, or an
 uncommitted `.env`); you verify by USING the var in a call, not by printing
 it. If the human pastes a token into the chat anyway: tell them it's now in a
 transcript — rotate it — and continue with the rotated one.
+
+**`server` mode** — `$ARGUMENTS` starts with `server` → skip the owner-channel
+flow entirely and run the **remote work server** setup at the end of this file.
 
 ## 0. Pick the transport (AskUserQuestion, unless `$ARGUMENTS` says)
 
@@ -109,3 +112,54 @@ Reuse skips setup, never proof — the round-trip test always runs.
 What was configured, what the round-trip proved (send ✅ / inbound ✅ with
 which identity), the files touched, and — if anything failed — exactly where
 in the step-by-step it stopped and the manual fix.
+
+
+---
+
+## Remote work server — `/agentic-workflow:connect server <tailscale-hostname>`
+
+Goal: heavy work (Docker, integration suites, builds, dev servers) runs on the
+server while the session stays local (§10 **Remote executor**). The owner
+provides only the Tailscale hostname (and answers prompts); every step is
+verified before the next; nothing is recorded until the round-trip proves out.
+The secret rule holds: no passwords in the conversation — the one step that
+may need one (`ssh-copy-id`) is run BY THE HUMAN (`! ssh-copy-id …`), never by
+you.
+
+1. **Collect** (AskUserQuestion where missing): Tailscale hostname (from
+   `$ARGUMENTS`), SSH user on the server, repo path there (default
+   `~/apps/<repo>`). Sanity: `tailscale status 2>/dev/null | grep <host>` when
+   the CLI exists — absent is fine, Tailscale MagicDNS still resolves.
+2. **Key + alias.** No `~/.ssh/id_ed25519*`? → `ssh-keygen -t ed25519 -N ""`.
+   Test `ssh -o BatchMode=yes <user>@<host> true`; on failure tell the human
+   to run `! ssh-copy-id <user>@<host>` (they type the password, once) and
+   re-test. Then append a `Host <repo>-server` block (HostName, User) to
+   `~/.ssh/config` — the alias is what every later command and §10 row uses.
+3. **Server readiness.** Over SSH check `git`, `node >= 18`, `pnpm`, `docker`
+   (+ compose). Report what's missing with the exact install commands for the
+   server's distro; run them only with the owner's explicit okay.
+4. **Repo on the server, no password dance**: generate a key ON the server if
+   none (`ssh <alias> ssh-keygen …`), register it from here with
+   `gh repo deploy-key add` (read-only is enough for gates; read-write if
+   remote worktrees will push), then `ssh <alias> git clone git@github.com:…
+   <path>` and copy the untracked env: `scp .env <alias>:<path>/` (values
+   never transit the conversation). Seed per §10.
+5. **Docker context**: `docker context create <repo>-server --docker
+   "host=ssh://<alias>"`; verify `docker --context <repo>-server ps`. Tell the
+   owner: `docker context use <repo>-server` makes every docker/compose
+   command run server-side; per-project direnv (`DOCKER_HOST`) if they prefer
+   scoping.
+6. **Round-trip proof (all four, else stop and diagnose)**: `ssh <alias> true`
+   exits 0 · remote `node --version` ≥ 18 · `ssh <alias> 'cd <path> && git
+   fetch -q && git rev-parse origin/<default>'` equals the local
+   `git rev-parse origin/<default>` · `docker --context <repo>-server ps`
+   exits 0.
+7. **Record — only now**: §10 **Remote executor** row (`ssh <repo>-server ·
+   repo at <path> · sync: push + fetch (pushed-branch-tip only, LA-8)`);
+   rewrite the heavy §10 gate rows in remote form with the owner's okay
+   (`ssh <repo>-server 'cd <path> && git fetch -q && git checkout -q <branch>
+   && <gate>'` — integration first: it runs next to the Tailscale Postgres);
+   document the alias + docker context in `docs/AUTH.md` §"Databases & remote
+   access" (names and recipes, no values). Report: what runs remotely now,
+   what stayed local, and the one command that undoes it (`docker context use
+   default`, remove the §10 row).

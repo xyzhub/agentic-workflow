@@ -858,6 +858,7 @@ concrete values.
 | **Typecheck/lint gate** | _(e.g. `npm run typecheck`)_ |
 | **Build** | _(e.g. `npm run build`)_ |
 | **Datastore seed/reset** | _(e.g. `npm run seed`)_ |
+| **Remote executor** (optional) | _(`ssh <alias> · repo at <path> · sync: push + fetch` — heavy work (Docker via the docker context, integration suites, builds) runs on this server while the session stays local; set up by `/agentic-workflow:connect server <tailscale-host>`, probed by `/agentic-workflow:doctor`. Pushed-branch-tip only, never a dirty tree (LA-8). `none` (or absent) → everything local)_ |
 | **Test users / auth access** | _(`docs/AUTH.md` — seeded dev/staging app credentials, per-surface sign-in flows, AND the access recipes for DBs/remote servers (`templates/auth.md`): agents read it instead of asking or digging through transcripts. Seed-derived values only; everything real by env NAME; production never. `none` → nothing to authenticate to)_ |
 | **Deploy + live-verify** | _(how it ships and how you confirm on the deployed instance)_ |
 | **Eval suite** (behavioral, if any) | _(e.g. `node evals/run.mjs` — run before releases; see `/agentic-workflow:release`)_ |

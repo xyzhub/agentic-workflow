@@ -31,6 +31,11 @@ command, or "run `/agentic-workflow:doctor fix`").
   (Paul Bakaus's design-quality plugin, Apache-2.0). Present, or absent with
   no UI surface → 🟢. In `fix` mode, OFFER that install command in the report
   — never run it unprompted; installing a plugin is the owner's call.
+- **Remote executor** — if §10 records one: `ssh -o BatchMode=yes <alias> true`
+  exits 0; remote repo present at the recorded path and `git fetch` works;
+  when the docker context exists, `docker --context <alias> ps` exits 0. Any
+  failure → 🟡 with the failing probe and `/agentic-workflow:connect server
+  <host>` as the fix.
 - **Owner channel** (§12) — if §10 records one: the named env vars resolve and
   the owner id is present. In `fix` mode, send a test message ("doctor test —
   reply not needed") and report whether the send succeeded; stale entries in
