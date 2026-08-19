@@ -356,8 +356,11 @@ brief and `Estimate: 1 session`; one builder session runs it; one fresh
 one-shot reviewer verifies it; it lands via **staging → verify → PR to the
 default branch**. Multi-phase missions are an explicit opt-in
 (`/agentic-workflow:mission "<name>" phases`) that carries an honest session
-estimate and a hard overrun stop. The plan trio, written by a dedicated
-planning session:
+estimate and a hard overrun stop. **`.plans/` is tracked in git, never
+gitignored** — the ledger is the record that survives a crash, a clone, and a
+worktree; the conform ladder flags a gitignored `.plans/` (junk like
+screenshots gets targeted sub-ignores instead). The plan trio, written by a
+dedicated planning session:
 
 | File | Job |
 |---|---|

@@ -109,6 +109,18 @@ const LADDER = [
   { id: 'engineering-folder', since: '1.36.0',
     check: () => (existsSync(at('docs/product/architecture.md')) || existsSync(at('docs/product/interface-contract.md'))) ? 'flat docs/product/architecture.md or interface-contract.md (belongs under docs/product/engineering/)' : true,
     fix: '/agentic-workflow:sync step 3.5 moves them (git mv, links rewritten, staged for review)' },
+  { id: 'plans-tracked', since: '1.48.1',
+    check: () => {
+      // fs-only approximation (this runs in a hook: no git commands): the repo
+      // gitignoring its own mission state means every ledger lives on one
+      // machine only, a fresh clone/worktree starts empty, and the crash-safe
+      // premise silently fails. Root .gitignore lines `.plans` / `.plans/`.
+      if (!existsSync(at('.plans'))) return true;
+      const gi = read(at('.gitignore')) || '';
+      return gi.split('\n').some((l) => /^\.plans\/?\s*$/.test(l.trim()))
+        ? '.plans/ is gitignored — ledgers, briefs and the obligations register exist on this machine only (a clone or a worktree starts empty; the staging PR cannot carry ledger updates)' : true;
+    },
+    fix: 'remove the `.plans/` line from .gitignore, re-ignore only the junk (screenshots, scratch dirs) with targeted patterns, and `git add .plans` — tracking starts now, history is not needed' },
   { id: 'profile-staging-row', since: '1.45.0',
     check: () => has10('Staging') ? true : '§10 has no **Staging** row (every mission phase lands on staging and is verified there before its PR)',
     fix: 'add the §10 **Staging** row — branch + URL, or `none` (the first mission creates `staging`); /agentic-workflow:sync appends it' },

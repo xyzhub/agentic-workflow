@@ -1149,6 +1149,14 @@ const CLOSING_NONE_DUE = {
     const a = runHook({ event: 'SessionStart', desc: CONF, input: { source: 'startup', session_id: id }, files });
     const b = runHook({ event: 'SessionStart', desc: CONF, input: { source: 'startup', session_id: id }, files });
     check('conform-check: stale stamp only → one-line-ish advisory once per session (second dispatch silent)', a.code === 0 && /protocol-stamp/.test(ctxOf(a)) && b.code === 0 && b.stdout === '', `a=${JSON.stringify(ctxOf(a))} b=${JSON.stringify(b.stdout)}`); }
+  // plans-tracked (v1.48.1): a gitignored .plans/ is a gap; targeted ignores are not.
+  { const files = { ...conformant, '.gitignore': { content: 'node_modules\n.plans/\n' } };
+    const r = runHook({ event: 'SessionStart', desc: CONF, input: { source: 'startup', session_id: sid('k') }, ledgers: { 'm.state.md': 'Estimate: 1 session\nSessions used: 0\n- [ ] S1\nNext up: S1\n' }, files });
+    check('conform-check: .plans/ gitignored → plans-tracked gap', r.code === 0 && /plans-tracked/.test(ctxOf(r)), JSON.stringify(ctxOf(r))); }
+  { const files = { ...conformant, '.gitignore': { content: 'node_modules\n.plans/screenshots/\n.plans/*.png\n' } };
+    const r = runHook({ event: 'SessionStart', desc: CONF, input: { source: 'startup', session_id: sid('l') }, ledgers: { 'm.state.md': 'Estimate: 1 session\nSessions used: 0\n- [ ] S1\nNext up: S1\n' }, files });
+    check('conform-check: only targeted .plans sub-ignores → silent', r.code === 0 && r.stdout === '', r.stdout); }
+
   // claude-md-anchors (v1.47.2): dead anchors in the conventions file are a gap;
   // resolving anchors, globs/placeholders/URLs, and a missing file are not.
   { const files = { ...conformant,
