@@ -28,7 +28,9 @@ CI config) or ask.
    Bash) for blast-radius on changed symbols — callers/impact queries beat a
    grep expedition — before any ranged reads.
 3. **Perform deferred manual/live items** — real-client smoke (a real browser for
-   web UI, not a status-code ping). Your concrete path is **Bash-driven
+   web UI, not a status-code ping). Sign in with the §10 **Test users** file
+   (`docs/AUTH.md` — seeded credentials, per-surface flows); a missing or
+   seed-stale AUTH.md is a DX finding. Your concrete path is **Bash-driven
    Playwright**: the project's browser test tooling if present, else a throwaway
    `npx playwright` script that starts the app, drives the changed flow, and
    captures the console. If that's impossible in this environment, report the

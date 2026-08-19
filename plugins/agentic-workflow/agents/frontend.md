@@ -88,6 +88,11 @@ not converge (§12 LA-5).
 
 ## Verify in a real client, then hand off
 
+Credentials and per-surface sign-in flows come from the §10 **Test users**
+file (`docs/AUTH.md`) — never ask, never dig. If your slice changes auth,
+seeds, or a login flow, update AUTH.md in the same branch (rows anchor to the
+seed scripts).
+
 Run the project gates (test + typecheck/lint) green. Then verify the change **in
 a real browser**, not a status-code ping. Your concrete path is **Bash-driven
 Playwright**: use the project's existing browser test tooling if it has one, or

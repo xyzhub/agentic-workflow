@@ -81,6 +81,11 @@ bundled one.
   from `git log` + merged PRs.
 - `docs/product/JOURNEY.md` — a dated first entry describing the project's current
   state in plain language.
+- **AUTH.md (auth-surface ventures)** — when the repo has an auth surface and
+  seed scripts, copy `${CLAUDE_PLUGIN_ROOT}/templates/auth.md` to
+  `docs/AUTH.md` and fill the users table FROM the seed scripts (seeded
+  credentials only — the safety rule is in the template); record the §10
+  **Test users** row. No auth → row = `none`.
 - **CI tracking** — when `.github/workflows` exists, copy
   `${CLAUDE_PLUGIN_ROOT}/tools/ci-wait.mjs` to `tools/ci-wait.mjs`: agents
   wait on CI/deploys with `node tools/ci-wait.mjs <sha>` in the background
