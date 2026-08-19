@@ -144,7 +144,8 @@ alongside the workflow; when it isn't, they proceed exactly as today.
 | `/agentic-workflow:settle` | Probe every deferred obligation (`.plans/OBLIGATIONS.md` + mission ledgers' `## Closing`), fire the condition-met safe class — merged-branch and worktree reaping behind the deploy-green gate, never `-D` — surface what a probe can't prove, and refuse to close a mission while `[ ]` rows remain |
 | `/agentic-workflow:operate` | The V6 loop: analyst numbers → ops/marketing/business reviews → one report with a ranked backlog; in a registry repo it sweeps the whole portfolio |
 | `/agentic-workflow:publish` | The §14 publishing pipeline: connect channels, stage posts into the queue (marketing/writer), then fire — human-fired by default, or a scheduled run within a scoped, revocable `may-publish` delegation; paid always human-fired |
-| `/agentic-workflow:retro` | Turn lessons into protocol amendments, eval scenarios, hook proposals — via PR like any change |
+| `/agentic-workflow:groom` | Keep the queue true: probe every open issue against the tree, close what shipped (quoted evidence), flag stale, re-size, regenerate the backlog view; `--from BACKLOG.md` imports a markdown backlog into the tracker once |
+| `/agentic-workflow:retro` | Turn lessons into protocol amendments, eval scenarios, hook proposals — filed as issues in the queue — via PR like any change |
 
 **Machinery**
 

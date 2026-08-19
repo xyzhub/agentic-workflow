@@ -21,6 +21,13 @@ or memory.
 - A durable rule → edit `docs/WORKFLOW.md` — in its **Local amendments**
   section, so `/agentic-workflow:sync` preserves it — via PR like any other change.
 - A stale doc → fix it now (stale-doc rule).
+- **Any action that is work rather than a rule** (a fix to make, a guard to
+  add later, a re-measure) → an issue in the queue (§4; `gh issue create
+  --label type/debt --label size/…`), not a bullet in a markdown file. The
+  retro's output links the numbers.
+- **A guardrail written during the incident** (a script, a runner, a check in
+  the scratchpad) → commit it in THIS session (orderly §12 LA-4: one sat in a
+  scratchpad for a day, protecting nothing).
 - A project-specific fact → the conventions file or repo docs.
 - An agent-behavioral lesson → auto-memory (not both places).
 - A missing guardrail → propose a hook change.

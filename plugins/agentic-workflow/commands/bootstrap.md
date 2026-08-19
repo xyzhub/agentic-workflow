@@ -43,7 +43,12 @@ then. Ask questions only when a human is actually present to answer them.
 - **Memory/recall store** — optional; only record one that already exists.
 - **Owner channel** — cannot be inferred; leave `none` and recommend
   `/agentic-workflow:connect` in the report (it guides the setup and proves the round-trip).
-- **Issue tracker** — GitHub Issues (`gh`), Linear, none.
+- **Issue tracker** — GitHub Issues (`gh`), Linear, none. This is the queue's
+  system of record (§4): when it is GitHub, ensure the queue labels exist
+  (`gh label create type/bug type/feature type/debt type/ops size/XS size/S
+  size/M stale needs-owner` — idempotent, skip existing) and mention
+  `/agentic-workflow:groom` in the report; if the repo carries a hand-written
+  `BACKLOG.md`, recommend `/agentic-workflow:groom --from BACKLOG.md`.
 - **HITL** — the human owner's name (from git config/repo ownership if
   plausible; otherwise `TBD — confirm`).
 - **Merge policy** — always default `human-only`. Write `agent-may-merge
@@ -76,6 +81,12 @@ bundled one.
   from `git log` + merged PRs.
 - `docs/product/JOURNEY.md` — a dated first entry describing the project's current
   state in plain language.
+- `docs/product/roadmap.md` — copy `${CLAUDE_PLUGIN_ROOT}/templates/roadmap.md`
+  (epic view: owner ranking + epics + deferred; never per-item status — items
+  live in the tracker). If the repo already has an item-level roadmap
+  (per-entry status tables), keep it and note in the report that it duplicates
+  the queue and should collapse to epics via `/agentic-workflow:groom`'s
+  recommendation.
 - `docs/product/overview.html` — copy `${CLAUDE_PLUGIN_ROOT}/templates/overview.html`,
   fill the project name, the stage rail to the detected stage, and an initial
   timeline; then publish it via the Artifact tool and record the returned URL in

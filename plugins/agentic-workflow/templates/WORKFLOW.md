@@ -42,6 +42,7 @@ V4 harden → V5 launch → V6 operate.
 | Cutting a version | `/agentic-workflow:release` |
 | Just deployed | `/agentic-workflow:verify` |
 | Weekly, once live | `/agentic-workflow:operate` |
+| "What should we build next?" / the backlog feels stale | `/agentic-workflow:groom` (probe every open issue against the tree, close what shipped, re-size the rest), then `/agentic-workflow:next` |
 | Health check / feeling stuck | `/agentic-workflow:check`, then `/agentic-workflow:next` |
 | Something feels broken (tools, profile, hooks) | `/agentic-workflow:doctor` — add `fix` to install missing tools |
 | An agent keeps underperforming | `/agentic-workflow:tune <agent> opus` — back: `/agentic-workflow:tune <agent> reset` |
@@ -282,6 +283,27 @@ ticking)? The close falls through to the settle close-gate first: read the
 ledger's `## Closing` block — while any `[ ]` obligation row remains, the
 mission may not be reported closed; `/agentic-workflow:settle` fires or
 promotes each row, and only then is the `Closed:` stamp written (§5).
+
+**The queue — one place work waits.** Every open item — bug, review nit,
+feature, deferral, `/agentic-workflow:operate` finding, `/agentic-workflow:retro`
+action — is an issue in the §10 **Issue tracker** (GitHub Issues via `gh` when the
+remote is GitHub), labelled `type/{bug,feature,debt,ops}` and `size/{XS,S,M}`,
+optionally `epic/<id>` and `surface/<name>`. Markdown backlogs are **generated
+views** of that queue, never hand-appended; the roadmap
+(`docs/product/roadmap.md`, `templates/roadmap.md`) holds epics, the owner's
+ranking and pointers — **never per-item status**. A deferral is a decision doc
+plus a *closed* issue that links to it, not a third prose copy.
+`/agentic-workflow:groom` keeps the queue true — it probes every open item
+against the tree (anchors present, merged commit an ancestor of the default
+branch, behavior proven), closes what shipped **with quoted evidence**, flags what
+went stale, re-sizes the rest, and regenerates the view; `/agentic-workflow:next`
+recommends ONE item from it; `/agentic-workflow:mission` and `/agentic-workflow:fix`
+take one item out and close it on merge; `/agentic-workflow:operate` and
+`/agentic-workflow:retro` write into it. *Incident (orderly, 2026-08-19):* an
+append-only `BACKLOG.md` reached 123 KB / 119 open boxes with shipped items still
+listed under "small effort", while a hand-reconciled roadmap marked every entry
+shipped or deferred — two files, no consumer, no truth. A record nobody reads
+back goes stale; an append-only one goes stale by design.
 
 **Context discipline** — at ~25% usage, finish the current edit to a compiling
 state, verify, write the handoff, end. A clean half-session beats a degraded full
@@ -773,6 +795,7 @@ concrete values.
 | **Version pin** | _(the file and key this project bumps on release — e.g. `package.json` `version`, `pyproject.toml` `project.version`, a plugin manifest. `none` → the project pins no version, and the mission-close `version bumped + stamped` row fires with "no version named" as its evidence — that row's condition is its own CHANGELOG entry, never this key; this row only records WHERE to bump when there is something to bump)_ |
 | **Owner channel** (§12) | _(private DM only — transport (Telegram bot / Slack), the send template with env-var NAMES for token + chat id (never values), the owner's user id for inbound verification, and how callbacks arrive (Telegram: getUpdates polling; Slack: interactivity endpoint, else text fallback). `none` → harness push notifications, else status page only)_ |
 | **Portfolio** (§13, optional) | _(path or remote of the registry repo this venture is registered in; `none` if standalone)_ |
+| **Issue tracker** | _(the queue's system of record — e.g. `GitHub Issues via gh`; `/agentic-workflow:groom` probes it, `/agentic-workflow:next` reads it, `/agentic-workflow:mission`/`fix` close items on merge. `none` → the markdown backlog is groomed in place and adopting a tracker is recommended)_ |
 | **Issue tracker** | _(e.g. GitHub Issues via `gh`)_ |
 
 ## 11. Autopilot mode
