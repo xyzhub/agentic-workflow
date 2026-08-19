@@ -8,6 +8,17 @@ has no tags — each version-stamped commit on `main` IS the release.
 
 _(empty)_
 
+## [1.47.3] — 2026-08-19
+### Fixed
+- **`/pr` gains the queue-item gate (step 7.5)** — owner: "why don't filed
+  issues get closed when their PRs are merged?" GitHub auto-closes only on
+  `Closes #N` in the PR description; the rule existed in `/mission`, `/fix`
+  and `/end` but not in `/pr`, the command that actually creates PRs. Now:
+  `Closes #N` when the PR finishes the item, `Part of #N` + an issue comment on
+  what remains when partial (a half-done issue that auto-closes is a silent
+  drop), create-or-justify when no issue exists. Step 7 also picks up the
+  catalog check.
+
 ## [1.47.2] — 2026-08-19
 ### Added — the conventions file governs itself (owner: "make it happen automatically, or update the rules")
 CLAUDE.md/AGENTS.md is injected into every session, so a stale line there
