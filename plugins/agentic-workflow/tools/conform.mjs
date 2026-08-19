@@ -100,7 +100,7 @@ const LADDER = [
     fix: 'copy templates/roadmap.md to docs/product/roadmap.md and move per-item status to the tracker (/agentic-workflow:groom)' },
   { id: 'backlog-is-generated-view', since: '1.46.0',
     check: () => { for (const f of ['BACKLOG.md', 'docs/product/backlog.md']) { const t = read(at(f)); if (t && !/generated view/i.test(t.split('\n').slice(0, 3).join('\n'))) return `${f} is hand-written (not a generated view of the tracker)`; } return true; },
-    fix: 'run /agentic-workflow:groom --from <file> (imports into the tracker, closes shipped with evidence, regenerates the file as a view)' },
+    fix: 'run /agentic-workflow:groom (it detects the file, imports into the tracker, closes shipped with evidence, regenerates the file as a view)' },
   { id: 'catalog-tooling', since: '1.46.0',
     check: () => (catalogOptOut() || existsSync(at('tools/catalog.mjs'))) ? true : 'no tools/catalog.mjs (the derived API/data-model catalog cannot be generated or checked)',
     fix: 'copy the plugin\'s tools/catalog.mjs into tools/ and run it; /agentic-workflow:sync step 3.6 does this' },
