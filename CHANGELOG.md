@@ -8,6 +8,15 @@ has no tags — each version-stamped commit on `main` IS the release.
 
 _(empty)_
 
+## [1.49.2] — 2026-08-19
+### Fixed
+- **Staging parity has a second dimension: connection topology.** Same
+  commands + same image was not enough — orderly's prod release aborted
+  (safely) because the release wrapper's `lock_timeout` startup option is
+  accepted by staging's direct Postgres and FATAL-rejected by prod's
+  PgBouncer. §5 parity rule now names it; migrations run on the DIRECT
+  database URL in every environment.
+
 ## [1.49.0] — 2026-08-19
 ### Changed — reviewer tier keys on risk class, and a security review must close the threat
 Both from a live finding during the n=1 (orderly #605→#730): a two-deletion
