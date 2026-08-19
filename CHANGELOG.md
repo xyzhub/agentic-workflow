@@ -8,6 +8,18 @@ has no tags — each version-stamped commit on `main` IS the release.
 
 _(empty)_
 
+## [1.48.4] — 2026-08-19
+### Fixed
+- **`conform.mjs` `has10()` label match** (found by orderly's `/sync`, #57):
+  exact-bold matching made a verbatim template copy fail its own ladder —
+  `has10('Test users')` vs the template's `**Test users / auth access**`. Now
+  a prefix match with a word boundary, plus a hook-test that derives every
+  `has10` label from `conform.mjs` and asserts the TEMPLATE's own §10
+  satisfies it — the two files can no longer diverge silently.
+- `/sync` step 3.6: the project's own lint must ignore the plugin-shipped
+  scripts (orderly measured 341 spurious errors without the ignore; local
+  fixes would be overwritten by the next sync).
+
 ## [1.48.3] — 2026-08-19
 ### Added — `/connect server <tailscale-host>`: one guided command to offload heavy work to a server
 Owner: "I don't know how to set that up… maybe a single command." Same

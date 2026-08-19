@@ -84,9 +84,13 @@ after the move changes nothing (idempotent).
 For each script the plugin ships into ventures — `tools/catalog.mjs`,
 `tools/ci-wait.mjs` (when `.github/workflows` exists) — if the plugin's copy
 differs from the project's (or the project has none but the trigger exists),
-copy the newer one over (it is generated tooling,
-never project-edited — a project-side change belongs in `catalog.config.json`),
-run `node tools/catalog.mjs` and stage the regenerated derived files with the
+copy the newer one over, and make sure the project's OWN lint ignores the
+plugin-shipped scripts (`tools/catalog.mjs`, `tools/ci-wait.mjs` — e.g. an
+`eslint.config` ignore entry): they are generated tooling under the plugin's
+style, any local fix is overwritten by the next sync, and orderly measured 341
+spurious lint errors without the ignore. The scripts are never project-edited
+(a project-side change belongs in `catalog.config.json`). Then run
+`node tools/catalog.mjs` and stage the regenerated derived files with the
 move. Report it in step 4. No catalog dir and no script → say so and point at
 `/agentic-workflow:adopt`'s catalog step; do not create it silently.
 

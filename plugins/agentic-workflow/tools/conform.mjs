@@ -64,7 +64,11 @@ function activeLedgers() {
 // repo, a pure library with no routes/schema and no marketable surface). The
 // row must SAY none; a missing row means the default (catalog expected).
 const catalogOptOut = () => /^\|\s*\*\*Catalog\*\*\s*\|\s*none\b/mi.test(section10());
-const has10 = (label) => new RegExp(`^\\|\\s*\\*\\*${label}\\*\\*`, 'm').test(section10());
+// Prefix match with a word boundary — the template writes richer labels
+// (`**Test users / auth access**`, `**Remote executor** (optional)`) and an
+// exact-bold match made a verbatim template copy fail its own ladder
+// (found by orderly's /sync, 2026-08-19).
+const has10 = (label) => new RegExp(`^\\|\\s*\\*\\*${label}\\b`, 'm').test(section10());
 
 // The conventions file (CLAUDE.md/AGENTS.md) is injected into EVERY session, so
 // a dead anchor there misleads more than anywhere else. Check only tokens that
