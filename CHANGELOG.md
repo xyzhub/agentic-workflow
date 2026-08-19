@@ -8,6 +8,21 @@ has no tags — each version-stamped commit on `main` IS the release.
 
 _(empty)_
 
+## [1.48.2] — 2026-08-19
+### Added — AUTH.md: test users and authenticated access, known to every session (owner ask)
+- `templates/auth.md` → `docs/AUTH.md`: seeded app test users (role, login,
+  password, org/venue, surfaces, **seed anchor**), per-surface sign-in flows,
+  and access recipes for DBs/remote servers (env-var NAMES and recipes only —
+  e.g. the Tailscale scratch-Postgres host — never secret values; production
+  credentials never in any form). Rows are rewritten in place when seeds
+  change, in the same PR (§6.1 discipline).
+- §10 **Test users / auth access** row; conform ladder
+  `profile-test-users-row`; `/bootstrap` fills the table FROM the seed
+  scripts; `/verify`, the reviewer's real-client smoke, and `frontend` read it
+  instead of asking or digging through transcripts; `backend` updates it when
+  seeds/auth/login flows change; a missing or seed-stale AUTH.md is a DX
+  finding.
+
 ## [1.48.1] — 2026-08-19
 ### Fixed
 - **A gitignored `.plans/` is now a conformance gap (`plans-tracked`).** Found

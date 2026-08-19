@@ -51,6 +51,9 @@ surface, exercise the endpoint (a real request, not just a compile). Then stop:
 - return a **bounded** hand-off (§6.2): what changed (paths), what you verified
   (the gate signal), and what still needs an independent reviewer or a
   manual/live check — a distillate for the caller, not a transcript;
+- **AUTH.md**: if you touched seeds, auth, or a login flow, rewrite the
+  affected `docs/AUTH.md` rows in the same branch (§10 Test users — seeded
+  credentials only, rows anchor to the seed scripts);
 - **catalog (§6.1)**: if you added/changed a route or the schema, run
   `node tools/catalog.mjs` (the derived files are part of your diff) and name
   the `features.md` row(s) the chronicler must rewrite — or the new capability

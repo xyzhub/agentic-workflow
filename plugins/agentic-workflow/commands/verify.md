@@ -31,6 +31,11 @@ proves nothing.
 
 ## 2. Drive the real flow
 
+Sign in as the right role using the §10 **Test users** file (`docs/AUTH.md`) —
+credentials and per-surface login flows live there; never ask the human for
+test credentials and never grep transcripts for them. Missing/stale AUTH.md →
+say so and name it as the fix (its rows anchor to the seed scripts).
+
 Exercise the core user journey **on the deployed instance** in a real client —
 Bash-driven Playwright (the same path the `frontend` and `reviewer` agents
 use): the changed flow end to end, console clean, UI truthful (no state claimed

@@ -1110,7 +1110,7 @@ const CLOSING_NONE_DUE = {
   const pv = JSON.parse(readFileSync(path.join(PLUGIN, '.claude-plugin/plugin.json'), 'utf8')).version;
   const ctxOf = (r) => { try { return JSON.parse(r.stdout).hookSpecificOutput.additionalContext; } catch { return ''; } };
   const wf = (stamp, rows) => `# The Workflow\n\n<!-- protocol-master: v${stamp} -->\n\n## 10. Project profile\n\n| Key | Value |\n|---|---|\n${rows.map((r) => `| **${r}** | x |`).join('\n')}\n\n## 11. Autopilot mode\n`;
-  const FULL10 = ['Default branch', 'Staging', 'Issue tracker'];
+  const FULL10 = ['Default branch', 'Staging', 'Issue tracker', 'Test users'];
   const conformant = {
     'docs/WORKFLOW.md': { content: wf(pv, FULL10) },
     'docs/product/roadmap.md': { content: '# Roadmap (epic view)\n\n## Epics\n' },
