@@ -79,11 +79,12 @@ flat under `docs/product/` from a pre-`engineering/` adoption.
 Because the already-foldered case is a no-op, re-running `/agentic-workflow:sync`
 after the move changes nothing (idempotent).
 
-## 3.6 Refresh the shipped tooling (catalog.mjs)
+## 3.6 Refresh the shipped tooling (catalog.mjs, ci-wait.mjs)
 
-If the plugin's `${CLAUDE_PLUGIN_ROOT}/tools/catalog.mjs` differs from the
-project's `tools/catalog.mjs` (or the project has none but has
-`docs/product/catalog/`), copy the newer one over (it is generated tooling,
+For each script the plugin ships into ventures — `tools/catalog.mjs`,
+`tools/ci-wait.mjs` (when `.github/workflows` exists) — if the plugin's copy
+differs from the project's (or the project has none but the trigger exists),
+copy the newer one over (it is generated tooling,
 never project-edited — a project-side change belongs in `catalog.config.json`),
 run `node tools/catalog.mjs` and stage the regenerated derived files with the
 move. Report it in step 4. No catalog dir and no script → say so and point at

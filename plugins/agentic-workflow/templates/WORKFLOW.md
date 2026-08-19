@@ -406,8 +406,10 @@ mechanical half):
 - **Staging → verify → PR (venture flow).** On APPROVE the phase branch is
   merged into `staging` (created from the default branch if absent, recorded
   in §10), the staging deploy is confirmed green **on the diff-bearing
-  commit** (`gh run list --commit <full-sha>` — a PR-level check summary is not
-  evidence, LA-8), `/agentic-workflow:verify` runs against the staging URL,
+  commit** (`node tools/ci-wait.mjs <full-sha>`, run in the background — exit 0
+  is the only green; no-runs and a never-triggered expected workflow are
+  failures; a PR-level check summary is not evidence, LA-8),
+  `/agentic-workflow:verify` runs against the staging URL,
   and only then does the PR to the default branch open. The human merges that
   PR (or the agent under a delegated §10 Merge policy). Never straight from a
   phase branch to the default branch.

@@ -148,8 +148,11 @@ inferences.
      branch). This merge is yours: it is not the default branch, so the push
      guardrail allows it, and it is logged in the ledger with the staging SHA.
   2. Wait for the staging deploy to conclude green (§10 **Deploy + live-verify**
-     row; `gh run list --commit <full-40-char-sha>` on the diff-bearing commit —
-     a PR-level check summary is not evidence, §12 LA-8), then run
+     row): `node tools/ci-wait.mjs <staging-sha>` run in the **background**
+     (`run_in_background` — zero tokens while waiting; exit 0 = every run for
+     the diff-bearing commit concluded green, and NO-RUNS/EXPECT-MISSING are
+     failures, never green — §12 LA-8; a PR-level check summary is not
+     evidence), then run
      `/agentic-workflow:verify` against the **staging URL** from §10. Record the
      verify result in the ledger. A red verify is a REQUEST CHANGES: one
      corrective session, then re-review.

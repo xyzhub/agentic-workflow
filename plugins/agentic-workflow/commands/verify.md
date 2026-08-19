@@ -18,8 +18,9 @@ verification, not at "PR merged"). Two moments run it:
   **Deploy + live-verify** row.
 
 Before either: confirm the deploy that carried the diff is green **on the
-diff-bearing commit** — `gh run list --commit <full-40-char-sha>` — not on a
-PR-level check summary, and not on `cmd | tail`'s exit status (§12 LA-8).
+diff-bearing commit** — `node tools/ci-wait.mjs <full-sha>` (exit 0 = green;
+run it in the background and do other work while it polls) — never a PR-level
+check summary, never `cmd | tail`'s exit status (§12 LA-8).
 
 ## 1. Reachability & health
 

@@ -8,6 +8,21 @@ has no tags — each version-stamped commit on `main` IS the release.
 
 _(empty)_
 
+## [1.48.0] — 2026-08-19
+### Added — deterministic CI tracking: `tools/ci-wait.mjs` (closes the LA-8 false-green family; zero tokens while waiting)
+- One question, one exit code: resolves any ref/`pr:N` to the **full 40-char
+  sha** (a short sha silently returns `[]`), polls `gh run list --commit`, and
+  exits 0 GREEN / 1 RED / 2 TIMEOUT / 3 NO-RUNS / 4 EXPECT-MISSING. NO-RUNS
+  and a never-triggered `--expect` workflow are failures, never green — the
+  path-filter trap. Pure `decide()` core with a 10-case selftest (lint check
+  10.6, fail-closed); agents run it via `run_in_background` and pay zero
+  tokens while it polls.
+- Wired everywhere CI was tracked by prose: `/mission` staging step, `/verify`
+  precheck, `/settle` deploy-green probe, reviewer step 0, WORKFLOW §5;
+  `/bootstrap` and `/sync` step 3.6 copy it into ventures with workflows;
+  conform ladder `ci-wait-tooling` (present + current when `.github/workflows`
+  exists).
+
 ## [1.47.3] — 2026-08-19
 ### Fixed
 - **`/pr` gains the queue-item gate (step 7.5)** — owner: "why don't filed

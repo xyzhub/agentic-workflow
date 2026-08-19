@@ -15,6 +15,10 @@ CI config) or ask.
 
 ## Protocol (checkpoint duties)
 
+0. **CI on the diff-bearing commit** — when the branch is pushed and the repo
+   has workflows: `node tools/ci-wait.mjs <full-sha> --no-wait` (or wait in the
+   background). Exit 0 is the only green; NO-RUNS and EXPECT-MISSING are
+   findings, not passes (§12 LA-8).
 1. **Re-run all gates yourself** — the project's test and typecheck/lint gates,
    plus the build when the change is release-bound. Never trust reported results.
    Report signals (green/red + first failing case), not log dumps.

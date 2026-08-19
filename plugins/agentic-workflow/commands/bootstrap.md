@@ -81,6 +81,10 @@ bundled one.
   from `git log` + merged PRs.
 - `docs/product/JOURNEY.md` — a dated first entry describing the project's current
   state in plain language.
+- **CI tracking** — when `.github/workflows` exists, copy
+  `${CLAUDE_PLUGIN_ROOT}/tools/ci-wait.mjs` to `tools/ci-wait.mjs`: agents
+  wait on CI/deploys with `node tools/ci-wait.mjs <sha>` in the background
+  (exit code = verdict, zero tokens while polling; §12 LA-8).
 - **The catalog (§6.1)** — copy `${CLAUDE_PLUGIN_ROOT}/tools/catalog.mjs` to
   `tools/catalog.mjs` (create `catalog.config.json` only if the project's
   routes/schema are not at the Nuxt/Prisma defaults — `routesDir`,

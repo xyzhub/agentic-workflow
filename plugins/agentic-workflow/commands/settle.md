@@ -48,7 +48,8 @@ must name the rung used:
 1. **Deploy + CI in the profile** → checks green on the merge commit of the PR
    that carried the branch:
    `gh pr list --state merged --head <branch> --json number,mergeCommit` →
-   `gh run list --commit <sha> --json status,conclusion` — `<sha>` must be the
+   `node tools/ci-wait.mjs <sha> --no-wait` (exit 0 green / 3 no-runs — never
+   conflate the two), or raw: `gh run list --commit <sha> --json status,conclusion` — `<sha>` must be the
    **full 40-char SHA**: `gh run list --commit` with a short SHA returns `[]`
    silently, which fail-closed surfaces a green branch instead of firing it.
 2. **CI but no separate deploy** (merging to the default branch IS the
