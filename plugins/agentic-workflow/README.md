@@ -173,6 +173,9 @@ docs/product/catalog/       # WHAT THE PRODUCT IS (state, not history — §6.1)
                             # curated + rewritten in place (marketable rows are
                             # the landing-page/sales fact source), README.md ≤40 lines
 tools/catalog.mjs           # shipped by the plugin: generate · --check · --verify
+tools/ci-wait.mjs           # shipped by the plugin: CI/deploy verdict for the
+                            # diff-bearing commit — exit 0 green / 1 red / 2 timeout /
+                            # 3 no-runs / 4 expected-workflow-missing; background-safe
 .plans/                     # one trio per mission + pending-gates
 CHANGELOG.md                # Keep-a-Changelog, chronicler-maintained (history)
 .env.example                # var names for the owner channel etc. (never values)

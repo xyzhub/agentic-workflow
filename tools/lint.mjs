@@ -415,6 +415,24 @@ function checkCatalogSelftest() {
   }
 }
 
+// ── 10.6 ci-wait selftest (tier-1.5) ─────────────────────────────────────
+// The CI tracker ships in the plugin and is the LA-8 mechanism (false-green
+// family). Its decision core is pure; delegate to its fixture selftest,
+// fail-closed on a missing runner — same shape as checks 8–10.5.
+function checkCiWaitSelftest() {
+  const runner = path.join(PLUGIN, 'tools/ci-wait.mjs');
+  if (!existsSync(runner)) {
+    fail(runner, null, 'ci-wait script missing — plugins/agentic-workflow/tools/ci-wait.mjs must exist so the gate proves the green/red/pending/none/expect-missing verdicts (do not silently drop the check)');
+    return;
+  }
+  const res = spawnSync('node', [runner, '--selftest'], { encoding: 'utf8' });
+  if (res.status !== 0) {
+    const detail = `${res.stdout ?? ''}${res.stderr ?? ''}`
+      .split('\n').filter((l) => /FAIL|failure|Error/.test(l)).join(' | ');
+    fail(runner, null, `ci-wait selftest failed — run \`node plugins/agentic-workflow/tools/ci-wait.mjs --selftest\`: ${detail || '(no detail)'}`);
+  }
+}
+
 // ── Mission-ledger helpers (checks 11 + 12) ─────────────────────────────────
 // Both ledger checks read `.plans/*.state.md` — deployed ledgers, not templates.
 // A repo with no `.plans/` (a fresh consumer) simply has nothing to check.
@@ -801,7 +819,7 @@ const isEntryPoint = () => {
 };
 
 if (isEntryPoint()) {
-  for (const check of [checkManifests, checkAgents, checkCommands, checkCrossRefs, checkTemplateRefs, checkSections, checkFrontmatterYaml, checkTemplateFrontmatter, checkHooks, checkObfuscation, checkHookBehavior, checkClockGuard, checkMarkerMutation, checkContextAttrib, checkCatalogSelftest, checkStandingSteers, checkNextUpAgreement, checkClosing, checkObligationsRegister]) {
+  for (const check of [checkManifests, checkAgents, checkCommands, checkCrossRefs, checkTemplateRefs, checkSections, checkFrontmatterYaml, checkTemplateFrontmatter, checkHooks, checkObfuscation, checkHookBehavior, checkClockGuard, checkMarkerMutation, checkContextAttrib, checkCatalogSelftest, checkCiWaitSelftest, checkStandingSteers, checkNextUpAgreement, checkClosing, checkObligationsRegister]) {
     check();
   }
 
