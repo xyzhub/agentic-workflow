@@ -22,7 +22,19 @@ Report ✅ PASS / ⚠️ WARNING / ❌ BLOCKER for each step.
    `origin/<default>` when a remote exists): all conventional
    (`type(scope): description`), ending with the Co-Authored-By trailer.
 7. **Docs current** — the conventions file and any architecture/data-model docs
-   updated if behavior/config changed (stale-doc rule).
+   updated if behavior/config changed (stale-doc rule); the catalog regenerated
+   + feature rows rewritten if the diff touched a route, the schema, or a
+   catalogued anchor (§6.1).
+7.5 **Queue item named (§4)** — when the project records a §10 **Issue
+   tracker**, every PR names its queue item in the DESCRIPTION (that is what
+   GitHub's auto-close reads — a bare `#N` mention only links):
+   - the work finishes the item → `Closes #N` (the merge closes it);
+   - it ships part of the item → `Part of #N`, plus a comment on the issue
+     saying what remains (never `Closes` — a half-done issue that auto-closes
+     is a silent drop);
+   - no issue exists for this work → create one first (`gh issue create`) or
+     state in the PR body why this PR is queue-exempt (pure bookkeeping,
+     release commit). ⚠️ WARNING when none of these hold.
 8. **Live verification** — if the change has a runtime surface, confirm it was
    exercised in a real client (real browser for web UI), not just a status ping.
 
@@ -30,7 +42,7 @@ Report ✅ PASS / ⚠️ WARNING / ❌ BLOCKER for each step.
 
 ```bash
 git push -u origin <branch>
-gh pr create --fill    # or a summary + test plan
+gh pr create --fill    # or a summary + test plan; body carries Closes #N / Part of #N (step 7.5)
 ```
 
 Report the final status and any remaining blockers. Do not merge — the human
