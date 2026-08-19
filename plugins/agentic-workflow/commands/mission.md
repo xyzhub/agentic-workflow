@@ -142,7 +142,11 @@ paraphrase; retire a superseded steer by strikethrough, never delete it. This
 happens **only at a checkpoint** — never mid-brief, and never for your own
 inferences.
 
-- **APPROVE → staging → verify → PR to main.** The venture flow (§5, §7):
+- **APPROVE → staging → verify → PR to main.** The venture flow (§5, §7) —
+  EXCEPT a Lane-A hotfix branched from the default branch while staging has
+  diverged: skip the staging landing, verify on a preview/branch deploy or a
+  local real-client run against a scratch datastore, record the deviation +
+  verification target, and go straight to the PR (§5 Hotfix path):
   1. Merge the phase branch into **`staging`** (create it from the default
      branch if the project has none, and record it in §10 as the staging
      branch). This merge is yours: it is not the default branch, so the push

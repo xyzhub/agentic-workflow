@@ -406,6 +406,19 @@ mechanical half):
 - **Exactly one `Next up:` (LA-7).** Supersede by renaming the old line
   (`SUPERSEDED next-up (historical):`); the hook reads the first and warns on
   duplicates; the lint backstop fails on disagreement.
+- **Hotfix path (Lane A): when the defect is live on the default branch and
+  staging has diverged, do NOT land the fix on staging.** A fix branched from
+  the default branch and merged into a staging branch that is far ahead
+  (commits + migrations) verifies a build that is not the fix, risks
+  conflicts, and double-lands at the eventual promote. Instead: verify on a
+  preview/branch deploy of the fix branch (the §10 Staging row's escape
+  hatch), or a local real-client run against a scratch datastore, driving the
+  actual defective flow; record the deviation + the verification target in
+  the ledger; open the PR to the default branch as usual. The fix reaches
+  staging via the normal promote/back-merge, never a direct landing.
+  *Incident (orderly #605, 2026-08-19): staging sat 128 commits + 7 migrations
+  ahead of main; landing a main-based security fix there would have made
+  "verified on staging" a claim about the wrong build.*
 - **Staging → verify → PR (venture flow).** On APPROVE the phase branch is
   merged into `staging` (created from the default branch if absent, recorded
   in §10), the staging deploy is confirmed green **on the diff-bearing

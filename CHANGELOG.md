@@ -8,6 +8,17 @@ has no tags — each version-stamped commit on `main` IS the release.
 
 _(empty)_
 
+## [1.48.6] — 2026-08-19
+### Fixed
+- **§5 Hotfix path**: a Lane-A fix branched from the default branch, with
+  staging far diverged, must NOT land on staging — it would verify a build
+  that isn't the fix, risk conflicts, and double-land at the promote. Verify
+  on a preview/branch deploy or a local real-client run against a scratch
+  datastore, record the deviation + verification target, PR to the default
+  branch as usual; the fix reaches staging via the promote/back-merge.
+  Found live: orderly #605 with staging 128 commits + 7 migrations ahead.
+  `/mission` §3 carries the exception.
+
 ## [1.48.5] — 2026-08-19
 ### Fixed
 - **`/sync` can now ask** (owner: "it didn't ask me anything, it just listed
