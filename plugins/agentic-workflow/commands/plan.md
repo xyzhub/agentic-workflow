@@ -9,8 +9,12 @@ journeys → shape decisions → red-team → decompose) with the human as
 INTERVIEWEE and approver, never as author. **Precondition**: the project is
 bootstrapped (`docs/WORKFLOW.md` exists); otherwise point at `/agentic-workflow:adopt` or
 `/agentic-workflow:bootstrap` and stop. Route check first: if the feature is plainly
-one-sitting-sized, say so and recommend `/agentic-workflow:start` (or `/agentic-workflow:fix`) instead of this
-machinery — `/agentic-workflow:plan` is for mission-class features.
+a small isolated fix, say so and recommend `/agentic-workflow:fix` instead of this
+machinery — `/agentic-workflow:plan` is for features that need defining. The
+resulting mission is still **one session by default**: the planner writes
+`Estimate: 1 session` unless the decomposition honestly needs `phases`, in
+which case it returns the per-phase session count and the justification and the
+human chooses to run `/agentic-workflow:mission "<name>" phases`.
 
 ## 1. The interview (the only typing the human does)
 
@@ -78,5 +82,6 @@ both point at it.
 The human is interviewed and approves — never drafts. All the standing rules
 apply unchanged: stop-the-line (the brief IS the acceptance criteria),
 architect memos for shape decisions, counsel before commitment, dated locks,
-the planner's read budgets. `/agentic-workflow:plan` produces a plan; it never builds,
+the planner's read budgets and session estimate (§5 — the ledger's
+`Estimate:` is what the overrun stop measures against). `/agentic-workflow:plan` produces a plan; it never builds,
 merges, or deploys.

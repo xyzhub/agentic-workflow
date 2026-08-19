@@ -18,9 +18,10 @@ already committed to. Ground every choice in the subject's own world (its
 audience, materials, vernacular), not in generic defaults.
 
 **Impeccable (optional design-quality toolset).** When the impeccable plugin
-(Paul Bakaus, Apache-2.0, github.com/pbakaus/impeccable) is installed — probe
-(§0.2): `grep -qsi impeccable ~/.claude/plugins/installed_plugins.json` exits
-0 — load its design rules and DESIGN.md conventions and apply them to
+(Paul Bakaus, Apache-2.0, github.com/pbakaus/impeccable) is present — probe
+(§0.2), ANY of: `grep -qsi impeccable ~/.claude/plugins/installed_plugins.json`
+exits 0, `.claude/skills/impeccable/` exists in the project, or
+`node_modules/.bin/impeccable` exists — load its design rules and DESIGN.md conventions and apply them to
 direction generation (Move 1) and to the V4 heuristic usability evaluation;
 in your returns, cite which impeccable rules informed each finding. When it
 is present, author the Move 2 brand-system deliverable **in impeccable's

@@ -12,7 +12,12 @@ export default function checks({ dir }) {
   if (!files.some((f) => f.endsWith('.md') && !f.endsWith('.sessions.md') && !f.endsWith('.state.md')))
     failures.push('no master plan *.md in .plans/');
   const state = files.find((f) => f.endsWith('.state.md'));
-  if (state && !/next up/i.test(readFileSync(path.join(plans, state), 'utf8')))
-    failures.push('state ledger has no "Next up:" pointer');
+  if (state) {
+    const ledger = readFileSync(path.join(plans, state), 'utf8');
+    const nextUps = ledger.match(/^Next up:/gm) || [];
+    if (nextUps.length !== 1) failures.push(`state ledger has ${nextUps.length} "Next up:" lines — exactly one required`);
+    if (!/^Estimate:\s*\d+ sessions?/m.test(ledger)) failures.push('state ledger has no "Estimate: N sessions" line');
+    if (!/^Sessions used:\s*0/m.test(ledger)) failures.push('state ledger has no "Sessions used: 0" line');
+  }
   return failures;
 }

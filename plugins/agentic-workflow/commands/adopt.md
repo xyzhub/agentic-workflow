@@ -66,8 +66,9 @@ basics every stage inherits, checking mechanically where possible:
   (`docs/product/engineering/runbook.md`), launch assets (`docs/product/launch/`),
   the client sales kit (`docs/product/sales/`), business docs (`docs/product/business/`).
 - **Design-quality scaffolding (UI-surface ventures)** — when the impeccable
-  plugin is installed — probe (§0.2): `grep -qsi impeccable
-  ~/.claude/plugins/installed_plugins.json` exits 0 — and `.impeccable/` is
+  toolset is present — probe (§0.2), any of: `grep -qsi impeccable
+  ~/.claude/plugins/installed_plugins.json` exits 0, `.claude/skills/impeccable/`
+  exists, or `node_modules/.bin/impeccable` exists — and `.impeccable/` is
   absent, note its scaffolding (impeccable's `init`) as a recommended step in
   the report; the human or the main session runs it. When the plugin is not
   installed, omit the row entirely.

@@ -23,9 +23,10 @@ command, or "run `/agentic-workflow:doctor fix`").
   Missing on a non-trivial repo is 🟡 (DX pillar: the repo legible to models).
 - **Stack toolchain** — whatever §10's gates need (node/pnpm, cargo, etc.)
   actually on PATH.
-- **impeccable (optional design-quality plugin)** — probe (§0.2):
-  `grep -qsi impeccable ~/.claude/plugins/installed_plugins.json` (exit 0 =
-  installed; fail-closed to absent). Absent while the venture has a UI
+- **impeccable (optional design-quality plugin)** — probe (§0.2), ANY of:
+  `grep -qsi impeccable ~/.claude/plugins/installed_plugins.json` (exit 0),
+  `.claude/skills/impeccable/` present, or `node_modules/.bin/impeccable`
+  present (fail-closed to absent). Absent while the venture has a UI
   surface → 🟡 with the fix `/plugin marketplace add pbakaus/impeccable`
   (Paul Bakaus's design-quality plugin, Apache-2.0). Present, or absent with
   no UI surface → 🟢. In `fix` mode, OFFER that install command in the report
@@ -47,7 +48,16 @@ The profile is load-bearing and written once — verify it still tells the truth
 - Seed/reset path exists; deploy config file present; code-index CLI answers
   a version/status call; high-impact files exist at their recorded paths.
 - Default branch row matches `git symbolic-ref`; Merge policy holds a valid
-  value (`human-only` / `agent-may-merge (delegated <date>)`).
+  value (`human-only` / `agent-may-merge (delegated <date>)`); Staging row
+  names a branch that exists (or `none`) and a URL that answers.
+- **Design-tooling cadence (§0.2)**: if impeccable is present (any probe form)
+  AND `.claude/settings*.json` registers its hook on `Stop`, report 🟡 "per-turn
+  design deep pass is on — quiet it for autonomous runs
+  (drop the `Stop` entry, or `IMPECCABLE_HOOK_DISABLED=1` for the run — `IMPECCABLE_HOOK_QUIET` only mutes clean acks) and rely on the checkpoint
+  gate"; a `PostToolUse`-only registration is 🟢.
+- **Mission budget fields**: every active `.plans/*.state.md` carries exactly
+  one `Next up:` line and an `Estimate:` line; missing/duplicate → 🟡 with the
+  ledger named (the mission-budget hook is already saying so each turn).
 - Any `TBD — confirm` leftovers → 🟡 with the row named.
 
 ## 3. Records & plans

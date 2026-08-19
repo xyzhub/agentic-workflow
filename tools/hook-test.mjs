@@ -285,6 +285,94 @@ const HARD_PAUSE_NOT_STARTED = ledger(
   check('Stop: unreleased [ ] HARD PAUSE row above → silent', r.code === 0 && !nudged(r), `stdout=${JSON.stringify(r.stdout)}`);
 }
 
+// ── mission-budget (D3, UserPromptSubmit) — status line, single Next up:, overrun STOP ──
+// Orderly §12 LA-1 (no estimate/overrun mechanism → 44 sessions on an 18-session
+// plan) and LA-7 (thread-keeper's `tail -1` fed the owner the stalest `Next up:`
+// for a day). The hook reads `Estimate: N sessions` / `Sessions used: k` and fires
+// the STOP at 2k ≥ 3N; `Next up:` is head -1 with a loud warning on duplicates.
+{
+  const MB = 'mission-budget (D3';
+  const led = (...lines) => ({ 'pay.state.md': [...lines, ''].join('\n') });
+  const status = (r) => /🧵 Mission pay — /.test(r.stdout);
+  const overrun = (r) => /🛑 OVERRUN/.test(r.stdout);
+  const dupWarn = (r) => /`Next up:` lines in the ledger/.test(r.stdout);
+  const noEst = (r) => /No `Estimate:/.test(r.stdout);
+  const nextLine = (r) => (r.stdout.split('\n').find((l) => l.trim().startsWith('Next up:')) || '').trim();
+
+  // 1. No .plans/ at all → silent, exit 0.
+  {
+    const r = runHook({ event: 'UserPromptSubmit', desc: MB, input: { prompt: 'hi' } });
+    check('mission-budget: no .plans/ → silent, exit 0', r.code === 0 && r.stdout === '', `stdout=${JSON.stringify(r.stdout)}`);
+  }
+  // 2. Ledger fully done (no open beat) → not active → silent.
+  {
+    const r = runHook({ event: 'UserPromptSubmit', desc: MB, input: {},
+      ledgers: led('Estimate: 1 session', 'Sessions used: 5', '- [x] S1 — build', 'Next up: done') });
+    check('mission-budget: no open [ ]/[~] beat → not active → silent', r.code === 0 && r.stdout === '', `stdout=${JSON.stringify(r.stdout)}`);
+  }
+  // 3. Under estimate → status line + Next up, no overrun.
+  {
+    const r = runHook({ event: 'UserPromptSubmit', desc: MB, input: {},
+      ledgers: led('Estimate: 4 sessions', 'Sessions used: 2', '- [x] S1 — build', '- [ ] S2 — build', 'Next up: S2') });
+    check('mission-budget: k<1.5N → status "session 2/4 (est.)" + first Next up, no STOP',
+      r.code === 0 && status(r) && /session 2\/4 \(est\.\)/.test(r.stdout) && nextLine(r) === 'Next up: S2' && !overrun(r) && !dupWarn(r) && !noEst(r),
+      `stdout=${JSON.stringify(r.stdout)}`);
+  }
+  // 4. Exactly at 1.5× (N=2, k=3) → OVERRUN text, still exit 0.
+  {
+    const r = runHook({ event: 'UserPromptSubmit', desc: MB, input: {},
+      ledgers: led('Estimate: 2 sessions', 'Sessions used: 3', '- [ ] S3 — build', 'Next up: S3') });
+    check('mission-budget: k=1.5N (3/2) → 🛑 OVERRUN scope-decision text, exit 0 (never blocks)',
+      r.code === 0 && overrun(r) && /session 3 of 2 estimated/.test(r.stdout) && /ship a defined subset/.test(r.stdout),
+      `code=${r.code} stdout=${JSON.stringify(r.stdout)}`);
+  }
+  // 5. Default one-session mission: N=1, k=2 → overrun (the one-session default has teeth).
+  {
+    const r = runHook({ event: 'UserPromptSubmit', desc: MB, input: {},
+      ledgers: led('Estimate: 1 session', 'Sessions used: 2', '- [ ] S1 — build', 'Next up: S1') });
+    check('mission-budget: N=1, k=2 → OVERRUN (one-session default fires on the 2nd session)', r.code === 0 && overrun(r), `stdout=${JSON.stringify(r.stdout)}`);
+  }
+  // 6. Just under: N=18, k=26 → silent on overrun; k=27 → fires (integer 2k≥3N boundary).
+  {
+    const a = runHook({ event: 'UserPromptSubmit', desc: MB, input: {},
+      ledgers: led('Estimate: 18 sessions', 'Sessions used: 26', '- [ ] S27', 'Next up: S27') });
+    const b = runHook({ event: 'UserPromptSubmit', desc: MB, input: {},
+      ledgers: led('Estimate: 18 sessions', 'Sessions used: 27', '- [ ] S28', 'Next up: S28') });
+    check('mission-budget: boundary 26/18 silent, 27/18 fires (2k≥3N exact)', a.code === 0 && !overrun(a) && b.code === 0 && overrun(b),
+      `a=${JSON.stringify(a.stdout)} b=${JSON.stringify(b.stdout)}`);
+  }
+  // 7. Two Next up: lines → FIRST wins and the duplicate is called out (LA-7).
+  {
+    const r = runHook({ event: 'UserPromptSubmit', desc: MB, input: {},
+      ledgers: led('Estimate: 3 sessions', 'Sessions used: 1', '- [ ] Checkpoint C', 'Next up: ckpt-C', '(kept for the record)', 'Next up: S2') });
+    check('mission-budget: two Next up: lines → the FIRST is shown (head -1) + duplicate warning',
+      r.code === 0 && nextLine(r) === 'Next up: ckpt-C' && dupWarn(r) && /2 `Next up:` lines/.test(r.stdout),
+      `stdout=${JSON.stringify(r.stdout)}`);
+  }
+  // 8. Estimate: missing → reminder line, no overrun math, exit 0.
+  {
+    const r = runHook({ event: 'UserPromptSubmit', desc: MB, input: {},
+      ledgers: led('Sessions used: 9', '- [ ] S1 — build', 'Next up: S1') });
+    check('mission-budget: no Estimate: → 📐 reminder, no OVERRUN, exit 0', r.code === 0 && status(r) && noEst(r) && !overrun(r), `stdout=${JSON.stringify(r.stdout)}`);
+  }
+  // 9. Sessions used: missing → treated as 0; garbage Estimate → treated as missing; garbage stdin → still exit 0.
+  {
+    const a = runHook({ event: 'UserPromptSubmit', desc: MB, input: {},
+      ledgers: led('Estimate: 2 sessions', '- [ ] S1', 'Next up: S1') });
+    const b = runHook({ event: 'UserPromptSubmit', command: `printf 'not json' | bash "${PLUGIN}/hooks/lib/mission-budget.sh"`,
+      ledgers: led('Estimate: lots', 'Sessions used: many', '- [ ] S1', 'Next up: S1') });
+    check('mission-budget: missing Sessions used → 0/2; non-numeric fields + garbage stdin → reminder path, exit 0',
+      a.code === 0 && /session 0\/2/.test(a.stdout) && !overrun(a) && b.code === 0 && noEst(b) && !overrun(b),
+      `a=${JSON.stringify(a.stdout)} b=${JSON.stringify(b.stdout)}`);
+  }
+  // 10. Newest-mtime active ledger wins over an older active one (shared predicate).
+  {
+    const r = runHook({ event: 'UserPromptSubmit', desc: MB, input: {},
+      ledgers: { 'old.state.md': 'Estimate: 1 session\n- [ ] S1\nNext up: S1\n', 'pay.state.md': 'Estimate: 3 sessions\nSessions used: 1\n- [ ] S1\nNext up: S1\n' } });
+    check('mission-budget: newest-mtime active ledger is the one reported', r.code === 0 && status(r) && /session 1\/3/.test(r.stdout), `stdout=${JSON.stringify(r.stdout)}`);
+  }
+}
+
 // ── SessionStart:compact re-read directive ───────────────────────────────
 // Matcher discipline is structural (the harness dispatches commands directly and
 // does not apply matchers), so assert the registered matcher set itself.

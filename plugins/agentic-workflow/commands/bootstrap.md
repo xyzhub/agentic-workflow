@@ -17,6 +17,11 @@ then. Ask questions only when a human is actually present to answer them.
 
 - **Default branch** — `git symbolic-ref --short refs/remotes/origin/HEAD` or the
   current branch.
+- **Staging** — a `staging` branch (`git branch -r`) and its deploy URL (a
+  staging app in `fly.toml`/Vercel/CI env, or the preview-deploy pattern);
+  `none` when absent — the first mission creates the branch and records it
+  (§5: every phase lands on staging and is verified there before its PR to
+  the default branch).
 - **Package manager / gates** — from `package.json` scripts (test, typecheck/lint,
   build), or the equivalent for the stack (Cargo, Go, Poetry, etc.). Prefer the
   scripts that CI runs.
@@ -110,9 +115,10 @@ at V6: plan a growth mission). Then **offer to run that next command** for them
 spend/publish). Close with: "`/agentic-workflow:next` answers this question any
 time; the Quick reference at the top of docs/WORKFLOW.md has the full map."
 
-For a venture with a UI surface, when the impeccable plugin is installed —
-probe (§0.2): `grep -qsi impeccable ~/.claude/plugins/installed_plugins.json`
-exits 0 — also recommend `.impeccable/` scaffolding as a next step: name
+For a venture with a UI surface, when the impeccable toolset is present —
+probe (§0.2), any of: `grep -qsi impeccable ~/.claude/plugins/installed_plugins.json`
+exits 0, `.claude/skills/impeccable/` exists, or `node_modules/.bin/impeccable`
+exists — also recommend `.impeccable/` scaffolding as a next step: name
 impeccable's `init` (the human or the main session runs it; subagents cannot
 invoke slash commands). When it is not installed, omit any impeccable mention.
 

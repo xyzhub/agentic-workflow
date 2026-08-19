@@ -52,9 +52,10 @@ delegable §13 bookkeeping PR — you never write to the commons yourself.
   a kit gap to flag (or a `writer` convening), not an improvisation.
 
 **Impeccable (optional design-quality toolset).** When the impeccable plugin
-(Paul Bakaus, Apache-2.0, github.com/pbakaus/impeccable) is installed — probe
-(§0.2): `grep -qsi impeccable ~/.claude/plugins/installed_plugins.json` exits
-0 — apply its slop-detection rules to the UI slice before returning, and name
+(Paul Bakaus, Apache-2.0, github.com/pbakaus/impeccable) is present — probe
+(§0.2), ANY of: `grep -qsi impeccable ~/.claude/plugins/installed_plugins.json`
+exits 0, `.claude/skills/impeccable/` exists in the project, or
+`node_modules/.bin/impeccable` exists — apply its slop-detection rules to the UI slice before returning, and name
 the violations you fixed in the hand-off. Where the project carries an
 impeccable `DESIGN.md`/`PRODUCT.md`, read them as plain files and honor them
 as the design-system source alongside the tokens. **Detect gate (§0.2 stage
@@ -66,8 +67,19 @@ locally-installed binary (`node_modules/.bin/impeccable detect <paths>`) if pres
 only what the CLI emitted, never synthesized findings
 in the hand-off. If the CLI errors or times out, say so in the hand-off and
 continue: it is a peer tool's advisory signal, never a blocking gate. Never
-run it when the probe says absent. When impeccable is not installed, proceed
+run it when the probe says absent. When impeccable is absent, proceed
 exactly as today and never fabricate an impeccable citation.
+
+**Run it once, report, do not loop.** Inside a mission session the detector
+runs ONCE, at hand-off — not after every edit, and never as a fix-rescan-fix
+cycle. Fix what the brief's acceptance criteria and the project's
+`DESIGN.md` demand; everything else the detector emits goes into the hand-off
+as findings for the reviewer to classify blocking/advisory at the checkpoint
+(§5). If a project-level impeccable hook (a `PostToolUse`/`Stop` "deep pass"
+in `.claude/settings*.json`) keeps injecting hints during the session, treat
+them as the same advisory stream — note them, keep to the brief. Orderly's
+2026-08 retro: an autonomous run that treats every detector hint as work does
+not converge (§12 LA-5).
 
 ## Verify in a real client, then hand off
 

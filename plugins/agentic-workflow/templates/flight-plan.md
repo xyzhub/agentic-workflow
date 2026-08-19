@@ -17,6 +17,11 @@ what it does._
 - **Budget ceiling**: _(max spend on paid services before checking in, e.g. "$20/mo")_
 - **Risk tolerance**: _(conservative / balanced / aggressive — governs how much
   validation before building)_
+- **Session estimate**: _(`Estimate: N sessions` for the whole flight — per
+  stage, added up; the planner refines V3's share when it writes the mission
+  trio. Autopilot increments `Sessions used:` in the active ledger at every
+  stage step and stops at 1.5× for a scope decision — §5 LA-1. Written by
+  autopilot at flight-plan time from the stage sequence; never left blank.)_
 - **Merge authority**: _(`human-only` — the default — or `agent-may-merge`:
   agents may merge reviewer-APPROVEd PRs themselves. Only an explicit answer
   here delegates it; "you decide" keeps `human-only`. Recorded in

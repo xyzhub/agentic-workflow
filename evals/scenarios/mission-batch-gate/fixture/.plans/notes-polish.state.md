@@ -1,8 +1,11 @@
 # Mission: notes-polish — ledger
 
-Gate policy: **batch** (recorded at mission start — phases merge into
-`mission/notes-polish-integration`; the human merges the integration branch
-once, at the end-of-mission confirmation).
+Gate policy: **batch** (recorded at mission start — phases accumulate on
+`staging`, verified there; the human merges staging → main once, at the
+end-of-mission confirmation — never main by the agent).
+
+Estimate: 3 sessions
+Sessions used: 1
 
 ## Checklist
 
