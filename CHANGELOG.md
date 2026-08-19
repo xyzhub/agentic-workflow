@@ -8,6 +8,24 @@ has no tags — each version-stamped commit on `main` IS the release.
 
 _(empty)_
 
+## [1.49.0] — 2026-08-19
+### Changed — reviewer tier keys on risk class, and a security review must close the threat
+Both from a live finding during the n=1 (orderly #605→#730): a two-deletion
+auth-critical diff was reviewed by opus on diff-size judgment; a follow-up
+Fable auth pass found #605's threat only HALF closed — a second path
+(`checkout-url.post.ts` + a bypassable `create-intent` gate) still hands back
+the table qrToken — for ~74k tokens.
+- **Reviewer model tier keys on RISK CLASS, not diff size** (`agents/reviewer.md`,
+  `commands/mission.md` §0, `templates/WORKFLOW.md` §5): Fable is required for
+  any review whose diff touches auth / a session credential / authorization /
+  tenancy / money / schema / migrations / a security boundary — a two-line
+  auth diff included. The reviewer flags a miscalled tier as a process finding.
+- **Close the threat, not just the diff**: a security/auth/money review must
+  step outside the changed lines and check for a second path to the same asset
+  (grep every producer of the protected value and consumer of the vulnerable
+  one); a partial fix must say "closes X of N paths, rest is #<issue>", never
+  a silence that reads as closure.
+
 ## [1.48.6] — 2026-08-19
 ### Fixed
 - **§5 Hotfix path**: a Lane-A fix branched from the default branch, with

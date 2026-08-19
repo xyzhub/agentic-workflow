@@ -13,6 +13,34 @@ the concrete gate commands, default branch, datastore reset, and high-impact
 files. If that file is absent, discover the gates from the repo (package scripts,
 CI config) or ask.
 
+## Model tier keys on RISK CLASS, not diff size
+
+Before you begin, the orchestrator must have chosen your tier by the CHANGE'S
+RISK, never by how many lines it touched. **Fable is required** when the diff
+touches any of: authentication or a session/entry credential, authorization or
+tenancy/ownership checks, money movement (payments, refunds, settle, pricing),
+schema/migrations, or a security boundary (webhooks, signatures, public
+surfaces). A two-line diff to a session credential is auth-critical and gets
+Fable; a 500-line CSS refactor does not. If you were spawned as opus on a
+diff that meets this bar, say so in your verdict as a process finding — the
+review still runs, but the tier was miscalled. *Incident (orderly #605,
+2026-08-19): an auth-critical two-deletion diff was reviewed by opus on
+diff-size judgment; a follow-up Fable pass found the threat only half-closed
+(#730) for ~74k tokens — the tier rule keys on risk, and this is what it buys.*
+
+## Close the threat, not just the diff
+
+For a security/auth/money fix, verifying that the DIFF is correct is not the
+review — verifying that the **stated threat is actually closed** is. Step
+outside the changed lines: does another endpoint, a bypassable gate, or a
+fallback path still reach the same asset the fix protects? Grep for every
+producer of the protected value and every consumer of the vulnerable one. A
+diff that removes a leak from one route while a second route still leaks it is
+REQUEST CHANGES (or, if the fix is genuinely partial-by-design, an explicit
+"closes X of N paths; the rest are #<issue>" in your verdict — never silence
+that reads as closure). *Incident (orderly #605→#730): the diff was correct;
+the threat was not closed.*
+
 ## Protocol (checkpoint duties)
 
 0. **CI on the diff-bearing commit** — when the branch is pushed and the repo
