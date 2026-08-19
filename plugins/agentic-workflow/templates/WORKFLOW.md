@@ -394,8 +394,15 @@ mechanical half):
   an explicit owner line in the ledger (`Standing agent authorized: <role> —
   <date> — "<words>"`), beaten on decisions only, cost re-quoted every ~3
   beats, killed when its remit ends. The reviewer flags any without the line.
-  Model tiering is unchanged (Fable one-shot for money/schema-critical
-  reviews and audits; opus builders) — the saving is in shape, not tier.
+  Model tiering is unchanged in principle (opus builders) but the **reviewer
+  tier keys on the change's RISK CLASS, not its diff size**: Fable is required
+  for any review whose diff touches auth, a session/entry credential,
+  authorization/tenancy, money, schema/migrations, or a security boundary —
+  a two-line auth diff included. The saving is in shape (one-shot, at decision
+  points), not tier. And a security/auth/money review must **close the threat,
+  not just verify the diff** — step outside the changed lines for a second
+  path to the same asset (orderly #605→#730). A miscalled tier is a process
+  finding.
   *Incident:* six supervisor beats ≈ 1.08M tokens, 94% of a session's Fable
   spend, against 70k for the one-shot review that found the real defects.
 - **Write-ahead at every merge and gate (LA-6).** Builders have a session

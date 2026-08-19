@@ -62,9 +62,13 @@ defects; three merges and a gate went unrecorded and a compaction erased them.
    old line** (`SUPERSEDED next-up (historical, do NOT read as state):`) —
    never leaving a second `Next up:` that still parses; the hook reads the
    first and warns on duplicates.
-7. **Model tiering stays** (Fable for money/schema-critical one-shot reviews and
-   audits, opus builders) — the saving is in *shape* (one-shot, at decision
-   points), not in the tier.
+7. **Model tiering stays, and the reviewer tier keys on RISK CLASS not diff
+   size** (opus builders; **Fable required** for any review whose diff touches
+   auth / a session credential / authorization / tenancy / money / schema /
+   migrations / a security boundary — regardless of how few lines it is). The
+   saving is in *shape* (one-shot, at decision points), not in the tier; a
+   two-line auth diff still gets Fable (orderly #605→#730). The reviewer flags
+   a miscalled tier as a process finding.
 
 ## 1. Plan (if no trio exists)
 
