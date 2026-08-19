@@ -176,7 +176,9 @@ inferences.
 After each brief/checkpoint — and, per rule 5, at every merge and gate result in
 between — the ledger is written first; then spawn the **chronicler** to update
 the record and republish the status page via the Artifact tool (subagents
-cannot publish). The ledger is ground truth: `continue` mode simply re-reads
+cannot publish). The ledger is ground truth — and the ledger **at origin** is the state when
+more than one machine can drive (§5 hand-off): `continue` mode pulls first,
+then re-reads
 `Next up:` **and the `## Standing steers` block** (steers bind every session
 that follows the checkpoint that captured them), increments `Sessions used:`,
 and proceeds, losing nothing across interruptions.

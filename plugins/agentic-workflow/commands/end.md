@@ -76,7 +76,8 @@ Artifact tool to the URL in its `artifact-url` comment.
 ## 6. Push / hand off
 
 ```bash
-git push -u origin <branch>
+git push -u origin <branch>   # includes the ledger — the push is what makes
+                              # a cross-machine hand-off real (§5)
 ```
 
 Run `/agentic-workflow:pr` before opening the PR (no remote yet → it says so; skip the
