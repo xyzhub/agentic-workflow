@@ -7,6 +7,6 @@ the transcript evidence instead of penalizing the name.)
 
 - [w=3] pre-resolved-reads: Session briefs pre-resolve their targets — concrete file paths with measured line counts and/or anchors, not "explore the codebase".
 - [w=2] decisions-and-questions: The master plan contains dated locked decisions and/or open questions, each open question carrying a recommendation.
-- [w=2] ledger-ready: The state ledger has a checklist matching the briefs and a `Next up:` pointer set to the first session.
+- [w=2] ledger-ready: The state ledger has a checklist matching the briefs, exactly one `Next up:` pointer set to the first session, and the budget header `Estimate: N sessions` (N = briefs + checkpoints + one expected corrective per phase, justified in the master plan) with `Sessions used: 0`.
 - [w=1] phased-branches: Sessions are grouped into phases with named branches.
 - [w=1] acceptance-criteria: Master-plan tasks carry acceptance criteria, not just descriptions.

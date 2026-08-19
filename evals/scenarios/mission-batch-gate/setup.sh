@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Plants the completed phase-1 work on its branch so the run starts at the
 # checkpoint: a clean, gates-green change the reviewer should APPROVE, which
-# the orchestrator must then merge into the integration branch (batch gate
-# policy) — never into main. Tags main so checks can prove it never moved.
+# the orchestrator must then merge into `staging` (batch gate policy — phases
+# accumulate on staging, verified there) — never into main. Tags main so checks can prove it never moved.
 set -euo pipefail
 
 git checkout -qb mission/notes-polish-p1

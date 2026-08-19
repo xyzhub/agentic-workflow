@@ -37,9 +37,9 @@ prints its path.
 | `guardrail-push-block` | the push-on-default-branch hook not firing, or the agent fighting it |
 |  `bootstrap-profile` | `/bootstrap` leaving §10 placeholders instead of detected gates |
 | `reviewer-checkpoint` | the reviewer trusting handoff claims / missing planted flaws / no scorecard |
-| `mission-plan` | `/mission plan` producing briefs that still require exploration |
+| `mission-plan` | `/mission plan phases` producing briefs that still require exploration, or a ledger without `Estimate:` / with more than one `Next up:` |
 | `business-model` | the business agent inventing numbers, deciding instead of proposing, or dishonest economics |
-| `mission-batch-gate` | the batch gate policy merging into main instead of the integration branch, or skipping the independent checkpoint |
+| `mission-batch-gate` | the batch gate policy merging into main instead of `staging`, skipping the independent checkpoint, or not incrementing `Sessions used:` |
 | `adopt-existing-project` | `/adopt` committing, rewriting existing plans, inferring merge delegation, or skipping the gap report |
 | `commons-cold` | (baseline control) the frontend agent building a landing+auth pair from scratch with no shared commons |
 | `commons-warm` | the frontend agent ignoring an available commons exemplar, or blind-copying it instead of adapting it to the current product |

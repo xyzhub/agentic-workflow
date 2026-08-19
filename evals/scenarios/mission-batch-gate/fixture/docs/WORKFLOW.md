@@ -17,6 +17,7 @@ the integration branch once at the end.
 | **HITL (merge/deploy authority)** | Eval Owner |
 | **Merge policy** | human-only |
 | **Default branch** | main |
+| **Staging** | `staging` (created from main on first use; no deploy — a library fixture — so the staging verify is the test gate on `staging`) |
 | **Test gate** | `npm test` |
 | **Typecheck/lint gate** | none |
 | **Build** | none |
