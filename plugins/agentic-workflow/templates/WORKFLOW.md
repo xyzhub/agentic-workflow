@@ -42,6 +42,7 @@ V4 harden → V5 launch → V6 operate.
 | Cutting a version | `/agentic-workflow:release` |
 | Just deployed | `/agentic-workflow:verify` |
 | Weekly, once live | `/agentic-workflow:operate` |
+| "What should we build next?" / the backlog feels stale | `/agentic-workflow:groom` (probe every open issue against the tree, close what shipped, re-size the rest), then `/agentic-workflow:next` |
 | Health check / feeling stuck | `/agentic-workflow:check`, then `/agentic-workflow:next` |
 | Something feels broken (tools, profile, hooks) | `/agentic-workflow:doctor` — add `fix` to install missing tools |
 | An agent keeps underperforming | `/agentic-workflow:tune <agent> opus` — back: `/agentic-workflow:tune <agent> reset` |
@@ -246,7 +247,7 @@ Shipped by this plugin as hooks. Advisory except where marked:
 | `git push` | Warns when tracked files are modified-but-uncommitted (untracked scratch dirs don't warn) |
 | `gh pr merge` | **BLOCKS** unless the §10 **Merge policy** is `agent-may-merge` (fail closed when unset/absent); when delegated, reminds: merge only on a reviewer APPROVE |
 | `gh pr create` | Reminder to have run the gates |
-| `Write`/`Edit` | Reminder to update docs when high-impact files change |
+| `Write`/`Edit` | Reminder to update docs when high-impact files change; on a route file (`server/api/**`) or the schema, when the project ships `tools/catalog.mjs`, it names the catalog (§6.1: regenerate + rewrite the feature row in the same PR — the reviewer gates it) |
 | `Read` (whole file, no `limit`) | **Read advisory** (context discipline) — nudges toward a ranged read or a delegating subagent (§6.2 Delegated reads) when a whole-file read targets a file over `READ_ADVISORY_LINES` (800 lines); a discipline line, not a measured optimum — this repo has no corpus to confirm an effect size, so none is claimed; never blocks |
 | Prompt submit | **Router** (governance) — an un-prefixed work request gets a soft "route it through the protocol — hand to `intake`" nudge; silent on plain chat, never blocks |
 | Prompt submit | **Mission-budget** (governance; supersedes the thread-keeper) — injects the active ledger's status line `Mission <name> — session k/N (est.)` + its **first** `Next up:` line each turn (§12 LA-7: the old `tail -1` fed the owner the stalest state for a day; duplicates now draw a loud warning). Reads `Estimate: N sessions` and `Sessions used: k` from the ledger header and, once **k ≥ 1.5 × N**, prints 🛑 OVERRUN on every prompt until the estimate is revised — a protocol STOP for the orchestrator (no further brief until the owner chooses subset / revised estimate / abort), never a hook block; a missing `Estimate:` draws a one-line reminder. Silent when no active ledger; every hook in this table now carries a `timeout` (5 s; 30 s for compact-resume) so a slow hook can never stall a turn; never blocks |
@@ -282,6 +283,27 @@ ticking)? The close falls through to the settle close-gate first: read the
 ledger's `## Closing` block — while any `[ ]` obligation row remains, the
 mission may not be reported closed; `/agentic-workflow:settle` fires or
 promotes each row, and only then is the `Closed:` stamp written (§5).
+
+**The queue — one place work waits.** Every open item — bug, review nit,
+feature, deferral, `/agentic-workflow:operate` finding, `/agentic-workflow:retro`
+action — is an issue in the §10 **Issue tracker** (GitHub Issues via `gh` when the
+remote is GitHub), labelled `type/{bug,feature,debt,ops}` and `size/{XS,S,M}`,
+optionally `epic/<id>` and `surface/<name>`. Markdown backlogs are **generated
+views** of that queue, never hand-appended; the roadmap
+(`docs/product/roadmap.md`, `templates/roadmap.md`) holds epics, the owner's
+ranking and pointers — **never per-item status**. A deferral is a decision doc
+plus a *closed* issue that links to it, not a third prose copy.
+`/agentic-workflow:groom` keeps the queue true — it probes every open item
+against the tree (anchors present, merged commit an ancestor of the default
+branch, behavior proven), closes what shipped **with quoted evidence**, flags what
+went stale, re-sizes the rest, and regenerates the view; `/agentic-workflow:next`
+recommends ONE item from it; `/agentic-workflow:mission` and `/agentic-workflow:fix`
+take one item out and close it on merge; `/agentic-workflow:operate` and
+`/agentic-workflow:retro` write into it. *Incident (orderly, 2026-08-19):* an
+append-only `BACKLOG.md` reached 123 KB / 119 open boxes with shipped items still
+listed under "small effort", while a hand-reconciled roadmap marked every entry
+shipped or deferred — two files, no consumer, no truth. A record nobody reads
+back goes stale; an append-only one goes stale by design.
 
 **Context discipline** — at ~25% usage, finish the current edit to a compiling
 state, verify, write the handoff, end. A clean half-session beats a degraded full
@@ -613,6 +635,43 @@ stage change); the chronicler edits the three files, then the **main session
 republishes** `overview.html` via the Artifact tool to its recorded URL
 (subagents cannot publish artifacts). Task-altitude changes update CHANGELOG only.
 
+**The catalog — what the product IS (state, not history).** The three
+artifacts above say what *happened*; a fresh session that has to replay them to
+learn the current shape builds on old knowledge. `docs/product/catalog/` holds
+the current state, in two halves:
+
+- **Derived, never stale** — `api.md` (every route: method, path, auth class,
+  handler) and `data-model.md` (models, fields, relations, enums), generated by
+  `tools/catalog.mjs` (shipped by the plugin, copied in by
+  `/agentic-workflow:bootstrap` / `adopt` / `sync`) from the route files and the
+  schema. Deterministic and sorted, so **`git diff` on them IS the API and
+  data-model change log**; `--check` fails when they are out of date.
+  `README.md` (≤40 lines, generated) carries counts + the last five changed
+  features — the first thing a session reads.
+- **Curated, rewritten in place** — `features.md` (`templates/catalog-features.md`):
+  one row per capability — `id · name · status (live|changed|removed) ·
+  marketable · audience · current behavior · anchors · last change · benefit`.
+  The `chronicler` rewrites rows at checkpoints and `/agentic-workflow:end`
+  (never appends; history stays in the CHANGELOG); `marketing` fills only
+  `benefit`. Every row's **anchors must resolve** — `tools/catalog.mjs --verify`
+  fails otherwise; `/agentic-workflow:groom` and the reviewer run it.
+
+**Consumed, so old knowledge cannot be built on**: `/agentic-workflow:start`,
+`/agentic-workflow:next` and the compact-resume directive read
+`catalog/README.md`; the `planner` lists in every brief the `features.md` rows
+and `api.md`/`data-model.md` sections whose anchors intersect the brief's
+reads; builders read a row before touching its anchor and name the rows they
+changed at hand-off; the `reviewer` REQUEST CHANGES a diff that touches
+`server/api/**`, the schema, or a catalogued anchor without a catalog update in
+the same PR (`--check` green, the row edited). **Marketing reads the catalog,
+not the changelog**: landing page, launch assets, the sales kit's
+`data:capabilities` and "What's new" draw facts only from rows with
+`marketable: yes` + `status: live`. *Incident (orderly, 2026-08-19):* 304
+routes, a 158 KB schema and an openapi endpoint with no derived inventory; a
+1,848-line CHANGELOG as the only "what is built"; landing copy drafted from
+that changelog. Sessions were building on old knowledge because nothing said
+what the product is.
+
 ### 6.2 The context firewall — bounded returns & the fresh-self handoff
 
 A context window fills mostly with **tool output** — file reads, command dumps,
@@ -671,7 +730,9 @@ different moments.
 ## 7. Fulfilment: definition of done
 
 DONE = gates green → live verification passed (real client for UI) → docs updated
-when behavior/config changed → PR merged by HITL → **post-deploy verification on
+when behavior/config changed → **catalog current** (`docs/product/catalog/`
+regenerated and the feature row rewritten when a route, the schema, or a
+catalogued anchor changed — §6.1) → PR merged by HITL → **post-deploy verification on
 the deployed instance** for anything user-facing (`/agentic-workflow:verify` is the vehicle:
 drive the real flow, confirm monitoring is receiving, record the result).
 "Deployed and verified" is the finish line, not "PR open".
@@ -773,6 +834,7 @@ concrete values.
 | **Version pin** | _(the file and key this project bumps on release — e.g. `package.json` `version`, `pyproject.toml` `project.version`, a plugin manifest. `none` → the project pins no version, and the mission-close `version bumped + stamped` row fires with "no version named" as its evidence — that row's condition is its own CHANGELOG entry, never this key; this row only records WHERE to bump when there is something to bump)_ |
 | **Owner channel** (§12) | _(private DM only — transport (Telegram bot / Slack), the send template with env-var NAMES for token + chat id (never values), the owner's user id for inbound verification, and how callbacks arrive (Telegram: getUpdates polling; Slack: interactivity endpoint, else text fallback). `none` → harness push notifications, else status page only)_ |
 | **Portfolio** (§13, optional) | _(path or remote of the registry repo this venture is registered in; `none` if standalone)_ |
+| **Issue tracker** | _(the queue's system of record — e.g. `GitHub Issues via gh`; `/agentic-workflow:groom` probes it, `/agentic-workflow:next` reads it, `/agentic-workflow:mission`/`fix` close items on merge. `none` → the markdown backlog is groomed in place and adopting a tracker is recommended)_ |
 | **Issue tracker** | _(e.g. GitHub Issues via `gh`)_ |
 
 ## 11. Autopilot mode

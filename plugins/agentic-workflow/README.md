@@ -91,7 +91,7 @@ as what it does.
 | `compass` | Strategic beats | Owns `docs/product/north-star.md`; judges trajectory-vs-purpose; on a concrete named drift fires ONE gated Alert-tier §12 owner notification (severity + frequency limited) | Decides; kills/greenlights; builds; merges (purpose is the human's call) |
 | `writer` | Optional | Copy kit/glossary owner; convened for copy-heavy slices (landing, UI strings, long-form) | Publishes; defines brand voice; owns positioning |
 | `reviewer` | Checkpoints | Fresh-context review — four pillars + QA + architecture; APPROVE / REQUEST CHANGES + scorecard; re-runs all gates itself | Merges; pushes; edits code; trusts a handoff claim |
-| `chronicler` | Session close | CHANGELOG, the JOURNEY narrative, the live owner status page | Touches product code; re-reads source "to verify" |
+| `chronicler` | Session close, checkpoints | The catalog's `features.md` rows (rewritten in place) + derived files, then CHANGELOG, the JOURNEY narrative, the live owner status page | Touches product code; re-reads source "to verify"; writes a `benefit` (marketing's column) |
 | `backend` | Build | Server-side slices — data integrity, idempotency, additive migrations | Self-approves; merges |
 | `frontend` | Build | UI slices — owns the UX pillar; verifies in a real browser | Self-approves; introduces parallel styling systems |
 | `security` | Hardening | Fail-closed config guards, auth, rate limits, secret handling, CI pinning — and proves each guard blocks | Marks its own work approved |
@@ -144,7 +144,8 @@ alongside the workflow; when it isn't, they proceed exactly as today.
 | `/agentic-workflow:settle` | Probe every deferred obligation (`.plans/OBLIGATIONS.md` + mission ledgers' `## Closing`), fire the condition-met safe class — merged-branch and worktree reaping behind the deploy-green gate, never `-D` — surface what a probe can't prove, and refuse to close a mission while `[ ]` rows remain |
 | `/agentic-workflow:operate` | The V6 loop: analyst numbers → ops/marketing/business reviews → one report with a ranked backlog; in a registry repo it sweeps the whole portfolio |
 | `/agentic-workflow:publish` | The §14 publishing pipeline: connect channels, stage posts into the queue (marketing/writer), then fire — human-fired by default, or a scheduled run within a scoped, revocable `may-publish` delegation; paid always human-fired |
-| `/agentic-workflow:retro` | Turn lessons into protocol amendments, eval scenarios, hook proposals — via PR like any change |
+| `/agentic-workflow:groom` | Keep the queue true: probe every open issue against the tree, close what shipped (quoted evidence), flag stale, re-size, regenerate the backlog view; `--from BACKLOG.md` imports a markdown backlog into the tracker once |
+| `/agentic-workflow:retro` | Turn lessons into protocol amendments, eval scenarios, hook proposals — filed as issues in the queue — via PR like any change |
 
 **Machinery**
 
@@ -165,11 +166,26 @@ docs/product/               # idea.md · prd.md · ux-brief.md · architecture.m
                             # interface-contract.md · JOURNEY.md · overview.html
                             # (live status page) · business/ · launch/
                             # (assets · publish-queue.md · publish-log.md) ·
-                            # decisions/ (memos)
+                            # decisions/ (memos) · roadmap.md (epic view only)
+docs/product/catalog/       # WHAT THE PRODUCT IS (state, not history — §6.1):
+                            # api.md + data-model.md derived by tools/catalog.mjs
+                            # (git diff = the API/model change log), features.md
+                            # curated + rewritten in place (marketable rows are
+                            # the landing-page/sales fact source), README.md ≤40 lines
+tools/catalog.mjs           # shipped by the plugin: generate · --check · --verify
 .plans/                     # one trio per mission + pending-gates
-CHANGELOG.md                # Keep-a-Changelog, chronicler-maintained
+CHANGELOG.md                # Keep-a-Changelog, chronicler-maintained (history)
 .env.example                # var names for the owner channel etc. (never values)
 ```
+
+**The queue** lives in the §10 issue tracker (GitHub Issues via `gh`), labelled
+`type/*` `size/*` `epic/*`; markdown backlogs are generated views
+(`/agentic-workflow:groom`), the roadmap holds epics only. **The catalog** is what
+every fresh session reads before it builds: `/agentic-workflow:start`, the planner's
+briefs, the builders and the compact-resume directive all point at it; the
+reviewer REQUEST CHANGES a route/schema/anchor change that leaves it stale;
+marketing writes landing and launch copy from its `marketable: yes` rows — never
+from the CHANGELOG.
 
 ## The owner channel
 

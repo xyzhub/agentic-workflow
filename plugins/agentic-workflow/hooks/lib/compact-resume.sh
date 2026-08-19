@@ -77,13 +77,22 @@ done)
 
 HANDOFF=docs/product/session-handoff.md
 
+# The catalog README (§6.1) is the current shape of the product; a session that
+# resumes from a summary must re-read it too, or it builds on old knowledge.
+# Conditional so projects without a catalog get the directive byte-for-byte.
+CATALOG_LINE=""
+if [ -f docs/product/catalog/README.md ]; then
+  CATALOG_LINE="
+  3. docs/product/catalog/README.md — what the product IS now (routes, models, features, last changes)."
+fi
+
 if [ -n "$LEDGER" ]; then
   # Branch 1 — active mission: the ledger is the richer record. Byte-for-byte
-  # the pre-P2 directive; ckpt-p2 diff-checks this against the pre-phase hook.
+  # the pre-P2 directive when no catalog exists; ckpt-p2 diff-checks this.
   MSG="♻️ Context was just COMPACTED — what you hold now is a summary, not the record.
 Before anything else, re-read these VERBATIM (do not resume from the summary):
   1. $LEDGER — phase, \`Next up:\`, open beats, Deviations, and \`## Standing steers\` (honor them).
-  2. docs/product/session-handoff.md — the last session handoff, if it exists.
+  2. docs/product/session-handoff.md — the last session handoff, if it exists.${CATALOG_LINE}
 Then re-state the current brief's remaining Do/Verify items before continuing."
 elif [ -f "$HANDOFF" ]; then
   # Branch 2 — no mission, but a handoff exists. State its freshness in the

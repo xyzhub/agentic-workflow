@@ -1075,6 +1075,30 @@ const CLOSING_NONE_DUE = {
     `cps=${cps.length} oldestCps=${[...oldest].length} oldest=${JSON.stringify(oldest.slice(-12))}`);
 }
 
+// ── Catalog wiring (§6.1, 2026-08-19): docs-reminder names the catalog on
+// route/schema edits when tools/catalog.mjs ships; compact-resume adds the
+// catalog README as re-read item 3 when it exists (byte-for-byte otherwise).
+{
+  const DOCS = 'Docs reminder when high-impact';
+  const edit = (fp) => ({ tool_input: { file_path: fp } });
+  const a = runHook({ event: 'PostToolUse', desc: DOCS, input: edit('/repo/server/api/orders/index.get.ts') });
+  check('docs-reminder: route edit, no tools/catalog.mjs → plain stale-doc reminder', a.code === 0 && /High-impact file changed/.test(a.stdout) && !/catalog/.test(a.stdout), a.stdout);
+  const b = runHook({ event: 'PostToolUse', desc: DOCS, input: edit('/repo/server/api/orders/index.get.ts'), files: { 'tools/catalog.mjs': { content: '// stub' } } });
+  check('docs-reminder: route edit with tools/catalog.mjs → names the catalog + features.md row', b.code === 0 && /node tools\/catalog\.mjs/.test(b.stdout) && /features\.md/.test(b.stdout), b.stdout);
+  const c = runHook({ event: 'PostToolUse', desc: DOCS, input: edit('/repo/prisma/schema.prisma'), files: { 'tools/catalog.mjs': { content: '// stub' } } });
+  check('docs-reminder: schema edit with catalog → names the catalog', c.code === 0 && /catalog/.test(c.stdout), c.stdout);
+  const d = runHook({ event: 'PostToolUse', desc: DOCS, input: edit('/repo/app/pages/x.vue'), files: { 'tools/catalog.mjs': { content: '// stub' } } });
+  check('docs-reminder: ordinary file → silent', d.code === 0 && d.stdout.trim() === '', d.stdout);
+
+  const COMPACT_D = 'compact-resume directive';
+  const led = { 'm.state.md': '- [ ] S1 — build\nNext up: S1\n' };
+  const e = runHook({ event: 'SessionStart', desc: COMPACT_D, input: { source: 'compact' }, ledgers: led });
+  const f = runHook({ event: 'SessionStart', desc: COMPACT_D, input: { source: 'compact' }, ledgers: led, files: { 'docs/product/catalog/README.md': { content: '# Product catalog\n' } } });
+  const lines = (r) => { try { return JSON.parse(r.stdout).hookSpecificOutput.additionalContext.split('\n'); } catch { return []; } };
+  check('compact-resume: no catalog → directive unchanged (no item 3)', e.code === 0 && !lines(e).some((l) => /catalog\/README/.test(l)) && lines(e).length <= 6, JSON.stringify(e.stdout));
+  check('compact-resume: catalog README present → item 3 names it, still ≤6 lines', f.code === 0 && lines(f).some((l) => /3\. docs\/product\/catalog\/README\.md/.test(l)) && lines(f).length <= 6, JSON.stringify(f.stdout));
+}
+
 if (failures.length) {
   console.error(`\nhook-test: ${failures.length} failure(s)`);
   process.exit(1);

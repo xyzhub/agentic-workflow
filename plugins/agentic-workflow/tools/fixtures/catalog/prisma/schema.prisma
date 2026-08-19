@@ -1,0 +1,27 @@
+// fixture schema
+generator client { provider = "prisma-client" }
+datasource db { provider = "postgresql" url = env("DATABASE_URL") }
+
+enum OrderStatus {
+  OPEN
+  PAID // settled
+}
+
+model Order {
+  id        String      @id @default(cuid())
+  venueId   String
+  total     Decimal     @db.Decimal(10, 2)
+  status    OrderStatus @default(OPEN)
+  items     OrderItem[]
+  placedAt  DateTime    @default(now())
+
+  @@unique([venueId, id])
+  @@index([placedAt])
+}
+
+model OrderItem {
+  id      String @id @default(cuid())
+  orderId String
+  order   Order  @relation(fields: [orderId], references: [id])
+  qty     Int
+}

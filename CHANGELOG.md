@@ -8,6 +8,61 @@ has no tags — each version-stamped commit on `main` IS the release.
 
 _(empty)_
 
+## [1.46.0] — 2026-08-19
+### Added — one queue, the product catalog, catalog-driven marketing
+Owner asks after v1.45.0, all found while trying to pick one feature in a
+venture: the backlog was append-only and lied (123 KB, 119 open boxes, shipped
+items still "open"); roadmap and backlog overlapped with no owner; nothing said
+what the product IS (1,848-line CHANGELOG as the only inventory; 304 routes and
+a 158 KB schema never derived), so sessions built on old knowledge; landing
+copy was written from a noisy changelog. Nothing removed.
+- **The queue (§4).** Every open item is an issue in the §10 **Issue tracker**
+  (`type/*`, `size/*`, `epic/*`, `surface/*`); markdown backlogs are generated
+  views; the roadmap (`templates/roadmap.md`, `docs/product/roadmap.md`) holds
+  epics + owner ranking only. New **`/agentic-workflow:groom`**: probe every
+  open issue against the tree (anchors, merged commit ancestor of the default
+  branch, behavior), close shipped **with quoted evidence**, flag stale, re-size,
+  regenerate the view; `--from BACKLOG.md` imports a markdown backlog once.
+  `/next` recommends ONE queue item; `/operate` and `/retro` file issues;
+  `/fix` and `/mission` take an issue (`Closes #N`); `/end` files unqueued work
+  and commits scratchpad guardrails (LA-4); `/bootstrap` seeds labels + roadmap;
+  `/adopt` recommends the import.
+- **The catalog (§6.1) — what the product IS.** `tools/catalog.mjs` (shipped
+  in the plugin, copied into ventures by `/bootstrap`/`/adopt`/`/sync`)
+  derives `docs/product/catalog/api.md` (routes: method, path, auth class,
+  handler — Nuxt/Nitro file convention) and `data-model.md` (Prisma models,
+  fields, relations, enums) deterministically, so `git diff` is the API/model
+  change log; `--check` fails when stale; `--verify` fails when a
+  `features.md` anchor no longer resolves; `README.md` (≤40 lines) is the first
+  read of any session. Curated `features.md` (`templates/catalog-features.md`):
+  one row per capability, **rewritten in place** — `status · marketable ·
+  audience · current behavior · anchors · last change · benefit`; the
+  chronicler owns all but `benefit` (marketing's). Consumed by `/start`,
+  `/next`, the compact-resume directive, the planner's briefs (rows whose
+  anchors intersect the reads), the builders (read the row before touching the
+  anchor), and gated by the **reviewer** (route/schema/anchor change without a
+  catalog update → REQUEST CHANGES). Verified on orderly's tree: 304 routes,
+  68 models, 28 enums in 0.1 s.
+- **Marketing reads the catalog, not the changelog.** Landing page, launch
+  assets, the sales kit's `data:capabilities` and "What's new" draw facts only
+  from `features.md` rows with `marketable: yes` + `status: live`; the
+  reviewer flags a claim with no backing row.
+- Hooks: the docs-reminder names the catalog on route/schema edits when
+  `tools/catalog.mjs` ships; compact-resume adds `catalog/README.md` as re-read
+  item 3 when it exists (byte-for-byte otherwise). Both hook-tested.
+### Tests
+- `tools/lint.mjs` check 10.5 delegates to `catalog.mjs --selftest` (bundled
+  fixture: 5 routes incl. `:id`/`*slug`/ANY, 2 models + enum, determinism,
+  `--check` staleness, `--verify` failures, stub output without conventions).
+- `hook-test.mjs`: 6 cases (docs-reminder × 4, compact-resume × 2).
+- `evals/scenarios/reviewer-checkpoint`: fixture ships the catalog with row F-1
+  anchored on `src/server.js`; the planted branch changes it without a catalog
+  update → new `catalog-gate` criterion.
+### Docs
+- `templates/WORKFLOW.md` §4 (the queue), §6.1 (the catalog), §7 (DoD:
+  catalog current), §3 (docs-reminder row), §10 (Issue tracker row), quick
+  reference; repo `docs/WORKFLOW.md` re-synced to v1.46.0.
+
 ## [1.45.0] — 2026-08-19
 ### Changed — missions converge: one session by default, a hard overrun stop, staging → verify → PR
 The owner disabled the plugin on 2026-08-19: missions ran 24–48 h, results

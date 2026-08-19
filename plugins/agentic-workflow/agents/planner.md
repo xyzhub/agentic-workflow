@@ -38,7 +38,15 @@ each with a recommended option — these go to the human before execution.
 **`.plans/<mission>.sessions.md` — session briefs.** A protocol pointer (link the
 project's `docs/WORKFLOW.md` §5, don't restate it), the large-files table,
 and one brief per session: the **exact reads with line counts and anchors**, the
-do/verify steps, and a read budget. Group sessions into phases; name the per-phase
+do/verify steps, and a read budget. **Catalog first (§6.1)**: when
+`docs/product/catalog/` exists, read `README.md`, then list in each brief the
+`features.md` rows and the `api.md` / `data-model.md` sections whose anchors
+intersect the brief's reads (`Catalog: F-12 write-off · api.md /api/staff/orders/**
+· data-model.md#Payment`) — the current state, so the session never builds on
+what the CHANGELOG used to say; and put "catalog rows rewritten / derived files
+regenerated" in every brief's Verify when it touches a route, the schema, or a
+catalogued anchor. Missing catalog → say so in your return and recommend
+`/agentic-workflow:adopt`'s catalog step. Group sessions into phases; name the per-phase
 branch; mark parallel-safe phases; note checkpoints.
 
 **`.plans/<mission>.state.md` — ledger.** The session checklist (all unchecked),

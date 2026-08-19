@@ -73,7 +73,9 @@ agent with the goal and the mode (`phases` or not). (For a feature that still
 needs DEFINING — scope, journeys, shape decisions — `/agentic-workflow:plan` is
 the interview-driven front door that ends here with everything locked.) It
 explores once and writes the trio, including `Estimate:` and `Sessions used: 0`
-in the ledger header. **Converting an existing plan**: if the goal names a plan
+in the ledger header — and `Issue: #N` when the goal names a queue item (§4);
+the PR body then carries `Closes #N` so the merge closes it, and the reviewer
+reads the issue as the acceptance criteria. **Converting an existing plan**: if the goal names a plan
 document (a PLAN.md, migration doc, ticket export), pass it to the planner as
 source material — its decisions become locked decisions, not things to
 re-litigate. Then surface the master plan's **open questions** to the human and

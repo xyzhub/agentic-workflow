@@ -54,7 +54,12 @@ experiment for each — experiments are proposed to the human, never launched
 - **Ranked backlog**: every finding shaped as a runnable next step — a
   `/agentic-workflow:mission "<name>"` for big items, a session, or `/agentic-workflow:fix` — with
   acceptance criteria sketched. Rank by user impact and risk across ALL
-  categories, not per-category.
+  categories, not per-category. **File each as an issue in the queue** (§4 —
+  §10 Issue tracker: `gh issue create --label type/{bug,ops,feature} --label
+  size/{XS,S,M}`, body = the finding + its number + acceptance criteria), or
+  update the existing issue when one already tracks it (`gh issue list --search`);
+  the report links the issue numbers. A markdown-only backlog is a view — never
+  the place a finding is filed.
 - **Owner action items**: the human-only moves (merges, spend, publishing).
 
 ## 4. Record

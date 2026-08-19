@@ -15,7 +15,9 @@ consolidated report instead of a stream of questions.
 
 Run the `/agentic-workflow:bootstrap` procedure: detect the project profile, write
 `docs/WORKFLOW.md` with §10 filled, seed the record artifacts (CHANGELOG —
-reconstructed from git history via the `chronicler` — JOURNEY, status page).
+reconstructed from git history via the `chronicler` — JOURNEY, status page,
+the **catalog** — `tools/catalog.mjs` generated + `features.md` seeded from
+the code and CHANGELOG, §6.1 — and the roadmap epic view).
 Use the `$ARGUMENTS` stage if given, else infer from repo maturity. Skip
 whatever already exists (idempotent). The **Merge policy** row stays
 `human-only` unless the human explicitly delegates it — never infer
@@ -46,6 +48,12 @@ Look for what the project already uses and fold it in rather than duplicating:
   milestone docs) → list them; for the one that looks actively driven, spawn
   the `planner` to convert it into the trio (its decisions arrive locked —
   see the planner's conversion rules). Leave the originals untouched.
+- **A hand-written backlog** (`BACKLOG.md`, `TODO.md` with checkbox items) and
+  an item-level roadmap → the queue (§4): recommend
+  `/agentic-workflow:groom --from <file>` (imports into the §10 Issue tracker,
+  closes what already shipped with evidence, regenerates the file as a view)
+  and collapsing the roadmap to `docs/product/roadmap.md` epics. Report the
+  counts; do not import unasked in the audit pass.
 - **Existing conventions** (CLAUDE.md/AGENTS.md, commit conventions, an
   existing CHANGELOG) → point the protocol at them (§10 high-impact files,
   §4 commit format) instead of replacing them.

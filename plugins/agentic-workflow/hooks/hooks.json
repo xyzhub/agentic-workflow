@@ -98,8 +98,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "INPUT=$(cat); FILEPATH=$(printf '%s' \"$INPUT\" | jq -r '.tool_input.file_path // \"\"' 2>/dev/null || printf '%s' \"$INPUT\"); case \"$FILEPATH\" in *CLAUDE.md*|*AGENTS.md*|*docs/WORKFLOW.md*|*docs/architecture*|*docs/data-model*|*schema.prisma*|*schema.sql*) echo '📚 High-impact file changed — update related docs in the same PR (stale-doc rule).';; esac; exit 0",
-            "description": "Docs reminder when high-impact files change",
+            "command": "INPUT=$(cat); FILEPATH=$(printf '%s' \"$INPUT\" | jq -r '.tool_input.file_path // \"\"' 2>/dev/null || printf '%s' \"$INPUT\"); case \"$FILEPATH\" in *CLAUDE.md*|*AGENTS.md*|*docs/WORKFLOW.md*|*docs/architecture*|*docs/data-model*) echo '📚 High-impact file changed — update related docs in the same PR (stale-doc rule).';; esac; case \"$FILEPATH\" in */server/api/*|*schema.prisma|*/prisma/schema/*|*schema.sql) if [ -f tools/catalog.mjs ]; then echo '📚 Route/schema changed — regenerate the catalog (node tools/catalog.mjs) and rewrite the affected docs/product/catalog/features.md row in this PR (§6.1); the reviewer gates it.'; else echo '📚 High-impact file changed — update related docs in the same PR (stale-doc rule).'; fi;; esac; exit 0",
+            "description": "Docs reminder when high-impact files change; on a route file (server/api/**) or the schema, when the project ships tools/catalog.mjs, the reminder names the catalog (§6.1: regenerate derived files + rewrite the feature row in the same PR — the reviewer gates it), else the plain stale-doc reminder",
             "timeout": 5
           }
         ]

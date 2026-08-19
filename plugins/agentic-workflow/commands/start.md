@@ -27,6 +27,10 @@ git checkout -b <type>/<short-description>    # feat/…, fix/…  — never the
 ## 3. Load context
 
 - Read the project's conventions file and `docs/WORKFLOW.md`.
+- Read `docs/product/catalog/README.md` when it exists (≤40 lines: what the
+  product IS — routes, models, features, last five changes; §6.1). Building on
+  a route/model/component? Its `features.md` row and `api.md`/`data-model.md`
+  section come before the code — never the CHANGELOG.
 - If a `docs/product/session-handoff.md` manifest exists (a prior session handed
   off before its context filled, §6.2), read it and continue from its **Next** —
   following only the pointers you need. It's a re-read manifest, not a summary;

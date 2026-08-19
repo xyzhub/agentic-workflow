@@ -15,6 +15,11 @@ exist, read the two artifacts that tell you WHAT to build and against what
 boundary: `docs/product/ux-brief.md` (the personas, journeys, and states this
 slice must satisfy) and `docs/product/engineering/interface-contract.md` (the API shape to
 build against before `backend` finishes it — in parallel, without divergence).
+**Catalog before code (§6.1)**: when `docs/product/catalog/` exists, read the
+`features.md` rows the brief names (and any row whose anchors you are about to
+touch) plus the matching `api.md` section — that is the current state; the
+CHANGELOG is history. At hand-off, name the rows you changed or the new
+capability that needs one, and run `node tools/catalog.mjs --check`.
 Then — before writing any component or CSS — find the existing design system:
 tokens/theme file, component library, established patterns. Apply it; never introduce a
 parallel styling approach or hardcode values a token already covers. Match the

@@ -9,7 +9,10 @@ turns out to touch multiple areas or needs its own tests-plus-design, stop and
 escalate to a full session.
 
 1. **Branch** — `git checkout -b fix/<short-description>` off an up-to-date
-   default branch (never commit on the default branch).
+   default branch (never commit on the default branch). If the argument is an
+   issue number (`#N`) or the fix maps to a queue item, read the issue first —
+   it is the acceptance criteria — and reference it in the branch/PR
+   (`fix/N-<desc>`, `Closes #N` in the PR body so the merge closes it).
 2. **Fix** — the smallest change that resolves it; add or adjust a test if the
    behavior is testable.
 3. **Verify** — run the project test gate (and typecheck if the fix could affect

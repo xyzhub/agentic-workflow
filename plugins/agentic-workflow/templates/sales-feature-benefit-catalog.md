@@ -17,9 +17,10 @@ enter, and nowhere else restates them.
 Two hands write this file, and the split is the whole point:
 
 - **The chronicler writes the facts, every ship.** When a capability ships, the
-  chronicler appends one row inside the `data:capabilities` markers — sourced
-  from the CHANGELOG/ledger and cited to the merged PR — with the **client
-  outcome left `_unwritten_`**. It records *what shipped and the proof*; it
+  chronicler appends one row inside the `data:capabilities` markers — a
+  **projection of `docs/product/catalog/features.md`** rows with `marketable:
+  yes` (§6.1; the `F-n` id rides along), cited to the merged PR — with the
+  **client outcome left `_unwritten_`**. It records *what shipped and the proof*; it
   **never authors a benefit claim**. (This is live: the chronicler refreshes this
   region on every ship, guarded by the marker-only-mutation fixture in lint.)
 - **Marketing fills the outcomes, at its own beat.** Every `_unwritten_` in the

@@ -56,7 +56,19 @@ Artifact tool to the URL in its `artifact-url` comment.
 ## 5. Docs & issue
 
 - Conventions file / architecture docs updated if behavior/config changed.
-- If the work maps to a tracked issue, comment progress or link the PR.
+- **Catalog current (§6.1)**: if this session touched a route, the schema, or a
+  catalogued anchor — `node tools/catalog.mjs --check` green (regenerate and
+  commit the derived files if not) and the `features.md` row(s) rewritten (the
+  chronicler in step 4 does the rows; you confirm it happened). The next
+  session builds on this, not on the CHANGELOG.
+- If the work maps to a tracked issue, comment progress or link the PR
+  (`Closes #N` in the PR body when it finishes the item). When §10 records an
+  Issue tracker and this session's work maps to nothing in the queue, file the
+  issue now (`gh issue create`) so the queue stays the one place work waits (§4)
+  — hand-off notes are not a backlog.
+- Scratchpad guardrails: any `*.sh`/`*.mjs`/`*.py` written this session under
+  the scratchpad that guards something (a runner, a check, a probe) is committed
+  now or deliberately dropped — never left to evaporate (§12 LA-4).
 
 ## 6. Push / hand off
 
