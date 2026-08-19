@@ -111,8 +111,8 @@ edit, never a rewrite of project prose:
   status tables), leave it in place and report that `/agentic-workflow:groom`
   should absorb its items into the tracker; do not delete it.
 - **Backlog** — a hand-written `BACKLOG.md` is NOT rewritten here (that needs
-  the tracker import): report `/agentic-workflow:groom --from BACKLOG.md` as
-  the next step.
+  the tracker import): report `/agentic-workflow:groom` as the next step (it
+  detects and imports the file itself).
 - **Catalog** — copy the plugin's `tools/catalog.mjs` when missing or
   different (step 3.6), run it, and copy `templates/catalog-features.md` to
   `docs/product/catalog/features.md` when absent (seeding rows is

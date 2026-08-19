@@ -1,6 +1,6 @@
 ---
-description: Groom the queue — probe every open issue against the tree, close what shipped (with evidence), flag what went stale, re-size the rest, and regenerate the backlog view; --from imports a markdown backlog into the tracker once.
-argument-hint: '[--from <BACKLOG.md>] [--dry-run] [label:<type/…|size/…|epic/…>]'
+description: Groom the queue — probe every open issue against the tree, close what shipped (with evidence), flag what went stale, re-size the rest, and regenerate the backlog view. Hand-written backlog files (BACKLOG.md, docs/product/backlog.md, TODO.md, an item-level .plans/roadmap.md) are detected and imported into the tracker automatically; --from only overrides the path.
+argument-hint: '[--dry-run] [--from <file>] [label:<type/…|size/…|epic/…>]'
 allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, Task, AskUserQuestion]
 ---
 
@@ -13,17 +13,28 @@ shipped or deferred while new ideas kept landing in the backlog. `/agentic-workf
 against the tree, then act on evidence, never on the file's word.**
 
 **Precondition**: the §10 **Issue tracker** row (e.g. `GitHub Issues via gh`).
-No tracker recorded → say so and offer to record one (`gh` is the default when
-the remote is GitHub); with `--from` you may still import into it. With no
-tracker at all, groom the markdown backlog **in place** (mark rows, never
-delete) and recommend adopting one.
+No tracker recorded but the remote is GitHub → use `gh` and record the row
+(`GitHub Issues via gh`) as part of this run — grooming without a tracker is
+the exception, not a mode. With no tracker at all, groom the markdown backlog
+**in place** (mark rows, never delete) and recommend adopting one.
 
-## 1. Inventory
+## 1. Inventory — the tracker AND any hand-written backlog
 
 Read the open queue: `gh issue list --state open --limit 500 --json
 number,title,labels,body,updatedAt` (or the tracker's equivalent). Filter by the
 optional `label:` argument. Note items missing the queue labels (`type/*`,
 `size/*`) — they get labels in step 4.
+
+Then **detect hand-written backlog files** — you know where they live; the
+owner should not have to say: `BACKLOG.md`, `docs/product/backlog.md`,
+`TODO.md`, and an item-level `.plans/roadmap.md` (per-entry `R-NN` rows /
+`SHIPPED`·`DEFERRED` status tables). A file counts when it holds `- [ ]`
+checkbox items (or `R-NN` entries) and its first three lines do NOT say
+`generated view`. Every such file is an import source for step 5 (the same
+detection the conform ladder uses, so what the session-start advisory called
+"hand-written" is exactly what gets imported). `--from <file>` adds or
+overrides a path — it is never required. Under `--dry-run`, list the detected
+files and the count of blocks each would import.
 
 ## 2. Probe each item against the tree (evidence, not memory)
 
@@ -70,10 +81,15 @@ ancestor of the default branch (`git merge-base --is-ancestor <sha> <default>`).
 - **needs owner** → label `needs-owner` + one-line question in a comment.
 - `--dry-run` prints every intended action and touches nothing.
 
-## 5. `--from <file>` — one-time import of a markdown backlog
+## 5. Import the detected backlog files (one-time per file; `--from` adds a path)
 
-Parse the file's `- [ ] **Title** …` blocks (title = the bold run; body = the
-whole block; keep the source line number). For each: skip if an open or closed
+For each file detected in step 1 (plus any `--from`), parse its `- [ ] **Title**
+…` blocks (title = the bold run, else the first sentence; body = the whole
+block; keep the source line number) — for an item-level roadmap, each `R-NN`
+entry is a block whose title is its heading and whose status line decides
+whether it imports as open or is skipped as already shipped/deferred (a
+`SHIPPED` entry with evidence needs no issue; a `DEFERRED` one gets a *closed*
+issue linking the decision doc, per §4). For each: skip if an open or closed
 issue with the same title exists (`gh issue list --search "in:title <title>"
 --state all`); otherwise `gh issue create --title "<title>" --body "<block>\n\n
 _Imported from <file>:<line> by /agentic-workflow:groom on <date>_" --label
@@ -81,7 +97,13 @@ type/… --label size/…` (infer labels from the section headings and the block
 own words; default `type/debt size/S` and say so). Then run steps 2–4 over the
 imported set too. Finally **rewrite the file as a generated view** (step 6) —
 it must never be hand-appended again — and tell the owner in the report that
-the source file is now generated (deleting it is their call).
+the source file is now generated (deleting it is their call). An item-level
+roadmap is not rewritten: report that its items are now in the tracker and
+that `docs/product/roadmap.md` (epic view) is where the owner's ranking lives.
+
+**Creating issues is outward-facing.** When the human is present, show the
+detected files + counts and ask once before creating (AskUserQuestion, default
+yes); a `--dry-run` answers the same question without asking.
 
 ## 6. Regenerate the view
 
@@ -106,7 +128,7 @@ epics — do not rewrite it unasked.
 
 ## Output
 
-Counts: probed · shipped (closed) · stale · re-sized · imported · needs owner.
+Counts: probed · shipped (closed) · stale · re-sized · imported (per source file) · needs owner.
 Then the **top 5 open items by leverage/size** with their `/agentic-workflow:mission
 "<title> (#N)"` or `/agentic-workflow:fix #N` line — the same shape
 `/agentic-workflow:next` recommends from. Under `--dry-run`, the action list

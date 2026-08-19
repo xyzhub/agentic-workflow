@@ -8,6 +8,18 @@ has no tags — each version-stamped commit on `main` IS the release.
 
 _(empty)_
 
+## [1.47.1] — 2026-08-19
+### Fixed
+- **`/groom` detects hand-written backlog files itself** — `BACKLOG.md`,
+  `docs/product/backlog.md`, `TODO.md` with checkbox items, an item-level
+  `.plans/roadmap.md` (`R-NN` rows / SHIPPED·DEFERRED tables) — the same
+  detection the conform ladder uses; `--from` only overrides the path. It asks
+  once before creating issues when a human is present (`--dry-run` answers
+  without asking), records the §10 Issue tracker row when the remote is GitHub,
+  and treats an item-level roadmap's SHIPPED entries as no-op and DEFERRED ones
+  as closed issues linking the decision doc. Owner: "why do I have to specify
+  --from — shouldn't groom know?" It should; now it does.
+
 ## [1.47.0] — 2026-08-19
 ### Added — recognize and conform: a project on an older structure is told, and `/sync` fixes it
 Owner ask: after #39/#40 a project adopted on v1.43 kept running on v1.46 with

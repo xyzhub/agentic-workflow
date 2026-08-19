@@ -48,7 +48,7 @@ then. Ask questions only when a human is actually present to answer them.
   (`gh label create type/bug type/feature type/debt type/ops size/XS size/S
   size/M stale needs-owner` — idempotent, skip existing) and mention
   `/agentic-workflow:groom` in the report; if the repo carries a hand-written
-  `BACKLOG.md`, recommend `/agentic-workflow:groom --from BACKLOG.md`.
+  `BACKLOG.md`, recommend `/agentic-workflow:groom` (it detects and imports it).
 - **HITL** — the human owner's name (from git config/repo ownership if
   plausible; otherwise `TBD — confirm`).
 - **Merge policy** — always default `human-only`. Write `agent-may-merge

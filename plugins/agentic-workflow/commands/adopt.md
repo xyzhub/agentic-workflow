@@ -50,7 +50,7 @@ Look for what the project already uses and fold it in rather than duplicating:
   see the planner's conversion rules). Leave the originals untouched.
 - **A hand-written backlog** (`BACKLOG.md`, `TODO.md` with checkbox items) and
   an item-level roadmap → the queue (§4): recommend
-  `/agentic-workflow:groom --from <file>` (imports into the §10 Issue tracker,
+  `/agentic-workflow:groom` (it detects such files and imports them into the §10 Issue tracker,
   closes what already shipped with evidence, regenerates the file as a view)
   and collapsing the roadmap to `docs/product/roadmap.md` epics. Report the
   counts; do not import unasked in the audit pass.

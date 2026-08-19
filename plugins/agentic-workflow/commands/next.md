@@ -30,9 +30,9 @@ Inspect fast, decide, recommend — total output under 12 lines. No lectures;
   --limit 30` (or the tracker's equivalent) — the groomed queue is where "what
   next" comes from when nothing is in flight. If the queue looks ungroomed
   (items with no `type/`/`size/` labels, or the backlog view's generated stamp is
-  older than the last 20 commits), the recommendation is
-  `/agentic-workflow:groom` first. A markdown `BACKLOG.md` with no tracker →
-  recommend `/agentic-workflow:groom --from BACKLOG.md`.
+  older than the last 20 commits), or a hand-written `BACKLOG.md` exists, the
+  recommendation is `/agentic-workflow:groom` first (it detects and imports
+  the file itself).
 - Red flags: protocol stamp older than the plugin, ledger contradicting git.
 
 ## Decide (priority order — first match wins)
