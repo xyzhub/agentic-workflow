@@ -17,6 +17,12 @@ Converted from `<path>`, <YYYY-MM-DD>. -->
 
 Goal: _one sentence — the outcome this mission delivers._
 
+Estimate: _1 session (the default: one brief, one one-shot review, staging →
+verify → PR). With `phases`: N sessions — count every brief + every checkpoint +
+one expected corrective per phase, and justify the number per phase below. The
+ledger mirrors this as `Estimate: N sessions`; a rise is a dated locked
+decision, never a silent edit._
+
 ## Tasks
 
 _Numbered, each with concrete acceptance criteria a reviewer can check against

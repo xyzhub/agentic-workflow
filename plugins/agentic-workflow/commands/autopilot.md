@@ -50,6 +50,29 @@ Before starting, collect the **bare minimum** from the human — ask all at once
 - **Check-in level** — "only stop at hard gates" (default) vs. "check in each
   stage". This also selects the `/agentic-workflow:mission` gate policy (§5): hard-gates-only
   authorizes `batch`; check-in-each-stage keeps `human-merge` per phase.
+- **Session estimate** — you write it, the human sees it: `Estimate: N
+  sessions` for the whole flight, per stage, in the flight plan AND mirrored
+  into the active mission ledger's header once V3 has one (the planner refines
+  V3's share). This is the number the overrun stop measures against.
+
+**The convergence rules bind autopilot exactly as they bind a mission (§5,
+orderly §12 LA-1/5/6/7).** Increment `Sessions used:` in the active ledger
+**write-ahead** at every stage step, brief, corrective and `continue` tick.
+When the mission-budget hook prints 🛑 OVERRUN (`Sessions used` ≥ 1.5×
+`Estimate`) you MUST NOT start another stage or brief: send the scope decision
+to the owner (ship what exists as a defined subset / continue at a revised
+estimate / abort) via the owner channel (§12) or the next interactive turn,
+record the answer as a dated locked decision in `decision-log.md`, revise
+`Estimate:`, and only then continue. Never keep a standing/resident agent
+(supervisor, advisor, reviewer) alive across beats — counsel, review and audit
+are one-shot spawns at gates; a resident agent needs an explicit owner line in
+the ledger and is beaten on decisions only, with its running cost re-quoted
+every ~3 beats. Write the ledger and decision log at every merge and gate
+verdict as they happen, not at stage end. Design-quality tooling (impeccable,
+§0.2) runs at the checkpoint cadence, never as a per-turn feed — if the
+venture's own impeccable `Stop` hook is on, ask the owner to quiet it for the
+autonomous run (`IMPECCABLE_HOOK_QUIET=1`) or note in the decision log that
+its hints are advisory and not worked.
 
 Record this as `docs/product/flight-plan.md`, from the bundled template
 (`${CLAUDE_PLUGIN_ROOT}/templates/flight-plan.md`). It is your standing
@@ -96,13 +119,17 @@ owner can watch live.
   spawn `devops` to lay the CI + deploy pipeline (gates, health checks, scoped
   permissions, SHA-pinned actions) alongside the fail-closed config guard, env
   validation, and seed.
-- **V3 Build** — for anything beyond a single sitting, run `/agentic-workflow:mission` with the
-  gate policy from the flight plan's check-in level (the `planner` decomposes it
-  into a phased trio; you drive it). Implement via
-  `backend` / `frontend` / `devops` specialists in parallel where slices are
-  independent, honoring the chosen design system. Run a `reviewer` checkpoint at
-  each phase; auto-apply one corrective pass on REQUEST CHANGES, then surface if
-  it still fails (one-corrective-retry).
+- **V3 Build** — run `/agentic-workflow:mission` with the gate policy from the
+  flight plan's check-in level: one session and one review by default; pass
+  `phases` only when the planner says the build honestly needs it, with an
+  `Estimate:` you mirror into the flight plan (the `planner` decomposes it into
+  a phased trio; you drive it). Implement via `backend` / `frontend` / `devops`
+  specialists in parallel where slices are independent, honoring the chosen
+  design system. Run a one-shot `reviewer` checkpoint at each phase; each phase
+  lands on `staging`, is verified there (`/agentic-workflow:verify` against the
+  staging URL), and only then opens its PR to the default branch; auto-apply
+  one corrective pass on REQUEST CHANGES, then surface if it still fails
+  (one-corrective-retry).
 - **V4 Harden** — run the four pillar audits as an **adversarial multi-vote**
   (§5): 2–3 fresh lens-partitioned `reviewer` instances in parallel, conservative
   merge (any REQUEST CHANGES blocks; findings unioned). `security` implements
@@ -133,7 +160,8 @@ owner can watch live.
 These require an explicit human confirmation every time, even in autopilot mode
 — pre-authorization in the flight plan lets you *prepare* them, not *fire* them:
 
-- **Merging the default branch** — you open PRs; the human (HITL) merges.
+- **Merging the default branch** — you open PRs (from a staging-verified
+  state, §5); the human (HITL) merges.
   Exception: if the flight plan's **Merge authority** (recorded as the §10 Merge
   policy) says `agent-may-merge`, you may merge reviewer-APPROVEd PRs yourself —
   the delegation is the human's explicit, recorded decision, covers only

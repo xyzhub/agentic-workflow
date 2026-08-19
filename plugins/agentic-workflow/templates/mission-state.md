@@ -8,13 +8,34 @@ refresh-trigger: every-ship
 
 _The durable state that outlives any transcript (WORKFLOW.md §2, principle 1): a
 fresh agent resumes the mission from this file alone. Write-ahead — update it
-before ending a session. Deploys to `.plans/{{MISSION_NAME}}.state.md`._
+**at every merge and every gate result**, not only before ending a session (the
+orchestrator has no session boundary to force a write; a compaction erases
+everything since the last one — §12 LA-6). Deploys to
+`.plans/{{MISSION_NAME}}.state.md`._
 
-Gate policy: **_human-merge_** _(the default — pause for the human to merge each
-phase branch on APPROVE)_ **| batch** _(phases merge into
-`mission/{{MISSION_NAME}}-integration`; the human merges that once, at the
-end-of-mission confirmation — never the default branch)._ Recorded at mission
-start.
+Estimate: 1 session
+Sessions used: 0
+
+_The two budget lines above are read by the mission-budget hook every turn. The
+planner writes `Estimate:` (default `1 session`; more only with the `phases`
+mode and a justification in the master plan). The orchestrator increments
+`Sessions used:` the moment it starts a brief, a corrective `S<n>-fix`, or a
+`continue`/loop tick — write-ahead, before spawning. When `Sessions used`
+reaches 1.5× the estimate the hook prints 🛑 OVERRUN on every prompt and the
+orchestrator must stop and give the owner the scope decision (subset / revised
+estimate / abort) — recorded below as a dated locked decision that revises
+`Estimate:`. Never edit `Estimate:` to silence the hook without that decision._
+
+Gate policy: **_human-merge_** _(the default — after APPROVE the phase lands on
+`staging`, is verified there, and the human merges the PR to the default
+branch)_ **| batch** _(phases accumulate on `staging`; the human merges staging
+→ default once, at the end-of-mission confirmation — never the default branch
+by the agent)._ Recorded at mission start.
+
+Standing agent authorized: _(none — every review/counsel is a one-shot spawn at
+a decision point, §12 LA-5. If the owner authorizes a resident agent, record it
+here verbatim with role and date, beat it on decisions only, and re-quote its
+running cost every ~3 beats.)_
 
 ## Checklist
 
@@ -94,6 +115,7 @@ Deviating is allowed; deviating silently is not (§4)._
 _≤10 lines per entry: what this session did, the verify signal, the branch, and
 what the next session needs. Newest on top; crash-safe by write-ahead._
 
-- _YYYY-MM-DD S1: what shipped, `<gate>` green on `<branch>`, ready for `<next>`._
+- _YYYY-MM-DD S1: what shipped, `<gate>` green on `<branch>`, staging SHA
+  `<sha>` verified `<result>`, PR `<#>` open for the human, ready for `<next>`._
 
 Next up: S1

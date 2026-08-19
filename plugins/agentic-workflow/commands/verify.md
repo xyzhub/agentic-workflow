@@ -5,9 +5,21 @@ allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, Task, Artifact]
 ---
 
 Verify the deployed instance (Agentic Workflow §7: DONE ends at post-deploy
-verification, not at "PR merged"). Run after the human deploys — following a
-`/agentic-workflow:release`, a launch, or any user-facing merge that auto-deploys. `$ARGUMENTS`
-is the deployed URL; otherwise use the §10 **Deploy + live-verify** row.
+verification, not at "PR merged"). Two moments run it:
+
+- **On staging, before the PR to the default branch opens** (§5 mission flow —
+  every phase lands on `staging`, deploys there, and is verified here; the
+  orchestrator runs this itself and records the result + staging SHA in the
+  ledger; a FAIL is a REQUEST CHANGES for the phase). `$ARGUMENTS` is the
+  staging URL, else the §10 **Staging** row.
+- **On production, after the human deploys** — following a
+  `/agentic-workflow:release`, a launch, or any user-facing merge that
+  auto-deploys. `$ARGUMENTS` is the deployed URL; otherwise use the §10
+  **Deploy + live-verify** row.
+
+Before either: confirm the deploy that carried the diff is green **on the
+diff-bearing commit** — `gh run list --commit <full-40-char-sha>` — not on a
+PR-level check summary, and not on `cmd | tail`'s exit status (§12 LA-8).
 
 ## 1. Reachability & health
 

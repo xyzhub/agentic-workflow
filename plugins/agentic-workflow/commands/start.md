@@ -31,8 +31,12 @@ git checkout -b <type>/<short-description>    # feat/…, fix/…  — never the
   off before its context filled, §6.2), read it and continue from its **Next** —
   following only the pointers you need. It's a re-read manifest, not a summary;
   the files it names are the memory.
-- If continuing a mission, read `.plans/<mission>.state.md` → `Next up:` → that
-  brief, and follow it (including its read budget).
+- If continuing a mission, read `.plans/<mission>.state.md` → `Next up:` (the
+  first such line — there must be exactly one) → that brief, and follow it
+  (including its read budget). **Increment `Sessions used:` in the ledger
+  header before you start** — write-ahead; the mission-budget hook shows
+  `session k/N` and stops the mission at 1.5× the estimate (§5). If the hook is
+  already printing 🛑 OVERRUN, do not build: surface the scope decision.
 - If the work maps to a tracked issue, read it and confirm acceptance criteria
   exist (stop-the-line: no implementation without them).
 

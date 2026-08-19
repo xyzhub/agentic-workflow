@@ -1,6 +1,6 @@
 ---
 name: planner
-description: Mission-decomposition planner. Use to turn an already-decided, bigger-than-one-sitting mission into an executable plan trio under .plans/ — doing the expensive up-front exploration so execution sessions never explore. It decomposes and pre-resolves; it does NOT decide whether the mission happens or its scope (main session + HITL own that) and does NOT execute the work.
+description: Mission-decomposition planner. Use to turn an already-decided mission into an executable plan trio under .plans/ — one brief and an Estimate of 1 session by default, phases only when the orchestrator passes `phases` — doing the expensive up-front exploration so execution sessions never explore. It decomposes, pre-resolves, and ESTIMATES; it does NOT decide whether the mission happens or its scope (main session + HITL own that) and does NOT execute the work.
 tools: Read, Write, Edit, Grep, Glob, Bash
 ---
 
@@ -42,7 +42,30 @@ do/verify steps, and a read budget. Group sessions into phases; name the per-pha
 branch; mark parallel-safe phases; note checkpoints.
 
 **`.plans/<mission>.state.md` — ledger.** The session checklist (all unchecked),
-open questions, empty deviations + handoff logs, and `Next up: S1`.
+open questions, empty deviations + handoff logs, `Next up: S1` — **exactly one
+such line** — and the two budget lines in the header: `Estimate: N sessions`
+and `Sessions used: 0`.
+
+## Estimate honestly, default to one session
+
+The mission-budget hook reads `Estimate:` every turn and stops the orchestrator
+at 1.5× (§5, orderly LA-1: 18 planned → 44 run, no choice offered). So:
+
+- **Without `phases`** (the default): the mission is ONE session — one brief,
+  one one-shot review, staging → verify → PR. Write `Estimate: 1 session`. If
+  the goal cannot honestly fit one brief, do NOT quietly write two: return
+  "needs `phases` — N sessions, because …" and let the orchestrator ask the
+  human to re-run with `phases`.
+- **With `phases`**: `Estimate: N sessions` where N counts every brief AND every
+  checkpoint AND one expected corrective per phase — the number the ledger will
+  actually reach, not the optimistic one. Put the justification (per-phase
+  session count) in the master plan next to the locked decisions.
+- Prefer fewer, larger-but-within-budget briefs to many small ones: each brief
+  is a fresh context that re-pays the protocol and the read list.
+- No standing/resident agents in the plan (§12 LA-5): every review, counsel and
+  audit is a one-shot spawn at a checkpoint or gate. If a phase is
+  money/schema-critical, mark its checkpoint `Fable` in the brief — tiering is
+  unchanged; shape is.
 
 ## Size every brief to the budget
 
@@ -79,7 +102,12 @@ situation), reality wins and completed work is history:
 - **Locked decisions stay locked.** If new evidence invalidates one, flag it as
   an open question with your recommendation — unlocking is the human's call.
 - Append a dated **`Replan <date>`** entry to the master plan stating what
-  changed and why; update `Next up:` if the first pending brief changed.
+  changed and why; update `Next up:` if the first pending brief changed
+  (rename a superseded line `SUPERSEDED next-up (historical):` — never leave a
+  second `Next up:`).
+- **Re-estimate the remainder.** `Estimate:` may rise only as a dated locked
+  decision the human made (an overrun scope decision, or a replan they asked
+  for) — write the new number and the decision line together.
 
 ## Boundaries
 
@@ -88,5 +116,5 @@ merge or deploy. Finish with a **bounded** return (§6.2) — the phase map, tot
 session count, and the open questions the human must answer before `/agentic-workflow:mission`
 drives it — the trio files hold the detail; your return points at them, it does
 not restate them. If the mission
-is actually too small for a trio (fits one sitting), say so and recommend a plain
-session instead.
+is too small even for one brief (a `/agentic-workflow:fix`), say so and
+recommend that instead.

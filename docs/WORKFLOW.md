@@ -1,6 +1,6 @@
 # The Workflow — one agentic protocol from idea to viable product
 
-<!-- protocol-master: v1.43.0 -->
+<!-- protocol-master: v1.45.0 -->
 
 ## Quick reference — humans start here
 
@@ -108,9 +108,11 @@ and speed wins at V0–V2 prototyping — say which mode you're in.
 *Design-quality toolset (optional)*: **impeccable** — Paul Bakaus's
 design-quality plugin (Apache-2.0, github.com/pbakaus/impeccable) — is the
 recommended toolset for this pillar when it is installed alongside the
-workflow. Presence probe (read-only, fail-closed to absent):
-`grep -qsi impeccable ~/.claude/plugins/installed_plugins.json` exits 0 when
-installed. When present, the design-facing agents (`designer`, `frontend`, the
+workflow. Presence probe (read-only, fail-closed to absent) — ANY of:
+`grep -qsi impeccable ~/.claude/plugins/installed_plugins.json` exits 0 (the
+plugin install), `.claude/skills/impeccable/` exists in the project (the skill
+install), or `node_modules/.bin/impeccable` exists (the npm install). When
+present, the design-facing agents (`designer`, `frontend`, the
 reviewer's UX lens) load its design rules and DESIGN.md conventions and cite
 the rules that informed their findings. It is a soft dependency, never a
 requirement: when absent, every agent proceeds exactly as today and never
@@ -134,6 +136,23 @@ The detector gate is **advisory and fail-open**: when the CLI errors or times
 out, the agent says so and continues — a peer tool's detector is never a
 blocking gate of this workflow, and it is never run when the probe says
 absent.
+
+**Once per beat, classified at the checkpoint — never a per-turn feed.** In a
+mission the builder runs the detector ONCE at hand-off and reports; the
+reviewer runs it once at the checkpoint and classifies each finding
+**blocking** (breaks a user-visible flow, an accessibility requirement, or a
+rule the project's `DESIGN.md`/`PRODUCT.md` states) or **advisory** (taste,
+density, polish). Only blocking findings may drive REQUEST CHANGES; advisory
+ones ride into the ledger as a backlog line. Ventures that install impeccable's
+own hooks (a `PostToolUse` per-edit pass and a `Stop` "deep pass" in
+`.claude/settings*.json`) should, for **autonomous runs** (missions, autopilot,
+loop ticks), silence the Stop pass — `IMPECCABLE_HOOK_QUIET=1` or drop the
+`Stop` entry — and rely on the checkpoint gate; `/agentic-workflow:doctor`
+reports the venture's impeccable hook configuration. Incident (orderly,
+2026-08-17→19): the Stop deep pass fired at every turn end of a two-day
+mission (110 firings in one transcript) inside a loop that treated every hint
+as work; sessions stretched and the mission consumed 38% of the owner's weekly
+quota. The detector was not wrong; the cadence was.
 
 **DX** — *a stranger clones the repo and ships a fix the same day.*
 - README quickstart with few commands incl. a one-command dev datastore;
@@ -220,9 +239,9 @@ Shipped by this plugin as hooks. Advisory except where marked:
 | `Write`/`Edit` | Reminder to update docs when high-impact files change |
 | `Read` (whole file, no `limit`) | **Read advisory** (context discipline) — nudges toward a ranged read or a delegating subagent (§6.2 Delegated reads) when a whole-file read targets a file over `READ_ADVISORY_LINES` (800 lines); a discipline line, not a measured optimum — this repo has no corpus to confirm an effect size, so none is claimed; never blocks |
 | Prompt submit | **Router** (governance) — an un-prefixed work request gets a soft "route it through the protocol — hand to `intake`" nudge; silent on plain chat, never blocks |
-| Prompt submit | **Thread-keeper** (governance) — injects the active ledger's phase + `Next up:` + first unchecked beat each turn; silent when no active ledger, never blocks |
+| Prompt submit | **Mission-budget** (governance; supersedes the thread-keeper) — injects the active ledger's status line `Mission <name> — session k/N (est.)` + its **first** `Next up:` line each turn (§12 LA-7: the old `tail -1` fed the owner the stalest state for a day; duplicates now draw a loud warning). Reads `Estimate: N sessions` and `Sessions used: k` from the ledger header and, once **k ≥ 1.5 × N**, prints 🛑 OVERRUN on every prompt until the estimate is revised — a protocol STOP for the orchestrator (no further brief until the owner chooses subset / revised estimate / abort), never a hook block; a missing `Estimate:` draws a one-line reminder. Silent when no active ledger; every hook in this table now carries a `timeout` (5 s; 30 s for compact-resume) so a slow hook can never stall a turn; never blocks |
 | Prompt submit | **Handoff-budget** (governance) — nudges (≤3 lines) to write/refresh `docs/product/session-handoff.md` before compaction takes the window, once cumulative transcript **bytes** — a loose proxy, including tool results the window has already evicted, never a token measurement — cross an advisory (3,700,000 B) or urgent (5,380,000 B) band, boundary-inclusive; silent below the advisory band, once already fired for that band this session, while an active mission ledger exists, or once the handoff is already newer than the crossing; never blocks |
-| turn end | **Beat-enforcer backstop** (governance, `Stop`) — nudges a required-but-unchecked ledger beat (`chronicler` at close, `reviewer` at a checkpoint) at the overdue moment; it scans the open beats top-down and nudges the **first due** one — a beat whose own row is held is stepped over, not treated as a wall — and stays silent when nothing is due, i.e. when unfinished work, an unreleased ⛔/HARD PAUSE row, or an unreleased `[~]` **HELD** row sits above every candidate (a `[ ]` HELD row is parked, not a barrier: the scan steps over it); advisory, never blocks |
+| turn end | **Beat-enforcer backstop** (governance, `Stop`) — nudges a not-started ledger beat (`chronicler` at close, `reviewer` at a checkpoint) at the overdue moment; it scans the open beats top-down and nudges the **first due** one — a beat whose own row is held is stepped over, not treated as a wall — and stays silent when nothing is due, i.e. when unfinished work, an unreleased ⛔/HARD PAUSE row, or an unreleased `[~]` **HELD** row sits above every candidate (a `[ ]` HELD row is parked, not a barrier: the scan steps over it); advisory, never blocks |
 | `git commit` / `gh pr create` / `gh pr merge` | **Beat-enforcer** (governance, `PreToolUse`) — the same nudge at the closing action, but with **no due-ness scan yet**: it reports the **first** not-started beat outright, so it can name one that is held or behind unfinished work (the due-ness port is pending); advisory, never blocks |
 | After a compaction | **Compact-resume** (governance) — on `SessionStart` with matcher `compact` only, injects a directive (≤6 lines) and is **never silent** (OQ6): active mission ledger → re-read the ledger and the last handoff **verbatim**; no ledger but `docs/product/session-handoff.md` exists → re-read it verbatim with freshness stated — its `_Written:` provenance stamp preferred over file mtime; **CURRENT** only if provably newer than the transcript's last append, else **SUSPECT** (older than the transcript's last append, or the transcript is missing/unreadable — fail closed): treat the handoff as a lead, not the truth, and verify against `git log`/`git status` before trusting its **Next**; neither record exists → names `git log -5`, `git status`, `.remember/now.md` and tells the agent to report the gap to the human, never to author a handoff on the spot; never blocks |
 | Session start | **Obligations-due** (governance, `SessionStart` matcher `startup|resume` — never `compact`: compact-resume owns that beat, and the two directives must not compete) — grep-counts unticked `- [ ] OB-` rows in `.plans/OBLIGATIONS.md` plus unticked `- [ ]` rows inside any mission ledger's `## Closing` section, and injects a ≤3-line advisory naming both counts, the oldest unticked row (register first — it is append-only, so its first unticked row waited longest; bounded to 140 characters), and `/agentic-workflow:settle`; **grep-only, no network** — it never runs `gh` and probes no row's condition (the real probes live in `/agentic-workflow:settle`, `/agentic-workflow:end`, and `/agentic-workflow:check`); four silencers exactly: no register and no `## Closing` block anywhere → silent, zero unticked rows → silent, once per session (a silent dispatch does not consume the session's one advisory), always exit 0 on every path; advisory, never blocks |
@@ -262,18 +281,19 @@ end a session). For a long *interactive* session with no natural session end,
 (§6.2) — never lean on the auto-summary.
 
 **Reflex backstops** — four §3 governance hooks keep a *running* session
-on-protocol without being read: the *thread-keeper* surfaces the active ledger's
-phase + `Next up:` + first open beat every turn; the *beat-enforcer* nudges a
-required-but-unchecked beat (`chronicler` at close, `reviewer` at a checkpoint) at
-the moment you try to close or advance; *compact-resume* fires the moment the
-context window is compacted and is never silent (OQ6): with an active ledger it
-directs a verbatim re-read of the ledger and the last handoff; with no ledger it
-falls back to `docs/product/session-handoff.md`, stating freshness — stamp
-preferred, mtime fallback — so a stale handoff reads **SUSPECT** ("treat the
-handoff as a lead, not the truth") rather than being trusted outright; with
-neither record it names `git log -5`, `git status` and `.remember/now.md` and
-tells you to flag the gap to the human rather than proceed on the compaction
-summary; and *handoff-budget* nudges once cumulative
+on-protocol without being read: the *mission-budget* hook surfaces the active
+ledger's `session k/N` + first `Next up:` every turn and turns into the
+overrun STOP at 1.5× the estimate; the *beat-enforcer* nudges a
+not-started beat (`chronicler` at close, `reviewer` at a checkpoint) at the moment
+you try to close or advance; *compact-resume* fires the moment the context
+window is compacted and is never silent (OQ6): with an active ledger it directs
+a verbatim re-read of the ledger and the last handoff; with no ledger it falls
+back to `docs/product/session-handoff.md`, stating freshness — stamp preferred,
+mtime fallback — so a stale handoff reads **SUSPECT** ("treat the handoff as a
+lead, not the truth") rather than being trusted outright; with neither record it
+names `git log -5`, `git status` and `.remember/now.md` and tells you to flag
+the gap to the human rather than proceed on the compaction summary; and
+*handoff-budget* nudges once cumulative
 transcript bytes — a loose proxy, never a token measurement — cross an advisory
 or urgent band, telling you to write/refresh the handoff before compaction takes
 the window. All four are advisory — they steer the session back to the ledger,
@@ -282,15 +302,21 @@ rather than during it: the *router* before the work starts, and
 *obligations-due* at session start — surfacing how many deferred obligations
 sit unticked so a due condition meets a session that can act on it.)
 
-## 5. Mission lifecycle (multi-session work)
+## 5. Mission lifecycle
 
-The plan trio, written by a dedicated planning session:
+**A mission is one session and one review by default.** The planner writes one
+brief and `Estimate: 1 session`; one builder session runs it; one fresh
+one-shot reviewer verifies it; it lands via **staging → verify → PR to the
+default branch**. Multi-phase missions are an explicit opt-in
+(`/agentic-workflow:mission "<name>" phases`) that carries an honest session
+estimate and a hard overrun stop. The plan trio, written by a dedicated
+planning session:
 
 | File | Job |
 |---|---|
 | `.plans/<mission>.md` | Master plan: numbered tasks with acceptance criteria, **locked decisions (dated)**, risks, open questions each with a recommendation |
 | `.plans/<mission>.sessions.md` | One brief per session: pre-resolved reads (file → measured line count → anchors), do/verify steps, read budget; phases with named branches |
-| `.plans/<mission>.state.md` | Ledger: checklist, deviations log, handoff log (≤10 lines each, newest first), `Next up:`. Every ledger also carries a `## Closing` block — deferred obligations in the OB grammar (`do:` / an observable `when:` / `probe: <command | manual>`), read by the mission-close gate below |
+| `.plans/<mission>.state.md` | Ledger: checklist, open questions, **standing steers** (human steers quoted verbatim, captured at checkpoints only), deviations log, handoff log (≤10 lines each, newest first), `Next up:` — which must name the same next beat wherever it appears in the file. Checklist glyphs: `[ ]` not started · `[~]` in-flight / deferred / awaiting owner · `[x]` done — the beat-enforcer nudges only on a not-started `[ ]` checkpoint/reviewer/chronicler row, so set `[~]` when a beat is picked up or parked. Every ledger also carries a `## Closing` block — deferred obligations in the OB grammar (`do:` / an observable `when:` / `probe: <command | manual>`), read by the mission-close gate below |
 
 Rules: briefs pre-resolve targets so execution sessions never explore; one branch
 per phase, merged at checkpoint per the **gate policy** below; migrations and
@@ -298,17 +324,61 @@ CI/deploy-touching changes get extra checkpoint scrutiny; **one-corrective-retry
 — a failing session/agent is retried once with a corrective note, then escalated
 to the human.
 
-**Gate policy** (chosen at mission start; default `human-merge`):
-- `human-merge` — on APPROVE, pause for HITL to merge each phase branch. Where
-  the §10 **Merge policy** is `agent-may-merge`, the orchestrator may merge the
-  reviewer-APPROVEd phase PR itself (logged in the ledger) instead of pausing —
-  the delegation covers *who clicks merge*, never *skipping the review*.
-- `batch` — on APPROVE, the orchestrator merges the phase branch into a
-  long-lived `mission/<name>-integration` branch — **never the default branch**,
-  so the push-block guardrail (§3) and the merge authority (§11 safety boundary)
-  stay intact — and HITL merges the integration branch once, at the batched
-  end-of-mission (or launch) confirmation. Used by `/agentic-workflow:autopilot` when the flight
-  plan says "only stop at hard gates".
+**Convergence rules** (each one names the incident that produced it — orderly
+`docs/WORKFLOW.md §12`, 2026-08; the mission-budget hook in §3 is their
+mechanical half):
+- **Estimate + count (LA-1).** The ledger header carries `Estimate: N sessions`
+  (planner; counts briefs + checkpoints + one expected corrective per phase)
+  and `Sessions used: k` (orchestrator — incremented **write-ahead** at every
+  brief, corrective, `continue` and loop tick). At **k ≥ 1.5 × N** the hook
+  prints 🛑 OVERRUN on every prompt and the orchestrator MUST NOT start another
+  brief: it gives the owner the scope decision — ship a defined subset now /
+  continue at a revised estimate / abort — with the remaining phases and what
+  each buys, records the answer as a dated locked decision, and only then
+  revises `Estimate:`. *Incident:* multi-venue-manager, planned 18 sessions,
+  ran ~44 over ~28 hours; every phase justified, no choice ever offered.
+- **No standing agents (LA-5).** Reviews, counsel and audits are one-shot
+  spawns at decision points (checkpoint, merge, gate verdict, scope change). A
+  resident/supervisor agent is resumed over its whole transcript on every beat,
+  so its cost rises for the life of the mission; one is permitted only under
+  an explicit owner line in the ledger (`Standing agent authorized: <role> —
+  <date> — "<words>"`), beaten on decisions only, cost re-quoted every ~3
+  beats, killed when its remit ends. The reviewer flags any without the line.
+  Model tiering is unchanged (Fable one-shot for money/schema-critical
+  reviews and audits; opus builders) — the saving is in shape, not tier.
+  *Incident:* six supervisor beats ≈ 1.08M tokens, 94% of a session's Fable
+  spend, against 70k for the one-shot review that found the real defects.
+- **Write-ahead at every merge and gate (LA-6).** Builders have a session
+  boundary that forces a write; the orchestrator does not. The ledger is
+  written at every merge to staging, every verify result, every review
+  verdict, every PR opened — not at session end. *Incident:* a checkpoint
+  review, three merges and a verify went unrecorded; a compaction erased them.
+- **Exactly one `Next up:` (LA-7).** Supersede by renaming the old line
+  (`SUPERSEDED next-up (historical):`); the hook reads the first and warns on
+  duplicates; the lint backstop fails on disagreement.
+- **Staging → verify → PR (venture flow).** On APPROVE the phase branch is
+  merged into `staging` (created from the default branch if absent, recorded
+  in §10), the staging deploy is confirmed green **on the diff-bearing
+  commit** (`gh run list --commit <full-sha>` — a PR-level check summary is not
+  evidence, LA-8), `/agentic-workflow:verify` runs against the staging URL,
+  and only then does the PR to the default branch open. The human merges that
+  PR (or the agent under a delegated §10 Merge policy). Never straight from a
+  phase branch to the default branch.
+
+**Gate policy** (chosen at mission start; default `human-merge`) — applied
+AFTER the phase has landed on `staging` and verified there:
+- `human-merge` — on a green staging verify, open the PR to the default branch
+  and pause for HITL to merge it. Where the §10 **Merge policy** is
+  `agent-may-merge`, the orchestrator may merge the reviewer-APPROVEd,
+  staging-verified PR itself (logged in the ledger) instead of pausing — the
+  delegation covers *who clicks merge*, never *skipping the review or the
+  staging verify*.
+- `batch` — phases accumulate on `staging` (each verified as it lands) —
+  **never the default branch**, so the push-block guardrail (§3) and the merge
+  authority (§11 safety boundary) stay intact — and HITL merges staging → default
+  once, at the batched end-of-mission (or launch) confirmation. Used by
+  `/agentic-workflow:autopilot` when the flight plan says "only stop at hard
+  gates".
 
 **Checkpoints** end every phase: the independent `reviewer` agent (fresh context)
 re-runs all gates, diff-reviews `base..head`, performs deferred manual/live items,
@@ -347,8 +417,9 @@ is never a completeness signal.
 
 **Loop mode.** The ledger makes missions loop-drivable: a recurring
 `/loop /mission "<name>" continue` (or a scheduled agent) has every tick read
-the ledger, execute exactly one brief or checkpoint, write the handoff, and
-end. A `/loop` tick does NOT reset the context window — `/loop` is
+the ledger, increment `Sessions used:`, execute exactly one brief or
+checkpoint, write the handoff, and end — the overrun stop applies to ticks
+exactly as to interactive runs. A `/loop` tick does NOT reset the context window — `/loop` is
 session-scoped, and ticks accrete in the same transcript; genuine fresh context
 requires `/clear`, a new session, or a scripted `claude -p`. What makes loop
 mode safe is that **state lives in files**: any tick can be run from a fresh
@@ -426,8 +497,8 @@ decisions. At V1 it authors the stack decision and data-model sketch as option
 memos — 2–3 options, tradeoffs, reversal cost, a recommendation — under
 `docs/product/decisions/`; during missions it digests technical open questions
 into decision-ready memos. It also authors and maintains the two living system
-docs the implementers build from — `docs/product/architecture.md` (components,
-data model, invariants) and `docs/product/interface-contract.md` (the
+docs the implementers build from — `docs/product/engineering/architecture.md` (components,
+data model, invariants) and `docs/product/engineering/interface-contract.md` (the
 frontend/backend boundary that keeps parallel slices from diverging) — thin,
 intent-and-contract only, pointing at the code index rather than re-narrating
 code. It consults; the human decides (dated locked
@@ -675,6 +746,7 @@ drive the real flow, confirm monitoring is receiving, record the result).
 | **Merge policy** | human-only |
 | **Publish policy** | human-only (default, fail-closed — no publishing delegation recorded; §14) |
 | **Default branch** | main |
+| **Staging** | none — markdown plugin with no deploy; a phase's "staging verify" is the tier-1 lint on the phase branch + `claude --plugin-dir` load in a consumer session; the PR to `main` opens after that (added 2026-08-19 with the §5 staging flow) |
 | **Test gate** | `node tools/lint.mjs` (tier 1 — deterministic; CI runs it on every push/PR) |
 | **Typecheck/lint gate** | covered by the test gate — `tools/lint.mjs` IS the lint |
 | **Build** | none (markdown plugin — nothing compiles) |
@@ -708,8 +780,23 @@ bundled template): the idea, a budget ceiling, risk tolerance, a brand preferenc
 standing authorization; anything outside it returns to the human. The check-in
 level also selects the mission **gate policy** (§5): "check in each stage" keeps
 the default `human-merge` at every phase; "only hard gates" authorizes `batch` —
-phases merge autonomously into a mission integration branch (never the default
-branch) and the human merges once, at the consolidated launch confirmation.
+phases land autonomously on `staging` (verified there, never the default
+branch) and the human merges staging → default once, at the consolidated
+launch confirmation.
+
+**Autopilot inherits the §5 convergence rules unchanged.** The flight plan
+carries an `Estimate:` for the whole flight (sessions per stage, written by the
+planner at V3 and by autopilot itself for the other stages) and autopilot
+increments `Sessions used:` in the active mission ledger at every stage step,
+brief and `continue` tick, so the mission-budget hook (§3) reads it and the
+🛑 OVERRUN stop applies to the flight exactly as to a mission: at 1.5× the
+estimate autopilot stops and gives the owner the scope decision (ship the
+subset that exists / continue at a revised estimate / abort) through the owner
+channel or the next interactive turn — it never keeps building silently. No
+standing/resident agents (LA-5): counsel, review and audit are one-shot spawns
+at gates. Every stage's merges and gate verdicts are written to the ledger and
+decision log as they happen (LA-6). Design-quality tooling runs at the
+checkpoint cadence (§0.2), never as a per-turn feed.
 
 **What runs autonomously**: the reviewer-verified stage gates. The `researcher`
 validates (and can auto-stop on kill criteria); the `designer` picks a direction

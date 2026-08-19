@@ -8,6 +8,65 @@ has no tags — each version-stamped commit on `main` IS the release.
 
 _(empty)_
 
+## [1.45.0] — 2026-08-19
+### Changed — missions converge: one session by default, a hard overrun stop, staging → verify → PR
+The owner disabled the plugin on 2026-08-19: missions ran 24–48 h, results
+degraded, one mission took 38% of the weekly Fable quota. The causes were
+measured in a venture's own retro (orderly `docs/WORKFLOW.md §12` LA-1..LA-9)
+and each fix below names its incident. Nothing was removed; every change is a
+mechanism the incidents lacked.
+- **A mission is one session and one one-shot review by default.**
+  `/agentic-workflow:mission` gains a `phases` opt-in; without it the planner
+  writes one brief and `Estimate: 1 session`. `/plan`, `/start`, the planner
+  and the mission templates follow.
+- **Estimate + overrun stop (LA-1: 18 sessions planned, ~44 run over ~28 h, no
+  choice offered).** The ledger header carries `Estimate: N sessions` and
+  `Sessions used: k` (incremented write-ahead at every brief, corrective,
+  `continue` and loop tick). New hook `hooks/lib/mission-budget.sh`
+  (UserPromptSubmit) prints `Mission <name> — session k/N` every turn and, at
+  **k ≥ 1.5 × N** (integer `2k ≥ 3N`), 🛑 OVERRUN on every prompt until the
+  estimate is revised — a protocol STOP for the orchestrator (scope decision:
+  subset / revised estimate / abort), never a hook block. Autopilot inherits it
+  (flight plan `Estimate:`; `Sessions used:` incremented per stage step).
+- **Exactly one `Next up:` (LA-7).** The hook reads the FIRST line (`head -1`)
+  and warns loudly on duplicates. The thread-keeper (which read the LAST and
+  fed the owner a checkpoint-stale status for a day) is superseded by
+  mission-budget.
+- **No standing agents (LA-5: six supervisor beats ≈ 1.08M tokens vs 70k for
+  the one-shot review that found the real defects).** Reviews, counsel and
+  audits are one-shot spawns at decision points; a resident agent needs an
+  explicit `Standing agent authorized:` owner line, decisions-only beats, cost
+  re-quoted every ~3 beats. The reviewer flags violations and checks the
+  budget fields. Model tiering unchanged.
+- **Write-ahead at every merge and gate (LA-6).** Ledger written at each merge
+  to staging, verify result, review verdict, PR opened — never only at session
+  end.
+- **Staging → verify → PR to main (venture flow).** On APPROVE a phase merges
+  into `staging` (created if absent; new §10 **Staging** row), the staging
+  deploy is confirmed green on the diff-bearing commit (LA-8), `/verify` runs
+  against the staging URL, and only then the PR to the default branch opens.
+  `batch` accumulates on staging. `/verify` documents both moments;
+  `/bootstrap` detects the row; `/doctor` checks it.
+- **Impeccable as a checkpoint gate, not a per-turn feed** (orderly: the Stop
+  "deep pass" fired 110× in one mission transcript inside a loop that worked
+  every hint). Builders run the detector once at hand-off and do not loop;
+  the reviewer runs it once per checkpoint and classifies findings
+  blocking/advisory — only blocking may drive REQUEST CHANGES. Presence probe
+  now recognises the skill install (`.claude/skills/impeccable/`) and the npm
+  binary, not only `installed_plugins.json` (which is why the plugin's own
+  wiring never fired in orderly). §0.2 tells ventures to quiet the Stop hook
+  for autonomous runs; `/doctor` reports the cadence.
+- **Hook hygiene.** Every hook in `hooks.json` now carries a `timeout` (5 s;
+  30 s compact-resume).
+### Tests
+- `tools/hook-test.mjs`: 10 mission-budget cases (silence without a ledger,
+  under/at/over the 1.5× boundary incl. 26/18 vs 27/18, N=1 fires at the 2nd
+  session, duplicate `Next up:`, missing/garbage fields, newest-ledger wins).
+### Docs
+- `templates/WORKFLOW.md` §3 (mission-budget row), §4, §5 (convergence rules,
+  gate policy after staging), §0.2 (probe + cadence), §10 (Staging row), §11
+  (autopilot inherits); repo `docs/WORKFLOW.md` re-synced to v1.45.0.
+
 ## [1.44.0] — 2026-08-16
 ### Fixed
 - **The L3 clock guard was 25/44 wrong on the corpus that exposed it; it is

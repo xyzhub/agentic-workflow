@@ -136,7 +136,7 @@ alongside the workflow; when it isn't, they proceed exactly as today.
 | Command | Does |
 |---|---|
 | `/agentic-workflow:plan` | Feature front door: interactive interview → the team drafts brief/journeys/memos/metrics → counsel → ONE approval → the planner's trio, ready to run |
-| `/agentic-workflow:mission` | Plan + drive multi-session work: the planner authors a `.plans/` trio (master plan · session briefs · ledger), then phases execute with independent checkpoint reviews; `continue` resumes from the ledger, `replan` reconciles it with reality; loop-drivable |
+| `/agentic-workflow:mission` | Plan + drive a mission — **one session and one one-shot review by default**; `phases` opts into a multi-phase trio (master plan · session briefs · ledger) with an honest `Estimate:` and a hard 1.5× overrun stop; every phase lands via **staging → verify → PR to main**; `continue` resumes from the ledger, `replan` reconciles it with reality; loop-drivable |
 | `/agentic-workflow:counsel` | Convene 2–3 lens-partitioned advisors on a pending decision → one-page brief in the decision log |
 | `/agentic-workflow:audit` | The V4 adversarial multi-vote on demand: lens-partitioned fresh reviewers, conservative merge, findings ranked and routed |
 | `/agentic-workflow:release` | Cut a version on a release branch: changelog, PR, and the post-merge tag commands — the human fires them |
@@ -203,8 +203,11 @@ state.
 
 Six **governance reflexes** (advisory, never block) keep a session on the
 protocol without it being read: the **router** nudges an un-prefixed work request
-to route through the workflow (hand to `intake`); the **thread-keeper** surfaces
-the active ledger's phase + `Next up:` + first open beat each turn; the
+to route through the workflow (hand to `intake`); the **mission-budget** hook
+(supersedes the thread-keeper) surfaces the active ledger's `session k/N` +
+its first `Next up:` each turn and becomes the 🛑 OVERRUN stop once sessions
+reach 1.5× the planner's estimate — the orchestrator must give the owner a
+scope decision before building on (§5); the
 **beat-enforcer** nudges a not-started ledger beat (`chronicler` at
 close, `reviewer` at a checkpoint) at the moment you try to close or advance —
 stepping over beats that aren't due (held, or behind unfinished work or an
