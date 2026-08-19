@@ -140,6 +140,17 @@
             "timeout": 5
           }
         ]
+      },
+      {
+        "matcher": "startup|resume",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/lib/conform-check.sh\"",
+            "description": "conform-check advisory (SessionStart, matcher startup|resume — never compact): runs the plugin's tools/conform.mjs --brief against the cwd and, when the project's docs structure is behind the INSTALLED plugin (stale protocol stamp, §10 rows missing — Staging / Issue tracker —, active ledgers without Estimate:/Sessions used: or with ≠1 Next up:, no roadmap epic view, hand-written backlog, no catalog / stale catalog tooling), injects a ≤3-line advisory naming the gap count, the first gap, and /agentic-workflow:sync (which applies the SAME ladder). Silent when the cwd is not adopted (no docs/WORKFLOW.md), when conformant, when node or the script is missing; once per session ($TMPDIR marker keyed by sanitized session_id, written only when it fires); filesystem-only, no git/network; jq-built additionalContext; always exit 0. Body: hooks/lib/conform-check.sh → tools/conform.mjs",
+            "timeout": 10
+          }
+        ]
       }
     ],
     "SessionEnd": [

@@ -19,12 +19,16 @@ Quick workflow health check. Report a traffic-light status at the end.
 5. **Mission ledger** — if `.plans/*.state.md` exists, report `Next up:` and any
    blocked items.
 6. **Stage** — name the current venture stage (V0–V6) and the next gate.
-7. **Protocol drift** — if `docs/WORKFLOW.md` exists, compare its
+7. **Structure conformance** — run `node "${CLAUDE_PLUGIN_ROOT}/tools/conform.mjs"`
+   (filesystem-only, instant): gaps → 🟡 with the count and the first gap;
+   the fix is always `/agentic-workflow:sync` (it applies the same ladder), or
+   the command a gap names (`groom`, `adopt`).
+8. **Protocol drift** — if `docs/WORKFLOW.md` exists, compare its
    `<!-- protocol-master: vX.Y.Z -->` stamp against the installed plugin
    version (`${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json`). Older or
    missing stamp → 🟡, recommend `/agentic-workflow:sync` (it re-copies the master,
    preserving §10 and the Local amendments section verbatim).
-8. **Deferred obligations** — grep-count unticked `- [ ] OB-` rows in
+9. **Deferred obligations** — grep-count unticked `- [ ] OB-` rows in
    `.plans/OBLIGATIONS.md` plus unticked `- [ ]` rows inside any
    `.plans/*.state.md` `## Closing` section (the obligations-due reflex's
    predicate — count only, probe nothing). Any due → 🟡, recommend

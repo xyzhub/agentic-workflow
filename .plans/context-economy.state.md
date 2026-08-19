@@ -10,6 +10,13 @@ _The durable state that outlives any transcript (WORKFLOW.md §2, principle 1): 
 agent resumes the mission from this file alone. Write-ahead — update it before ending a
 session._
 
+Estimate: 12 sessions
+Sessions used: 12
+
+_(sync 2026-08-19: budget fields added by the conform ladder — the mission is complete
+(PR #31 merged); one `[~]` row remains parked as a tracked deferral. Counts = the 12
+`[x]` session rows.)_
+
 Gate policy: **batch** (D3, recorded at mission start) — each phase branch
 `mission/context-economy-p0…p4` merges into **`mission/context-economy-integration`**
 by the orchestrator on reviewer APPROVE; **never the default branch**. The human merges

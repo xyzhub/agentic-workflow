@@ -1,18 +1,31 @@
 ---
-description: Upgrade the project's docs/WORKFLOW.md to the installed plugin's protocol master — preserving §10 (project profile) and the Local amendments section verbatim.
+description: Conform the project to the installed plugin — re-copy docs/WORKFLOW.md (preserving §10 + Local amendments) AND apply the structure ladder (tools/conform.mjs) so a project adopted on an older version gains the rows, ledger fields, roadmap, catalog and queue view the current plugin expects.
 allowed-tools: [Read, Write, Edit, Bash, Grep, Glob]
 ---
 
-Bring `docs/WORKFLOW.md` up to the installed protocol master (the fix for
-`/agentic-workflow:check`'s protocol-drift finding). No `docs/WORKFLOW.md` → this
-project isn't bootstrapped; run `/agentic-workflow:bootstrap` instead.
+Bring the project up to the installed plugin — the protocol copy AND the
+structure around it (the fix for `/agentic-workflow:check`'s protocol-drift
+finding and for the session-start **conform-check** advisory). No
+`docs/WORKFLOW.md` → this project isn't bootstrapped; run
+`/agentic-workflow:bootstrap` instead.
+
+## 0. Measure the gap (the ladder)
+
+Run `node "${CLAUDE_PLUGIN_ROOT}/tools/conform.mjs"` in the project root. It
+prints every structural gap between this project and the installed plugin,
+each with its fix — a stale protocol stamp, missing §10 rows, active ledgers
+without the budget fields or with more than one `Next up:`, no roadmap epic
+view, a hand-written backlog, missing or stale catalog tooling/files. This is
+the same ladder the `SessionStart` conform-check hook reads, so what it names
+here is exactly what the owner was told at session start. Zero gaps and a
+current stamp → report "conformant" and stop.
 
 ## 1. Compare versions
 
 Read the project copy's `<!-- protocol-master: vX.Y.Z -->` stamp and the
 installed plugin version (`${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json`).
-Already current → report that and stop. Stamp missing → the copy predates
-stamping; proceed, and say so.
+Stamp current but the ladder found structural gaps → skip to step 3.7. Stamp
+missing → the copy predates stamping; proceed, and say so.
 
 ## 2. Preserve the project-owned parts
 
@@ -75,6 +88,41 @@ never project-edited — a project-side change belongs in `catalog.config.json`)
 run `node tools/catalog.mjs` and stage the regenerated derived files with the
 move. Report it in step 4. No catalog dir and no script → say so and point at
 `/agentic-workflow:adopt`'s catalog step; do not create it silently.
+
+## 3.7 Apply the structure ladder (idempotent — every step skips when already done)
+
+Work through the gaps §0 listed, in this order; each is a small mechanical
+edit, never a rewrite of project prose:
+
+- **§10 rows** — append any missing row the new master's §10 template
+  carries (`Staging`, `Issue tracker`, …) with a detected value where cheap
+  (`git branch -r` for `staging`; `gh repo view` → `GitHub Issues via gh`),
+  else `TBD — confirm`. Existing values are never touched.
+- **Active ledgers** (`.plans/*.state.md` with an open `[ ]`/`[~]` beat) —
+  add `Estimate: N sessions` and `Sessions used: k` to the header when
+  missing: `k` = the count of `[x]` session rows so far; `N` = `k` + the open
+  session rows + open checkpoints (an honest floor — the planner may raise it
+  as a dated decision, never silently). Reduce `Next up:` to exactly one line
+  by renaming every earlier one `SUPERSEDED next-up (historical):` (the LAST
+  one is the newest by the old convention; keep that). Log each edit as a
+  ledger deviation line: `sync: budget fields added / next-up deduplicated`.
+- **Roadmap** — no `docs/product/roadmap.md` → copy `templates/roadmap.md`
+  and, if an item-level roadmap exists (e.g. `.plans/roadmap.md` with per-entry
+  status tables), leave it in place and report that `/agentic-workflow:groom`
+  should absorb its items into the tracker; do not delete it.
+- **Backlog** — a hand-written `BACKLOG.md` is NOT rewritten here (that needs
+  the tracker import): report `/agentic-workflow:groom --from BACKLOG.md` as
+  the next step.
+- **Catalog** — copy the plugin's `tools/catalog.mjs` when missing or
+  different (step 3.6), run it, and copy `templates/catalog-features.md` to
+  `docs/product/catalog/features.md` when absent (seeding rows is
+  `/agentic-workflow:adopt`'s catalog step — report it as the next step when
+  the repo already ships capabilities).
+- **Engineering folder** — step 3.5 above.
+
+Re-run `node "${CLAUDE_PLUGIN_ROOT}/tools/conform.mjs"` and paste its output
+into the report: it must read "matches plugin vX" or list only the gaps whose
+fix is another command (`groom`, `adopt`) — those are the hand-off.
 
 ## 4. Review & hand off
 

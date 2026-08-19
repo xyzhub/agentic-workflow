@@ -1,6 +1,6 @@
 # The Workflow — one agentic protocol from idea to viable product
 
-<!-- protocol-master: v1.46.0 -->
+<!-- protocol-master: v1.47.0 -->
 
 ## Quick reference — humans start here
 
@@ -40,7 +40,7 @@ V4 harden → V5 launch → V6 operate.
 | An agent keeps underperforming | `/agentic-workflow:tune <agent> opus` — back: `/agentic-workflow:tune <agent> reset` |
 | Away from the terminal | gates ping your owner channel — tap Approve/Reject (§12; set up: `/agentic-workflow:connect`) |
 | Several ventures, one owner | a registry repo; `/agentic-workflow:operate` run there sweeps them all (§13) |
-| Protocol copy out of date | `/agentic-workflow:sync` |
+| Protocol copy or project structure behind the installed plugin (the session-start conform-check said so) | `/agentic-workflow:sync` — re-copies the master AND applies the structure ladder |
 | After a mission or incident | `/agentic-workflow:retro` |
 
 **You (the human) always own**: merges to the default branch (unless §10
@@ -247,6 +247,7 @@ Shipped by this plugin as hooks. Advisory except where marked:
 | turn end | **Beat-enforcer backstop** (governance, `Stop`) — nudges a not-started ledger beat (`chronicler` at close, `reviewer` at a checkpoint) at the overdue moment; it scans the open beats top-down and nudges the **first due** one — a beat whose own row is held is stepped over, not treated as a wall — and stays silent when nothing is due, i.e. when unfinished work, an unreleased ⛔/HARD PAUSE row, or an unreleased `[~]` **HELD** row sits above every candidate (a `[ ]` HELD row is parked, not a barrier: the scan steps over it); advisory, never blocks |
 | `git commit` / `gh pr create` / `gh pr merge` | **Beat-enforcer** (governance, `PreToolUse`) — the same nudge at the closing action, but with **no due-ness scan yet**: it reports the **first** not-started beat outright, so it can name one that is held or behind unfinished work (the due-ness port is pending); advisory, never blocks |
 | After a compaction | **Compact-resume** (governance) — on `SessionStart` with matcher `compact` only, injects a directive (≤6 lines) and is **never silent** (OQ6): active mission ledger → re-read the ledger and the last handoff **verbatim**; no ledger but `docs/product/session-handoff.md` exists → re-read it verbatim with freshness stated — its `_Written:` provenance stamp preferred over file mtime; **CURRENT** only if provably newer than the transcript's last append, else **SUSPECT** (older than the transcript's last append, or the transcript is missing/unreadable — fail closed): treat the handoff as a lead, not the truth, and verify against `git log`/`git status` before trusting its **Next**; neither record exists → names `git log -5`, `git status`, `.remember/now.md` and tells the agent to report the gap to the human, never to author a handoff on the spot; never blocks |
+| Session start | **Conform-check** (governance, `SessionStart` matcher `startup|resume` — never `compact`) — runs the plugin's `tools/conform.mjs --brief` against the cwd: a versioned ladder of structural expectations (protocol stamp vs installed plugin; §10 **Staging** / **Issue tracker** rows; active ledgers carrying `Estimate:` / `Sessions used:` and exactly one `Next up:`; `docs/product/roadmap.md` as the epic view; a generated (not hand-written) backlog view; `tools/catalog.mjs` present and current; the `docs/product/catalog/` files). Gaps → a ≤3-line advisory naming the count, the first gap, and `/agentic-workflow:sync`, which applies the SAME ladder; silent when the cwd is not adopted, when conformant, when node/the script is missing; once per session; filesystem-only; never blocks. *Incident (2026-08-19):* a project adopted on v1.43 ran on v1.46 with ledgers that lacked the budget fields — the overrun stop could not fire — and nothing said so |
 | Session start | **Obligations-due** (governance, `SessionStart` matcher `startup|resume` — never `compact`: compact-resume owns that beat, and the two directives must not compete) — grep-counts unticked `- [ ] OB-` rows in `.plans/OBLIGATIONS.md` plus unticked `- [ ]` rows inside any mission ledger's `## Closing` section, and injects a ≤3-line advisory naming both counts, the oldest unticked row (register first — it is append-only, so its first unticked row waited longest; bounded to 140 characters), and `/agentic-workflow:settle`; **grep-only, no network** — it never runs `gh` and probes no row's condition (the real probes live in `/agentic-workflow:settle`, `/agentic-workflow:end`, and `/agentic-workflow:check`); four silencers exactly: no register and no `## Closing` block anywhere → silent, zero unticked rows → silent, once per session (a silent dispatch does not consume the session's one advisory), always exit 0 on every path; advisory, never blocks |
 
 Blockers exit 2 (hard stop); reminders exit 0. Guardrails catch autopilot
@@ -822,6 +823,7 @@ drive the real flow, confirm monitoring is receiving, record the result).
 | **Version pin** | `plugins/agentic-workflow/.claude-plugin/plugin.json` → `version` (bumped on release; merging to `main` IS the release, so there is no tag to read) |
 | **Owner channel** (§12) | Slack, **shared DM** (reused app `agentic_operating_pro`, workspace XYZ — connected & round-trip-verified 2026-07-08). Send: `chat.postMessage` with `$SLACK_BOT_TOKEN` → `$SLACK_OWNER_DM`, every message prefixed `[venture-workflow-plugin]`. Inbound: emoji-reaction decisions (✅/❌/✋ via `reactions.get` polling, verified against `$SLACK_OWNER_ID`) + typed `approve <id>` fallback. Env names in `.env.example`; values in the uncommitted `.env` |
 | **Portfolio** (§13) | `/Users/baker/Playground/registry` (github.com/xyzhub/registry) — registered as row 1 |
+| **Catalog** | none — markdown-only plugin: no routes or schema to derive; the plugin README + `templates/WORKFLOW.md` §9 are its capability inventory (decided 2026-08-19) |
 | **Issue tracker** | GitHub Issues via `gh` |
 
 ## 11. Autopilot mode
