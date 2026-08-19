@@ -55,7 +55,10 @@ Artifact tool to the URL in its `artifact-url` comment.
 
 ## 5. Docs & issue
 
-- Conventions file / architecture docs updated if behavior/config changed.
+- Conventions file / architecture docs updated if behavior/config changed —
+  and if this session renamed/deleted anything CLAUDE.md names (a script, a
+  path, a symbol), rewrite that line now (§6.1; the conform ladder will flag
+  it next session start otherwise).
 - **Catalog current (§6.1)**: if this session touched a route, the schema, or a
   catalogued anchor — `node tools/catalog.mjs --check` green (regenerate and
   commit the derived files if not) and the `features.md` row(s) rewritten (the

@@ -28,7 +28,13 @@ or memory.
 - **A guardrail written during the incident** (a script, a runner, a check in
   the scratchpad) → commit it in THIS session (orderly §12 LA-4: one sat in a
   scratchpad for a day, protecting nothing).
-- A project-specific fact → the conventions file or repo docs.
+- A project-specific fact → the conventions file (CLAUDE.md/AGENTS.md) — with
+  an **anchor** (path/script/symbol), **rewriting in place** any line it
+  supersedes (§6.1: never append a second truth; the conform ladder checks the
+  anchors every session start).
+- A standing steer that proved durable across missions → graduate it from the
+  ledger's `## Standing steers` into the conventions file (same anchor +
+  rewrite-in-place rules); the steer stays in the ledger as history.
 - An agent-behavioral lesson → auto-memory (not both places).
 - A missing guardrail → propose a hook change.
 - A behavioral regression an automated check could have caught → add a scenario

@@ -8,6 +8,30 @@ has no tags — each version-stamped commit on `main` IS the release.
 
 _(empty)_
 
+## [1.47.2] — 2026-08-19
+### Added — the conventions file governs itself (owner: "make it happen automatically, or update the rules")
+CLAUDE.md/AGENTS.md is injected into every session, so a stale line there
+misleads at the highest leverage. Recognition is automatic through machinery
+that already runs; the rules change at the moments that write conventions.
+- **conform ladder `claude-md-anchors`**: every concrete anchor the conventions
+  file names — backticked repo paths, `pnpm|npm run <script>` against
+  package.json — is checked; dead ones surface in the session-start
+  conform-check advisory and in `/sync`'s report. Globs, placeholders, URLs,
+  absolute/`~` paths and route patterns are skipped; absence of the file is
+  not a gap (that is `/doctor`'s business, #46).
+- **WORKFLOW §6.1 rule**: conventions with anchors, never state (catalog),
+  protocol (pointer), or queue (tracker); writers rewrite the superseded line
+  in place — never append a second truth.
+- **`/retro`**: facts land with an anchor, rewrite-in-place; a standing steer
+  that proved durable graduates into the conventions file. **`/end`**: a
+  session that renamed/deleted a named anchor rewrites the line now.
+  **Reviewer DX lens**: a diff that kills a named anchor without updating the
+  line is a finding — gated like a catalog row.
+### Tests
+- 2 conform-check hook cases (dead script + dead path → gap, with globs/URLs/
+  placeholders skipped; resolving anchors → silent). Verified against orderly's
+  real 19 KB CLAUDE.md: clean, no false positives.
+
 ## [1.47.1] — 2026-08-19
 ### Fixed
 - **`/groom` detects hand-written backlog files itself** — `BACKLOG.md`,
