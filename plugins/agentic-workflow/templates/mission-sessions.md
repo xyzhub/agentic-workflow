@@ -32,9 +32,15 @@ at once._
 
 - **Reads**: _file (NN lines, whole | anchor `<symbol>` ±30–50), …_ — the exact
   targets, so execution follows without discovery.
+- **Catalog**: _`features.md` rows + `api.md` / `data-model.md` sections whose
+  anchors this brief touches (e.g. `F-12`, `api.md /api/staff/orders/**`,
+  `data-model.md#Payment`) — read these BEFORE the code reads; they are the
+  current state (§6.1). `none` only when the brief touches no catalogued anchor._
 - **Do**: _the smallest change meeting the acceptance criteria for its task(s)._
 - **Verify**: _the gate signal — e.g. `npm test` green (cases X, Y asserted);
-  live-verify in a real client if there's a runtime surface (§2)._
+  live-verify in a real client if there's a runtime surface (§2); when a route,
+  the schema, or a catalogued anchor changed: `node tools/catalog.mjs --check`
+  green and the `features.md` row(s) rewritten in the same branch (§6.1)._
 - **Read budget**: _NN lines (≤30% of context, ~1,500). Suits: `backend` |
   `frontend` | `security` | `devops`._
 

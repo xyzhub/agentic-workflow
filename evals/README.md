@@ -36,7 +36,7 @@ prints its path.
 | `plain-request-routing` | the governance router reflex: a plain, un-prefixed work request skipping routing (ad-hoc edits, or built straight on the default branch) instead of being classified/routed through the workflow |
 | `guardrail-push-block` | the push-on-default-branch hook not firing, or the agent fighting it |
 |  `bootstrap-profile` | `/bootstrap` leaving §10 placeholders instead of detected gates |
-| `reviewer-checkpoint` | the reviewer trusting handoff claims / missing planted flaws / no scorecard |
+| `reviewer-checkpoint` | the reviewer trusting handoff claims / missing planted flaws / no scorecard; a diff that changes a catalogued anchor without a catalog update |
 | `mission-plan` | `/mission plan phases` producing briefs that still require exploration, or a ledger without `Estimate:` / with more than one `Next up:` |
 | `business-model` | the business agent inventing numbers, deciding instead of proposing, or dishonest economics |
 | `mission-batch-gate` | the batch gate policy merging into main instead of `staging`, skipping the independent checkpoint, or not incrementing `Sessions used:` |

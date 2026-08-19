@@ -66,6 +66,16 @@ flat under `docs/product/` from a pre-`engineering/` adoption.
 Because the already-foldered case is a no-op, re-running `/agentic-workflow:sync`
 after the move changes nothing (idempotent).
 
+## 3.6 Refresh the shipped tooling (catalog.mjs)
+
+If the plugin's `${CLAUDE_PLUGIN_ROOT}/tools/catalog.mjs` differs from the
+project's `tools/catalog.mjs` (or the project has none but has
+`docs/product/catalog/`), copy the newer one over (it is generated tooling,
+never project-edited — a project-side change belongs in `catalog.config.json`),
+run `node tools/catalog.mjs` and stage the regenerated derived files with the
+move. Report it in step 4. No catalog dir and no script → say so and point at
+`/agentic-workflow:adopt`'s catalog step; do not create it silently.
+
 ## 4. Review & hand off
 
 Summarize what changed in the protocol between the two versions (new/changed

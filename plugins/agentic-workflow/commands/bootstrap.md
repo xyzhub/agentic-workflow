@@ -81,6 +81,19 @@ bundled one.
   from `git log` + merged PRs.
 - `docs/product/JOURNEY.md` — a dated first entry describing the project's current
   state in plain language.
+- **The catalog (§6.1)** — copy `${CLAUDE_PLUGIN_ROOT}/tools/catalog.mjs` to
+  `tools/catalog.mjs` (create `catalog.config.json` only if the project's
+  routes/schema are not at the Nuxt/Prisma defaults — `routesDir`,
+  `schemaFiles`, `authPatterns`), run `node tools/catalog.mjs` (writes
+  `docs/product/catalog/{api,data-model,README}.md`), and copy
+  `${CLAUDE_PLUGIN_ROOT}/templates/catalog-features.md` to
+  `docs/product/catalog/features.md`. Seed `features.md` when the repo already
+  ships capabilities: spawn the `chronicler` with the PRD + CHANGELOG + the
+  generated `api.md` to draft one row per capability (`status: live`, anchors
+  resolving under `--verify`, `marketable` proposed, `benefit: _unwritten_`),
+  and put the `marketable` column in the step-5 report for the human to confirm
+  — the catalog is what every later session builds on, so its first version
+  is reviewed, not assumed.
 - `docs/product/roadmap.md` — copy `${CLAUDE_PLUGIN_ROOT}/templates/roadmap.md`
   (epic view: owner ranking + epics + deferred; never per-item status — items
   live in the tracker). If the repo already has an item-level roadmap

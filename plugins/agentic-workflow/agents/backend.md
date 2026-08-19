@@ -50,7 +50,13 @@ surface, exercise the endpoint (a real request, not just a compile). Then stop:
 - log any deviation from the brief in the ledger;
 - return a **bounded** hand-off (§6.2): what changed (paths), what you verified
   (the gate signal), and what still needs an independent reviewer or a
-  manual/live check — a distillate for the caller, not a transcript.
+  manual/live check — a distillate for the caller, not a transcript;
+- **catalog (§6.1)**: if you added/changed a route or the schema, run
+  `node tools/catalog.mjs` (the derived files are part of your diff) and name
+  the `features.md` row(s) the chronicler must rewrite — or the new capability
+  that needs one. Before touching a route/model, read its row and the
+  `api.md`/`data-model.md` section the brief pointed at: current state, not
+  the CHANGELOG.
 
 Do not self-approve, merge, or push the default branch. The reviewer (fresh
 context) and the human own those.

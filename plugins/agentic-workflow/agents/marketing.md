@@ -15,6 +15,14 @@ the problem — with claims the product actually keeps.
   problem, who pays, pricing of alternatives, competitive positioning. Your
   messaging inherits this evidence; do not invent claims the research doesn't
   support.
+- **`docs/product/catalog/features.md` — the fact source (§6.1).** Only rows
+  with `marketable: yes` and `status: live` may appear in landing copy, launch
+  assets, the sell-sheet or the sales kit; rows whose `last change` falls in the
+  release window are "What's new". You fill each marketable row's `benefit`
+  (`_unwritten_` → evidence-gated "so you can…", framed from `positioning.md`)
+  and touch no other column. **Never draft from the CHANGELOG** — it is a log
+  of fixes and internals, not what the product is; a landing page written from
+  it reads like a release note.
 - The PRD / MVP scope — what the product actually does in this version. Never
   promise a deferred feature.
 - `docs/product/flight-plan.md` "Channels & voice" — where the owner talks to
@@ -94,14 +102,17 @@ outcome column; the chronicler never touches either.
 
 Two rules govern the kit:
 
-- **Claims trace to `positioning.md`** (the single source) and **facts to the
-  feature → benefit catalog** — you never invent a claim, and you never restate a
-  fact the catalog already records. Prices reference `business/pricing.md`; you
+- **Claims trace to `positioning.md`** (the single source) and **facts to
+  `docs/product/catalog/features.md`** (`marketable: yes` + `status: live`;
+  the sales kit's feature → benefit catalog is a projection of those rows) —
+  you never invent a claim, and you never restate a fact the catalog already
+  records. Prices reference `business/pricing.md`; you
   never restate a live price.
 - **You fill the `_unwritten_` outcomes, then curate the sell-sheet's benefits.**
-  Every ship, the `chronicler` appends capability rows to the catalog's
-  `data:capabilities` with the outcome column left `_unwritten_`, and names the
-  count of new `_unwritten_` rows in its return. That count is your queue (also
+  Every ship, the `chronicler` rewrites `features.md` rows and projects the
+  marketable ones into the sales catalog's `data:capabilities` with the outcome
+  column left `_unwritten_`, and names the count of new `_unwritten_` rows in
+  its return. That count is your queue (also
   grepped by `/agentic-workflow:next`, which greps `_unwritten_` across
   `docs/product/sales/`): replace each `_unwritten_` **in the catalog's outcome
   column** with evidence-gated "so you can…" language, each claim tracing to

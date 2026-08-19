@@ -394,6 +394,27 @@ function checkContextAttrib() {
   }
 }
 
+// ── 10.5 Product-catalog selftest (tier-1.5) ─────────────────────────────
+// The catalog script ships INSIDE the plugin and is copied into ventures; its
+// route/schema derivation, --check staleness and --verify anchor probe are the
+// mechanism that stops sessions building on old knowledge (§6.1). Delegate to
+// its bundled fixture selftest, fail-closed on a missing runner — same shape as
+// checks 8–10. Owner incident, 2026-08-19: 304 routes and a 158 KB schema with
+// no derived inventory; a 1,848-line CHANGELOG as the only "what is built".
+function checkCatalogSelftest() {
+  const runner = path.join(PLUGIN, 'tools/catalog.mjs');
+  if (!existsSync(runner)) {
+    fail(runner, null, 'catalog script missing — plugins/agentic-workflow/tools/catalog.mjs must exist so the gate proves route/schema derivation, --check and --verify on the bundled fixture (do not silently drop the check)');
+    return;
+  }
+  const res = spawnSync('node', [runner, '--selftest'], { encoding: 'utf8' });
+  if (res.status !== 0) {
+    const detail = `${res.stdout ?? ''}${res.stderr ?? ''}`
+      .split('\n').filter((l) => /FAIL|failure|Error/.test(l)).join(' | ');
+    fail(runner, null, `catalog selftest failed — run \`node plugins/agentic-workflow/tools/catalog.mjs --selftest\`: ${detail || '(no detail)'}`);
+  }
+}
+
 // ── Mission-ledger helpers (checks 11 + 12) ─────────────────────────────────
 // Both ledger checks read `.plans/*.state.md` — deployed ledgers, not templates.
 // A repo with no `.plans/` (a fresh consumer) simply has nothing to check.
@@ -780,7 +801,7 @@ const isEntryPoint = () => {
 };
 
 if (isEntryPoint()) {
-  for (const check of [checkManifests, checkAgents, checkCommands, checkCrossRefs, checkTemplateRefs, checkSections, checkFrontmatterYaml, checkTemplateFrontmatter, checkHooks, checkObfuscation, checkHookBehavior, checkClockGuard, checkMarkerMutation, checkContextAttrib, checkStandingSteers, checkNextUpAgreement, checkClosing, checkObligationsRegister]) {
+  for (const check of [checkManifests, checkAgents, checkCommands, checkCrossRefs, checkTemplateRefs, checkSections, checkFrontmatterYaml, checkTemplateFrontmatter, checkHooks, checkObfuscation, checkHookBehavior, checkClockGuard, checkMarkerMutation, checkContextAttrib, checkCatalogSelftest, checkStandingSteers, checkNextUpAgreement, checkClosing, checkObligationsRegister]) {
     check();
   }
 

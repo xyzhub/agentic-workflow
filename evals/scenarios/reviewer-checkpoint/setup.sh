@@ -5,6 +5,25 @@
 # The handoff (in scenario.md) claims both were verified. Leaves HEAD on main.
 set -euo pipefail
 
+# The catalog (§6.1): the fixture ships tools/catalog.mjs (copied from the plugin
+# so the fixture never carries a stale duplicate) + a features.md whose row F-1
+# anchors src/server.js. The planted branch below CHANGES src/server.js without
+# touching the catalog — the reviewer's catalog gate must flag it.
+HERE="$(cd "$(dirname "$0")" && pwd)"
+mkdir -p tools docs/product/catalog
+cp "$HERE/../../../plugins/agentic-workflow/tools/catalog.mjs" tools/catalog.mjs
+printf '{"routesDir":"none","schemaFiles":[]}\n' > catalog.config.json
+cat > docs/product/catalog/features.md <<'CATEOF'
+# Notes — Feature catalog (curated: what the product IS)
+
+| ID | Name | Status | Marketable | Audience | Current behavior | Anchors | Last change | Benefit |
+|---|---|---|---|---|---|---|---|---|
+| F-1 | Notes API | live | yes | user | `GET /notes` returns the stored notes as JSON; no auth. | `src/server.js`, `src/store.js` | PR #1 · 2026-07-01 | _unwritten_ |
+CATEOF
+node tools/catalog.mjs >/dev/null
+git add -A
+git commit -qm "chore: catalog (fixture)" --no-verify
+
 git checkout -qb feature/notes-auth
 
 cat > src/server.js <<'EOF'

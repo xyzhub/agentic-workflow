@@ -21,6 +21,10 @@ Inspect fast, decide, recommend — total output under 12 lines. No lectures;
   benefit language marketing hasn't filled yet. A non-empty count is a pending
   `marketing` fill beat; surface it as the recommended move when nothing higher
   in the priority order is in flight.
+- `docs/product/catalog/README.md` (≤40 lines) when it exists — the current
+  shape of the product; `node tools/catalog.mjs --check` red → the derived
+  files are stale, which is itself a candidate next action (`/agentic-workflow:end`
+  did not regenerate them).
 - **The queue** (§4): if §10 records an **Issue tracker**, `gh issue list
   --state open --label size/XS,size/S --json number,title,labels,updatedAt
   --limit 30` (or the tracker's equivalent) — the groomed queue is where "what

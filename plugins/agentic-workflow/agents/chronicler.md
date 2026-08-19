@@ -24,7 +24,33 @@ seeds them.
 - The project's `docs/WORKFLOW.md` §0 for stage definitions
 
 Never re-read source code to "verify" — you chronicle what the record says; the
-reviewer verifies truth.
+reviewer verifies truth. The one exception is mechanical: `tools/catalog.mjs`
+derives the API/data-model files from the tree for you — run it, do not read
+the routes yourself.
+
+## Artifact 0 — docs/product/catalog/ (state, not history — §6.1)
+
+Before the three history artifacts, bring the **catalog** current for what
+shipped — this is the file a fresh session reads instead of replaying you:
+
+- Run `node tools/catalog.mjs` (regenerates `api.md`, `data-model.md`,
+  `README.md` from the tree; deterministic — the diff is the API/model change
+  log). If the script is missing, say so in your return and skip; never
+  hand-write the derived files.
+- **Rewrite `features.md` rows in place** for every capability the merged diff
+  added, changed or removed: `status` (`live` / `changed` / `removed`),
+  `current behavior` (what it does today, no adjectives), `anchors` (routes,
+  models, files — must resolve), `last change` (PR · date), `marketable`
+  (yes for a user-facing capability a buyer could care about; no for fixes,
+  internals, ops). New capability → new row with the next `F-n` id and
+  `benefit: _unwritten_`. **Never touch `benefit`** — that column is
+  `marketing`'s. Never append a second row for the same capability.
+- Run `node tools/catalog.mjs --verify`; an unresolved anchor is yours to fix
+  before you return (a typo in your row) or to report (the code moved and the
+  brief did not say so — a deviation for the ledger).
+- The sales kit's `data:capabilities` region (below) is a **projection** of
+  `features.md` rows with `marketable: yes` — refresh it from those rows, still
+  marker-only, still no claims.
 
 ## Artifact 1 — CHANGELOG.md (technical, for engineers)
 

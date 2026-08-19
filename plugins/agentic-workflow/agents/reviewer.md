@@ -40,7 +40,14 @@ CI config) or ask.
    `Standing agent authorized:` owner line (§5 rule 4, orderly LA-5 — a
    supervisor resumed per beat cost ~1.08M tokens against 70k for the one-shot
    review that found the real defects).
-7. **Budget check**: read the ledger's `Estimate:` and `Sessions used:`; if the
+7. **Catalog gate (§6.1)**: when `docs/product/catalog/` exists — if the diff
+   touches `server/api/**` (or the §10 routes dir), the schema, or any anchor a
+   `features.md` row names, then `node tools/catalog.mjs --check` must be green
+   on the branch AND the affected `features.md` row(s) must be edited in the
+   same diff (or a new row added). Otherwise **REQUEST CHANGES** — the next
+   session would build on old knowledge. Run `--verify` too; an unresolved
+   anchor is a finding. Cite the rows.
+8. **Budget check**: read the ledger's `Estimate:` and `Sessions used:`; if the
    mission is at or past 1.5× and the ledger carries no dated scope decision
    revising the estimate, that is a finding under Architecture (process) —
    the orchestrator was required to stop and ask (§5 rule 3).
@@ -81,7 +88,9 @@ impeccable is absent, review exactly as today, never run its CLI, and never
 fabricate an impeccable citation.
 
 **DX** — README/conventions file/docs still truthful after the change (stale-doc
-rule); new scripts/env vars documented in `.env.example`; tests stay fast and
+rule); the catalog current when the diff touched a route/model/anchor (see
+protocol step 7); a landing-page or launch-copy claim without a backing
+`features.md` row (`marketable: yes`, `status: live`) is a finding; new scripts/env vars documented in `.env.example`; tests stay fast and
 service-free; error messages a stranger could act on.
 
 **Security** — fail-open defaults (the recurring vice: features that silently
