@@ -436,7 +436,11 @@ mechanical half):
   failures; a PR-level check summary is not evidence, LA-8),
   `/agentic-workflow:verify` runs against the staging URL — and staging is
   evidence only insofar as it exercises the SAME image/release/deploy commands
-  as production (*incident, orderly #586: `fly.staging.toml` ran an old inline
+  AND the same connection topology as production (a pooled connection rejects
+  what a direct one accepts: the release wrapper passed `lock_timeout` as a
+  startup option — staging's direct Postgres took it, prod's PgBouncer
+  FATAL'd, and the prod release aborted safely; migrations belong on the
+  DIRECT database URL in every environment) (*incident, orderly #586: `fly.staging.toml` ran an old inline
   migrate command while `fly.toml` ran a wrapper script the Docker image never
   contained — staging green while the prod release phase would have
   MODULE_NOT_FOUND'd with zero of 7 migrations applied; a whole-range Fable
