@@ -1149,6 +1149,18 @@ const CLOSING_NONE_DUE = {
     const a = runHook({ event: 'SessionStart', desc: CONF, input: { source: 'startup', session_id: id }, files });
     const b = runHook({ event: 'SessionStart', desc: CONF, input: { source: 'startup', session_id: id }, files });
     check('conform-check: stale stamp only → one-line-ish advisory once per session (second dispatch silent)', a.code === 0 && /protocol-stamp/.test(ctxOf(a)) && b.code === 0 && b.stdout === '', `a=${JSON.stringify(ctxOf(a))} b=${JSON.stringify(b.stdout)}`); }
+  // ladder/template label consistency (v1.48.4): every has10('<label>') in
+  // conform.mjs must be satisfied by the TEMPLATE's own §10 — the two files
+  // diverged once ('Test users' vs '**Test users / auth access**') and a
+  // verbatim template copy failed its own ladder forever.
+  { const conformSrc = readFileSync(path.join(PLUGIN, 'tools/conform.mjs'), 'utf8');
+    const labels = [...conformSrc.matchAll(/has10\('([^']+)'\)/g)].map((m) => m[1]);
+    const tpl = readFileSync(path.join(PLUGIN, 'templates/WORKFLOW.md'), 'utf8');
+    const s10 = (tpl.match(/^## 10\.[\s\S]*?(?=^## 11\.)/m) || [''])[0];
+    const missing = labels.filter((l) => !new RegExp(`^\\|\\s*\\*\\*${l}\\b`, 'm').test(s10));
+    check(`conform/template consistency: every has10 label (${labels.join(', ')}) matches a template §10 row`,
+      labels.length >= 3 && missing.length === 0, `missing=${JSON.stringify(missing)}`); }
+
   // plans-tracked (v1.48.1): a gitignored .plans/ is a gap; targeted ignores are not.
   { const files = { ...conformant, '.gitignore': { content: 'node_modules\n.plans/\n' } };
     const r = runHook({ event: 'SessionStart', desc: CONF, input: { source: 'startup', session_id: sid('k') }, ledgers: { 'm.state.md': 'Estimate: 1 session\nSessions used: 0\n- [ ] S1\nNext up: S1\n' }, files });
