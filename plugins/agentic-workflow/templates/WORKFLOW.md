@@ -356,8 +356,11 @@ brief and `Estimate: 1 session`; one builder session runs it; one fresh
 one-shot reviewer verifies it; it lands via **staging → verify → PR to the
 default branch**. Multi-phase missions are an explicit opt-in
 (`/agentic-workflow:mission "<name>" phases`) that carries an honest session
-estimate and a hard overrun stop. The plan trio, written by a dedicated
-planning session:
+estimate and a hard overrun stop. **`.plans/` is tracked in git, never
+gitignored** — the ledger is the record that survives a crash, a clone, and a
+worktree; the conform ladder flags a gitignored `.plans/` (junk like
+screenshots gets targeted sub-ignores instead). The plan trio, written by a
+dedicated planning session:
 
 | File | Job |
 |---|---|
@@ -463,6 +466,18 @@ enforces the same rule fail-closed. The obligations-due reflex (§3) surfaces
 due counts at session start; the `end` and `mission` commands route a finishing
 mission through this gate — the checklist is the authority, and "zero open PRs"
 is never a completeness signal.
+
+**Hand-off across machines and sessions.** The tracked ledger is what makes a
+mission portable: its edits are committed on the mission branch and pushed
+like code, so another machine is `git pull` + `/agentic-workflow:mission
+"<name>" continue` away from resuming exactly where the last one stopped.
+Rules: **one driver per mission at a time** — hand off by pushing, never by
+running the same mission from two places (the budget fields would
+double-count and the header lines conflict); a session that stops — cleanly
+or mid-flight — **commits and pushes the ledger before it ends** (write-ahead
+already requires the commit; the push is what makes the hand-off real); and
+`continue` **pulls first** — the ledger at origin is the state, the local
+copy is a cache.
 
 **Loop mode.** The ledger makes missions loop-drivable: a recurring
 `/loop /mission "<name>" continue` (or a scheduled agent) has every tick read

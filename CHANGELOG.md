@@ -8,6 +8,21 @@ has no tags — each version-stamped commit on `main` IS the release.
 
 _(empty)_
 
+## [1.48.1] — 2026-08-19
+### Fixed
+- **A gitignored `.plans/` is now a conformance gap (`plans-tracked`).** Found
+  in the wild (owner, 2026-08-19): orderly's `.gitignore` had `.plans/`, so 18
+  ledgers, the obligations register and every `/sync` edit existed on one
+  machine only — a clone or a worktree starts empty, the staging PR cannot
+  carry ledger updates, and the crash-safe premise silently fails.
+  Fs-only check (root `.gitignore` lines `.plans`/`.plans/`); targeted
+  sub-ignores (screenshots, scratch dirs) stay fine. WORKFLOW §5 states the
+  rule; 2 hook-test cases.
+- **Cross-machine hand-off is now protocol (§5)**: one driver per mission at a
+  time; a stopping session commits AND pushes the ledger; `continue` pulls
+  first — the ledger at origin is the state, the local copy a cache.
+  `/mission continue` and `/end` carry the rule.
+
 ## [1.48.0] — 2026-08-19
 ### Added — deterministic CI tracking: `tools/ci-wait.mjs` (closes the LA-8 false-green family; zero tokens while waiting)
 - One question, one exit code: resolves any ref/`pr:N` to the **full 40-char
