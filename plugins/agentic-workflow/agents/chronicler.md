@@ -69,6 +69,12 @@ what was decided, what went wrong and what it taught us. Incidents are stories
 with morals, not bug IDs. Milestones get a `### Milestone:` heading. Never rewrite
 old entries — append-only; corrections are new entries.
 
+_The status page and JOURNEY are read by the OWNER, not by engineers. Write
+them under the `plain-report` skill (§6.0): the timeline says what changed and
+what it means in plain words, every id is defined the first time, no internal
+shorthand, no AI-vocabulary or puffery. The CHANGELOG above is the technical
+record and keeps its engineer voice; these two do not._
+
 ## Artifact 3 — docs/product/overview.html (the owner's live status page)
 
 A single self-contained HTML file (published as a Claude Artifact under a strict

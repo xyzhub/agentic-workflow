@@ -85,5 +85,7 @@ push). **Never merge the default branch** — that's the human owner's act.
 
 ## Output
 
+_Owner-facing — write it under the `plain-report` skill (§6.0): the action or the state first, every id defined, plain words, no internal shorthand._
+
 Summarize: work status · committed? · record updated (+ status-page URL) · docs
 current · action items for the human (PR needed, blockers, questions).

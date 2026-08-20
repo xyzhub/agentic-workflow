@@ -57,6 +57,8 @@ Inspect fast, decide, recommend — total output under 12 lines. No lectures;
 
 ## Output (exactly this shape)
 
+_Owner-facing — write it under the `plain-report` skill (§6.0): the action or the state first, every id defined, plain words, no internal shorthand._
+
 - **Where you are** — stage + one-line state.
 - **Do this** — ONE command carrying the **`agentic-workflow:` prefix**, real
   values filled in (the actual mission name from the ledger, the actual version,

@@ -195,6 +195,8 @@ for a single confirmation, rather than nagging along the way.
 
 ## Output
 
+_Owner-facing — write it under the `plain-report` skill (§6.0): the action or the state first, every id defined, plain words, no internal shorthand._
+
 Between stages, a short status: stage reached, key decisions (linked to the log),
 next gate. At the launch boundary, the consolidated confirmation. If you stop
 early (kill criteria, blocked, budget, or a needed human decision), say exactly

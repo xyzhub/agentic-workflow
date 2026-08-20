@@ -224,6 +224,8 @@ the close, so it parks as a `## Closing` row and fires at a later
 
 ## Output
 
+_Owner-facing — write it under the `plain-report` skill (§6.0): the action or the state first, every id defined, plain words, no internal shorthand._
+
 Between phases: the phase completed, review verdict, staging SHA + verify
 result, what the human must merge, sessions used vs estimate, and the next
 phase. At the end: all phases merged, or exactly where it stopped and why.

@@ -122,7 +122,9 @@ impeccable is absent, review exactly as today, never run its CLI, and never
 fabricate an impeccable citation.
 
 **DX** — README/conventions file/docs still truthful after the change (stale-doc
-rule); the catalog current when the diff touched a route/model/anchor (see
+rule); an owner-facing artifact the diff changed (status page, JOURNEY, a report
+template) written under the `plain-report` skill (§6.0 — defined ids, action
+first, plain words), a finding if it dumps internal shorthand on the owner; the catalog current when the diff touched a route/model/anchor (see
 protocol step 7); **the conventions file's anchors**: a diff that renames or
 deletes a path/script/symbol CLAUDE.md (or AGENTS.md) names must update that
 line in the same diff — check with the conform ladder's `claude-md-anchors`

@@ -220,7 +220,7 @@ not a measured one, since this repo has no corpus to confirm an effect size.
 Checks evaluate in the command's **target repo** and read pre-execution
 state.
 
-Seven **governance reflexes** (advisory, never block) keep a session on the
+The **`plain-report` skill** governs every owner-facing report (defined ids, action first, plain words — no internal shorthand dumped on the human). Seven **governance reflexes** (advisory, never block) keep a session on the
 protocol without it being read: the **router** nudges an un-prefixed work request
 to route through the workflow (hand to `intake`); the **mission-budget** hook
 (supersedes the thread-keeper) surfaces the active ledger's `session k/N` +
