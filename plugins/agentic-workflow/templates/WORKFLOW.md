@@ -254,7 +254,7 @@ Shipped by this plugin as hooks. Advisory except where marked:
 | Event | Behavior |
 |---|---|
 | Prompt submit | Reminder when the working tree is on the default branch |
-| `git commit` | Conventional-format reminder |
+| `git commit` | Conventional-format reminder; **BLOCKS** a message carrying a GitHub closing keyword + issue ref (`Closes/Fixes/Resolves #N`) — that fires auto-close whenever the commit reaches the default branch, including via the staging→main promote, closing the issue done-or-not (orderly #605). Reference an issue as `(#N)` or `refs #N`; put the close in the PR-to-default-branch body |
 | `git push` | **BLOCKS** any push while on the default branch (feature branches only) |
 | `git push` | **BLOCKS** any refspec targeting the default branch (`HEAD:main`, `feature:main`, `:main`) — never sanctioned, even with delegated merge authority |
 | `git push --tags` / `--follow-tags` | Warns that tag pushes may fire a release/deploy pipeline — per `/agentic-workflow:release`, the human runs them |

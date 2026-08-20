@@ -8,6 +8,21 @@ has no tags — each version-stamped commit on `main` IS the release.
 
 _(empty)_
 
+## [1.50.1] — 2026-08-21
+### Fixed — the "closes an issue that isn't done" bug, made mechanically impossible
+Owner: "it closes issues that are not done yet." Root cause: a GitHub closing
+keyword (`Closes/Fixes/Resolves #N`) in a durable COMMIT MESSAGE fires whenever
+that commit reaches the default branch — including when the staging→main
+promote carries it — closing the issue at the wrong moment, done or not (orderly
+#605, auto-closed by a commit message after the PR body was scrubbed).
+- New guardrail hook: **BLOCKS** a `git commit` whose message carries a closing
+  keyword + issue ref (`(#N)` PR references and `refs #N` are allowed; only the
+  close directive is blocked). Hard block, exit 2 — a warning is what failed
+  before. 7 hook-test cases.
+- Protocol (WORKFLOW §3, `/pr` step 7.5, `/mission`): closing keywords live in
+  the PR-to-default-branch body only, reviewed at the close moment; commits and
+  staging-PR bodies reference an issue, never close it.
+
 ## [1.50.0] — 2026-08-21
 ### Added — the plain-report skill: owner-facing reports a human who missed the session can act on
 Owner, after a correct 20-hour orderly session handed them internal shorthand
