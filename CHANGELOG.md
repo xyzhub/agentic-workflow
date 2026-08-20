@@ -8,6 +8,22 @@ has no tags — each version-stamped commit on `main` IS the release.
 
 _(empty)_
 
+## [1.50.0] — 2026-08-21
+### Added — the plain-report skill: owner-facing reports a human who missed the session can act on
+Owner, after a correct 20-hour orderly session handed them internal shorthand
+(`LD-21`, `OB-6`, `S11-fix`), repeated a deadline date it never explained, and
+took two rewrites to say the plain thing: "I don't want to read slop."
+- `skills/plain-report/SKILL.md` (adapted from the unslop skill, cursor/plugins):
+  define every id and term the first time, lead with the action, explain instead
+  of repeat, cut AI vocabulary and puffery, plain words, mechanism over feeling.
+  Scoped to owner-facing prose — reports, notifications, status page, JOURNEY,
+  decision-needed messages. Exempt: commit messages (fixed format), ledger rows
+  (data), code. Structured status stays tabular; narrative gets plain sentences.
+- Wired into WORKFLOW §6.0, the chronicler (status page + JOURNEY), the
+  orchestrator Output sections (`/mission`, `/settle`, `/next`, `/end`,
+  `/autopilot`), and the reviewer DX lens (a report that dumps shorthand on the
+  owner is a finding).
+
 ## [Unreleased]
 
 _(empty)_

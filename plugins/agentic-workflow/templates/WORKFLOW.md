@@ -682,6 +682,21 @@ purpose-misalignment is the human's call. Distinct from `advisor` (red-teams one
 pending decision) and `analyst` (measures numbers); it runs independently of
 `intake` and is never a hard gate on a route.
 
+### 6.0 Writing for the owner (the plain-report rule)
+
+A report is judged by what the owner can DO with it, and the owner was not in
+the session. Every surface that talks to a person — orchestrator reports,
+owner-channel notifications (§12), the status page and JOURNEY, any "decision
+needed" message — follows the **`plain-report` skill**: define every id/term
+the first time (`OB-6` means nothing to the owner — write "the split-payment log
+check (OB-6)" once, then the id), lead with the action not the preamble, explain
+instead of repeating, cut AI vocabulary and puffery, and use the plain word.
+Structured status (gate tables, before/after) stays tabular; narrative prose
+gets plain sentences. *Incident (orderly, 2026-08-20): a correct 20-hour session
+handed the owner internal shorthand and a bare deadline date it never explained,
+and took two rewrites to say the plain thing.* It does NOT touch commit messages
+(fixed format), ledger rows (data), or code.
+
 ### 6.1 Documentation of record (Chronicler)
 
 Three artifacts kept current so the project's story survives any single session:
