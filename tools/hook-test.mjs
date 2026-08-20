@@ -1188,6 +1188,22 @@ const CLOSING_NONE_DUE = {
     check('conform-check: source=compact → silent (compact-resume owns that beat)', r.code === 0 && r.stdout === '', r.stdout); }
 }
 
+// ── close-keyword guard (v1.50.1): a commit message must not carry a GitHub
+// closing keyword — it fires auto-close when the commit reaches the default
+// branch (orderly #605). A bare (#N) PR ref or refs #N is allowed.
+{
+  const GUARD = 'close-keyword guard';
+  const c = (cmd) => runHook({ event: 'PreToolUse', desc: GUARD, input: { tool_input: { command: cmd } } });
+  const blocks = (r) => r.code === 2 && /closing keyword/i.test(r.stderr);
+  check('close-guard: git commit with "Closes #605" in message → BLOCK (exit 2)', blocks(c('git commit -m "fix: leak\n\nCloses #605"')), '');
+  check('close-guard: "fixes #42" → BLOCK', blocks(c('git commit -m "feat: thing, fixes #42"')), '');
+  check('close-guard: owner/repo#N form → BLOCK', blocks(c('git commit -m "chore: closes xyzhub/orderly#12"')), '');
+  { const r = c('git commit -m "fix(security): stop the leak (#605)"'); check('close-guard: bare (#605) PR ref → allowed (exit 0)', r.code === 0, `code=${r.code}`); }
+  { const r = c('git commit -m "docs: describe how fixes propagate downstream"'); check('close-guard: prose mentioning "fixes" with no #ref → allowed', r.code === 0, `code=${r.code}`); }
+  { const r = c('git commit -m "chore: refs #605 — partial, does not close"'); check('close-guard: "refs #605" → allowed', r.code === 0, `code=${r.code}`); }
+  { const r = c('git status'); check('close-guard: non-commit command → allowed', r.code === 0, `code=${r.code}`); }
+}
+
 if (failures.length) {
   console.error(`\nhook-test: ${failures.length} failure(s)`);
   process.exit(1);

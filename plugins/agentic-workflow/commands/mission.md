@@ -62,6 +62,12 @@ defects; three merges and a gate went unrecorded and a compaction erased them.
    compaction can erase everything since the last write. After each merge to
    staging, each verify result, each review verdict, each PR opened: write the
    handoff entry, flip the glyph, advance `Next up:`, then continue.
+6b. **Closing keywords live in the PR-to-`main` body, never in a commit message
+   or a staging-PR body** — a commit's `Closes #N` fires whenever the commit
+   reaches the default branch (the promote carries it), closing the issue
+   done-or-not (orderly #605). Commits reference an issue with `(#N)`; the close
+   is a reviewed decision at the PR to the default branch. The guardrail hook
+   blocks a closing keyword in a commit message.
 6. **Exactly one `Next up:` line (LA-7).** Superseding it means **renaming the
    old line** (`SUPERSEDED next-up (historical, do NOT read as state):`) —
    never leaving a second `Next up:` that still parses; the hook reads the

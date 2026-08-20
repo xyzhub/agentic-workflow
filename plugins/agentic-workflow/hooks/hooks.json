@@ -63,6 +63,17 @@
         "hooks": [
           {
             "type": "command",
+            "command": "INPUT=$(cat); CMD=$(printf '%s' \"$INPUT\" | jq -r '.tool_input.command // \"\"' 2>/dev/null || printf '%s' \"$INPUT\"); case \"$CMD\" in *'git commit'*) if printf '%s' \"$CMD\" | grep -iqE '(close|closes|closed|fix|fixes|fixed|resolve|resolves|resolved)[[:space:]:]+([a-z0-9_.-]+/[a-z0-9_.-]+)?#[0-9]+'; then echo \"❌ BLOCKED: a closing keyword (Closes/Fixes/Resolves #N) in a COMMIT MESSAGE fires GitHub auto-close whenever the commit reaches the default branch — it rides the staging→main promote and closes the issue at the wrong time, done or not (orderly #605, 2026-08-19). Closing an issue is a decision made in the PR-to-default-branch BODY, reviewed at that moment. Move the keyword there; a commit may reference an issue as \\\"(#N)\\\" or \\\"refs #N\\\" but must never carry a close directive.\" >&2; exit 2; fi;; esac; exit 0",
+            "description": "close-keyword guard (PreToolUse/Bash): BLOCK a `git commit` whose message carries a GitHub closing keyword + issue ref (Closes/Fixes/Resolves #N, incl. owner/repo#N). Such a keyword in a durable commit message fires auto-close whenever the commit lands on the default branch — including via the staging→main promote — closing the issue done-or-not (orderly #605). A bare `(#N)` PR reference or `refs #N` is allowed; only the close directive is blocked. Closing is a PR-to-default-branch BODY decision, reviewed at the close moment.",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
             "command": "INPUT=$(cat); CMD=$(printf '%s' \"$INPUT\" | jq -r '.tool_input.command // \"\"' 2>/dev/null || printf '%s' \"$INPUT\"); D=$(printf '%s' \"$CMD\" | sed -n 's/^ *cd  *\\([^;&|]*\\).*/\\1/p' | sed 's/\"//g; s/ *$//'); D=${D:-.}; TOP=$(git -C \"$D\" rev-parse --show-toplevel 2>/dev/null); WF=\"$TOP/docs/WORKFLOW.md\"; if printf '%s' \"$CMD\" | grep -qiE 'ads-api\\.|googleads|adaccounts|/act_[0-9]+/|/ads/'; then if ! printf '%s' \"$CMD\" | grep -q 'PAID_CONFIRMED_BY_HUMAN'; then echo '❌ BLOCKED: paid promotion crosses the money boundary (§11) — never delegable; it must be human-fired within the budget ceiling. No autonomous ad spend.' >&2; exit 2; fi; fi; if printf '%s' \"$CMD\" | grep -qiE 'api\\.(x|twitter|linkedin)\\.com|dev\\.to/api|buttondown|mailchimp|bsky\\.social|hashnode|/api/v1/statuses'; then if grep -qiE '\\*\\*Publish policy\\*\\* *\\| *_?may-publish' \"$WF\" 2>/dev/null; then echo '📣 Publishing under a delegated Publish policy (§14) — post only approved, due, organic queue items within scope; append each to publish-log.md.'; else echo '📣 Publishing is §14-gated: Publish policy is not delegated — post only an approved queue item via a human-fired /publish run, and log it. Paid stays human-fired.'; fi; fi; exit 0",
             "description": "publishing guardrail (§14): hard-block paid/ad-spend endpoints unless human-confirmed (never delegable); remind that organic publish-host calls must be policy-authorized, approved queue items logged to publish-log.md",
             "timeout": 5
