@@ -39,11 +39,24 @@ read-only|workspace-write|danger-full-access`, `-C/--cd`, `-m`, `-c key=value`,
 `--search` (via the search feature flag set), `--json`, `-o/--output-last-message`,
 `--output-schema <FILE>`, `--ephemeral`, `--ignore-rules`, `--ignore-user-config`,
 `-p/--profile`, and `exec resume`. `codex execpolicy check --rules <PATH>
-<COMMAND>…` exists (`-r/--rules` is repeatable). `--ignore-rules` is documented as
-"Do not load user or project execpolicy `.rules` files" — project-level rules are
-loaded automatically; the directory is S1's probe. `codex debug prompt-input`
-renders the model-visible prompt input as JSON. **No `codex exec` run against the
-API in any brief** (locked decision, 2026-09-11).
+<COMMAND>…` exists (`-r/--rules` is repeatable). `codex debug prompt-input`
+renders the model-visible prompt input as JSON.
+
+**Execpolicy facts — settled by the owner 2026-09-11 from the Codex sources
+(`codex-rs/core/src/exec_policy.rs`, `config/src/loader/mod.rs`); do not
+re-probe**: rules load automatically from every config layer's `rules/` folder,
+and the Project layer is `$(git rev-parse --show-toplevel)/.codex/rules/*.rules`.
+The guardrail file ships as `<repo>/.codex/rules/agentic-workflow.rules`,
+committed in the consumer repo, written from `templates/codex.rules` — no
+user-level copy. Project-layer rules are loaded but **disabled until the project
+is trusted**: a user-layer `[projects."<abs repo path>"] trust_level = "trusted"`
+entry in `~/.codex/config.toml`. This repo is NOT trusted today; adding that entry
+is `/connect codex`'s explicitly owner-approved step (S4), never a silent edit.
+The adapter must never pass `--ignore-rules`.
+
+**No `codex exec` run against the API in any brief.** The only real `codex exec`
+in the shipped machinery is `/connect codex`'s round-trip proof, which the owner
+fires interactively (locked decisions, 2026-09-11).
 
 ## Large-files table
 
@@ -80,7 +93,7 @@ API in any brief** (locked decision, 2026-09-11).
 Not parallel-safe: S2 extends the file S1 creates, S3 is independent but shares
 the branch. Run S1 → S2 → S3.
 
-### S1 — execpolicy probe, the rules file, the distillate schema, the harness skeleton
+### S1 — the rules file, the distillate schema, the harness skeleton
 
 - **Reads**: `docs/product/engineering/runtime-agnostic-codex.md` lines 26–41
   (§3 verified facts) and 111–205 (§6 flags → §7 schema → §8 rules → §10 setup)
@@ -92,22 +105,10 @@ the branch. Run S1 → S2 → S3.
   registry / run block where a new check is registered); `tools/hook-test.mjs`
   lines 1–28 (harness conventions, exit 0 = pass).
 - **Catalog**: none.
-- **Do**:
-  1. **Probe first, no API call.** Run `codex --version`, `codex exec --help`,
-     `codex execpolicy check --help`. Then settle the project-rules load path:
-     make a throwaway git repo under the scratch dir, write a forbidding rule at
-     `<repo>/.codex/rules/codex.rules`, and prove the FILE parses and decides
-     with `codex execpolicy check --rules <path> git push origin main`. To settle
-     the LOAD path without spending, use only free signals:
-     `codex debug prompt-input` inside that repo, `codex doctor`, and
-     `strings -a $(readlink -f "$(command -v codex)") | grep -F '.codex/'`
-     (known result: `.codex/config.toml`, `.codex/skills` — no `.codex/rules`
-     string was found by the planner, so treat the project path as UNPROVEN
-     unless one of these shows it). Record the verdict verbatim in the ledger's
-     handoff entry, and if unproven apply OQ1's fallback (user-level
-     `~/.codex/rules/agentic-workflow.rules`, installed later by
-     `/connect codex`) and log it as a deviation. Do NOT run `codex exec`.
-  2. Write `plugins/agentic-workflow/templates/distillate.schema.json` per memo
+- **Do**: (the load-path probe is gone — the owner settled it from the Codex
+  sources on 2026-09-11; read the "Execpolicy facts" block above and treat it as
+  given. Do NOT run `codex exec`.)
+  1. Write `plugins/agentic-workflow/templates/distillate.schema.json` per memo
      §7: `status`, `summary`, `changed_paths`, `gates[]`
      (`name`/`result`/`first_error`), `deviations[]`, `next[]`,
      `blocked_reason`, `runtime` (`name`/`model`/`effort`/`thread_id`), `usage`
@@ -116,7 +117,7 @@ the branch. Run S1 → S2 → S3.
      in `required`, with the memo's optional fields as nullable unions
      (`["string","null"]`, `["object","null"]`, `["array","null"]`). Not a `.md`
      file, so the template-frontmatter lint rule does not apply.
-  3. Write `plugins/agentic-workflow/templates/codex.rules` per memo §8 —
+  2. Write `plugins/agentic-workflow/templates/codex.rules` per memo §8 —
      Starlark `prefix_rule` entries with `decision = "forbidden"` and a
      justification string that reads like the matching guardrail hook message,
      covering: `git push` in every form (including `git -C <dir> push`),
@@ -124,8 +125,12 @@ the branch. Run S1 → S2 → S3.
      `gh pr create`, `gh pr merge`, and the §14 paid-promotion/publish hosts.
      Give every rule `match` / `not_match` example command lines in a
      machine-readable comment block (one command per line, a stable prefix like
-     `# match:` / `# not_match:`) so the harness can enumerate them.
-  4. Create `tools/run-codex-test.mjs` (repo root, zero deps, exit 0 = pass,
+     `# match:` / `# not_match:`) so the harness can enumerate them. Add a header
+     comment naming the deployed location — `<repo>/.codex/rules/agentic-workflow.rules`,
+     Codex's Project config layer — and the trust requirement (the file is inert
+     until `[projects."<abs repo path>"] trust_level = "trusted"` exists in
+     `~/.codex/config.toml`; `/connect codex` adds it with the owner's okay).
+  3. Create `tools/run-codex-test.mjs` (repo root, zero deps, exit 0 = pass,
      1 = fail, same header-comment style as `tools/hook-test.mjs`) with two case
      groups: (a) schema — parses, strictness invariant (every object's
      `required` covers its `properties`, `additionalProperties: false`
@@ -136,7 +141,7 @@ the branch. Run S1 → S2 → S3.
      <templates/codex.rules> <example>` for every enumerated example and assert
      forbidden/allowed accordingly, printing `SKIP (no codex binary)` when
      `codex` is not on PATH.
-  5. Wire the harness into `tools/lint.mjs` as a tier-1.5 check (numbered after
+  4. Wire the harness into `tools/lint.mjs` as a tier-1.5 check (numbered after
      the existing `ci-wait` one, e.g. `// ── 10.7 run-codex adapter harness`),
      fail-closed when the runner is missing, with the same `spawnSync` +
      detail-extraction body as `checkCiWaitSelftest`, and register it in the run
@@ -148,7 +153,7 @@ the branch. Run S1 → S2 → S3.
   git push origin main` returns a forbidden verdict and the same check on
   `git status` does not (paste both verdicts into the handoff entry); confirm in
   the handoff entry that no `codex exec` ran.
-- **Read budget**: ~340 lines. Suits: `devops` (shipped tooling + policy files).
+- **Read budget**: ~320 lines. Suits: `devops` (shipped tooling + policy files).
   Security-boundary brief: the rules file and the sandbox flag table are the
   guardrail parity mechanism.
 
@@ -186,7 +191,9 @@ the branch. Run S1 → S2 → S3.
     <tmp last-message file> --output-schema <schema> -c
     model_reasoning_effort=<effort> -c shell_environment_policy.inherit=all -m
     <model>`; no `--ephemeral` (sessions persist for resume); `--resume
-    <thread-id>` uses `codex exec resume`.
+    <thread-id>` uses `codex exec resume`. **Never** pass `--ignore-rules`: it
+    would disable the project-layer guardrail file that is the whole parity
+    mechanism (locked decision, 2026-09-11).
   - post-run merge into `--out`: schema-validate the last message (on parse
     failure write `status: "failed"`, `first_error: "distillate not valid
     JSON"`, and save the raw beside it), then attach `thread_id` and `usage`
@@ -201,7 +208,9 @@ the branch. Run S1 → S2 → S3.
   events plus a last message) and the memo §13 unit assertions: flag derivation
   for the three tool shapes, prompt block order, skill inlining, schema
   validation and the non-JSON path, `changed_paths` from a temp git repo,
-  `high_impact_touched`, and all three exit codes.
+  `high_impact_touched`, all three exit codes, and — from the shim's recorded
+  argv — that `--ignore-rules` appears on NO invocation (including the
+  `--resume` path).
 - **Verify**: `node tools/run-codex-test.mjs` exits 0 with every named case
   asserted; `node tools/lint.mjs` exits 0; `node
   plugins/agentic-workflow/tools/run-codex.mjs --help` prints usage and exits 1
@@ -265,7 +274,8 @@ rule 7). The reviewer re-runs `node tools/lint.mjs`, `node
 tools/run-codex-test.mjs`, the three conform fixtures, and the binary-backed
 `codex execpolicy check` verdicts locally; diff-reviews
 `main..mission/runtime-agnostic-codex-p1`; and confirms that no code path can
-reach a real `codex exec` from a test or a gate. Then staging → verify (lint
+reach a real `codex exec` from a test or a gate and that `--ignore-rules` appears
+nowhere in the adapter. Then staging → verify (lint
 green on the phase branch + `claude --plugin-dir` load in a consumer session) →
 PR to `main` for the human to merge (gate policy `human-merge`).
 
@@ -283,7 +293,9 @@ must already be settled for.
   proven-round-trip shape); `plugins/agentic-workflow/commands/doctor.md` whole
   (101 — the probe-group style and the 🟢/🟡/🔴 contract);
   `docs/product/engineering/runtime-agnostic-codex.md` lines 70–84 (§5 selection
-  + `/tune` grammar) and 188–202 (§10 setup + health).
+  + `/tune` grammar) and 188–202 (§10 setup + health);
+  `plugins/agentic-workflow/commands/bootstrap.md` lines 130–159 (the scaffolding
+  tail S3 already edited — 159 total).
 - **Catalog**: none.
 - **Do**:
   1. `tune.md` — `argument-hint` gains the runtime forms; alias validation
@@ -293,29 +305,60 @@ must already be settled for.
      <effort>) — `; the no-arg table gains a **runtime** column; default effort
      `high` for `reviewer`, `planner`, `advisor`, `architect` and `medium`
      otherwise (the owner's global `low` is deliberately overridden per spawn);
-     `reset` unchanged. Add the OQ3 answer's wording (recommended: a warning
-     line when the tuned role is `reviewer`).
+     `reset` unchanged. `/agentic-workflow:tune reviewer codex` must PRINT the
+     locked constraint in its report: a codex reviewer covers ROUTINE checkpoints
+     only, and a checkpoint whose diff touches a security boundary (auth, session
+     credential, authorization, tenancy, money, schema, migrations — including the
+     rules file and the sandbox flag derivation) stays on Fable per §5 convergence
+     rule 7, where the orchestrator overrides the tune.
   2. `connect.md` — a `codex` MODE beside `server`: the dispatch line near the
-     top, then a section implementing memo §10's five steps in order (version ≥
-     0.146 and authenticated login; the dry-run round-trip with
-     `--output-schema` + `-o` validated against the schema; register the §10
-     code index as an MCP server with `codex mcp add` when one exists — a
-     no-op-with-a-note in this repo, whose §10 **Code index** is `none`; install
-     the rules file at the path OQ1 settled and verify with `codex execpolicy
-     check --rules … git push origin main` → forbidden; only then write the §10
-     **Runtimes** row `claude (default) · codex: <model> (connected <date>) ·
-     rules: <path>`).
+     top, then a section with these steps in order, each verified before the next
+     and nothing recorded until the round trip proves out:
+     (i) `codex --version` ≥ 0.146 and an authenticated login;
+     (ii) copy `templates/codex.rules` to `.codex/rules/agentic-workflow.rules`
+     in the target repo (Codex's Project config layer) and verify the file decides
+     with `codex execpolicy check --rules .codex/rules/agentic-workflow.rules git
+     push origin main` → forbidden;
+     (iii) **trust**: project-layer rules are inert until the repo is trusted, so
+     ask the owner with AskUserQuestion and, only on an explicit okay, add
+     `[projects."<absolute repo path>"] trust_level = "trusted"` to
+     `~/.codex/config.toml` — never a silent user-config edit; refuse to continue
+     (and write no §10 row) if the owner declines, reporting that the guardrails
+     would be loaded-but-disabled;
+     (iv) register the §10 code index as an MCP server with `codex mcp add` when
+     one exists — a no-op-with-a-note in this repo, whose §10 **Code index** is
+     `none`;
+     (v) **round-trip proof**: one cheap read-only `codex exec` (`-a never -s
+     read-only --output-schema <schema> -o <tmp>`) whose prompt asks the model to
+     run `git push --dry-run origin main` and report the execpolicy rejection in
+     its distillate — the proof is a valid distillate naming the rejection, which
+     demonstrates the binary, the auth, the schema, the rules file AND the trust
+     entry in one run;
+     (vi) only then write the §10 **Runtimes** row: `claude (default) · codex:
+     <model> (connected <date>) · rules: .codex/rules/agentic-workflow.rules ·
+     trust: user-layer entry present`.
   3. `doctor.md` — one probe group: advisory "Runtimes: claude only — not
-     configured" when the §10 row is absent; a failure only when the row names
-     codex and any of binary / auth / rules file / schema file is missing, each
-     red row carrying exactly one fix (`/agentic-workflow:connect codex`).
+     configured" when the §10 row is absent; **fails closed** when the row names
+     codex and any of binary / auth / `.codex/rules/agentic-workflow.rules` /
+     the `trust_level = "trusted"` entry for this repo / the schema file is
+     missing, each red row carrying exactly one fix
+     (`/agentic-workflow:connect codex`). A missing trust entry is a RED, not a
+     yellow: the rules file is present but inert, which reads as protection that
+     is not there.
+  4. `commands/bootstrap.md` — one line: when a project already records a codex
+     runtime in §10, bootstrap writes `.codex/rules/agentic-workflow.rules` from
+     the template alongside the other scaffolding; the trust entry and the
+     round-trip stay `/agentic-workflow:connect codex`'s job (a user-config edit
+     is never a bootstrap side effect).
   Every `templates/…` path named must be one S1/S3 created (lint resolves
   template references); every command mention must use the namespaced
   `/agentic-workflow:<cmd>` form; keep `": "` out of unquoted frontmatter values.
 - **Verify**: `node tools/lint.mjs` exits 0; re-read the three files and confirm
   each states its own failure mode (what is NOT recorded when a step fails);
-  paste the new §10 Runtimes row grammar into the handoff entry.
-- **Read budget**: ~300 lines. Suits: `devops`.
+  paste the new §10 Runtimes row grammar into the handoff entry. Do NOT run the
+  round-trip `codex exec` from this brief — it is the owner's interactive step;
+  the brief only authors the command text.
+- **Read budget**: ~330 lines. Suits: `devops`.
 
 ### S5 — orchestrator routing, planner brief field, protocol text
 
@@ -340,14 +383,21 @@ must already be settled for.
      itself (the run touches neither `.plans/` nor git history), passes
      `--resume <thread_id> --note "<corrective>"` for the one-corrective-retry
      rule, and treats `changed_paths` empty on `done` as suspicious (`[~]` +
-     reviewer confirmation before `[x]`). Add the security-boundary constraint
-     from OQ3's answer.
+     reviewer confirmation before `[x]`). Step 3 must also state the locked
+     reviewer rule: a codex `reviewer` tune covers ROUTINE checkpoints only, and
+     when the diff's risk class demands Fable (auth, session credential,
+     authorization, tenancy, money, schema, migrations, any security boundary —
+     including the rules file and the sandbox flag derivation) **the orchestrator
+     overrides the tune and spawns the Claude reviewer on Fable**; a miscalled
+     tier is a reviewer process finding (§5 convergence rule 7).
   2. `planner.md` — the optional brief header field `runtime: codex[:<model>]
      [effort=<low|medium|high>]`, set only when the mission's tune table already
      puts that role on codex or the owner asked.
   3. `templates/WORKFLOW.md` — §3 gains one table row: hooks fire only on Claude
      tool calls, so inside a foreign runtime the mechanical guardrails are the
-     execpolicy rules file (`templates/codex.rules`) plus sandbox mode, and the
+     execpolicy rules file (`templates/codex.rules`, deployed to
+     `.codex/rules/agentic-workflow.rules` and inert until the repo carries a
+     user-layer `trust_level = "trusted"` entry) plus sandbox mode, and the
      docs-reminder is replaced by the distillate's `high_impact_touched`; §6
      gains a short paragraph "roles are runtime-neutral: the prompt is the role,
      the runtime is a spawn detail"; §9 gains the new machinery (the adapter, the
@@ -356,7 +406,8 @@ must already be settled for.
      argument); §10's profile table gains the **Runtimes** row with its default
      (`claude (default)` and what a connected codex row looks like).
   4. `docs/WORKFLOW.md` §10 — this repo's own **Runtimes** row, `claude
-     (default) · codex: not connected` until `/connect codex` runs. Do not
+     (default) · codex: not connected (repo not trusted in ~/.codex/config.toml)`
+     until `/agentic-workflow:connect codex` runs. Do not
      re-stamp the protocol version here; `/agentic-workflow:sync` owns that.
 - **Verify**: `node tools/lint.mjs` exits 0 — specifically its section check
   (every `§N` written must exist as a WORKFLOW heading; do NOT introduce a new
