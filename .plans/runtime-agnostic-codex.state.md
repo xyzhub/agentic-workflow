@@ -12,15 +12,17 @@ fresh agent resumes the mission from this file alone. Write-ahead — update it
 orchestrator has no session boundary to force a write; a compaction erases
 everything since the last one — §12 LA-6)._
 
-Estimate: 10 sessions
+Issue: #79 (plan-judge — the PR to `main` closes it)
+
+Estimate: 4 sessions
 Sessions used: 0
 
 _The two budget lines above are read by the mission-budget hook every turn. The
-planner writes `Estimate:` (10 = 6 briefs + 2 checkpoints + 2 expected
-correctives; justification per phase is in the master plan). The orchestrator
-increments `Sessions used:` the moment it starts a brief, a corrective
-`S<n>-fix`, or a `continue`/loop tick — write-ahead, before spawning. When
-`Sessions used` reaches 1.5× the estimate (15) the hook prints 🛑 OVERRUN on
+planner writes `Estimate:` (4 = 3 briefs + 1 checkpoint; a corrective counts only
+when it fires, never pre-booked — owner replan 2026-09-11, 10 → 4). The
+orchestrator increments `Sessions used:` the moment it starts a brief, a
+corrective `S<n>-fix`, or a `continue`/loop tick — write-ahead, before spawning.
+When `Sessions used` reaches 1.5× the estimate (6) the hook prints 🛑 OVERRUN on
 every prompt and the orchestrator must stop and give the owner the scope decision
 (subset / revised estimate / abort) — recorded below as a dated locked decision
 that revises `Estimate:`. Never edit `Estimate:` to silence the hook without that
@@ -35,23 +37,19 @@ mission start, 2026-09-11.
 Standing agent authorized: _(none — every review/counsel is a one-shot spawn at a
 decision point, §12 LA-5.)_
 
-Branches: P1 `mission/runtime-agnostic-codex-p1` from `feat/runtime-agnostic-codex`
-(which carries the design memo); P2 `mission/runtime-agnostic-codex-p2` from
-`staging` after P1 lands.
+Branch: one phase branch, `mission/runtime-agnostic-codex`, cut from
+`feat/runtime-agnostic-codex` (which carries the design memo and this trio); one
+staging landing, one PR to `main`.
 
 ## Checklist
 
 _Glyphs: `[ ]` not started · `[~]` in-flight / deferred / awaiting owner · `[x]`
 done (verified, not merely written)._
 
-- [ ] S1 — execpolicy probe, rules file, distillate schema, harness skeleton (branch `mission/runtime-agnostic-codex-p1`)
-- [ ] S2 — the codex adapter `tools/run-codex.mjs` + unit cases on a fake shim
-- [ ] S3 — `AGENTS.md` primary, conform ladder entry, bootstrap/sync/adopt
-- [ ] Checkpoint ckpt-p1 — reviewer (**Fable required**: execpolicy rules + sandbox flag derivation are a security boundary), then staging → verify → PR to `main`
-- [ ] S4 — `/tune` runtime selector, `/connect codex` mode, `/doctor` probe (branch `mission/runtime-agnostic-codex-p2`)
-- [ ] S5 — orchestrator routing, planner brief `runtime:` field, protocol text (§3/§6/§9/§10)
-- [ ] S6 — CHANGELOG 1.51.0, version bump, both READMEs, `codex-routing` eval scenario
-- [ ] Checkpoint ckpt-p2 — reviewer (default tier unless the rules file or flag derivation reopened), then staging → verify → PR to `main`
+- [ ] S1 — mechanics: `tools/run-codex.mjs`, distillate schema, `codex.rules`, `tools/run-codex-test.mjs` + lint wiring (branch `mission/runtime-agnostic-codex`)
+- [ ] S2 — conventions + commands: `AGENTS.md` primary, conform ladder entry, bootstrap/sync/adopt, `/tune` runtime, `/connect codex`, `/doctor` probe
+- [ ] S3 — routing + record: `mission.md` step 2/3, planner `runtime:` field, WORKFLOW §3/§6/§9/§10, CHANGELOG 1.51.0 + version + READMEs + `codex-routing` eval, and the permanent plan-judge (#79)
+- [ ] Checkpoint ckpt-p1 — ONE fresh reviewer over the whole diff (**Fable required**: execpolicy rules + sandbox flag derivation are a security boundary), then staging → verify → one PR to `main` closing #79
 
 ## Open questions
 
@@ -74,7 +72,7 @@ _File state preserves **decisions** but loses **taste** — how the human wants 
 work done. Captured **verbatim** at checkpoints only, never mid-brief, never from
 an agent's own inference. Quote exactly; a paraphrase is not a steer. Grammar, one
 line each:_ `- YYYY-MM-DD (ckpt <id>) — "<exact words>"` _where `<id>` is the
-checkpoint id from the `## Checklist` (`p1`, `p2`, or `ckpt-p1`/`ckpt-p2`).
+checkpoint id from the `## Checklist` (`p1` or `ckpt-p1` — this mission has one).
 Retire by ~~strikethrough~~, **never delete**. Every session re-reads this block
 before it starts._
 
@@ -92,8 +90,8 @@ carry `→ OB-<n>`, the ref for the verbatim copy landed in
 mission may be reported done. The last three rows are the design memo's §15
 deferrals._
 
-- [ ] branch + worktree cleanup · added 2026-09-11 (planner) — do: delete this mission's phase branches (local and remote) and prune its stale worktrees — when: both phase PRs are merged and the lint run on each merge commit concluded green — probe: `gh pr list --state merged` + `gh run list`
-- [ ] docs/record synced · added 2026-09-11 (planner) — do: confirm CHANGELOG 1.51.0, both READMEs, the protocol §3/§6/§9/§10 edits and this repo's §10 Runtimes row all describe the shipped behaviour — when: S6 is `[x]` and the ckpt-p2 reviewer returned APPROVE — probe: manual
+- [ ] branch + worktree cleanup · added 2026-09-11 (planner) — do: delete this mission's phase branch (local and remote) and prune its stale worktrees — when: the PR to `main` is merged and the lint run on its merge commit concluded green — probe: `gh pr list --state merged` + `gh run list`
+- [ ] docs/record synced · added 2026-09-11 (planner) — do: confirm CHANGELOG 1.51.0, both READMEs, the protocol §3/§5/§6/§9/§10 edits and this repo's §10 Runtimes row all describe the shipped behaviour, plan-judge included — when: S3 is `[x]` and the ckpt-p1 reviewer returned APPROVE — probe: manual
 - [ ] version bumped + stamped · added 2026-09-11 (planner) — do: bump `plugins/agentic-workflow/.claude-plugin/plugin.json` to 1.51.0 (the §10 Version pin) and stamp this mission's CHANGELOG entry with it — when: this mission's CHANGELOG entry names a version — probe: manual
 - [ ] memo fact table corrected · added 2026-09-11 (planner) — do: replace the memo's §3 "Project-level load path: probe during implementation" row with the settled fact (every config layer's `rules/` folder; Project layer is `$(git rev-parse --show-toplevel)/.codex/rules/*.rules`, inert until the repo is trusted) — when: S1 is `[x]` — probe: manual
 - [ ] live-verify after reinstall · added 2026-09-11 (planner) — do: confirm in a real session that `/agentic-workflow:connect codex`, the `/agentic-workflow:doctor` runtime probe and the `agents-md-primary` ladder entry fire as written — when: the PR to `main` is merged and the plugin is reinstalled (`/plugin update` + `/reload-plugins`) — probe: manual
@@ -114,10 +112,20 @@ Deviating is allowed; deviating silently is not (§4)._
 _≤10 lines per entry: what this session did, the verify signal, the branch, and
 what the next session needs. Newest on top; crash-safe by write-ahead._
 
+- 2026-09-11 planner (replan): owner ruled 10 sessions too many — _"isn't 10
+  sessions too much for such a small feature?"_ — and approved one phase, three
+  briefs, one checkpoint. `Estimate:` 10 → 4 (correctives counted only when they
+  fire); old S1+S2 → S1, old S3+S4 → S2, old S5+S6 + issue #79 → S3; one branch
+  `mission/runtime-agnostic-codex`, one PR to `main` closing #79. Owner also
+  ruled _"yes make the plan-judge permanent"_, so #79 ships in S3 and the
+  "one expected corrective per phase" rule is rewritten at its three sites. No
+  brief had started, so nothing was rewritten as history; `Sessions used:` stays
+  0. S1 and S3 are the heavy briefs — both inside budget, each with a stated
+  split point if they run long.
 - 2026-09-11 planner (amendment): owner answered all three open questions.
   Execpolicy path settled from the Codex sources → S1 drops the load-path probe;
   the rules file ships at `<repo>/.codex/rules/agentic-workflow.rules` and is inert
-  until a user-layer trust entry exists, so `/connect codex` (S4) gains an
+  until a user-layer trust entry exists, so `/connect codex` (now S2) gains an
   owner-approved trust step and a real read-only round-trip, `/doctor` fails closed
   on a missing rules file or trust entry, and the adapter must never pass
   `--ignore-rules` (S2 asserts it). n=1 stays post-merge; codex reviewers cover

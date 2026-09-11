@@ -11,6 +11,12 @@ what still needs a human answer. Authored by the `planner` (WORKFLOW.md §5);
 scope is settled before this file exists — the planner decomposes, it does not
 re-decide._
 
+Replan 2026-09-11 — the owner judged 10 sessions too many for this feature and
+approved a collapse to one phase / three briefs / one checkpoint (`Estimate:`
+10 → 4, dated locked decision below); the same pass folds issue #79 (the
+permanent plan-judge) into the last brief. No brief had started, so nothing is
+history yet: every brief was re-resolved, not carried over.
+
 Converted from `docs/product/engineering/runtime-agnostic-codex.md`, 2026-09-11
 (owner-approved design memo; its §14 decisions are locked below verbatim in
 substance, its §15 deferrals are parked as ledger `## Closing` rows, its §3 facts
@@ -21,10 +27,11 @@ selector with a shared JSON distillate, `AGENTS.md` as the primary conventions
 file, execpolicy rules for guardrail parity, and proven setup/health probes —
 while a Claude-only project behaves exactly as it does today.
 
-Estimate: 10 sessions — `phases` mode, two phases. P1 (mechanics) = 3 briefs +
-1 checkpoint + 1 expected corrective = 5. P2 (commands, protocol, record) =
-3 briefs + 1 checkpoint + 1 expected corrective = 5. The ledger mirrors this as
-`Estimate: 10 sessions`; a rise is a dated locked decision, never a silent edit.
+Estimate: 4 sessions — ONE phase: 3 briefs + 1 checkpoint. Correctives are
+counted only when they fire, never pre-booked. The ledger mirrors this as
+`Estimate: 4 sessions`; a rise is a dated locked decision, never a silent edit.
+
+Issue: #79 (plan-judge) rides with this mission — the PR to `main` closes it.
 
 Target version: 1.51.0 (`plugins/agentic-workflow/.claude-plugin/plugin.json`,
 the §10 **Version pin**).
@@ -107,6 +114,20 @@ the §10 **Version pin**).
     route a brief marked `runtime: codex` to the adapter and never call the Agent
     tool. Acceptance: `node tools/lint.mjs` green; the scenario's `checks.mjs`
     asserts adapter-invoked and Agent-tool-absent.
+11. **Plan-judge, permanent** (issue #79) — a fresh, read-only, one-shot
+    reviewer spawn over the trio between the planner writing it and the first
+    brief spending a session: automatic in `/agentic-workflow:mission` §1 plan
+    mode and on `replan`, and in `/agentic-workflow:plan`'s decompose step; a
+    plan-judge MODE in `agents/reviewer.md` carrying the issue's checklist (done
+    criteria a named gate verifies · reads pre-resolved with line ranges · no
+    probe a doc lookup settles · decisions consistent with the source memo/issue ·
+    size within budget · security-boundary flag set where the Fable tier applies ·
+    `Estimate:` = briefs + checkpoints only); a `templates/WORKFLOW.md` §5
+    paragraph. Returns APPROVE or REVISE with per-brief findings, ≤ one page; the
+    planner revises once, a second REVISE surfaces to the owner. Acceptance: the
+    three "one expected corrective per phase" sites (`agents/planner.md:68`,
+    `templates/WORKFLOW.md:381`, `templates/mission-plan.md:22`) are rewritten to
+    the new estimate rule; lint green.
 
 ## Locked decisions
 
@@ -168,10 +189,19 @@ the §10 **Version pin**).
   shipped machinery is `/connect codex`'s round-trip proof — one cheap read-only
   run, fired interactively by the owner, never from a test or a gate — and the
   post-merge n=1.
-- 2026-09-11 (planner, branches) — P1 branches `mission/runtime-agnostic-codex-p1`
-  from the existing `feat/runtime-agnostic-codex` so the design memo travels with
-  the implementation; P2 branches `mission/runtime-agnostic-codex-p2` from
-  `staging` after P1 lands there.
+- 2026-09-11 (owner, replan) — **`Estimate:` 10 → 4.** Owner: _"isn't 10 sessions
+  too much for such a small feature?"_ The mission collapses to ONE phase, three
+  briefs and one checkpoint; the two pre-booked correctives are removed, and a
+  corrective counts only when it fires. This supersedes the two-phase shape and
+  the earlier per-phase justification.
+- 2026-09-11 (owner) — _"yes make the plan-judge permanent"_: issue #79 lands with
+  this mission (task 11), so the trio review that caught this mission's own
+  padded estimate and settled-by-docs probe becomes a standing step, not a
+  one-off manual pass.
+- 2026-09-11 (planner, branches — replaces the two-branch plan) — one phase
+  branch, `mission/runtime-agnostic-codex`, cut from the existing
+  `feat/runtime-agnostic-codex` so the design memo and this trio travel with the
+  implementation; one staging landing, one PR to `main`.
 - 2026-09-11 (planner, §10 Staging = none) — "staging verify" for this markdown
   plugin is `node tools/lint.mjs` green on the phase branch plus a
   `claude --plugin-dir` load in a consumer session; the eval suite is tier 2 and
@@ -208,8 +238,13 @@ the §10 **Version pin**).
   move carries runtime-neutral content only and reports line by line, never
   silently.
 - **Ordering.** `templates/…` paths named in markdown must already exist or
-  lint's template-reference check fails, so S1/S3 create the files before
-  S4/S5/S6 name them.
+  lint's template-reference check fails, so S1 creates the schema and rules files
+  and S2 creates `agents-md.md` before S2/S3 name them in command and protocol
+  prose. The briefs are strictly sequential for this reason.
+- **Two heavy briefs.** S1 (~540 read / ~830 written) and S3 (~800 read / ~450
+  written) sit near the one-session ceiling. Each brief names its split point, and
+  a split is logged as a deviation rather than absorbed silently — that, not a
+  pre-booked corrective, is how an underestimate surfaces.
 
 ## Open questions
 
