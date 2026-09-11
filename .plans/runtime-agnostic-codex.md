@@ -12,10 +12,12 @@ scope is settled before this file exists — the planner decomposes, it does not
 re-decide._
 
 Replan 2026-09-11 — the owner judged 10 sessions too many for this feature and
-approved a collapse to one phase / three briefs / one checkpoint (`Estimate:`
-10 → 4, dated locked decision below); the same pass folds issue #79 (the
-permanent plan-judge) into the last brief. No brief had started, so nothing is
-history yet: every brief was re-resolved, not carried over.
+approved a collapse to one phase (`Estimate:` 10 → 4, dated locked decision
+below); the same pass folded issue #79 (the permanent plan-judge) into the
+briefs. The plan-judge then returned REVISE, and on its over-full finding the
+owner ruled "Split now, Estimate 5", giving the current shape: **one phase, four
+briefs, one checkpoint**. No brief had started, so nothing is history yet: every
+brief was re-resolved, not carried over.
 
 Converted from `docs/product/engineering/runtime-agnostic-codex.md`, 2026-09-11
 (owner-approved design memo; its §14 decisions are locked below verbatim in
@@ -27,9 +29,9 @@ selector with a shared JSON distillate, `AGENTS.md` as the primary conventions
 file, execpolicy rules for guardrail parity, and proven setup/health probes —
 while a Claude-only project behaves exactly as it does today.
 
-Estimate: 4 sessions — ONE phase: 3 briefs + 1 checkpoint. Correctives are
+Estimate: 5 sessions — ONE phase: 4 briefs + 1 checkpoint. Correctives are
 counted only when they fire, never pre-booked. The ledger mirrors this as
-`Estimate: 4 sessions`; a rise is a dated locked decision, never a silent edit.
+`Estimate: 5 sessions`; a rise is a dated locked decision, never a silent edit.
 
 Issue: #79 (plan-judge) rides with this mission — the PR to `main` closes it.
 
@@ -45,26 +47,34 @@ the §10 **Version pin**).
    keys — OpenAI structured output is strict); a unit assertion in
    `tools/run-codex-test.mjs` proves the strictness invariant on the shipped
    file.
-2. **Execpolicy rules + the load-path probe** — `templates/codex.rules` (memo
-   §8) forbidding `git push` (all forms), `git commit`, `git tag` / `--tags`,
-   `gh pr create`, `gh pr merge`, and the §14 paid-promotion/publish hosts, each
-   with a hook-shaped justification and `match` / `not_match` examples.
-   Acceptance: `codex execpolicy check --rules <file> git push origin main`
-   returns a forbidden verdict and `… git status` does not; the harness asserts
-   both when the binary is present (skip-with-notice when it is not, e.g. CI) and
-   asserts the file's structure always. The deployed copy is
+2. **Execpolicy rules** — `templates/codex.rules` forbidding `git push`,
+   `git commit`, `git tag`, `gh pr create` and `gh pr merge`, each with a
+   hook-shaped justification and `match` / `not_match` examples.
+   Rules are expressed with **nested-list alternatives** (`["git", ["push",
+   "commit", "tag"]]`, `["gh", "pr", ["create", "merge"]]`) plus a blanket
+   forbidden `["git", "-C"]`, because `prefix_rule` tokens are literal and have no
+   globs; the §14 paid-promotion/publish host rules are dropped as inexpressible
+   (named gap, see Risks). Acceptance: `codex execpolicy check --rules <file>` is
+   forbidden for `git push origin main`, `git commit -m x`, `gh pr create` and
+   `git -C /tmp push`, and not for `git status`; the harness asserts these when
+   the binary is present (skip-with-notice when it is not, e.g. CI), asserts the
+   file's structure always, and asserts no rule relies on a glob or host pattern.
+   The deployed copy is
    `<repo>/.codex/rules/agentic-workflow.rules`, committed in the consumer repo
    and written from this template by `/connect codex` (task 7) — one source, no
    user-level copy.
-3. **Codex adapter** — `plugins/agentic-workflow/tools/run-codex.mjs` (memo §6):
-   prompt assembly in the six-block order, sandbox/network/search flags derived
-   from the role's `tools:` frontmatter, always-flags, persisted sessions,
+3. **Codex adapter** — `plugins/agentic-workflow/tools/run-codex.mjs` (memo §6,
+   as corrected): prompt assembly in the six-block order, sandbox/network/search
+   flags derived from the role's `tools:` frontmatter with **globals before the
+   `exec` subcommand**, a separate narrower **resume** argv shape, a `CODEX_BIN`
+   override ahead of PATH, persisted sessions,
    post-run distillate merge (`thread_id`, `usage`, `changed_paths` from
    `git status --porcelain`, `high_impact_touched` from §10), exit codes 0 /
    3 / 1. Acceptance: every assertion group in memo §13 "Unit" passes against a
-   fake `codex` shim; no test ever calls the real API; a unit assertion proves the
-   adapter never passes `--ignore-rules` on any code path (that flag would
-   disable the guardrail parity file).
+   fake `codex` shim reached via `CODEX_BIN`; no test ever calls the real API;
+   unit assertions pin the argv ORDER, both argv shapes (exec and resume),
+   `CODEX_BIN` winning over PATH, and `--ignore-rules` appearing on no invocation
+   (that flag would disable the guardrail parity file).
 4. **Adapter test harness + gate wiring** — `tools/run-codex-test.mjs` at the
    repo root plus a fail-closed tier-1.5 check in `tools/lint.mjs`. Acceptance:
    `node tools/lint.mjs` fails when the harness is missing or red, and is green
@@ -88,12 +98,16 @@ the §10 **Version pin**).
    §10). Acceptance: the mode adds the `[projects."<abs repo path>"] trust_level
    = "trusted"` entry to `~/.codex/config.toml` only after an explicit owner okay
    (AskUserQuestion — never a silent user-config edit), writes
-   `.codex/rules/agentic-workflow.rules` from the template, proves the round trip
-   with one cheap read-only `codex exec` whose prompt asks the model to run
-   `git push --dry-run origin main` and report the execpolicy rejection in its
-   distillate, and writes the §10 row only after that proof; `/doctor` fails
-   closed when the row names codex and either the rules file or the trust entry
-   is missing.
+   `.codex/rules/agentic-workflow.rules` from the template, re-reads
+   `~/.codex/config.toml` to confirm the trust table landed, and proves the round
+   trip with one cheap read-only `codex exec` whose prompt asks the model to run a
+   command the sandbox would otherwise ALLOW (`git commit --dry-run` or
+   `gh pr create --help`, never a push — a push fails on network denial with or
+   without trust), reading the rejection from the `--json` EVENT STREAM rather
+   than the model's prose; the §10 row is written only after that proof.
+   `/doctor` fails closed when the row names codex and either the rules file or
+   the trust entry is missing, probing trust by reading the config file — never by
+   `execpolicy check`, which returns forbidden in an untrusted repo.
 8. **Orchestrator + planner routing** — `commands/mission.md` step 2 resolves
    the runtime and spawns either the Agent tool or the adapter in the
    background, step 3 marks the ledger row from the distillate, commits the
@@ -160,7 +174,7 @@ the §10 **Version pin**).
   codex and either the rules file or the trust entry is missing. The adapter must
   never pass `--ignore-rules` (asserted in the harness).
 - 2026-09-11 (owner, was OQ2) — the n=1 first real Astra run happens AFTER the
-  1.51.0 merge, as the `## Closing` row in the ledger; `Estimate:` stays 10.
+  1.51.0 merge, as the `## Closing` row in the ledger; `Estimate:` unchanged by that answer (now 5 after the A3 split).
 - 2026-09-11 (owner, was OQ3) — the `reviewer` role MAY run on codex in 1.51.0
   for ROUTINE checkpoints only. Security-boundary reviews (auth, session
   credential, authorization, tenancy, money, schema, migrations, any security
@@ -194,6 +208,31 @@ the §10 **Version pin**).
   briefs and one checkpoint; the two pre-booked correctives are removed, and a
   corrective counts only when it fires. This supersedes the two-phase shape and
   the earlier per-phase justification.
+- 2026-09-11 (owner, A3 ruling) — **`Estimate:` 4 → 5.** Owner: _"Split now,
+  Estimate 5"_, on the plan-judge's finding that S3 was over-full. S3 splits at
+  its documented split point into S3 (routing + plan-judge) and S4 (record +
+  eval); S4 runs after S3 because it documents what S3 writes. The checkpoint
+  stays one Fable review, now after S4.
+- 2026-09-11 (planner, plan-judge REVISE — the binary overrules the memo) — five
+  memo claims are wrong and the memo is corrected in S3 as part of the record:
+  (a) §3 row 31 / §6 flag table — `-a/--ask-for-approval` and `--search` are
+  TOP-LEVEL options, so globals precede the `exec` subcommand (`codex exec -a
+  never …` exits 2); (b) §6 — `codex exec resume <id>` takes no `-s`, `-C` or
+  `-a`, so resume is a separate argv shape with the cwd set on the child process;
+  (c) §8 — `prefix_rule` tokens are literal with no globs, so "every form" and the
+  §14 host-pattern rules are inexpressible: rules use nested-list alternatives
+  plus a blanket forbidden `["git","-C"]`, and the host-pattern guards are a named
+  gap; (d) §5 — `model:` in `.claude/agents/<role>.md` must stay a Claude tier
+  (that file is also a Claude Code project agent; a foreign model id would break
+  the Claude spawn of the same role, including the Fable security override), so
+  the Codex model rides in `runtime: codex:<model>`; (e) `execpolicy check` is a
+  syntax/decision check on the file and never consults the trust layer.
+- 2026-09-11 (planner, plan-judge REVISE) — the adapter resolves its binary from
+  `CODEX_BIN` before PATH, documented in `--help`. `evals/run.mjs` spawns `claude`
+  with the inherited env, so "a shim on PATH" was not a mechanism the eval had:
+  the runner sets `CODEX_BIN=<fixture>/bin/codex` when the fixture provides one.
+  Without this the `codex-routing` scenario would call the real binary and break
+  the no-real-run decision.
 - 2026-09-11 (owner) — _"yes make the plan-judge permanent"_: issue #79 lands with
   this mission (task 11), so the trio review that caught this mission's own
   padded estimate and settled-by-docs probe becomes a standing step, not a
@@ -205,7 +244,7 @@ the §10 **Version pin**).
 - 2026-09-11 (planner, §10 Staging = none) — "staging verify" for this markdown
   plugin is `node tools/lint.mjs` green on the phase branch plus a
   `claude --plugin-dir` load in a consumer session; the eval suite is tier 2 and
-  runs in P2 only (never in CI, ~$1–5 per scenario).
+  runs at the checkpoint (never in CI, ~$1–5 per scenario).
 - 2026-09-11 (planner, surface) — codex is a `/connect` MODE and a `/tune`
   argument; no new command or agent file ships, so lint's reverse
   cross-reference duty (every command/agent named in both READMEs and
@@ -234,6 +273,16 @@ the §10 **Version pin**).
   whole mechanical guard; the docs-reminder is replaced by
   `high_impact_touched`. A rule that fails to parse is a silent parity hole —
   hence the binary-backed verdict assertions at ckpt-p1.
+- **Host-pattern guards are NOT replicated (accepted gap).** `prefix_rule` tokens
+  are literal, so the §14 paid-promotion/publish host rules cannot be expressed
+  at all. Read-only roles are covered by the network-off sandbox; a builder role
+  running with `network_access=true` has no publish-host guard inside Codex. The
+  gap is stated in the WORKFLOW §3 row, carried as a `## Closing` row for the
+  obligations register, and bounded for now by the fact that publishing is a
+  human-fired command, not something a brief asks a builder to do.
+- **Shell-wrapper bypass (unsettled).** Whether `zsh -lc "git push"` defeats the
+  prefix rules is not verified; the checkpoint reviewer settles it with the real
+  binary, and a negative result is a blocking finding, not a footnote.
 - **32 KiB `AGENTS.md` cap.** The template is a pointer file; `/sync`'s one-time
   move carries runtime-neutral content only and reports line by line, never
   silently.
@@ -241,9 +290,10 @@ the §10 **Version pin**).
   lint's template-reference check fails, so S1 creates the schema and rules files
   and S2 creates `agents-md.md` before S2/S3 name them in command and protocol
   prose. The briefs are strictly sequential for this reason.
-- **Two heavy briefs.** S1 (~540 read / ~830 written) and S3 (~800 read / ~450
-  written) sit near the one-session ceiling. Each brief names its split point, and
-  a split is logged as a deviation rather than absorbed silently — that, not a
+- **One heavy brief.** S1 (~540 read / ~830 written) still sits near the
+  one-session ceiling and names its split point; S3's over-full load was resolved
+  by the owner's split into S3 + S4 (~560/~320 and ~420/~250). A split that fires
+  anyway is logged as a deviation rather than absorbed silently — that, not a
   pre-booked corrective, is how an underestimate surfaces.
 
 ## Open questions
