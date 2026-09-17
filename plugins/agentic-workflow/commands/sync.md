@@ -123,6 +123,14 @@ edit, never a rewrite of project prose:
   `docs/product/catalog/features.md` when absent (seeding rows is
   `/agentic-workflow:adopt`'s catalog step — report it as the next step when
   the repo already ships capabilities).
+- **Conventions file** (`agents-md-primary` gap) — `AGENTS.md` is now the
+  primary conventions file, imported by `CLAUDE.md`. No `AGENTS.md` → create it
+  from `${CLAUDE_PLUGIN_ROOT}/templates/agents-md.md`; a rich `CLAUDE.md` with
+  no/stale `AGENTS.md` → **move the runtime-neutral content into `AGENTS.md`
+  once** (protocol pointers, gate/convention notes), leave the `@AGENTS.md`
+  import plus any Claude-only lines in `CLAUDE.md`, and make `@AGENTS.md` its
+  first non-blank line. Report the move **line by line, never silently** — this
+  is a one-time content migration, not a rewrite of project prose.
 - **Engineering folder** — step 3.5 above.
 
 Re-run `node "${CLAUDE_PLUGIN_ROOT}/tools/conform.mjs"` and paste its output

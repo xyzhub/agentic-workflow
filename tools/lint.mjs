@@ -175,6 +175,25 @@ function checkTemplateRefs() {
   }
 }
 
+// ── 5.5 Braced plugin-root variable ──────────────────────────────────────
+// Claude Code substitutes only the braced `${CLAUDE_PLUGIN_ROOT}` form inside
+// command/agent markdown; a bare `$CLAUDE_PLUGIN_ROOT` expands to nothing, so a
+// spawn line built from it runs with an empty path (the codex-routing eval
+// failed exactly this way). Hook shell scripts under hooks/lib/ legitimately use
+// the unbraced form and are not markdown, so they are out of scope here.
+function checkPluginRootBraced() {
+  for (const file of [
+    ...mdFiles(path.join(PLUGIN, 'commands')),
+    ...mdFiles(path.join(PLUGIN, 'agents')),
+  ]) {
+    const text = read(file);
+    // Unbraced `$CLAUDE_PLUGIN_ROOT` only: the `$` is directly followed by `C`,
+    // so the braced `${CLAUDE_PLUGIN_ROOT}` (a `$` then `{`) never matches.
+    for (const m of text.matchAll(/\$CLAUDE_PLUGIN_ROOT\b/g))
+      fail(file, lineOf(text, m.index), 'unbraced `$CLAUDE_PLUGIN_ROOT` — command/agent markdown only substitutes the braced `${CLAUDE_PLUGIN_ROOT}` form (the bare form expands to an empty path)');
+  }
+}
+
 // ── 6. WORKFLOW.md § integrity ───────────────────────────────────────────
 function checkSections() {
   const text = read(WORKFLOW);
@@ -430,6 +449,29 @@ function checkCiWaitSelftest() {
     const detail = `${res.stdout ?? ''}${res.stderr ?? ''}`
       .split('\n').filter((l) => /FAIL|failure|Error/.test(l)).join(' | ');
     fail(runner, null, `ci-wait selftest failed — run \`node plugins/agentic-workflow/tools/ci-wait.mjs --selftest\`: ${detail || '(no detail)'}`);
+  }
+}
+
+// ── 10.7 run-codex adapter harness (tier-1.5) ────────────────────────────
+// The Codex adapter is where the guardrails stop being hooks: sandbox mode is
+// derived from the role's tools, and the forbidden commands live in
+// templates/codex.rules. Lint can only prove those files parse, so delegate to
+// the behavioral harness — it pins the argv ORDER (globals before `exec`; the
+// other order exits 2 with "unexpected argument"), the narrower `exec resume`
+// shape, and that --ignore-rules never appears. Fail-closed on a missing
+// runner — same shape as checks 8–10.6. It never calls the API: a fake codex
+// shim pointed at by CODEX_BIN serves every case.
+function checkRunCodexHarness() {
+  const runner = path.join(ROOT, 'tools/run-codex-test.mjs');
+  if (!existsSync(runner)) {
+    fail(runner, null, 'run-codex harness missing — tools/run-codex-test.mjs must exist so the gate proves the adapter\'s sandbox derivation, argv order, resume shape and the execpolicy rules (do not silently drop the check)');
+    return;
+  }
+  const res = spawnSync('node', [runner], { encoding: 'utf8' });
+  if (res.status !== 0) {
+    const detail = `${res.stdout ?? ''}${res.stderr ?? ''}`
+      .split('\n').filter((l) => /FAIL|failure|Error/.test(l)).join(' | ');
+    fail(runner, null, `run-codex harness failed — run \`node tools/run-codex-test.mjs\`: ${detail || '(no detail)'}`);
   }
 }
 
@@ -819,7 +861,7 @@ const isEntryPoint = () => {
 };
 
 if (isEntryPoint()) {
-  for (const check of [checkManifests, checkAgents, checkCommands, checkCrossRefs, checkTemplateRefs, checkSections, checkFrontmatterYaml, checkTemplateFrontmatter, checkHooks, checkObfuscation, checkHookBehavior, checkClockGuard, checkMarkerMutation, checkContextAttrib, checkCatalogSelftest, checkCiWaitSelftest, checkStandingSteers, checkNextUpAgreement, checkClosing, checkObligationsRegister]) {
+  for (const check of [checkManifests, checkAgents, checkCommands, checkCrossRefs, checkTemplateRefs, checkPluginRootBraced, checkSections, checkFrontmatterYaml, checkTemplateFrontmatter, checkHooks, checkObfuscation, checkHookBehavior, checkClockGuard, checkMarkerMutation, checkContextAttrib, checkCatalogSelftest, checkCiWaitSelftest, checkRunCodexHarness, checkStandingSteers, checkNextUpAgreement, checkClosing, checkObligationsRegister]) {
     check();
   }
 

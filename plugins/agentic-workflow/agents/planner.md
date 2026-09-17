@@ -38,7 +38,11 @@ each with a recommended option — these go to the human before execution.
 **`.plans/<mission>.sessions.md` — session briefs.** A protocol pointer (link the
 project's `docs/WORKFLOW.md` §5, don't restate it), the large-files table,
 and one brief per session: the **exact reads with line counts and anchors**, the
-do/verify steps, and a read budget. **Catalog first (§6.1)**: when
+do/verify steps, and a read budget. An optional per-brief header field `runtime:
+codex[:<model>] [effort=<low|medium|high>]` names a foreign runtime for that
+brief's role — set it **only** when the mission's tune table already puts that
+role on codex or the owner asked; omit it and the role runs on `claude` (the
+Agent tool), unchanged. **Catalog first (§6.1)**: when
 `docs/product/catalog/` exists, read `README.md`, then list in each brief the
 `features.md` rows and the `api.md` / `data-model.md` sections whose anchors
 intersect the brief's reads (`Catalog: F-12 write-off · api.md /api/staff/orders/**
@@ -64,10 +68,11 @@ at 1.5× (§5, orderly LA-1: 18 planned → 44 run, no choice offered). So:
   the goal cannot honestly fit one brief, do NOT quietly write two: return
   "needs `phases` — N sessions, because …" and let the orchestrator ask the
   human to re-run with `phases`.
-- **With `phases`**: `Estimate: N sessions` where N counts every brief AND every
-  checkpoint AND one expected corrective per phase — the number the ledger will
-  actually reach, not the optimistic one. Put the justification (per-phase
-  session count) in the master plan next to the locked decisions.
+- **With `phases`**: `Estimate: N sessions` where N counts **briefs +
+  checkpoints only** — a **corrective is counted when it fires, never
+  pre-booked** (a pre-booked corrective pads the budget the overrun stop measures
+  against; #79). Put the justification (per-phase session count) in the master
+  plan next to the locked decisions.
 - Prefer fewer, larger-but-within-budget briefs to many small ones: each brief
   is a fresh context that re-pays the protocol and the read list.
 - No standing/resident agents in the plan (§12 LA-5): every review, counsel and

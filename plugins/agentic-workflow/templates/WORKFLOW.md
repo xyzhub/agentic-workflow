@@ -271,6 +271,7 @@ Shipped by this plugin as hooks. Advisory except where marked:
 | After a compaction | **Compact-resume** (governance) — on `SessionStart` with matcher `compact` only, injects a directive (≤6 lines) and is **never silent** (OQ6): active mission ledger → re-read the ledger and the last handoff **verbatim**; no ledger but `docs/product/session-handoff.md` exists → re-read it verbatim with freshness stated — its `_Written:` provenance stamp preferred over file mtime; **CURRENT** only if provably newer than the transcript's last append, else **SUSPECT** (older than the transcript's last append, or the transcript is missing/unreadable — fail closed): treat the handoff as a lead, not the truth, and verify against `git log`/`git status` before trusting its **Next**; neither record exists → names `git log -5`, `git status`, `.remember/now.md` and tells the agent to report the gap to the human, never to author a handoff on the spot; never blocks |
 | Session start | **Conform-check** (governance, `SessionStart` matcher `startup|resume` — never `compact`) — runs the plugin's `tools/conform.mjs --brief` against the cwd: a versioned ladder of structural expectations (protocol stamp vs installed plugin; §10 **Staging** / **Issue tracker** rows; active ledgers carrying `Estimate:` / `Sessions used:` and exactly one `Next up:`; `docs/product/roadmap.md` as the epic view; a generated (not hand-written) backlog view; `tools/catalog.mjs` present and current; the `docs/product/catalog/` files). Gaps → a ≤3-line advisory naming the count, the first gap, and `/agentic-workflow:sync`, which applies the SAME ladder; silent when the cwd is not adopted, when conformant, when node/the script is missing; once per session; filesystem-only; never blocks. *Incident (2026-08-19):* a project adopted on v1.43 ran on v1.46 with ledgers that lacked the budget fields — the overrun stop could not fire — and nothing said so |
 | Session start | **Obligations-due** (governance, `SessionStart` matcher `startup|resume` — never `compact`: compact-resume owns that beat, and the two directives must not compete) — grep-counts unticked `- [ ] OB-` rows in `.plans/OBLIGATIONS.md` plus unticked `- [ ]` rows inside any mission ledger's `## Closing` section, and injects a ≤3-line advisory naming both counts, the oldest unticked row (register first — it is append-only, so its first unticked row waited longest; bounded to 140 characters), and `/agentic-workflow:settle`; **grep-only, no network** — it never runs `gh` and probes no row's condition (the real probes live in `/agentic-workflow:settle`, `/agentic-workflow:end`, and `/agentic-workflow:check`); four silencers exactly: no register and no `## Closing` block anywhere → silent, zero unticked rows → silent, once per session (a silent dispatch does not consume the session's one advisory), always exit 0 on every path; advisory, never blocks |
+| Foreign runtime (Codex) | Claude hooks fire **only on Claude tool calls**, so inside a `codex` run **none of the rows above fire**. Mechanical parity there is two things: the **execpolicy rules file** (`templates/codex.rules`, deployed to `<repo>/.codex/rules/agentic-workflow.rules` — inert until the repo carries a user-layer `trust_level = "trusted"` entry in `~/.codex/config.toml`, added only by `/agentic-workflow:connect codex`) whose literal `prefix_rule` tokens forbid push / commit / tag / `gh pr create` / `gh pr merge` / `git -C`, the shell-wrapper and global-option-prefix bypasses (`sh -c` / `bash -c` / `zsh -c`, `env`, `command`, `nohup`, `xargs`, `timeout`, `git -c …`, `gh api`), and the **sandbox mode** the adapter derives from the role's `tools:` (read-only vs workspace-write; network on only for builder roles). The `Write`/`Edit` docs-reminder has no analogue inside Codex — the distillate's `high_impact_touched` flag replaces it. **NOT replicated:** the §14 paid-promotion / publish-host guards ship as no execpolicy command rule — a `network_rule(host=…)` form parses in 0.146.0 but is not used or verified yet (probe at n=1) — so read-only roles are covered by the network-off sandbox, but a **builder role running with network on is a named, accepted gap** (carried as a mission Risk + `## Closing` row, not silently) |
 
 Blockers exit 2 (hard stop); reminders exit 0. Guardrails catch autopilot
 mistakes; they never replace judgment. Checks evaluate in the command's
@@ -374,11 +375,26 @@ CI/deploy-touching changes get extra checkpoint scrutiny; **one-corrective-retry
 — a failing session/agent is retried once with a corrective note, then escalated
 to the human.
 
+**Plan-judge — the trio is reviewed before any brief spends a session.** As soon
+as the planner returns the trio (automatically in `/agentic-workflow:mission` §1
+`plan` mode, on every `replan`, and in `/agentic-workflow:plan`), the
+orchestrator spawns a **fresh, read-only, one-shot `reviewer` in plan-judge
+mode** over the trio — a `reviewer` *mode*, not a new agent. Per brief it checks:
+done criteria a named gate verifies · reads pre-resolved with line ranges · no
+probe a doc lookup settles · decisions consistent with the source memo/issue ·
+size within budget · the security-boundary flag set where the Fable tier applies ·
+`Estimate:` = briefs + checkpoints only. It returns **APPROVE** or **REVISE**
+with per-brief findings (≤ one page); the planner revises **once**, a **second
+REVISE surfaces to the owner**. Most correctives trace to a brief defect an
+up-front read would have caught — the judge spends one read-only pass to save the
+session (#79).
+
 **Convergence rules** (each one names the incident that produced it — orderly
 `docs/WORKFLOW.md §12`, 2026-08; the mission-budget hook in §3 is their
 mechanical half):
 - **Estimate + count (LA-1).** The ledger header carries `Estimate: N sessions`
-  (planner; counts briefs + checkpoints + one expected corrective per phase)
+  (planner; counts **briefs + checkpoints only** — a corrective is counted when
+  it fires, never pre-booked, #79)
   and `Sessions used: k` (orchestrator — incremented **write-ahead** at every
   brief, corrective, `continue` and loop tick). At **k ≥ 1.5 × N** the hook
   prints 🛑 OVERRUN on every prompt and the orchestrator MUST NOT start another
@@ -554,6 +570,14 @@ the fresh-context `reviewer` VERIFIES. No specialist self-approves, merges, or
 pushes the default branch. Reach for them when a session has a clear single-domain
 slice, or when a mission has parallel slices that can run at once; a plain session
 on the main agent is fine for small or cross-cutting work.
+
+**Roles are runtime-neutral: the prompt is the role, the runtime is a spawn
+detail.** A role runs on `claude` (the Agent tool, the default) or on a foreign
+runtime like **Codex** (`tools/run-codex.mjs`, §9) when the mission's tune table
+or a brief's `runtime:` field says so — the same role prompt, read list, and
+return distillate either way. What differs is only mechanical: inside Codex the
+guardrails are the execpolicy rules file plus the sandbox mode (§3), and the
+**orchestrator**, not the run, writes the ledger and the commits.
 
 **Intake** (`intake`) is the front-door classifier for an un-invoked request:
 when a plain-language work request arrives mid-chat with no command (the router
@@ -887,6 +911,20 @@ drive the real flow, confirm monitoring is receiving, record the result).
   `business-pricing.md`), the `compass`'s `north-star.md` (Purpose +
   worthy-progress definition + done-vs-roadmap rollup), and this protocol live
   under the plugin's `templates/`.
+- **Runtime adapters** let a role run outside Claude. `tools/run-codex.mjs` spawns
+  a role on the Codex CLI in the background and returns the shared **distillate**
+  (`templates/distillate.schema.json`), which the orchestrator reads as a FILE;
+  guardrail parity is the execpolicy rules file (`templates/codex.rules` →
+  `<repo>/.codex/rules/agentic-workflow.rules`) plus the sandbox mode the adapter
+  derives from the role's `tools:` (§3). Role prompts live in `agents/` either
+  way; a Codex-native repo reads conventions from `AGENTS.md` (seeded from
+  `templates/agents-md.md`) — a runtime-neutral pointer that `CLAUDE.md` imports
+  via `@AGENTS.md`, not the other way round.
+  `/agentic-workflow:connect codex` trusts the repo and proves the round trip;
+  `/agentic-workflow:tune <agent> codex[:<model>]` puts a role on Codex;
+  `/agentic-workflow:doctor` probes the available runtimes. The **plan-judge** (a
+  `reviewer` mode, §5) is the one-shot read-only check over the plan trio before
+  any brief runs.
 
 ## 10. Project profile (filled by `/agentic-workflow:bootstrap`)
 
@@ -906,6 +944,7 @@ concrete values.
 | **Build** | _(e.g. `npm run build`)_ |
 | **Datastore seed/reset** | _(e.g. `npm run seed`)_ |
 | **Remote executor** (optional) | _(`ssh <alias> · repo at <path> · sync: push + fetch` — heavy work (Docker via the docker context, integration suites, builds) runs on this server while the session stays local; set up by `/agentic-workflow:connect server <tailscale-host>`, probed by `/agentic-workflow:doctor`. Pushed-branch-tip only, never a dirty tree (LA-8). `none` (or absent) → everything local)_ |
+| **Runtimes** | _(which agent runtimes this repo can spawn. `claude` (the Agent tool) is always the default. `codex: connected` once the repo is trusted in `~/.codex/config.toml` and `.codex/rules/agentic-workflow.rules` is committed (via `/agentic-workflow:connect codex`); `codex: not connected` otherwise. A role runs on Codex only when its tune or a brief's `runtime:` field names it — read-only roles get a network-off sandbox, builder roles get workspace-write. `claude only` → no foreign runtime configured)_ |
 | **Test users / auth access** | _(`docs/AUTH.md` — seeded dev/staging app credentials, per-surface sign-in flows, AND the access recipes for DBs/remote servers (`templates/auth.md`): agents read it instead of asking or digging through transcripts. Seed-derived values only; everything real by env NAME; production never. `none` → nothing to authenticate to)_ |
 | **Deploy + live-verify** | _(how it ships and how you confirm on the deployed instance)_ |
 | **Eval suite** (behavioral, if any) | _(e.g. `node evals/run.mjs` — run before releases; see `/agentic-workflow:release`)_ |

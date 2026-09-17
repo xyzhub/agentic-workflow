@@ -134,9 +134,19 @@ bundled one.
 
 ## 4. Point the project's memory at the workflow
 
-If `AGENTS.md` or `CLAUDE.md` exists, add a short pointer near the top:
-"This project runs the Agentic Workflow — see docs/WORKFLOW.md." Don't
-duplicate the protocol into it.
+`AGENTS.md` is the primary conventions file (runtime-neutral — both Claude and
+Codex read it); `CLAUDE.md` imports it and holds only Claude-specific notes.
+
+- No `AGENTS.md` → create it from `${CLAUDE_PLUGIN_ROOT}/templates/agents-md.md`
+  (a pointer, not a copy of the protocol).
+- `CLAUDE.md` — create or patch it so its **first non-blank line is `@AGENTS.md`**;
+  keep any existing Claude-only notes below that import, never duplicate the
+  protocol into it.
+- When §10 already records a codex runtime (the **Runtimes** row names codex),
+  also write `.codex/rules/agentic-workflow.rules` from
+  `${CLAUDE_PLUGIN_ROOT}/templates/codex.rules`. The trust entry in
+  `~/.codex/config.toml` and the round-trip proof stay `/agentic-workflow:connect codex`'s
+  job — a user-config edit is never a bootstrap side effect.
 
 ## 5. Report
 

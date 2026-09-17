@@ -1,6 +1,6 @@
 # The Workflow — one agentic protocol from idea to viable product
 
-<!-- protocol-master: v1.50.1 -->
+<!-- protocol-master: v1.51.0 -->
 
 ## Quick reference — humans start here
 
@@ -246,7 +246,7 @@ Shipped by this plugin as hooks. Advisory except where marked:
 | Event | Behavior |
 |---|---|
 | Prompt submit | Reminder when the working tree is on the default branch |
-| `git commit` | Conventional-format reminder |
+| `git commit` | Conventional-format reminder; **BLOCKS** a message carrying a GitHub closing keyword + issue ref (`Closes/Fixes/Resolves #N`) — that fires auto-close whenever the commit reaches the default branch, including via the staging→main promote, closing the issue done-or-not (orderly #605). Reference an issue as `(#N)` or `refs #N`; put the close in the PR-to-default-branch body |
 | `git push` | **BLOCKS** any push while on the default branch (feature branches only) |
 | `git push` | **BLOCKS** any refspec targeting the default branch (`HEAD:main`, `feature:main`, `:main`) — never sanctioned, even with delegated merge authority |
 | `git push --tags` / `--follow-tags` | Warns that tag pushes may fire a release/deploy pipeline — per `/agentic-workflow:release`, the human runs them |
@@ -263,6 +263,7 @@ Shipped by this plugin as hooks. Advisory except where marked:
 | After a compaction | **Compact-resume** (governance) — on `SessionStart` with matcher `compact` only, injects a directive (≤6 lines) and is **never silent** (OQ6): active mission ledger → re-read the ledger and the last handoff **verbatim**; no ledger but `docs/product/session-handoff.md` exists → re-read it verbatim with freshness stated — its `_Written:` provenance stamp preferred over file mtime; **CURRENT** only if provably newer than the transcript's last append, else **SUSPECT** (older than the transcript's last append, or the transcript is missing/unreadable — fail closed): treat the handoff as a lead, not the truth, and verify against `git log`/`git status` before trusting its **Next**; neither record exists → names `git log -5`, `git status`, `.remember/now.md` and tells the agent to report the gap to the human, never to author a handoff on the spot; never blocks |
 | Session start | **Conform-check** (governance, `SessionStart` matcher `startup|resume` — never `compact`) — runs the plugin's `tools/conform.mjs --brief` against the cwd: a versioned ladder of structural expectations (protocol stamp vs installed plugin; §10 **Staging** / **Issue tracker** rows; active ledgers carrying `Estimate:` / `Sessions used:` and exactly one `Next up:`; `docs/product/roadmap.md` as the epic view; a generated (not hand-written) backlog view; `tools/catalog.mjs` present and current; the `docs/product/catalog/` files). Gaps → a ≤3-line advisory naming the count, the first gap, and `/agentic-workflow:sync`, which applies the SAME ladder; silent when the cwd is not adopted, when conformant, when node/the script is missing; once per session; filesystem-only; never blocks. *Incident (2026-08-19):* a project adopted on v1.43 ran on v1.46 with ledgers that lacked the budget fields — the overrun stop could not fire — and nothing said so |
 | Session start | **Obligations-due** (governance, `SessionStart` matcher `startup|resume` — never `compact`: compact-resume owns that beat, and the two directives must not compete) — grep-counts unticked `- [ ] OB-` rows in `.plans/OBLIGATIONS.md` plus unticked `- [ ]` rows inside any mission ledger's `## Closing` section, and injects a ≤3-line advisory naming both counts, the oldest unticked row (register first — it is append-only, so its first unticked row waited longest; bounded to 140 characters), and `/agentic-workflow:settle`; **grep-only, no network** — it never runs `gh` and probes no row's condition (the real probes live in `/agentic-workflow:settle`, `/agentic-workflow:end`, and `/agentic-workflow:check`); four silencers exactly: no register and no `## Closing` block anywhere → silent, zero unticked rows → silent, once per session (a silent dispatch does not consume the session's one advisory), always exit 0 on every path; advisory, never blocks |
+| Foreign runtime (Codex) | Claude hooks fire **only on Claude tool calls**, so inside a `codex` run **none of the rows above fire**. Mechanical parity there is two things: the **execpolicy rules file** (`templates/codex.rules`, deployed to `<repo>/.codex/rules/agentic-workflow.rules` — inert until the repo carries a user-layer `trust_level = "trusted"` entry in `~/.codex/config.toml`, added only by `/agentic-workflow:connect codex`) whose literal `prefix_rule` tokens forbid push / commit / tag / `gh pr create` / `gh pr merge` / `git -C`, the shell-wrapper and global-option-prefix bypasses (`sh -c` / `bash -c` / `zsh -c`, `env`, `command`, `nohup`, `xargs`, `timeout`, `git -c …`, `gh api`), and the **sandbox mode** the adapter derives from the role's `tools:` (read-only vs workspace-write; network on only for builder roles). The `Write`/`Edit` docs-reminder has no analogue inside Codex — the distillate's `high_impact_touched` flag replaces it. **NOT replicated:** the §14 paid-promotion / publish-host guards ship as no execpolicy command rule — a `network_rule(host=…)` form parses in 0.146.0 but is not used or verified yet (probe at n=1) — so read-only roles are covered by the network-off sandbox, but a **builder role running with network on is a named, accepted gap** (carried as a mission Risk + `## Closing` row, not silently) |
 
 Blockers exit 2 (hard stop); reminders exit 0. Guardrails catch autopilot
 mistakes; they never replace judgment. Checks evaluate in the command's
@@ -348,8 +349,11 @@ brief and `Estimate: 1 session`; one builder session runs it; one fresh
 one-shot reviewer verifies it; it lands via **staging → verify → PR to the
 default branch**. Multi-phase missions are an explicit opt-in
 (`/agentic-workflow:mission "<name>" phases`) that carries an honest session
-estimate and a hard overrun stop. The plan trio, written by a dedicated
-planning session:
+estimate and a hard overrun stop. **`.plans/` is tracked in git, never
+gitignored** — the ledger is the record that survives a crash, a clone, and a
+worktree; the conform ladder flags a gitignored `.plans/` (junk like
+screenshots gets targeted sub-ignores instead). The plan trio, written by a
+dedicated planning session:
 
 | File | Job |
 |---|---|
@@ -363,11 +367,26 @@ CI/deploy-touching changes get extra checkpoint scrutiny; **one-corrective-retry
 — a failing session/agent is retried once with a corrective note, then escalated
 to the human.
 
+**Plan-judge — the trio is reviewed before any brief spends a session.** As soon
+as the planner returns the trio (automatically in `/agentic-workflow:mission` §1
+`plan` mode, on every `replan`, and in `/agentic-workflow:plan`), the
+orchestrator spawns a **fresh, read-only, one-shot `reviewer` in plan-judge
+mode** over the trio — a `reviewer` *mode*, not a new agent. Per brief it checks:
+done criteria a named gate verifies · reads pre-resolved with line ranges · no
+probe a doc lookup settles · decisions consistent with the source memo/issue ·
+size within budget · the security-boundary flag set where the Fable tier applies ·
+`Estimate:` = briefs + checkpoints only. It returns **APPROVE** or **REVISE**
+with per-brief findings (≤ one page); the planner revises **once**, a **second
+REVISE surfaces to the owner**. Most correctives trace to a brief defect an
+up-front read would have caught — the judge spends one read-only pass to save the
+session (#79).
+
 **Convergence rules** (each one names the incident that produced it — orderly
 `docs/WORKFLOW.md §12`, 2026-08; the mission-budget hook in §3 is their
 mechanical half):
 - **Estimate + count (LA-1).** The ledger header carries `Estimate: N sessions`
-  (planner; counts briefs + checkpoints + one expected corrective per phase)
+  (planner; counts **briefs + checkpoints only** — a corrective is counted when
+  it fires, never pre-booked, #79)
   and `Sessions used: k` (orchestrator — incremented **write-ahead** at every
   brief, corrective, `continue` and loop tick). At **k ≥ 1.5 × N** the hook
   prints 🛑 OVERRUN on every prompt and the orchestrator MUST NOT start another
@@ -383,25 +402,57 @@ mechanical half):
   an explicit owner line in the ledger (`Standing agent authorized: <role> —
   <date> — "<words>"`), beaten on decisions only, cost re-quoted every ~3
   beats, killed when its remit ends. The reviewer flags any without the line.
-  Model tiering is unchanged (Fable one-shot for money/schema-critical
-  reviews and audits; opus builders) — the saving is in shape, not tier.
+  Model tiering is unchanged in principle (opus builders) but the **reviewer
+  tier keys on the change's RISK CLASS, not its diff size**: Fable is required
+  for any review whose diff touches auth, a session/entry credential,
+  authorization/tenancy, money, schema/migrations, or a security boundary —
+  a two-line auth diff included. The saving is in shape (one-shot, at decision
+  points), not tier. And a security/auth/money review must **close the threat,
+  not just verify the diff** — step outside the changed lines for a second
+  path to the same asset (orderly #605→#730). A miscalled tier is a process
+  finding.
   *Incident:* six supervisor beats ≈ 1.08M tokens, 94% of a session's Fable
   spend, against 70k for the one-shot review that found the real defects.
-- **Write-ahead at every merge and gate (LA-6).** Builders have a session
-  boundary that forces a write; the orchestrator does not. The ledger is
-  written at every merge to staging, every verify result, every review
-  verdict, every PR opened — not at session end. *Incident:* a checkpoint
+- **Write-ahead at every merge, gate result, and gate SPAWN (LA-6).** Builders
+  have a session boundary that forces a write; the orchestrator does not. The
+  ledger is written at every merge to staging, every verify result, every
+  review verdict, every PR opened — and one line when a long gate is SPAWNED
+  (what, on which range, when), because an unrecorded in-flight review is
+  indistinguishable from a stall to any watcher — not at session end. *Incident:* a checkpoint
   review, three merges and a verify went unrecorded; a compaction erased them.
 - **Exactly one `Next up:` (LA-7).** Supersede by renaming the old line
   (`SUPERSEDED next-up (historical):`); the hook reads the first and warns on
   duplicates; the lint backstop fails on disagreement.
+- **Hotfix path (Lane A): when the defect is live on the default branch and
+  staging has diverged, do NOT land the fix on staging.** A fix branched from
+  the default branch and merged into a staging branch that is far ahead
+  (commits + migrations) verifies a build that is not the fix, risks
+  conflicts, and double-lands at the eventual promote. Instead: verify on a
+  preview/branch deploy of the fix branch (the §10 Staging row's escape
+  hatch), or a local real-client run against a scratch datastore, driving the
+  actual defective flow; record the deviation + the verification target in
+  the ledger; open the PR to the default branch as usual. The fix reaches
+  staging via the normal promote/back-merge, never a direct landing.
+  *Incident (orderly #605, 2026-08-19): staging sat 128 commits + 7 migrations
+  ahead of main; landing a main-based security fix there would have made
+  "verified on staging" a claim about the wrong build.*
 - **Staging → verify → PR (venture flow).** On APPROVE the phase branch is
   merged into `staging` (created from the default branch if absent, recorded
   in §10), the staging deploy is confirmed green **on the diff-bearing
   commit** (`node tools/ci-wait.mjs <full-sha>`, run in the background — exit 0
   is the only green; no-runs and a never-triggered expected workflow are
   failures; a PR-level check summary is not evidence, LA-8),
-  `/agentic-workflow:verify` runs against the staging URL,
+  `/agentic-workflow:verify` runs against the staging URL — and staging is
+  evidence only insofar as it exercises the SAME image/release/deploy commands
+  AND the same connection topology as production (a pooled connection rejects
+  what a direct one accepts: the release wrapper passed `lock_timeout` as a
+  startup option — staging's direct Postgres took it, prod's PgBouncer
+  FATAL'd, and the prod release aborted safely; migrations belong on the
+  DIRECT database URL in every environment) (*incident, orderly #586: `fly.staging.toml` ran an old inline
+  migrate command while `fly.toml` ran a wrapper script the Docker image never
+  contained — staging green while the prod release phase would have
+  MODULE_NOT_FOUND'd with zero of 7 migrations applied; a whole-range Fable
+  re-gate caught it at the merge*) —,
   and only then does the PR to the default branch open. The human merges that
   PR (or the agent under a delegated §10 Merge policy). Never straight from a
   phase branch to the default branch.
@@ -456,6 +507,18 @@ due counts at session start; the `end` and `mission` commands route a finishing
 mission through this gate — the checklist is the authority, and "zero open PRs"
 is never a completeness signal.
 
+**Hand-off across machines and sessions.** The tracked ledger is what makes a
+mission portable: its edits are committed on the mission branch and pushed
+like code, so another machine is `git pull` + `/agentic-workflow:mission
+"<name>" continue` away from resuming exactly where the last one stopped.
+Rules: **one driver per mission at a time** — hand off by pushing, never by
+running the same mission from two places (the budget fields would
+double-count and the header lines conflict); a session that stops — cleanly
+or mid-flight — **commits and pushes the ledger before it ends** (write-ahead
+already requires the commit; the push is what makes the hand-off real); and
+`continue` **pulls first** — the ledger at origin is the state, the local
+copy is a cache.
+
 **Loop mode.** The ledger makes missions loop-drivable: a recurring
 `/loop /mission "<name>" continue` (or a scheduled agent) has every tick read
 the ledger, increment `Sessions used:`, execute exactly one brief or
@@ -499,6 +562,14 @@ the fresh-context `reviewer` VERIFIES. No specialist self-approves, merges, or
 pushes the default branch. Reach for them when a session has a clear single-domain
 slice, or when a mission has parallel slices that can run at once; a plain session
 on the main agent is fine for small or cross-cutting work.
+
+**Roles are runtime-neutral: the prompt is the role, the runtime is a spawn
+detail.** A role runs on `claude` (the Agent tool, the default) or on a foreign
+runtime like **Codex** (`tools/run-codex.mjs`, §9) when the mission's tune table
+or a brief's `runtime:` field says so — the same role prompt, read list, and
+return distillate either way. What differs is only mechanical: inside Codex the
+guardrails are the execpolicy rules file plus the sandbox mode (§3), and the
+**orchestrator**, not the run, writes the ledger and the commits.
 
 **Intake** (`intake`) is the front-door classifier for an un-invoked request:
 when a plain-language work request arrives mid-chat with no command (the router
@@ -626,6 +697,21 @@ name only, owner-only). It flags; it never decides, kills, builds, or merges —
 purpose-misalignment is the human's call. Distinct from `advisor` (red-teams one
 pending decision) and `analyst` (measures numbers); it runs independently of
 `intake` and is never a hard gate on a route.
+
+### 6.0 Writing for the owner (the plain-report rule)
+
+A report is judged by what the owner can DO with it, and the owner was not in
+the session. Every surface that talks to a person — orchestrator reports,
+owner-channel notifications (§12), the status page and JOURNEY, any "decision
+needed" message — follows the **`plain-report` skill**: define every id/term
+the first time (`OB-6` means nothing to the owner — write "the split-payment log
+check (OB-6)" once, then the id), lead with the action not the preamble, explain
+instead of repeating, cut AI vocabulary and puffery, and use the plain word.
+Structured status (gate tables, before/after) stays tabular; narrative prose
+gets plain sentences. *Incident (orderly, 2026-08-20): a correct 20-hour session
+handed the owner internal shorthand and a bare deadline date it never explained,
+and took two rewrites to say the plain thing.* It does NOT touch commit messages
+(fixed format), ledger rows (data), or code.
 
 ### 6.1 Documentation of record (Chronicler)
 
@@ -817,6 +903,20 @@ drive the real flow, confirm monitoring is receiving, record the result).
   `business-pricing.md`), the `compass`'s `north-star.md` (Purpose +
   worthy-progress definition + done-vs-roadmap rollup), and this protocol live
   under the plugin's `templates/`.
+- **Runtime adapters** let a role run outside Claude. `tools/run-codex.mjs` spawns
+  a role on the Codex CLI in the background and returns the shared **distillate**
+  (`templates/distillate.schema.json`), which the orchestrator reads as a FILE;
+  guardrail parity is the execpolicy rules file (`templates/codex.rules` →
+  `<repo>/.codex/rules/agentic-workflow.rules`) plus the sandbox mode the adapter
+  derives from the role's `tools:` (§3). Role prompts live in `agents/` either
+  way; a Codex-native repo reads conventions from `AGENTS.md` (seeded from
+  `templates/agents-md.md`) — a runtime-neutral pointer that `CLAUDE.md` imports
+  via `@AGENTS.md`, not the other way round.
+  `/agentic-workflow:connect codex` trusts the repo and proves the round trip;
+  `/agentic-workflow:tune <agent> codex[:<model>]` puts a role on Codex;
+  `/agentic-workflow:doctor` probes the available runtimes. The **plan-judge** (a
+  `reviewer` mode, §5) is the one-shot read-only check over the plan trio before
+  any brief runs.
 
 ## 10. Project profile (filled by `/adopt`, 2026-07-08)
 
@@ -831,10 +931,12 @@ drive the real flow, confirm monitoring is receiving, record the result).
 | **Typecheck/lint gate** | covered by the test gate — `tools/lint.mjs` IS the lint |
 | **Build** | none (markdown plugin — nothing compiles) |
 | **Datastore seed/reset** | none |
+| **Test users / auth access** | none — markdown plugin, nothing to authenticate to (sync 2026-09-17) |
 | **Deploy + live-verify** | merge to `main` IS the release (marketplace installs from main; no tags). Live-verify: `/plugin update` + `/reload-plugins` in a consumer session — plugin loads clean — then `/doctor` in an adopted project |
 | **Eval suite** (behavioral) | `node evals/run.mjs` — tier 2, before releases, never CI (~$1–5/scenario); flaky scenario → re-run it alone before calling regression |
 | **High-impact files** (docs-reminder targets) | `plugins/agentic-workflow/templates/WORKFLOW.md`, `hooks/hooks.json`, `tools/lint.mjs`, `agents/*`, `commands/*` |
 | **Code index** | none — markdown-only repo; `rg` + the tier-1 lint's cross-reference checks suffice |
+| **Runtimes** | `claude` (default) · codex: not connected (repo not trusted in `~/.codex/config.toml`) |
 | **Memory/recall store** (optional) | none |
 | **Version pin** | `plugins/agentic-workflow/.claude-plugin/plugin.json` → `version` (bumped on release; merging to `main` IS the release, so there is no tag to read) |
 | **Owner channel** (§12) | Slack, **shared DM** (reused app `agentic_operating_pro`, workspace XYZ — connected & round-trip-verified 2026-07-08). Send: `chat.postMessage` with `$SLACK_BOT_TOKEN` → `$SLACK_OWNER_DM`, every message prefixed `[venture-workflow-plugin]`. Inbound: emoji-reaction decisions (✅/❌/✋ via `reactions.get` polling, verified against `$SLACK_OWNER_ID`) + typed `approve <id>` fallback. Env names in `.env.example`; values in the uncommitted `.env` |

@@ -89,7 +89,19 @@ the interview-driven front door that ends here with everything locked.) It
 explores once and writes the trio, including `Estimate:` and `Sessions used: 0`
 in the ledger header — and `Issue: #N` when the goal names a queue item (§4);
 the PR body then carries `Closes #N` so the merge closes it, and the reviewer
-reads the issue as the acceptance criteria. **Converting an existing plan**: if the goal names a plan
+reads the issue as the acceptance criteria.
+
+**Plan-judge (automatic, before any brief spends a session).** As soon as the
+planner returns the trio — in `plan` mode and on every `replan` — spawn a
+**fresh, read-only, one-shot `reviewer` in plan-judge mode** (§5) over the trio
+(the master plan's §1 tasks, the briefs, the ledger). It returns **APPROVE** or
+**REVISE** with per-brief findings (≤ one page). APPROVE → carry on and surface
+the open questions as below. REVISE → hand the findings to the planner, which
+revises **once**; a **second REVISE surfaces to the owner** (the plan is wrong
+about something only they can settle). The judge is a `reviewer` *mode*, not a
+new agent, and it never writes.
+
+**Converting an existing plan**: if the goal names a plan
 document (a PLAN.md, migration doc, ticket export), pass it to the planner as
 source material — its decisions become locked decisions, not things to
 re-litigate. Then surface the master plan's **open questions** to the human and
@@ -114,9 +126,21 @@ outcome of an overrun scope decision.
 Read `.plans/<mission>.state.md` → `Next up:`. For each pending brief:
 
 1. **Write-ahead**: increment `Sessions used:` and mark the row `[~]`.
-2. Route it to the right agent from the brief (`backend`/`frontend`/`security`/
-   `devops`, or the main session for cross-cutting work). Spawn it with the
-   brief; it follows the pre-resolved reads and read budget, builds, and
+2. **Resolve the runtime, then spawn.** Precedence (locked): the brief's
+   `runtime:` header field → a `.claude/agents/<role>.md` tune override
+   (`runtime: codex[:<model>]`, `effort:`) → the default `claude`. Route to the
+   right agent from the brief (`backend`/`frontend`/`security`/`devops`, or the
+   main session for cross-cutting work) and spawn it on the resolved runtime:
+   - **`claude`** (the default — every run today is exactly this, unchanged): the
+     **Agent tool**, as now.
+   - **`codex`**: `node ${CLAUDE_PLUGIN_ROOT}/tools/run-codex.mjs --role <role>
+     --brief <file>#<anchor> --cwd <repo> --out <distillate.json>
+     [--model <m>] [--effort <low|medium|high>]` via the **Bash tool with
+     `run_in_background: true`**; on return read the distillate **FILE** named by
+     `--out` — **never stdout** (the adapter's stdout is a raw JSONL event
+     stream). The role prompt, the sandbox mode, and guardrail parity are the
+     adapter's job (§9); never pass `--ignore-rules`.
+   Either way it follows the pre-resolved reads and read budget, builds, and
    verifies gates. Design-quality tooling (impeccable, §0.2) runs **once** before
    the builder's hand-off and its findings are **reported, not looped on** — the
    reviewer decides at the checkpoint which are blocking.
@@ -131,6 +155,24 @@ Read `.plans/<mission>.state.md` → `Next up:`. For each pending brief:
    session.
 5. Parallel-safe phases may run their briefs concurrently (isolated worktrees) —
    only with explicit human okay.
+
+**Codex runs — you own the ledger and git.** A `codex` run touches **neither
+`.plans/` nor git history**. On its return: mark the ledger row from the
+distillate's `status` (adapter exit codes brief you first — `0` done · `3`
+blocked · `1` failed), and **commit the distillate's `changed_paths` yourself**
+(`type(scope): …`). The one-corrective-retry rule (step 3 above) re-spawns the
+adapter with `--resume <thread_id> --note "<corrective>"` — **one** retry, then
+stop and surface; there is **no automatic vendor fallback** (`blocked` → one
+retry → surface). Treat `changed_paths` **empty on a `done` status as
+suspicious**: mark the row `[~]` and get reviewer confirmation before `[x]`.
+
+**Reviewer tier survives the runtime switch.** A `codex` `reviewer` tune covers
+**ROUTINE checkpoints only**. When the diff's risk class demands Fable — auth, a
+session/entry credential, authorization, tenancy, money, schema, migrations, or
+any security boundary, **including the rules file
+`.codex/rules/agentic-workflow.rules` and the adapter's sandbox-flag
+derivation** — you **override the tune and spawn the Claude `reviewer` on Fable**
+(§5 rule 7). A miscalled tier is a reviewer process finding.
 
 ## 3. Checkpoint at each phase end (the only phase end, without `phases`)
 

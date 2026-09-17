@@ -8,6 +8,43 @@ has no tags — each version-stamped commit on `main` IS the release.
 
 _(empty)_
 
+## [1.51.0] — 2026-09-17
+### Added — a second runtime: run any role on the Codex CLI (GPT-6 Astra), same protocol
+"Fable plans, Astra executes." A role is a markdown prompt; the runtime is a
+spawn detail. Any role can now run on OpenAI's Codex CLI instead of a Claude
+subagent, chosen per brief or per agent — no protocol change, and no behaviour
+change for a project that never opts in.
+- **Runtime selector**: each brief routes by a locked precedence — the brief's
+  `runtime:` header → a `.claude/agents/<role>.md` tune override → the default
+  `claude`. `model:` stays a valid Claude tier; the Codex model rides in
+  `runtime: codex:<model>`.
+- **Codex adapter** `tools/run-codex.mjs`: brief in, JSON distillate out. It
+  assembles the role prompt + §10 + the brief, derives the sandbox from the
+  role's `tools:`, runs `codex exec` (globals BEFORE the subcommand — `codex
+  exec -a never …` exits 2), and writes the distillate FILE the orchestrator
+  reads. Codex never commits or touches `.plans/`; the orchestrator marks the
+  ledger and commits `changed_paths` itself. Behavioural harness wired into lint
+  (check 10.7); no API call.
+- **`templates/distillate.schema.json`**: one bounded hand-off schema (§6.2) for
+  every runtime. **`templates/codex.rules`**: the mechanical hook guardrails (no
+  push/commit/tag, no `gh pr create|merge`) restored inside Codex as execpolicy
+  `forbidden` prefix rules (literal tokens, nested-list alternatives, a blanket
+  `git -C`); the §14 host-pattern guards are a named, accepted parity gap.
+- **`AGENTS.md` is the primary, runtime-neutral conventions file** both Claude
+  and Codex read; `CLAUDE.md` imports it via a first-line `@AGENTS.md`. bootstrap
+  creates both, sync moves runtime-neutral content across once, adopt records the
+  precedence, conform gains the `agents-md-primary` ladder entry.
+- **Commands**: `/tune <role> codex[:<model>] [effort]`; `/connect codex` (a
+  proven read-only round-trip read from the `--json` event stream, rules install,
+  owner-approved trust entry, then the §10 Runtimes row); `/doctor` gains a
+  Runtimes probe — advisory when absent, fail-closed when §10 names codex and any
+  of binary/auth/rules/schema/trust entry is missing.
+- **Permanent plan-judge (#79)**: a fresh read-only one-shot reviewer mode over
+  the plan trio, automatic in `/mission` plan/replan and `/plan`; APPROVE/REVISE,
+  the planner revises once, a second REVISE surfaces to the owner.
+- **WORKFLOW.md**: §3 foreign-runtime parity row, §6 "roles are runtime-neutral,"
+  §9 maps the new tools/commands, §10 gains a Runtimes row.
+
 ## [1.50.1] — 2026-08-21
 ### Fixed — the "closes an issue that isn't done" bug, made mechanically impossible
 Owner: "it closes issues that are not done yet." Root cause: a GitHub closing

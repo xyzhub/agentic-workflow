@@ -70,6 +70,12 @@ Record the priority: top → it IS the next mission (ledger + portfolio
 backlog where a registry exists). Update the status page's in-flight region
 and republish via the Artifact tool (§6.1 board-currency).
 
+**Plan-judge gate.** Before the hand-off (§5), spawn a **fresh, read-only,
+one-shot `reviewer` in plan-judge mode** (WORKFLOW §5) over the trio: it returns
+**APPROVE** or **REVISE** with per-brief findings (≤ one page). REVISE → the
+planner revises **once**; a second REVISE surfaces to the owner. Only an
+APPROVEd trio reaches §5.
+
 ## 5. Hand off — or fire
 
 Report: the trio's phase map, session count, locked decisions, and counsel's

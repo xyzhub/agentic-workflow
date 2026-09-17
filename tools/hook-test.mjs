@@ -1113,6 +1113,7 @@ const CLOSING_NONE_DUE = {
   const FULL10 = ['Default branch', 'Staging', 'Issue tracker', 'Test users'];
   const conformant = {
     'docs/WORKFLOW.md': { content: wf(pv, FULL10) },
+    'AGENTS.md': { content: '# Agent conventions\n\nThis project runs the Agentic Workflow — read `docs/WORKFLOW.md` §10 first.\n' },
     'docs/product/roadmap.md': { content: '# Roadmap (epic view)\n\n## Epics\n' },
     'tools/catalog.mjs': { content: readFileSync(path.join(PLUGIN, 'tools/catalog.mjs'), 'utf8') },
     'docs/product/catalog/README.md': { content: '# Product catalog\n' },
@@ -1170,19 +1171,47 @@ const CLOSING_NONE_DUE = {
     check('conform-check: only targeted .plans sub-ignores → silent', r.code === 0 && r.stdout === '', r.stdout); }
 
   // claude-md-anchors (v1.47.2): dead anchors in the conventions file are a gap;
-  // resolving anchors, globs/placeholders/URLs, and a missing file are not.
+  // resolving anchors, globs/placeholders/URLs, and a missing file are not. The
+  // conventions file is now AGENTS.md (v1.51.0 — conventionsFile() prefers it),
+  // so the anchors live there; the pointer to docs/WORKFLOW.md keeps
+  // agents-md-primary satisfied.
   { const files = { ...conformant,
-      'CLAUDE.md': { content: 'Run `pnpm run lint`; read `src/gone.ts`; skip `docs/*plan*`, `<x/y.md>`, `https://a.com/b.md`; real: `docs/WORKFLOW.md`.\n' },
+      'AGENTS.md': { content: 'See `docs/WORKFLOW.md`. Run `pnpm run lint`; read `src/gone.ts`; skip `docs/*plan*`, `<x/y.md>`, `https://a.com/b.md`.\n' },
       'package.json': { content: '{"scripts":{"test":"x"}}' } };
     const r = runHook({ event: 'SessionStart', desc: CONF, input: { source: 'startup', session_id: sid('i') }, files });
     const m = ctxOf(r);
-    check('conform-check: CLAUDE.md dead script + dead path → claude-md-anchors gap (globs/URLs/placeholders skipped)',
+    check('conform-check: AGENTS.md dead script + dead path → claude-md-anchors gap (globs/URLs/placeholders skipped)',
       r.code === 0 && /claude-md-anchors/.test(m), JSON.stringify(m)); }
   { const files = { ...conformant,
-      'CLAUDE.md': { content: 'Read `docs/WORKFLOW.md` and run `pnpm run test`; routes like `/api/x/*` are fine.\n' },
+      'AGENTS.md': { content: 'Read `docs/WORKFLOW.md` and run `pnpm run test`; routes like `/api/x/*` are fine.\n' },
       'package.json': { content: '{"scripts":{"test":"x"}}' } };
     const r = runHook({ event: 'SessionStart', desc: CONF, input: { source: 'startup', session_id: sid('j') }, files });
-    check('conform-check: CLAUDE.md with resolving anchors only → silent', r.code === 0 && r.stdout === '', r.stdout); }
+    check('conform-check: AGENTS.md with resolving anchors only → silent', r.code === 0 && r.stdout === '', r.stdout); }
+
+  // agents-md-primary (v1.51.0): the conventions ladder. AGENTS.md is the
+  // primary, runtime-neutral file both Claude and Codex read; CLAUDE.md imports
+  // it via `@AGENTS.md`. Three gap states plus the conformant baseline — these
+  // are ADDED alongside the existing conform-check cases, not a move.
+  { // baseline: conformant fixture (AGENTS.md carries the docs/WORKFLOW.md pointer,
+    // no CLAUDE.md) → agents-md-primary satisfied, no advisory.
+    const r = runHook({ event: 'SessionStart', desc: CONF, input: { source: 'startup', session_id: sid('am0') }, files: conformant });
+    check('conform-check(agents-md-primary): conformant AGENTS.md with pointer → silent (no gap)',
+      r.code === 0 && r.stdout === '' && !/agents-md-primary/.test(ctxOf(r)), JSON.stringify(ctxOf(r))); }
+  { // gap 1: no AGENTS.md at all.
+    const files = { ...conformant }; delete files['AGENTS.md'];
+    const r = runHook({ event: 'SessionStart', desc: CONF, input: { source: 'startup', session_id: sid('am1') }, files });
+    check('conform-check(agents-md-primary): no AGENTS.md → agents-md-primary gap',
+      r.code === 0 && /agents-md-primary/.test(ctxOf(r)), JSON.stringify(ctxOf(r))); }
+  { // gap 2: AGENTS.md present + a CLAUDE.md whose first non-blank line is not `@AGENTS.md`.
+    const files = { ...conformant, 'CLAUDE.md': { content: '# Claude-only notes\n\nsome project notes\n' } };
+    const r = runHook({ event: 'SessionStart', desc: CONF, input: { source: 'startup', session_id: sid('am2') }, files });
+    check('conform-check(agents-md-primary): CLAUDE.md without the `@AGENTS.md` import → agents-md-primary gap',
+      r.code === 0 && /agents-md-primary/.test(ctxOf(r)), JSON.stringify(ctxOf(r))); }
+  { // gap 3: AGENTS.md present but lacking the docs/WORKFLOW.md pointer block.
+    const files = { ...conformant, 'AGENTS.md': { content: '# Agent conventions\n\nRun the workflow.\n' } };
+    const r = runHook({ event: 'SessionStart', desc: CONF, input: { source: 'startup', session_id: sid('am3') }, files });
+    check('conform-check(agents-md-primary): AGENTS.md lacking the docs/WORKFLOW.md pointer → agents-md-primary gap',
+      r.code === 0 && /agents-md-primary/.test(ctxOf(r)), JSON.stringify(ctxOf(r))); }
 
   { const r = runHook({ event: 'SessionStart', desc: CONF, input: { source: 'compact', session_id: sid('h') }, files: { ...conformant, 'docs/WORKFLOW.md': { content: wf('1.43.0', ['Default branch']) } } });
     check('conform-check: source=compact → silent (compact-resume owns that beat)', r.code === 0 && r.stdout === '', r.stdout); }

@@ -1,0 +1,58 @@
+#!/usr/bin/env node
+// Fake Codex CLI for the codex-routing eval — no network, no real model.
+// evals/run.mjs points the adapter's CODEX_BIN at this file, so the scenario
+// can never reach the real `codex`. It emits a canned --json event stream,
+// writes a schema-valid distillate to the -o file, and makes ONE real file
+// change in its cwd so the adapter's git-derived changed_paths is non-empty.
+//
+// The edit and the distillate DESCRIBE THE SAME THING — exactly the shrunk S1
+// brief (give `addNote` an optional `tags` parameter, stored on the note;
+// existing callers unaffected). A faithful reviewer can APPROVE it and the
+// orchestrator can mark S1 [x]. The overwrite is idempotent, so the
+// one-corrective-retry path (a second run on --resume) does not double-edit.
+const fs = require('node:fs');
+const path = require('node:path');
+const argv = process.argv.slice(2);
+
+if (argv.includes('--version')) {
+  process.stdout.write('codex-cli 0.146.0 (fake)\n');
+  process.exit(0);
+}
+
+// The real edit the brief asks for: addNote gains an optional tags array.
+try {
+  const f = path.join(process.cwd(), 'src', 'notes.js');
+  fs.mkdirSync(path.dirname(f), { recursive: true });
+  fs.writeFileSync(f, [
+    '// Minimal notes surface for the widget-tags demo.',
+    'export const addNote = (notes, text, tags = []) => [...notes, { text, tags }];',
+    'export const listNotes = (notes) => notes;',
+    '',
+  ].join('\n'));
+} catch { /* best effort */ }
+
+// Canned event stream — the adapter mines thread_id + usage from it.
+process.stdout.write([
+  '{"type":"thread.started","thread_id":"thr_eval_codex"}',
+  '{"type":"item.completed","item":{"type":"reasoning"}}',
+  '{"type":"turn.completed","usage":{"input_tokens":1200,"output_tokens":300}}',
+].join('\n') + '\n');
+
+// The model's FINAL message → the -o file. A schema-valid distillate whose
+// summary and changed_paths describe EXACTLY the edit above, nothing more.
+const o = argv.indexOf('-o');
+if (o >= 0 && argv[o + 1]) {
+  fs.writeFileSync(argv[o + 1], JSON.stringify({
+    status: 'done',
+    summary: 'Gave addNote an optional tags parameter (default []) that is stored on the note; listNotes and existing callers are unchanged.',
+    changed_paths: ['src/notes.js'],
+    gates: [{ name: 'node tools/lint.mjs', result: 'green', first_error: null }],
+    deviations: [],
+    next: ['reviewer: confirm addNote stores tags and existing addNote(notes, text) callers are unaffected'],
+    blocked_reason: null,
+    runtime: { name: 'codex', model: 'gpt-6-astra', effort: 'medium', thread_id: null },
+    usage: null,
+    high_impact_touched: null,
+  }));
+}
+process.exit(0);

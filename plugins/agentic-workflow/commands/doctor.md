@@ -36,6 +36,19 @@ command, or "run `/agentic-workflow:doctor fix`").
   when the docker context exists, `docker --context <alias> ps` exits 0. Any
   failure → 🟡 with the failing probe and `/agentic-workflow:connect server
   <host>` as the fix.
+- **Runtimes** (§5 / §10 **Runtimes** row) — probe only when the row exists.
+  - No **Runtimes** row → advisory 🟢 "Runtimes: claude only — not configured"
+    (the opt-in default; a project with no row behaves exactly as today).
+  - Row names codex → **fails closed (🔴)** when ANY of these is missing, each
+    red row carrying exactly one fix, `/agentic-workflow:connect codex`:
+    binary (`codex --version` ≥ 0.146) · auth (`codex login status`) · the rules
+    file (`.codex/rules/agentic-workflow.rules` present) · the trust entry · the
+    distillate schema (`${CLAUDE_PLUGIN_ROOT}/templates/distillate.schema.json`).
+  - Probe **trust** by READING `~/.codex/config.toml` for a
+    `[projects."<absolute repo path>"]` table with `trust_level = "trusted"` —
+    never by running `execpolicy check`, which returns `forbidden` in an
+    untrusted repo and would report protection that is not live. A missing trust
+    entry is **🔴, not 🟡**: the rules file is present but inert until trusted.
 - **Owner channel** (§12) — if §10 records one: the named env vars resolve and
   the owner id is present. In `fix` mode, send a test message ("doctor test —
   reply not needed") and report whether the send succeeded; stale entries in
