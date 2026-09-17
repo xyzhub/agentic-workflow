@@ -6,7 +6,7 @@ Next up: S1
 
 ## Sessions
 
-- [ ] S1 — build: tags field + filter-by-tag (runtime: codex)
+- [ ] S1 — build: tags field on addNote (runtime: codex)
 - [ ] C1 — checkpoint (reviewer)
 
 ## Handoffs

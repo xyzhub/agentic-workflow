@@ -5,8 +5,36 @@
 // the distillate FILE, and own the ledger + commit itself — never the Agent
 // tool (Task). The fake codex ships at fixture/bin/codex and is reached only
 // through CODEX_BIN, which evals/run.mjs exports for this scenario.
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
+
+// Discover a codex distillate anywhere under the fixture: any *.json that parses
+// with a top-level string `status` and `runtime.name === "codex"` (the shape the
+// adapter writes via --out, per mission.md §2). Deterministic — returns true if
+// ANY such file exists, independent of walk order. The fixture brief steers the
+// orchestrator to write it under `.plans/runs/`, but this finds it wherever in
+// the repo it landed. Skips .git/node_modules for bound and speed.
+function hasCodexDistillate(root) {
+  const stack = [root];
+  while (stack.length) {
+    const d = stack.pop();
+    let entries;
+    try { entries = readdirSync(d, { withFileTypes: true }); } catch { continue; }
+    for (const e of entries) {
+      const p = path.join(d, e.name);
+      if (e.isDirectory()) {
+        if (e.name === '.git' || e.name === 'node_modules') continue;
+        stack.push(p);
+      } else if (e.name.endsWith('.json')) {
+        try {
+          const j = JSON.parse(readFileSync(p, 'utf8'));
+          if (j && typeof j.status === 'string' && j.runtime && j.runtime.name === 'codex') return true;
+        } catch { /* not a distillate — ignore */ }
+      }
+    }
+  }
+  return false;
+}
 
 export default function checks({ dir, events }) {
   const failures = [];
@@ -44,14 +72,22 @@ export default function checks({ dir, events }) {
     if (role && flat.slice(adapterIdx + 1).some((t) => t.name === 'Task' && t.input?.subagent_type === role))
       failures.push(`a Task with subagent_type "${role}" ran after the adapter — the codex brief was re-run on Claude`);
 
-    // The distillate FILE named by --out must exist.
+    // The distillate FILE the adapter wrote must exist. Resolve robustly: the
+    // recorded command string cannot expand a shell variable (`--out "$OUT"`),
+    // so a token that is a variable/glob — or a literal path that does not
+    // resolve to a file — falls back to DISCOVERING the codex distillate by its
+    // shape anywhere under the fixture. The check never depends on the literal
+    // --out token being a usable path.
     const m = cmd.match(/--out\s+("[^"]+"|'[^']+'|\S+)/);
     if (!m) {
       failures.push('could not find --out in the run-codex.mjs invocation');
     } else {
       const raw = m[1].replace(/^['"]|['"]$/g, '');
+      const isLiteralPath = !/[$`~*?{}]/.test(raw); // not a shell var / glob
       const outPath = path.isAbsolute(raw) ? raw : path.join(dir, raw);
-      if (!existsSync(outPath)) failures.push(`distillate --out file not found at ${raw}`);
+      const foundLiteral = isLiteralPath && existsSync(outPath);
+      if (!foundLiteral && !hasCodexDistillate(dir))
+        failures.push(`no codex distillate found — the --out token "${raw}" did not resolve to a file and no *.json under the fixture parses with status + runtime.name==="codex"`);
     }
   }
 

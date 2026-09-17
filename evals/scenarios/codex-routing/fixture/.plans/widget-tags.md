@@ -2,16 +2,14 @@
 
 ## Goal
 
-Add tags to notes: set tags when adding a note, filter the list by tag, and
-expose both through the existing CLI and HTTP surface.
+Give notes an optional `tags` field: `addNote` accepts tags and stores them,
+and existing callers keep working unchanged.
 
 ## Phase 1 — tags (branch: `mission/widget-tags`)
 
 | Task | Acceptance |
 |---|---|
-| Tags field on note creation | `addNote` accepts and stores tags; existing callers unaffected |
-| Filter-by-tag | a filter path returns only notes carrying the tag |
-| CLI + HTTP surface | both expose set-tags and filter-by-tag |
+| Tags field on note creation | `addNote` accepts an optional `tags` array and stores it on the note; existing `addNote(notes, text)` callers are unaffected |
 
 ## Decisions locked (2026-09-17)
 
