@@ -180,7 +180,16 @@ what the next session needs. Newest on top; crash-safe by write-ahead._
   as specified. Adapter itself judged clean.
 - 2026-09-17 orchestrator (write-ahead): **S5-fix** started — `devops` (Opus 4.8)
   corrective for B1/B2 + A1–A4, A7–A9; orchestrator handles B3 (push + CI),
-  A5 (`/sync`), A6 (ledger). Sessions used 5 → 6 (1.2× estimate). Result pending.
+  A5 (`/sync`), A6 (ledger). Sessions used 5 → 6 (1.2× estimate). **B3 closed**:
+  branch pushed, `ci-wait cec2c6f` GREEN. **S5-fix part 1 done** — commits 01c8e34,
+  1b7f1a0, 7c34fbd, 23b6da2: B1 braced `${CLAUDE_PLUGIN_ROOT}` + new lint rule
+  `checkPluginRootBraced`; B2 ten wrapper/option families forbidden (harness 88 →
+  154 cases, real verdicts; residue `--git-dir=X` equals-form + absolute-path
+  executables documented); A1–A4, A7–A9 applied. Eval `codex-routing` re-run
+  ($1.23): adapter REACHED via CODEX_BIN (B1 verified live) but FAIL on two
+  fixture defects — checks.mjs cannot resolve `--out "$OUT"`; fake codex
+  over-claims vs its one edit so the orchestrator honestly left S1 `[~]`. Same
+  builder continues (part 2): fix both fixture defects, one eval re-run.
 
 - 2026-09-11 planner (A3 split): owner ruled _"Split now, Estimate 5"_. S3 split
   at its documented point — S3 keeps routing + the plan-judge (#79), the new S4
