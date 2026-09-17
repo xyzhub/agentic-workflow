@@ -68,6 +68,14 @@
 # not_match: git status
 # not_match: git diff --stat
 # not_match: git log --oneline -5
+# 2026-09-17 (n=1 finding): the `zsh -c|-lc|-ic` wrapper rule was REMOVED. Codex
+# runs every command as `/bin/zsh -lc "<cmd>"`, resolves `/bin/zsh` to `zsh` for
+# matching, and UNWRAPS the -lc string before matching the inner command (a
+# wrapped `git commit --dry-run` is still rejected by the git rule below). The
+# zsh rule therefore blocked every non-trivial command a delegated run issued
+# while adding no protection. `bash -c` / `sh -c` stay for now (they do not
+# collide with the observed wrapper); revisit under xyzhub/agentic-workflow#81.
+
 prefix_rule(
     pattern = ["git", ["push", "commit", "tag"]],
     decision = "forbidden",
@@ -123,18 +131,6 @@ prefix_rule(
     pattern = ["bash", "-c"],
     decision = "forbidden",
     justification = "Same bypass as `sh -c`: `bash -c 'gh pr merge 1'` smuggles a forbidden command inside a string argument no prefix token can reach. NOTE: `bash -lc` is deliberately NOT blocked — Codex's own shell tool may wrap commands that way, and whether the session unwraps it is settled at the `/connect codex` round trip, not here.",
-)
-
-# covers: zsh -c
-# match: zsh -c git push
-# match: zsh -lc 'gh pr merge 1'
-# match: zsh -ic git push
-# not_match: zsh script.sh
-# not_match: ls -la
-prefix_rule(
-    pattern = ["zsh", ["-c", "-lc", "-ic"]],
-    decision = "forbidden",
-    justification = "`zsh -c` / `-lc` / `-ic` are the same string-argument bypass as `sh -c`, one alternative per shell-invocation flavour. A delegated run has no reason to launch an interactive or login zsh to run a single command.",
 )
 
 # covers: env
