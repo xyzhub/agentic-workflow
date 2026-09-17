@@ -16,6 +16,70 @@ grades the protocol's own behavior the way a QA team would.
 
 ---
 
+## 2026-09-17 — the first real job handed to the second runtime, and it passed
+
+### Milestone: n=1 — a foreign-built brief, reviewed and found sound
+
+Earlier today this project proved a second runtime could exist inside its own
+building process (see the entry below). This entry records the first time
+that second runtime actually did real, reviewable work — the "n=1" test the
+earlier mission promised to run before calling the idea proven in practice,
+not just in design.
+
+The job: one real, self-contained work order (this project calls it a
+"brief") was handed entirely to OpenAI's GPT-6 model, running through
+OpenAI's Codex CLI and nicknamed "Astra" in this project's shorthand, instead
+of to a Claude-based worker. The bar was simple: if Astra produced work a
+person could sign off on without fixing it up first, and a reviewer agreed,
+the protocol counts as vendor-agnostic in practice.
+
+**The first attempt stopped, honestly, at a rule this project had written
+against itself.** Astra read its instructions and the files it needed, then
+tried its first edit — and was blocked. Not by a bug in Astra, but by one of
+this project's own safety rules, meant to catch a shell trick where a
+forbidden command is hidden inside another command. The rule had been written
+for Claude's own habits and didn't account for how OpenAI's Codex tool wraps
+every command it runs before executing it. Astra reported the block plainly
+and stopped there — it did not try to route around its own safety rail, which
+is exactly the behavior this project wants from any runtime, foreign or not.
+
+**The owner raised the estimate rather than accept a shortcut, and the team
+proved the fix live before trusting it.** Facing a blocked first attempt, the
+owner ruled the mission's effort estimate up from one working session to two.
+Before reusing the fix on Astra's real, blocked thread, it was tested live on
+a separate, throwaway run (nicknamed "Sol") to confirm Codex genuinely
+unwraps that shell trick before the safety rule ever sees the real command —
+confirmed, and only then was the rule removed.
+
+**The corrective ran as a resumed conversation, not a restart.** Astra's
+second attempt picked up its own earlier thread rather than starting fresh,
+and finished clean: no rejected commands, all seven files the brief named
+touched, in the order asked, with every deviation reported by Astra itself
+rather than discovered afterward.
+
+**A fresh reviewer approved the result — and corrected the building
+session's own record twice.** A Claude-based reviewer, run on this project's
+most careful review tier ("Fable," reserved for security-sensitive changes),
+read the whole change from scratch and approved it (commit `a981207`) with no
+blocking findings. Along the way it corrected two claims the building session
+had made about its own work: a file the session had flagged as an unplanned
+addition turned out to already be named in the original brief, and the claim
+that "Astra's own tool exited cleanly on a blocked command" turned out to be
+an artifact of how the surrounding process reported the result, not something
+Astra's tool itself did.
+
+**The numbers.** Astra used 779,762 tokens of input and produced 10,692
+tokens of output across both attempts, on OpenAI's "medium" effort setting.
+This project's own automated test count grew from 154 to 160 cases along the
+way. The result shipped as version 1.51.1 of this plugin.
+
+**Where it stands.** The change is sitting in pull request #85 (PR #85),
+opened today, asking to merge this mission's branch into the project's main
+line of code. It has not merged yet — it is awaiting the owner's own review,
+same as every change in this project.
+
+---
+
 ## 2026-09-17 — a second runtime: work can now run on OpenAI's Codex CLI, not just Claude
 
 ### Milestone: "Fable plans, Astra executes" — the protocol proven vendor-agnostic
