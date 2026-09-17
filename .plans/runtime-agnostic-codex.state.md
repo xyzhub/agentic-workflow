@@ -15,7 +15,7 @@ everything since the last one — §12 LA-6)._
 Issue: #79 (plan-judge — the PR to `main` closes it)
 
 Estimate: 5 sessions
-Sessions used: 0
+Sessions used: 1
 
 _The two budget lines above are read by the mission-budget hook every turn. The
 planner writes `Estimate:` (5 = 4 briefs + 1 checkpoint; a corrective counts only
@@ -47,7 +47,7 @@ staging landing, one PR to `main`.
 _Glyphs: `[ ]` not started · `[~]` in-flight / deferred / awaiting owner · `[x]`
 done (verified, not merely written)._
 
-- [ ] S1 — mechanics: `tools/run-codex.mjs`, distillate schema, `codex.rules`, `tools/run-codex-test.mjs` + lint wiring (branch `mission/runtime-agnostic-codex`)
+- [~] S1 — mechanics: `tools/run-codex.mjs`, distillate schema, `codex.rules`, `tools/run-codex-test.mjs` + lint wiring (branch `mission/runtime-agnostic-codex`)
 - [ ] S2 — conventions + commands: `AGENTS.md` primary, conform ladder entry, bootstrap/sync/adopt, `/tune` runtime, `/connect codex`, `/doctor` probe
 - [ ] S3 — routing + plan-judge: `mission.md` step 2/3 + the codex-reviewer Fable override, planner `runtime:` field, the permanent plan-judge (#79) in `mission.md` §1 / `plan.md` / `reviewer.md` / WORKFLOW §5 + the estimate rule at its three sites, WORKFLOW §3/§6/§9/§10 and this repo's §10 row
 - [ ] S4 — record: memo corrections, CHANGELOG 1.51.0, version bump, both READMEs, `codex-routing` eval scenario + fixture + the `evals/run.mjs` `CODEX_BIN` edit (runs after S3 — it documents what S3 writes)
@@ -114,6 +114,10 @@ Deviating is allowed; deviating silently is not (§4)._
 
 _≤10 lines per entry: what this session did, the verify signal, the branch, and
 what the next session needs. Newest on top; crash-safe by write-ahead._
+
+- 2026-09-17 orchestrator (write-ahead): S1 started — `backend` builder spawned
+  on `mission/runtime-agnostic-codex` (cut from `feat/runtime-agnostic-codex`
+  @ 3dbda74). Sessions used 0 → 1. Result pending.
 
 - 2026-09-11 planner (A3 split): owner ruled _"Split now, Estimate 5"_. S3 split
   at its documented point — S3 keeps routing + the plan-judge (#79), the new S4
