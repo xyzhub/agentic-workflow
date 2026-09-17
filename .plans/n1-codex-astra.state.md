@@ -14,7 +14,7 @@ everything since the last one — §12 LA-6). Deploys to
 `.plans/n1-codex-astra.state.md`._
 
 Estimate: 1 session
-Sessions used: 0
+Sessions used: 1
 
 _The two budget lines above are read by the mission-budget hook every turn. The
 planner writes `Estimate:` (default `1 session`; more only with the `phases`
@@ -48,7 +48,7 @@ a decision point (§12 LA-5).
 _Glyphs: `[ ]` not started · `[~]` in-flight / deferred / awaiting owner · `[x]`
 done (verified, not merely written)._
 
-- [ ] S1 — changed_paths delta + strict distillate discovery, shipped as 1.51.1 (branch `mission/n1-codex-astra`, runtime codex:gpt-6-astra via tune)
+- [~] S1 — changed_paths delta + strict distillate discovery, shipped as 1.51.1 (branch `mission/n1-codex-astra`, runtime codex:gpt-6-astra via tune)
 - [ ] Checkpoint — ONE fresh one-shot Claude `reviewer` (Fable) over `587aee6..HEAD`; then lint-on-branch + plugin-dir load, PR to `main`, owner merges
 
 ## Open questions
@@ -89,7 +89,14 @@ _Any departure from a brief — logged the moment it happens, with why._
 
 (none)
 
-## Handoff log (newest first)
+## Handoff log- 2026-09-17 orchestrator (write-ahead + gate spawn): plan-judge (Fable) REVISE →
+  planner revised once (B1 harness-count criterion; A1–A3, A5) — no second
+  judge pass (protocol). **S1 started on codex:gpt-6-astra** via the backend
+  tune: `run-codex.mjs --role backend --brief .plans/n1-codex-astra.sessions.md#S1
+  --model gpt-6-astra --effort medium`, background, stdin closed, distillate →
+  `.plans/runs/n1-codex-astra-S1.json`. Sessions used 0 → 1. Result pending.
+
+ (newest first)
 
 _≤10 lines per entry: what this session did, the verify signal, the branch, and
 what the next session needs._
