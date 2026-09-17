@@ -48,8 +48,8 @@ a decision point (§12 LA-5).
 _Glyphs: `[ ]` not started · `[~]` in-flight / deferred / awaiting owner · `[x]`
 done (verified, not merely written)._
 
-- [~] S1 — changed_paths delta + strict distillate discovery, shipped as 1.51.1 (branch `mission/n1-codex-astra`, runtime codex:gpt-6-astra via tune)
-- [ ] Checkpoint — ONE fresh one-shot Claude `reviewer` (Fable) over `587aee6..HEAD`; then lint-on-branch + plugin-dir load, PR to `main`, owner merges
+- [x] S1 — changed_paths delta + strict distillate discovery, shipped as 1.51.1 (branch `mission/n1-codex-astra`, runtime codex:gpt-6-astra via tune)
+- [~] Checkpoint — ONE fresh one-shot Claude `reviewer` (Fable) over `587aee6..HEAD`; then lint-on-branch + plugin-dir load, PR to `main`, owner merges
 
 ## Open questions
 
@@ -111,7 +111,19 @@ _Any departure from a brief — logged the moment it happens, with why._
 - 2026-09-17 orchestrator (write-ahead + gate spawn): **S1-fix** started —
   `run-codex.mjs --resume 01a0b0ce-ffc6-7220-97c0-30d7c59de1c3 --note "<rule fixed,
   proceed>"` on codex:gpt-6-astra, background, distillate →
-  `.plans/runs/n1-codex-astra-S1-fix.json`. Sessions used 1 → 2. Result pending.
+  `.plans/runs/n1-codex-astra-S1-fix.json`. Sessions used 1 → 2. **S1-fix DONE** —
+  status done, 0 rejections, 7 files (run-codex.mjs, run-codex-test.mjs,
+  checks.mjs, distillate.schema.json, plugin.json 1.51.1, CHANGELOG 1.51.1,
+  docs/WORKFLOW.md stamp). Orchestrator re-ran: harness 160 clean, lint clean,
+  conform clean; committed as <see git log> with Astra as co-author.
+  **Astra usage (n=1)**: attempt 1 156,072 in / 3,193 out; corrective 623,690 in /
+  7,499 out — total 779,762 in / 10,692 out on gpt-6-astra, effort medium.
+  Deviations reported by Astra: 7 extra snapshot assertions in the harness;
+  untracked `.plans/runs/`. Unreported: `distillate.schema.json` edited (not in
+  the brief's file list) — reviewer to judge.
+- 2026-09-17 orchestrator (gate spawn): **Checkpoint** — reviewer spawned, fresh,
+  Fable (security boundary: rules file + adapter), one-shot, over `587aee6..HEAD`.
+  Verdict pending.
 
  (newest first)
 
@@ -124,4 +136,4 @@ what the next session needs._
   question ruled the same day (17d1560). Plan-judge REVISE (B1 harness skip
   criterion, A1 line drift, A2 codex-rule wording, A3/A5 ledger) applied.
 
-Next up: S1-fix — corrective on codex:gpt-6-astra (resume thread) after the zsh rule fix; then the checkpoint
+Next up: Checkpoint — Fable reviewer in flight over 587aee6..HEAD (rules fix + Astra's S1); on APPROVE → lint-on-branch + plugin load → PR to main
