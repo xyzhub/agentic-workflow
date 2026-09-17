@@ -49,7 +49,7 @@ _Glyphs: `[ ]` not started · `[~]` in-flight / deferred / awaiting owner · `[x
 done (verified, not merely written)._
 
 - [x] S1 — changed_paths delta + strict distillate discovery, shipped as 1.51.1 (branch `mission/n1-codex-astra`, runtime codex:gpt-6-astra via tune)
-- [~] Checkpoint — ONE fresh one-shot Claude `reviewer` (Fable) over `587aee6..HEAD`; then lint-on-branch + plugin-dir load, PR to `main`, owner merges
+- [~] Checkpoint — **APPROVED a981207 (2026-09-17), merge pending** — — ONE fresh one-shot Claude `reviewer` (Fable) over `587aee6..HEAD`; then lint-on-branch + plugin-dir load, PR to `main`, owner merges
 
 ## Open questions
 
@@ -123,7 +123,23 @@ _Any departure from a brief — logged the moment it happens, with why._
   the brief's file list) — reviewer to judge.
 - 2026-09-17 orchestrator (gate spawn): **Checkpoint** — reviewer spawned, fresh,
   Fable (security boundary: rules file + adapter), one-shot, over `587aee6..HEAD`.
-  Verdict pending.
+  **Verdict: APPROVE — a981207.** Scorecard: DX 2 · Security 3 · Efficiency 3 ·
+  QA 2 · Architecture 2 · UX n/a. Gates re-run by the reviewer: harness 160/0
+  skipped · lint 0 · conform 0 · plugin load clean · CI GREEN (run 35265672589) ·
+  live probe on Sol: wrapped `git commit` rejected by the GIT rule (unwrap real).
+  **Corrections to earlier entries (A1)**: `distillate.schema.json` WAS in the
+  brief (Do 5 / Verify 4) — not scope creep; the "adapter exit 0 on blocked" was
+  the orchestrator's shell wrapper exit, the adapter returns 3 (reproduced).
+  A4: the `.gitignore` +2 lines in f8db0e5 are the ORCHESTRATOR's, not Astra's.
+  Advisories → #81: A3 re-add `["zsh",["-c","-ic"]]` + name the no-unwrap residual;
+  A5 adapter writes `<out>.events.jsonl` without mkdir and before the delta.
+  A6 memo line 166 stale (changed_paths) → docs/record row. A2 process lesson:
+  the harness baseline moved 154→147 mid-mission and the brief's "N ≥ 160" was
+  not re-baselined; Astra padded 7 (sound) tests to hit it — re-baseline
+  criteria when you change the baseline. **n=1 verdict: a foreign runtime
+  produced reviewable, brief-conformant work and stopped at the policy wall
+  instead of working around it.** Verify (§10 Staging=none): lint green on the
+  branch via CI + plugin-dir load clean — PASS.
 
  (newest first)
 
@@ -136,4 +152,4 @@ what the next session needs._
   question ruled the same day (17d1560). Plan-judge REVISE (B1 harness skip
   criterion, A1 line drift, A2 codex-rule wording, A3/A5 ledger) applied.
 
-Next up: Checkpoint — Fable reviewer in flight over 587aee6..HEAD (rules fix + Astra's S1); on APPROVE → lint-on-branch + plugin load → PR to main
+Next up: PR to main open — awaiting the owner's merge (human-only); then /settle closes this mission and stamps runtime-agnostic-codex
