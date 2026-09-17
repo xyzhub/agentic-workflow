@@ -38,7 +38,7 @@ change for a project that never opts in.
   proven read-only round-trip read from the `--json` event stream, rules install,
   owner-approved trust entry, then the §10 Runtimes row); `/doctor` gains a
   Runtimes probe — advisory when absent, fail-closed when §10 names codex and any
-  of binary/auth/rules/schema is missing.
+  of binary/auth/rules/schema/trust entry is missing.
 - **Permanent plan-judge (#79)**: a fresh read-only one-shot reviewer mode over
   the plan trio, automatic in `/mission` plan/replan and `/plan`; APPROVE/REVISE,
   the planner revises once, a second REVISE surfaces to the owner.

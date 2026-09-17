@@ -35,8 +35,8 @@ and `/agentic-workflow:tune <agent> reset`.
      a `model: gpt-6-astra` here would break running the same role under Claude
      Code, including the locked Fable override for security-boundary reviews. The Codex
      model rides in the runtime value. Set:
-     - `runtime: codex:<model>` (default `<model>` is the org's Codex model when
-       bare `codex` is given);
+     - `runtime: codex:<model>` (default `<model>` is `gpt-6-astra` — the
+       adapter's default — when bare `codex` is given);
      - `effort: <effort>` — default `high` for `reviewer`, `planner`, `advisor`,
        `architect`; `medium` otherwise (the owner's global `low` is deliberately
        overridden per role here; an explicit `effort=` in the args wins).

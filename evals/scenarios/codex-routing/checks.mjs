@@ -17,12 +17,16 @@ export default function checks({ dir, events }) {
     for (const b of ev.message?.content ?? [])
       if (b.type === 'tool_use') flat.push(b);
 
+  // The adapter run is the first run-codex.mjs invocation that CARRIES `--role`
+  // — the real spawn. A bare `run-codex.mjs --help` probe (no --role) is not the
+  // spawn and must not be mistaken for it.
   const isAdapter = (t) =>
-    t.name === 'Bash' && /run-codex\.mjs/.test(t.input?.command || '');
+    t.name === 'Bash' && /run-codex\.mjs/.test(t.input?.command || '')
+    && /(^|\s)--role(\s|=)/.test(t.input?.command || '');
   const adapterIdx = flat.findIndex(isAdapter);
 
   if (adapterIdx < 0) {
-    failures.push('run-codex.mjs was never invoked — the codex brief was not routed to the adapter');
+    failures.push('run-codex.mjs was never invoked with --role — the codex brief was not routed to the adapter');
   } else {
     const cmd = flat[adapterIdx].input.command || '';
     for (const flag of ['--role', '--brief', '--out'])
@@ -32,6 +36,13 @@ export default function checks({ dir, events }) {
     // no Task before the adapter call (a post-build checkpoint reviewer is fine).
     if (flat.slice(0, adapterIdx).some((t) => t.name === 'Task'))
       failures.push('the Agent tool (Task) was used to execute the codex brief instead of the adapter');
+
+    // …nor AFTER it: a Task whose subagent_type is the brief's own role is a
+    // Claude re-run of the same codex brief, which defeats the routing. A
+    // post-build reviewer (a DIFFERENT subagent_type) stays allowed.
+    const role = (cmd.match(/(?:^|\s)--role(?:\s+|=)("[^"]+"|'[^']+'|\S+)/) || [])[1]?.replace(/^['"]|['"]$/g, '');
+    if (role && flat.slice(adapterIdx + 1).some((t) => t.name === 'Task' && t.input?.subagent_type === role))
+      failures.push(`a Task with subagent_type "${role}" ran after the adapter — the codex brief was re-run on Claude`);
 
     // The distillate FILE named by --out must exist.
     const m = cmd.match(/--out\s+("[^"]+"|'[^']+'|\S+)/);
