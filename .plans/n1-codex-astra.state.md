@@ -140,6 +140,9 @@ _Any departure from a brief — logged the moment it happens, with why._
   produced reviewable, brief-conformant work and stopped at the policy wall
   instead of working around it.** Verify (§10 Staging=none): lint green on the
   branch via CI + plugin-dir load clean — PASS.
+- 2026-09-17 orchestrator: **PR #85 opened** → `main` from `mission/n1-codex-astra`
+  @ 5b6086c (code a981207). Merge policy human-only — awaiting the owner.
+  Chronicler spawned for the record.
 
  (newest first)
 
