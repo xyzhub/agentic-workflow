@@ -15,7 +15,7 @@ everything since the last one — §12 LA-6)._
 Issue: #79 (plan-judge — the PR to `main` closes it)
 
 Estimate: 5 sessions
-Sessions used: 1
+Sessions used: 2
 
 _The two budget lines above are read by the mission-budget hook every turn. The
 planner writes `Estimate:` (5 = 4 briefs + 1 checkpoint; a corrective counts only
@@ -47,8 +47,8 @@ staging landing, one PR to `main`.
 _Glyphs: `[ ]` not started · `[~]` in-flight / deferred / awaiting owner · `[x]`
 done (verified, not merely written)._
 
-- [~] S1 — mechanics: `tools/run-codex.mjs`, distillate schema, `codex.rules`, `tools/run-codex-test.mjs` + lint wiring (branch `mission/runtime-agnostic-codex`)
-- [ ] S2 — conventions + commands: `AGENTS.md` primary, conform ladder entry, bootstrap/sync/adopt, `/tune` runtime, `/connect codex`, `/doctor` probe
+- [x] S1 — mechanics: `tools/run-codex.mjs`, distillate schema, `codex.rules`, `tools/run-codex-test.mjs` + lint wiring (branch `mission/runtime-agnostic-codex`)
+- [~] S2 — conventions + commands: `AGENTS.md` primary, conform ladder entry, bootstrap/sync/adopt, `/tune` runtime, `/connect codex`, `/doctor` probe
 - [ ] S3 — routing + plan-judge: `mission.md` step 2/3 + the codex-reviewer Fable override, planner `runtime:` field, the permanent plan-judge (#79) in `mission.md` §1 / `plan.md` / `reviewer.md` / WORKFLOW §5 + the estimate rule at its three sites, WORKFLOW §3/§6/§9/§10 and this repo's §10 row
 - [ ] S4 — record: memo corrections, CHANGELOG 1.51.0, version bump, both READMEs, `codex-routing` eval scenario + fixture + the `evals/run.mjs` `CODEX_BIN` edit (runs after S3 — it documents what S3 writes)
 - [ ] Checkpoint ckpt-p1 — ONE fresh reviewer over the whole diff after S4 (**Fable required**: execpolicy rules + sandbox flag derivation are a security boundary), then staging → verify → one PR to `main` closing #79
@@ -117,7 +117,20 @@ what the next session needs. Newest on top; crash-safe by write-ahead._
 
 - 2026-09-17 orchestrator (write-ahead): S1 started — `backend` builder spawned
   on `mission/runtime-agnostic-codex` (cut from `feat/runtime-agnostic-codex`
-  @ 3dbda74). Sessions used 0 → 1. Result pending.
+  @ 3dbda74). Sessions used 0 → 1. **S1 DONE** — commits 6932157 (schema +
+  rules) and 2ca8b7a (adapter + harness + lint 10.7). Gates re-run by the
+  orchestrator: `run-codex-test.mjs` 88 cases clean (real `execpolicy check`
+  verdicts, 0 skipped); `lint.mjs` clean. Five rule verdicts: push/commit/`gh pr
+  create`/`git -C` forbidden, `git status` unmatched. Shim served every adapter
+  case; no `codex exec` ran. Deviations: host-pattern rules dropped (S3 records
+  the gap); one combined git rule; adapter also refuses `--ignore-rules`/
+  `--ephemeral` in any built argv and saves raw JSONL as `<out>.events.jsonl`;
+  defaults `--model gpt-6-astra`, `--effort medium`. Reviewer: look first at
+  `buildExecArgv`/`buildResumeArgv`, `highImpactPatterns` (`*` as segment
+  wildcard — prose-derived), `namedSkills`. Owner rule 2026-09-17: builders on
+  Opus 4.8 — tune overrides committed 3e11f12 (backend/devops/planner).
+- 2026-09-17 orchestrator (write-ahead): S2 started — `devops` builder (Opus 4.8
+  via `.claude/agents/devops.md`). Sessions used 1 → 2. Result pending.
 
 - 2026-09-11 planner (A3 split): owner ruled _"Split now, Estimate 5"_. S3 split
   at its documented point — S3 keeps routing + the plan-judge (#79), the new S4
@@ -173,4 +186,4 @@ what the next session needs. Newest on top; crash-safe by write-ahead._
   `--ignore-rules` proves project-level `.rules` files are loaded, so OQ1 is
   narrowed to the directory. Three open questions await the owner before S1.
 
-Next up: S1
+Next up: S2
