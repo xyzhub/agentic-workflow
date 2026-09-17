@@ -13,8 +13,8 @@ orchestrator has no session boundary to force a write; a compaction erases
 everything since the last one — §12 LA-6). Deploys to
 `.plans/n1-codex-astra.state.md`._
 
-Estimate: 1 session
-Sessions used: 1
+Estimate: 2 sessions
+Sessions used: 2
 
 _The two budget lines above are read by the mission-budget hook every turn. The
 planner writes `Estimate:` (default `1 session`; more only with the `phases`
@@ -103,8 +103,15 @@ _Any departure from a brief — logged the moment it happens, with why._
   commands passed via Codex's safe-command path, the write path hit the policy.
   No file changed. Astra usage: 156,072 in / 3,193 out (thread
   01a0b0ce-ffc6-7220-97c0-30d7c59de1c3). Gates skipped by the run; orchestrator
-  re-ran: harness 154 clean, lint clean (tree unchanged). Corrective would be
-  session 2 = 2.0× estimate → OVERRUN stop → owner scope decision pending.
+  re-ran: harness 154 clean, lint clean (tree unchanged). Owner scope decision
+  2026-09-17: "Continue at revised Estimate 2" — Estimate 1 → 2 (locked in the
+  master plan). Rules fix committed 5e5138d (zsh wrapper rule dropped; live probe
+  on Sol proved the runtime unwraps `-lc`, wrapped `git commit` still rejected;
+  harness 147 clean, lint clean).
+- 2026-09-17 orchestrator (write-ahead + gate spawn): **S1-fix** started —
+  `run-codex.mjs --resume 01a0b0ce-ffc6-7220-97c0-30d7c59de1c3 --note "<rule fixed,
+  proceed>"` on codex:gpt-6-astra, background, distillate →
+  `.plans/runs/n1-codex-astra-S1-fix.json`. Sessions used 1 → 2. Result pending.
 
  (newest first)
 
@@ -117,4 +124,4 @@ what the next session needs._
   question ruled the same day (17d1560). Plan-judge REVISE (B1 harness skip
   criterion, A1 line drift, A2 codex-rule wording, A3/A5 ledger) applied.
 
-Next up: S1
+Next up: S1-fix — corrective on codex:gpt-6-astra (resume thread) after the zsh rule fix; then the checkpoint

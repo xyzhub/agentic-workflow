@@ -114,6 +114,7 @@ status` snapshot; A3 checks.mjs:87 shape fallback should require `status ===
   reviewer re-runs with `codex` on PATH. (Plan-judge B1.)
 - 2026-09-17 — Estimate 1 session. A corrective (`S1-fix`, resumed via the
   distillate's `runtime.thread_id`) is counted when it fires, never pre-booked.
+- 2026-09-17 — **Estimate 1 → 2** (owner, overrun scope decision after S1 was blocked by the repo's own `zsh -c|-lc|-ic` execpolicy rule; verbatim: "Continue at revised Estimate 2"). The rule was removed from `templates/codex.rules` + `.codex/rules/agentic-workflow.rules` (5e5138d) after a live probe proved Codex unwraps `/bin/zsh -lc` before matching, so a wrapped `git commit` is still rejected by the git rule. One corrective (`S1-fix`, `--resume` of thread 01a0b0ce-ffc6-7220-97c0-30d7c59de1c3), then the checkpoint.
 
 ## Risks
 
