@@ -25,13 +25,44 @@ protocol prose is Claude-specific.
 
 ## 3. Verified facts the design rests on
 
+> **Corrections 2026-09-17** — implementation probed the Codex binary (0.146.0)
+> and the sources; where this memo differed, the binary/source won. Recorded
+> here so the design record stays truthful (a stale claim here is a future
+> defect). The bodies of §5, §6, §8, §10, §13 and §14 below are corrected in
+> place to match.
+>
+> - **§3 / §6 argv order** — `-a/--ask-for-approval` and `--search` are
+>   TOP-LEVEL options that come BEFORE the `exec` subcommand: `codex exec -a
+>   never …` exits 2 ("unexpected argument"); `codex -a never --search exec …`
+>   parses. Source: `codex 0.146.0` argv probe.
+> - **§6 `exec resume`** — the resume shape accepts only `-c -m --json -o
+>   --output-schema`; NOT `-s`, `-C` or `-a`. The cwd comes from the child
+>   process; the sandbox is inherited from the persisted session.
+> - **§3 project rules / §10 trust** — project rules load from
+>   `$(git rev-parse --show-toplevel)/.codex/rules/*.rules`, but are DISABLED
+>   until a user-layer `[projects."<abs repo path>"] trust_level = "trusted"`
+>   entry exists (`/connect codex`'s owner-approved step). `codex execpolicy
+>   check` is syntax-only and ignores the trust layer, so its verdict proves
+>   nothing about a live session. Source: `codex-rs/core/src/exec_policy.rs`,
+>   `config/src/loader/mod.rs`.
+> - **§5 tune model** — `.claude/agents/<role>.md` `model:` stays a valid Claude
+>   tier (the file is also a Claude Code agent); the Codex model rides in
+>   `runtime: codex:gpt-6-astra`, never in `model:`.
+> - **§8 rules grammar** — `prefix_rule` tokens are literal (no globs);
+>   alternatives are nested lists (`["git", ["push","commit","tag"]]`) plus a
+>   blanket `["git","-C"]`; the §14 host-pattern rules are NOT expressible and
+>   ship as a named parity gap, not a rule.
+> - **§13 testing** — the adapter harness is `tools/run-codex-test.mjs` (reached
+>   by lint check 10.7), not `run-codex.test.mjs`; the eval reaches the fake
+>   binary through `CODEX_BIN`, not "a shim on PATH".
+
 | Fact | Source |
 |---|---|
 | Claude Code's Agent tool runs Claude models only; `model:` is a Claude tier. | harness |
-| `codex exec [PROMPT]` supports `-a never`, `-s read-only\|workspace-write`, `-C <dir>`, `--search`, `--json`, `-o <file>`, `--output-schema <file>`, `-c key=value`, `exec resume <id>`. | `codex-cli 0.146.0 --help` |
+| `codex` supports `-a never`, `--search` (**top-level, before `exec`** — corrected 2026-09-17) and, on the `exec` subcommand, `-s read-only\|workspace-write`, `-C <dir>`, `--json`, `-o <file>`, `--output-schema <file>`, `-c key=value`; `exec resume <id>` is a narrower shape (`-c -m --json -o --output-schema` only). | `codex-cli 0.146.0 --help` |
 | Owner's Codex default model is `gpt-6-astra`, `model_reasoning_effort = "low"`, and profiles with `approval_mode = "approve"` exist. | `~/.codex/config.toml` |
 | Codex reads `AGENTS.md` (root → cwd, concatenated, 32 KiB cap); no `@file` import syntax; a direct prompt overrides `AGENTS.md`. | `codex-rs/core/src/agents_md.rs`, `models-manager/prompt.md` |
-| Codex enforces execpolicy `.rules` (Starlark `prefix_rule`, `decision = "forbidden"`); user-level file is `~/.codex/rules/default.rules`. Project-level load path: **probe during implementation**. | `codex-rs/execpolicy/README.md` |
+| Codex enforces execpolicy `.rules` (Starlark `prefix_rule`, `decision = "forbidden"`). Project-level load path (settled 2026-09-17): `$(git rev-parse --show-toplevel)/.codex/rules/*.rules`, loaded from every config layer but **disabled until the project is trusted** via a user-layer `[projects."<abs path>"] trust_level = "trusted"` entry. No user-level copy ships. | `codex-rs/core/src/exec_policy.rs`, `config/src/loader/mod.rs` |
 | `workspace-write` sandbox disables network unless `sandbox_workspace_write.network_access=true`; shell env is not fully inherited unless `shell_environment_policy.inherit=all`. | Codex config docs |
 | Claude Code's `CLAUDE.md` supports `@path` imports. | harness |
 | `templates/WORKFLOW.md` is 93 KB, far over the 32 KiB `AGENTS.md` cap. | `wc -c` |
@@ -72,7 +103,7 @@ Five components, each with one job:
 Precedence, first match wins:
 
 1. Brief header field `runtime: codex[:<model>] [effort=<low|medium|high>]` (planner may set it; the orchestrator honours it).
-2. Tune override `.claude/agents/<role>.md` frontmatter: `runtime: codex`, `model: gpt-6-astra`, `effort: high`.
+2. Tune override `.claude/agents/<role>.md` frontmatter: `runtime: codex:gpt-6-astra`, `effort: high`. (Corrected 2026-09-17: `model:` stays a valid Claude tier — the file is also a Claude Code agent — and the Codex model rides in `runtime: codex:<model>`, never in `model:`.)
 3. Default `claude` — the Agent tool exactly as today.
 
 `/tune` grows: `/tune <role> codex[:<model>] [effort]`. The banner line becomes
@@ -116,10 +147,13 @@ prompt is authoritative.
 | `Write` or `Edit` | `-s workspace-write` |
 | role ∈ {backend, frontend, devops, security} | `-c sandbox_workspace_write.network_access=true` (installs, `gh` reads) |
 | `WebSearch` or `WebFetch` | `--search` |
-| always | `-a never -C <cwd> --json -o <last-message-file> --output-schema templates/distillate.schema.json -c model_reasoning_effort=<effort> -c shell_environment_policy.inherit=all -m <model>` |
-| rules | the project-level execpolicy file (see §8); load path confirmed at implementation |
+| always | `-a never` and `--search` are TOP-LEVEL (before `exec`); the `exec` subcommand then takes `-C <cwd> --json -o <last-message-file> --output-schema templates/distillate.schema.json -c model_reasoning_effort=<effort> -c shell_environment_policy.inherit=all -m <model>` (corrected 2026-09-17 — `codex exec -a never …` exits 2) |
+| rules | the project-level execpolicy file `<repo>/.codex/rules/*.rules` (see §8), live only once the project is trusted (§10) |
 
-Sessions persist (no `--ephemeral`) so a corrective retry can `codex exec resume <thread-id>`.
+Sessions persist (no `--ephemeral`) so a corrective retry can `codex exec resume
+<thread-id>`. That resume shape is narrower (corrected 2026-09-17): it accepts
+only `-c -m --json -o --output-schema` — no `-s`, `-C` or `-a`; the cwd comes
+from the child process and the sandbox is inherited from the persisted session.
 
 **Post-run**, the adapter writes the distillate file by merging:
 
@@ -160,15 +194,23 @@ Plugin hooks do not fire inside Codex. The execpolicy file restores the
 mechanical ones as `forbidden` prefix rules with justifications that read
 like the hook messages:
 
-- `git push` (any form, incl. `git -C … push`) — the orchestrator pushes.
-- `gh pr merge`, `gh pr create` — human/orchestrator actions.
-- `git commit` — **Codex never commits**; the orchestrator commits from the distillate, which keeps the close-keyword guard and commit-format reminder in force.
-- `git push --tags`, `git tag` — release actions.
-- paid-promotion and publish hosts — same host patterns as the §14 hook.
+Corrected 2026-09-17: `prefix_rule` tokens are **literal — there are no globs**
+(`*` matches a literal `*`). Alternatives are expressed as nested lists, so one
+rule covers several subcommands. The rules that ship:
 
-Each rule carries `match` / `not_match` examples so `codex execpolicy check`
-doubles as the test. Sandbox mode covers the rest (read-only roles cannot
-write; network off for reviewers).
+- `git push` / `git commit` / `git tag` (as `["git", ["push","commit","tag"]]`) — the orchestrator pushes, commits and tags; **Codex never commits**, which keeps the close-keyword guard and commit-format reminder in force.
+- a blanket `["git", "-C"]` — the `git -C <dir> …` form is the bypass no narrower pattern can catch (literal tokens can't look past `-C`), so the whole prefix is forbidden.
+- `gh pr` create/merge (as `["gh", "pr", ["create","merge"]]`) — human/orchestrator actions.
+
+Each rule carries `match` / `not_match` examples that `codex execpolicy check`
+runs. **That check is syntax-only** (corrected 2026-09-17): it validates the
+rule file and ignores the trust layer, so a verdict here proves the file parses,
+not that the rules are live in a session (see §10). Sandbox mode covers the rest
+(read-only roles cannot write; network off for reviewers).
+
+**Named parity gap:** the §14 paid-promotion / publish-host guards are
+host-pattern rules, which `prefix_rule` cannot express at all. They are recorded
+as a deliberate, accepted gap — not shipped as a rule.
 
 What is *not* replicated and why: the docs-reminder (`Write|Edit` hook) is
 covered by `high_impact_touched` in the distillate; the beat-enforcer keys on
@@ -190,9 +232,9 @@ text through one import hop.
 **`/connect codex`** (new mode, same proven-round-trip pattern as `server`):
 
 1. `codex --version` ≥ 0.146; `codex login status` (or equivalent) authenticated.
-2. Dry run: `codex exec -a never -s read-only --output-schema <schema> -o <tmp> "Reply with a distillate whose summary is OK"` and validate the file. This is the round-trip.
+2. Dry run (corrected 2026-09-17 — globals before `exec`): `codex -a never exec -s read-only --output-schema <schema> -o <tmp> "Reply with a distillate whose summary is OK"` and validate the file. This is the round-trip.
 3. If §10 names a code index with a stdio MCP command, `codex mcp add codegraph -- <cmd>` (skip with a note if already registered).
-4. Install the rules file where Codex loads project rules (path from the implementation probe); verify with `codex execpolicy check --rules … git push origin main` → forbidden.
+4. Install the rules file at `<repo>/.codex/rules/agentic-workflow.rules`; add the owner-approved user-layer trust entry (`[projects."<abs repo path>"] trust_level = "trusted"`) and re-read to confirm. **Prove the rule is live, not just parseable** (corrected 2026-09-17): `codex execpolicy check` is syntax-only and ignores trust, so it cannot show a rule firing in a session. Instead run a command that would otherwise succeed in read-only and read the rejection from the `--json` event stream — that reads through the trust layer.
 5. Only then write the §10 row: **Runtimes** `claude (default) · codex: gpt-6-astra (connected <date>) · rules: <path>`.
 
 **`/doctor`** adds one probe group, advisory when the §10 row is absent
@@ -218,10 +260,10 @@ names codex and any of binary/auth/rules/schema is missing.
 
 ## 13. Testing
 
-- **Unit** (`tools/run-codex.test.mjs`, no network): a fake `codex` shim on PATH records argv and emits canned `--json` events + last message. Assert: flag derivation for the three tool shapes; prompt block order; skill inlining; schema validation and the non-JSON path; `changed_paths` from a temp git repo; `high_impact_touched`; exit codes.
-- **Rules**: `codex execpolicy check --rules templates/codex.rules …` over the `match`/`not_match` examples, run by the hook-test harness.
+- **Adapter harness** (`tools/run-codex-test.mjs`, no network; corrected 2026-09-17 — the file is `run-codex-test.mjs`, reached by lint check 10.7, not `run-codex.test.mjs` nor the hook-test harness): a fake `codex` reached through `CODEX_BIN` records argv and emits canned `--json` events + last message. Assert: flag derivation for the three tool shapes; argv order (globals before `exec`); the narrower `exec resume` shape; prompt block order; skill inlining; schema validation and the non-JSON path; `changed_paths` from a temp git repo; `high_impact_touched`; exit codes; that `--ignore-rules` never appears.
+- **Rules**: the harness also runs every `match`/`not_match` example in `templates/codex.rules` through `codex execpolicy check` for a real syntax verdict.
 - **Conform**: fixture projects for the three `agents-md-primary` gap states.
-- **Eval** (`evals/scenarios`): one scenario where the orchestrator must route a brief marked `runtime: codex` to the adapter and never call the Agent tool.
+- **Eval** (`evals/scenarios/codex-routing`): one scenario where the orchestrator must route a brief marked `runtime: codex` to the adapter and never call the Agent tool. The fixture ships a fake `codex` at `fixture/bin/codex`; `evals/run.mjs` exports `CODEX_BIN=<fixture>/bin/codex` so the scenario cannot reach the real binary (corrected 2026-09-17 — a shim on PATH is not a mechanism the runner has).
 - **n=1** (owner-fired): one real mission brief on Astra, in this repo, reviewed by a Claude reviewer; record tokens on both sides in the ledger.
 
 ## 14. Decisions locked (2026-09-11, owner: "go" with defaults)
@@ -231,6 +273,14 @@ names codex and any of binary/auth/rules/schema is missing.
 3. Setup is a `/connect codex` mode with a round-trip proof, not a `/doctor fix` side effect.
 4. `AGENTS.md` is the primary conventions file; `CLAUDE.md` imports it.
 5. No automatic vendor fallback.
+6. (2026-09-17) The n=1 real-mission proof on Astra is owner-fired **after
+   merge** — it lands as a `## Closing` obligation row, never pre-booked into the
+   session estimate.
+7. (2026-09-17) A codex reviewer tune covers **routine checkpoints only**;
+   risk-class diffs (security boundary, publishing) override to the Claude
+   reviewer on Fable.
+8. (2026-09-17) Estimate 5 = 4 briefs + 1 checkpoint. Correctives are counted
+   only when they fire — never pre-booked into the estimate.
 
 ## 15. Deferred (to the obligations register on merge)
 
