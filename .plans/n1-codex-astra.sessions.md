@@ -51,9 +51,11 @@ without exploring. Work only in the repository you were given as the working
 directory (`--cwd`). All paths are repository-relative.
 
 **Hard rules for this run (read first):**
-- NEVER run a real `codex exec` / `codex` command of any kind. The only way you
-  exercise the adapter is `node tools/run-codex-test.mjs`, which points
-  `CODEX_BIN` at a fake shim it builds itself.
+- Never invoke `codex` yourself (no `codex exec`, no `codex` of your own). The
+  only way you exercise the adapter is `node tools/run-codex-test.mjs`, which
+  points `CODEX_BIN` at a fake shim it builds itself. The harness's own
+  `codex --version` / `codex execpolicy check` subprocesses are expected and
+  are not a violation.
 - NEVER `git commit`, `git push`, `git stash`, create branches, or open PRs.
   The runtime forbids it and the orchestrator commits your `changed_paths`.
   Leave your edits in the working tree.
@@ -70,23 +72,26 @@ directory (`--cwd`). All paths are repository-relative.
      comment + `USAGE` text; the `--cwd` bullet at 61–62 says "the tree
      `changed_paths` is read from") and lines **320–475** (`changedPaths()`
      at 323–336, `highImpactPatterns()`/`highImpactTouched()` 340–353,
-     `EMPTY`/`writeOut` 356–376, `main()` 378–463 — the spawn is
-     `spawnSync(bin, args, …)` at 410–412; `changedPaths(o.cwd)` is called at
+     `EMPTY`/`writeOut` 356–376, `main()` 378–463 — `const bin = resolveBin();` at 408, the spawn
+     `spawnSync(bin, args, …)` at 409–411; `changedPaths(o.cwd)` is called at
      434 and assigned at 442 (failed branch) and 453 (`// the tree wins`)).
-  2. `tools/run-codex-test.mjs` lines **1–175** (imports 29–35; `ok`/`group`
-     helpers 42–50; the fake codex `SHIM_SRC` 58–75 — driven by a JSON spec
+  2. `tools/run-codex-test.mjs` lines **1–175** (imports 28–34; `ok`/`group`
+     helpers 42–50; the fake codex `SHIM_SRC` 58–71 (comment 58–60, source
+     61–71) — driven by a JSON spec
      file `SHIM_SPEC`: `record`, `lastMessage`, `events`, `stderr`, `exit`;
      `EVENTS`/`DONE_MSG`/`withStatus` 89–109; `git()` helper 111;
-     `makeRepo()` 114–137 — a throwaway git repo with `tools/lint.mjs`
+     `makeRepo()` 114–138 — a throwaway git repo with `tools/lint.mjs`
      (high-impact) and `notes.txt` committed; `runAdapter()` 141–173 — spawns
      the adapter with `--out`/`--cwd` and returns `{status, out, record,
      outPath}`), lines **371–400** (e2e group: the tree is pre-dirtied at
-     375–376 BEFORE `runAdapter`, then 381–386 assert `changed_paths ===
+     376–377 BEFORE `runAdapter`, then 381–386 assert `changed_paths ===
      ['notes.txt','tools/lint.mjs']` and `high_impact_touched ===
-     ['tools/lint.mjs']`), lines **480–529** (`failed` case at 480–491 asserts
-     the failed distillate carries the same two paths; `invalid`/`noBin`
-     cases; the guardrail group 508–515; the runner tail 518–529 prints
-     `run-codex harness: clean — N case(s)`). Baseline today: **154 cases**.
+     ['tools/lint.mjs']`), lines **470–529** (`failed` case at 477–488, its assertion at 485–487
+     expects the same two paths; `invalid`/`noBin`
+     cases; the guardrail group ~508–515; the runner tail 518–529 prints
+     `run-codex harness: clean — N case(s)`). Baseline today: **154 cases with `codex` on PATH; 86 + 1 skipped without it**
+     (lines 284–290 probe `codex --version` and SKIP the 68 execpolicy-verdict
+     cases when it is absent).
   3. `evals/scenarios/codex-routing/checks.mjs` **whole (106 lines)** —
      `hasCodexDistillate(root)` 17–37 (the fallback predicate is line 31);
      `checks({ dir, events })` 39–106 (the `--out` resolution 81–91 calls the
@@ -101,7 +106,7 @@ directory (`--cwd`). All paths are repository-relative.
      `node tools/run-codex-test.mjs` and fails on a non-zero exit; nothing to
      change here, read it so you know the gate.
   6. `plugins/agentic-workflow/templates/distillate.schema.json` lines
-     **28–32** — the `changed_paths` description you will reword. (You already
+     **30–34** — the `changed_paths` description on line 31 you will reword. (You already
      hold the full schema via `--output-schema`.)
   7. `CHANGELOG.md` lines **1–14** (the `## [Unreleased]` stub at 7–9 stays
      `_(empty)_`; the 1.51.0 entry starts at 11) and lines **48–62** (the
@@ -126,15 +131,15 @@ directory (`--cwd`). All paths are repository-relative.
        path dirty before the run that codex edits again keeps the same status
        and is not reported; a path reverted to clean is not reported.
      - In `main()`: take `const before = statusSnapshot(o.cwd);` immediately
-       BEFORE `const bin = resolveBin();` / the `spawnSync(bin, …)` call (after
-       the `--ignore-rules` refusal), and change the one call at line 434 to
+       BEFORE `const bin = resolveBin();` (line 408; the `spawnSync(bin, …)`
+       is 409–411), after the `--ignore-rules` refusal, and change the one call at line 434 to
        `changedPaths(o.cwd, before)`. Both assignment sites (442, 453) stay.
      - Reword the `--cwd` USAGE bullet (61–62) to say the tree `changed_paths`
        is the **delta vs a snapshot taken before the spawn** — the
        orchestrator's own pre-spawn edits are not the run's. Keep the line
        widths of the surrounding text.
   2. **Harness for A2** in `tools/run-codex-test.mjs`:
-     - Extend `SHIM_SRC` (58–71): after writing the last message, if
+     - Extend `SHIM_SRC` (61–71): after writing the last message, if
        `spec.writes` is an object, for each `[rel, content]` do
        `fs.mkdirSync(path.dirname(rel), {recursive:true})` +
        `fs.writeFileSync(rel, content)` relative to `process.cwd()` (the shim
@@ -142,7 +147,7 @@ directory (`--cwd`). All paths are repository-relative.
        case already proves). Add `const path = require('node:path');` to the
        shim source.
      - Rework the e2e group (371–386): REMOVE the two pre-run
-       `writeFileSync` calls at 375–376 and their comment. Instead:
+       `writeFileSync` calls at 376–377 and their comment (372–375). Instead:
        pre-dirty ONLY `notes.txt` (simulating the orchestrator's ledger edit)
        and pass `spec: { writes: { 'tools/lint.mjs': '// edited by the run\n',
        'made-by-run.txt': 'made by the run\n' } }` to the `done` run (a
@@ -154,11 +159,11 @@ directory (`--cwd`). All paths are repository-relative.
        spawn is not reported as the run's change` (`notes.txt` absent), and
        keep `high_impact_touched is the intersection` (still
        `['tools/lint.mjs']`). Keep every other assertion in the group as is.
-     - The `failed` case (480–491): it runs against the same `repo` whose
+     - The `failed` case (477–488): it runs against the same `repo` whose
        tree is now dirty from the `done` run; give it its own
        `spec.writes` (e.g. `{ 'tools/lint.mjs': '// edited again\n' }` will
        NOT show — same status — so write a fresh path `failed-run.txt`) and
-       change the assertion at 488–491 to expect exactly `['failed-run.txt']`
+       change the assertion at 485–487 to expect exactly `['failed-run.txt']`
        (or the collapsed form if you used a directory) and still
        `thread_id === 'thr_abc123'`. Name it `the failed distillate still
        carries the tree-derived delta`.
@@ -197,7 +202,7 @@ directory (`--cwd`). All paths are repository-relative.
        empty. Name: `a done codex distillate satisfies shape discovery`.
      - Case C: `status: 'blocked'` → failure again. Name: `a blocked
        distillate does not satisfy shape discovery`.
-  5. **Schema prose**: in `templates/distillate.schema.json` line 30, change
+  5. **Schema prose**: in `templates/distillate.schema.json` line 31, change
      the `changed_paths` description to say the adapter overwrites it with the
      paths whose `git status --porcelain` line is new or changed **relative to
      a snapshot taken before the spawn** in `--cwd`. JSON must stay valid.
@@ -217,9 +222,15 @@ directory (`--cwd`). All paths are repository-relative.
 
 - **Verify** (run all three, in this order, from the repository root; report
   each in the distillate's `gates` with its first failing line if red):
-  1. `node tools/run-codex-test.mjs` → exit 0, last line `run-codex harness:
-     clean — N case(s)` with **N > 154**; every case named in Do 2 and Do 4
-     prints `ok`.
+  1. `node tools/run-codex-test.mjs` → exit 0, zero `FAIL` lines; every case
+     named in Do 2 and Do 4 prints `ok`; last line `run-codex harness: clean —
+     N case(s)…` with **N ≥ 160 when that line has no `skipped`, N ≥ 92 when
+     it says `1 skipped`** (the execpolicy-verdict group needs `codex` on
+     PATH, which may not resolve inside your sandbox — a skip is NOT a failure
+     and NOT something to fix; report the last line verbatim in the
+     distillate's `gates[].first_error`-free `name`/`result`, e.g. name
+     `node tools/run-codex-test.mjs (92 cases, 1 skipped)`, result `green`;
+     the reviewer re-runs outside the sandbox).
   2. `node tools/lint.mjs` → exit 0, clean (it re-runs the harness as check
      10.7 and hook-test as 8/10.6; a `.plans/` grammar failure here means you
      touched `.plans/` — you must not have).
@@ -246,7 +257,10 @@ directory (`--cwd`). All paths are repository-relative.
 `mission/n1-codex-astra` and spawns ONE fresh one-shot `reviewer` (Claude —
 **this is the Claude half of the n=1**; run it on Fable per the owner's
 evaluation-tier rule) over `587aee6..HEAD`. The reviewer re-runs the three
-gates, diff-checks the done criteria above, and confirms no `.plans/` edit and
+gates **with `codex` on PATH** (so the harness's execpolicy-verdict group runs:
+expect ≥ 160 cases, no skip — a `1 skipped` line from the Codex sandbox is
+expected in the distillate and is not a defect), diff-checks the done criteria
+above, and confirms no `.plans/` edit and
 no commit came from the Codex run. Then, per gate policy `human-merge`:
 §10 Staging = none → lint green on the branch + `claude --plugin-dir` load in a
 consumer session → PR to `main` for the owner. After the reviewer returns, the

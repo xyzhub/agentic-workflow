@@ -56,10 +56,9 @@ done (verified, not merely written)._
 _Mirrored from the master plan with their recommendations. Empty once the
 human has answered them all._
 
-- Which `.plans/runs/` artefacts get committed? — **Recommendation:** commit
-  the distillate `.plans/runs/n1-codex-astra-S1.json` (the n=1 evidence);
-  sub-ignore `.plans/runs/*.events.jsonl` and `.plans/runs/*.raw.txt` in the
-  orchestrator's own commit.
+(none — the `.plans/runs/` question was ruled 2026-09-17: commit the
+distillate JSON, ignore `*.events.jsonl` / `*.raw.txt`; landed in 17d1560
+`.gitignore`)
 
 ## Standing steers
 
@@ -80,7 +79,7 @@ MUST carry `→ OB-<n>`. `Closed: YYYY-MM-DD` is written only once every row is
 
 - [ ] branch + worktree cleanup · added 2026-09-17 (planner) — do: delete `mission/n1-codex-astra` (local and remote) and prune its stale worktrees — when: the PR to `main` is merged AND the lint run on its merge commit concluded green — probe: `gh pr list --state merged` + `gh run list`
 - [ ] docs/record synced · added 2026-09-17 (planner) — do: confirm the CHANGELOG 1.51.1 entry, the `run-codex.mjs` `--cwd` usage text and the distillate schema's `changed_paths` description all say "delta vs the pre-spawn snapshot" — when: S1 is `[x]` and the checkpoint reviewer returned APPROVE — probe: manual
-- [ ] live-verify after reinstall · added 2026-09-17 (planner) — do: confirm in a real session that a codex run's distillate `changed_paths` omits the orchestrator's pre-spawn ledger edit — when: the 1.51.1 release is installed (`/plugin update` + `/reload-plugins`, post-merge) and the next codex-routed brief returns — probe: manual
+- [ ] live-verify after reinstall · added 2026-09-17 (planner) — do: confirm in a real session that a codex run's distillate `changed_paths` omits the orchestrator's pre-spawn ledger edit — when: the 1.51.1 release is installed (`/plugin update` + `/reload-plugins`, post-merge) and the next codex-routed brief returns — probe: manual _(cannot fire before the next codex brief after merge; expect `/agentic-workflow:settle` to park it `[~] … → OB-<n>`)_
 - [ ] version bumped + stamped · added 2026-09-17 (planner) — do: bump `plugins/agentic-workflow/.claude-plugin/plugin.json` to 1.51.1 (the §10 Version pin), stamp `docs/WORKFLOW.md` line 3 `protocol-master: v1.51.1`, and stamp this mission's CHANGELOG entry with 1.51.1 (all three are in the S1 brief's Do list; verify them in the diff) — when: this mission's CHANGELOG entry names a version — probe: manual
 - [ ] n=1 tokens recorded · added 2026-09-17 (planner) — do: copy the adapter distillate's `usage` (Astra `input_tokens`/`output_tokens` from `.plans/runs/n1-codex-astra-S1.json`) and the Claude reviewer's usage into the `n=1 real Astra run` row of `.plans/runtime-agnostic-codex.state.md` as its `· fired 2026-09-17 (…)` evidence, and note the outcome (APPROVE/REVISE, corrective count) beside it — when: the checkpoint reviewer returns — probe: manual
 
@@ -97,7 +96,8 @@ what the next session needs._
 
 - 2026-09-17 planner: trio written. One brief (S1, `backend` → codex:gpt-6-astra
   via the tune override), one Claude checkpoint. Baseline harness 154 cases;
-  lint clean on `mission/n1-codex-astra` @ 8ddf1d5. Open question 1 (which
-  `.plans/runs/` artefacts to commit) goes to the owner before S1 spawns.
+  lint clean on `mission/n1-codex-astra` @ 8ddf1d5. `.plans/runs/` artefact
+  question ruled the same day (17d1560). Plan-judge REVISE (B1 harness skip
+  criterion, A1 line drift, A2 codex-rule wording, A3/A5 ledger) applied.
 
 Next up: S1

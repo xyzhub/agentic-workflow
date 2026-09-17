@@ -104,12 +104,20 @@ status` snapshot; A3 checks.mjs:87 shape fallback should require `status ===
 - 2026-09-17 — Gate policy `human-merge`; §10 Staging = none, so "staging
   verify" is lint green on the branch + `claude --plugin-dir` load in a
   consumer session, then one PR to `main`. Merge is the owner's.
+- 2026-09-17 — `.plans/runs/` artefacts: the distillate JSON is committed (it
+  is the n=1 evidence); `*.events.jsonl` and `*.raw.txt` are sub-ignored
+  (landed in 17d1560 `.gitignore`). Ruled the day the question was raised.
+- 2026-09-17 — Harness gate inside the Codex sandbox: `tools/run-codex-test.mjs`
+  SKIPs its 68 execpolicy-verdict cases when `codex` is not on PATH (86 + 1
+  skipped vs 154 with it). The brief's criterion is therefore zero `FAIL` +
+  the named cases `ok` + N ≥ 160 (no skip) or N ≥ 92 (`1 skipped`); the
+  reviewer re-runs with `codex` on PATH. (Plan-judge B1.)
 - 2026-09-17 — Estimate 1 session. A corrective (`S1-fix`, resumed via the
   distillate's `runtime.thread_id`) is counted when it fires, never pre-booked.
 
 ## Risks
 
-- **Astra breaks the existing e2e harness cases.** Lines 371–384 and 488–491
+- **Astra breaks the existing e2e harness cases.** Lines 376–386 and 485–487
   of `tools/run-codex-test.mjs` pre-dirty `tools/lint.mjs` + `notes.txt` and
   expect both in `changed_paths`; with the delta fix they will vanish. The brief
   pre-resolves this: the fake codex shim gains a `writes` spec key so the RUN
@@ -127,7 +135,8 @@ status` snapshot; A3 checks.mjs:87 shape fallback should require `status ===
   `--resume <thread_id> --note "return only the JSON distillate"`, counted as
   `S1-fix`.
 - **`.plans/runs/` artefacts.** The adapter writes `<out>.events.jsonl` beside
-  the distillate (full JSONL, includes the prompt). See open question 1.
+  the distillate (full JSONL, includes the prompt). Ruled: JSON committed,
+  streams sub-ignored (locked decision above).
 
 ## Open questions
 
