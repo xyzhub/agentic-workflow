@@ -133,7 +133,7 @@ Read `.plans/<mission>.state.md` → `Next up:`. For each pending brief:
    main session for cross-cutting work) and spawn it on the resolved runtime:
    - **`claude`** (the default — every run today is exactly this, unchanged): the
      **Agent tool**, as now.
-   - **`codex`**: `node $CLAUDE_PLUGIN_ROOT/tools/run-codex.mjs --role <role>
+   - **`codex`**: `node ${CLAUDE_PLUGIN_ROOT}/tools/run-codex.mjs --role <role>
      --brief <file>#<anchor> --cwd <repo> --out <distillate.json>
      [--model <m>] [--effort <low|medium|high>]` via the **Bash tool with
      `run_in_background: true`**; on return read the distillate **FILE** named by
