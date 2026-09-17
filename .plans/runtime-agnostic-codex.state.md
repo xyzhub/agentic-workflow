@@ -15,7 +15,7 @@ everything since the last one — §12 LA-6)._
 Issue: #79 (plan-judge — the PR to `main` closes it)
 
 Estimate: 5 sessions
-Sessions used: 3
+Sessions used: 4
 
 _The two budget lines above are read by the mission-budget hook every turn. The
 planner writes `Estimate:` (5 = 4 briefs + 1 checkpoint; a corrective counts only
@@ -49,8 +49,8 @@ done (verified, not merely written)._
 
 - [x] S1 — mechanics: `tools/run-codex.mjs`, distillate schema, `codex.rules`, `tools/run-codex-test.mjs` + lint wiring (branch `mission/runtime-agnostic-codex`)
 - [x] S2 — conventions + commands: `AGENTS.md` primary, conform ladder entry, bootstrap/sync/adopt, `/tune` runtime, `/connect codex`, `/doctor` probe
-- [~] S3 — routing + plan-judge: `mission.md` step 2/3 + the codex-reviewer Fable override, planner `runtime:` field, the permanent plan-judge (#79) in `mission.md` §1 / `plan.md` / `reviewer.md` / WORKFLOW §5 + the estimate rule at its three sites, WORKFLOW §3/§6/§9/§10 and this repo's §10 row
-- [ ] S4 — record: memo corrections, CHANGELOG 1.51.0, version bump, both READMEs, `codex-routing` eval scenario + fixture + the `evals/run.mjs` `CODEX_BIN` edit (runs after S3 — it documents what S3 writes)
+- [x] S3 — routing + plan-judge: `mission.md` step 2/3 + the codex-reviewer Fable override, planner `runtime:` field, the permanent plan-judge (#79) in `mission.md` §1 / `plan.md` / `reviewer.md` / WORKFLOW §5 + the estimate rule at its three sites, WORKFLOW §3/§6/§9/§10 and this repo's §10 row
+- [~] S4 — record: memo corrections, CHANGELOG 1.51.0, version bump, both READMEs, `codex-routing` eval scenario + fixture + the `evals/run.mjs` `CODEX_BIN` edit (runs after S3 — it documents what S3 writes)
 - [ ] Checkpoint ckpt-p1 — ONE fresh reviewer over the whole diff after S4 (**Fable required**: execpolicy rules + sandbox flag derivation are a security boundary), then staging → verify → one PR to `main` closing #79
 
 ## Open questions
@@ -140,7 +140,16 @@ what the next session needs. Newest on top; crash-safe by write-ahead._
   event-stream rejection + step (iii) trust re-read; `tune.md` model-vs-runtime
   invariant. Planner override removed a0b3e12 (planner stays Fable).
 - 2026-09-17 orchestrator (write-ahead): S3 started — `devops` builder (Opus 4.8).
-  Sessions used 2 → 3. Result pending.
+  Sessions used 2 → 3. **S3 DONE** — commit 100b91b (7 files: mission.md §1
+  plan-judge + §2/§3 runtime routing, plan.md §4, planner.md, reviewer.md plan-judge
+  mode 7/7 checklist, WORKFLOW.md §3/§5/§6/§9/§10, mission-plan.md, this repo's
+  docs/WORKFLOW.md §10 Runtimes row). Orchestrator re-ran `lint.mjs`: clean.
+  Deviations: docs/WORKFLOW.md:370 (synced mirror of the §5 estimate rule) left
+  for `/sync` per brief; the builder-with-network gap must be confirmed in the
+  trio (see Risks / Closing). Reviewer: mission.md §2/§3 codex spawn+return
+  semantics; the §3 parity "named gap" wording; reviewer.md checklist vs #79.
+- 2026-09-17 orchestrator (write-ahead): S4 started — `devops` builder (Opus 4.8).
+  Sessions used 3 → 4. Result pending.
 
 - 2026-09-11 planner (A3 split): owner ruled _"Split now, Estimate 5"_. S3 split
   at its documented point — S3 keeps routing + the plan-judge (#79), the new S4
@@ -196,4 +205,4 @@ what the next session needs. Newest on top; crash-safe by write-ahead._
   `--ignore-rules` proves project-level `.rules` files are loaded, so OQ1 is
   narrowed to the directory. Three open questions await the owner before S1.
 
-Next up: S3
+Next up: S4
