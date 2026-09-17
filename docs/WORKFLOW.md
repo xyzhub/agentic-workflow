@@ -835,6 +835,7 @@ drive the real flow, confirm monitoring is receiving, record the result).
 | **Eval suite** (behavioral) | `node evals/run.mjs` — tier 2, before releases, never CI (~$1–5/scenario); flaky scenario → re-run it alone before calling regression |
 | **High-impact files** (docs-reminder targets) | `plugins/agentic-workflow/templates/WORKFLOW.md`, `hooks/hooks.json`, `tools/lint.mjs`, `agents/*`, `commands/*` |
 | **Code index** | none — markdown-only repo; `rg` + the tier-1 lint's cross-reference checks suffice |
+| **Runtimes** | `claude` (default) · codex: not connected (repo not trusted in `~/.codex/config.toml`) |
 | **Memory/recall store** (optional) | none |
 | **Version pin** | `plugins/agentic-workflow/.claude-plugin/plugin.json` → `version` (bumped on release; merging to `main` IS the release, so there is no tag to read) |
 | **Owner channel** (§12) | Slack, **shared DM** (reused app `agentic_operating_pro`, workspace XYZ — connected & round-trip-verified 2026-07-08). Send: `chat.postMessage` with `$SLACK_BOT_TOKEN` → `$SLACK_OWNER_DM`, every message prefixed `[venture-workflow-plugin]`. Inbound: emoji-reaction decisions (✅/❌/✋ via `reactions.get` polling, verified against `$SLACK_OWNER_ID`) + typed `approve <id>` fallback. Env names in `.env.example`; values in the uncommitted `.env` |
