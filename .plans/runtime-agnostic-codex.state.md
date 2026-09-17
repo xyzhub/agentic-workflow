@@ -213,6 +213,10 @@ what the next session needs. Newest on top; crash-safe by write-ahead._
   residue + add `["git","send-pack"]`; A2 run-codex.mjs:453 `changed_paths`
   should be the delta vs a pre-spawn `git status` snapshot; A3 checks.mjs:87
   shape fallback should require `status === "done"`.
+- 2026-09-17 orchestrator: **PR #80 opened** → `main` from
+  `mission/runtime-agnostic-codex` @ 5d75d57 (content 8dd87cd); the PR body
+  carries the #79 close directive. Merge policy human-only — awaiting the owner.
+  Chronicler spawned for the record.
 
 - 2026-09-11 planner (A3 split): owner ruled _"Split now, Estimate 5"_. S3 split
   at its documented point — S3 keeps routing + the plan-judge (#79), the new S4
