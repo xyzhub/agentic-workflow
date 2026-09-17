@@ -16,6 +16,51 @@ grades the protocol's own behavior the way a QA team would.
 
 ---
 
+## 2026-09-17 — a second runtime: work can now run on OpenAI's Codex CLI, not just Claude
+
+### Milestone: "Fable plans, Astra executes" — the protocol proven vendor-agnostic
+
+Until now, every piece of work in this project ran as a Claude subagent. This
+mission gave the protocol a second option: any of its specialist roles
+(backend builder, security reviewer, and so on) can now run instead on
+OpenAI's Codex CLI, using OpenAI's GPT-6 model (nicknamed "Astra" in this
+project's shorthand). The choice is made per role or per piece of work, and a
+project that never opts in behaves exactly as it did before — nothing changes
+by default. The idea in one line: the planning and reviewing still happens on
+Fable, this project's name for its senior review tier; only the doing moves.
+
+**A safety net caught five mistakes before any work began.** Before this
+mission wrote a single line of code, a new standing reviewer role — the
+"plan-judge" — read the plan itself and found five errors in the written
+design that would have cost real working time to discover the hard way (wrong
+command-line flags, a wrong assumption about how a safety file is loaded, and
+similar). All five were fixed in the plan before anyone touched code. The
+owner liked the result enough to make this plan-judge step permanent for
+every future mission, not just this one.
+
+**The end-of-work review caught three real problems, all fixed.** When the
+work was done, a fresh reviewer — again on Fable, because this touches
+security — checked the whole result and sent it back with three blocking
+findings: first, a variable naming this plugin's own installation folder was
+written without the safety braces that make it work reliably, which meant the
+new Codex path silently never ran at all in the automated test; second, the
+list of commands blocked from running inside Codex could be slipped past
+using common shell wrapper tricks (running a blocked command inside another
+program that hides it); third, the work had never been checked by the
+project's automated test system (CI) at all. A follow-up session fixed all
+three, closed ten smaller suggestions from the same review, and the reviewer
+came back and approved the result cleanly.
+
+**Where it stands.** The finished work is sitting in pull request #80 (PR
+#80), a formal request to merge this mission's changes into the project's
+main line of code, opened today and awaiting the owner's own review and
+merge — it has not shipped yet. The mission took six working sessions against
+a plan of five, one over.
+
+**Model assignments, for the record.** As of this mission, the owner's
+standing rule is: hands-on building work runs on Anthropic's Opus 4.8 model,
+while planning and every review runs on Fable.
+
 ## 2026-08-17 — correction: two numbers in this file had drifted
 
 The entry below says the clock-guard harness holds 55 cases. That was true
