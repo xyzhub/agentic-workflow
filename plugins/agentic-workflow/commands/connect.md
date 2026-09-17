@@ -1,6 +1,6 @@
 ---
-description: Interactive setup with a proven round-trip before anything is recorded — the owner channel (telegram | slack), or a remote work server (server <tailscale-host>) so heavy work (Docker, integration suites, builds) runs off the local machine. Writes the §10 rows only after the tests pass.
-argument-hint: '[telegram | slack | server <tailscale-hostname>]'
+description: Interactive setup with a proven round-trip before anything is recorded — the owner channel (telegram | slack), a remote work server (server <tailscale-host>) so heavy work (Docker, integration suites, builds) runs off the local machine, or a codex runtime (codex) so agents can be delegated to the Codex CLI under committed guardrails. Writes the §10 rows only after the tests pass.
+argument-hint: '[telegram | slack | server <tailscale-hostname> | codex]'
 allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, AskUserQuestion, WebFetch]
 ---
 
@@ -25,6 +25,9 @@ transcript — rotate it — and continue with the rotated one.
 
 **`server` mode** — `$ARGUMENTS` starts with `server` → skip the owner-channel
 flow entirely and run the **remote work server** setup at the end of this file.
+
+**`codex` mode** — `$ARGUMENTS` starts with `codex` → skip the owner-channel
+flow entirely and run the **codex runtime** setup at the end of this file.
 
 ## 0. Pick the transport (AskUserQuestion, unless `$ARGUMENTS` says)
 
@@ -163,3 +166,67 @@ you.
    access" (names and recipes, no values). Report: what runs remotely now,
    what stayed local, and the one command that undoes it (`docker context use
    default`, remove the §10 row).
+
+
+---
+
+## Codex runtime — `/agentic-workflow:connect codex`
+
+Goal: let the orchestrator route a role to the Codex CLI (§5 runtime
+selection) under guardrails that travel with the repo. The plugin's shell
+blocks are Claude Code hooks — they never fire for a Codex run — so the same
+"never push / commit / open or merge a PR" blocks are restated in Codex's
+execpolicy layer (`.codex/rules/agentic-workflow.rules`). Every step is verified
+before the next; **nothing is recorded until the round trip proves out**. The
+secret rule holds — no tokens in the conversation.
+
+`-a never` / `--search` are TOP-LEVEL codex options (they come BEFORE the `exec`
+subcommand); the adapter (`${CLAUDE_PLUGIN_ROOT}/tools/run-codex.mjs`) already
+builds argv that way — the commands below match it and must not contradict it.
+
+1. **Binary + auth.** `codex --version` ≥ 0.146; an authenticated login
+   (`codex login status`, or the equivalent the installed version prints).
+   Either missing → stop with the exact install/login command; record nothing.
+2. **Install the rules file (syntax check only).** Copy
+   `${CLAUDE_PLUGIN_ROOT}/templates/codex.rules` to
+   `.codex/rules/agentic-workflow.rules` in the target repo (Codex's Project
+   config layer, committed with the repo). Then
+   `codex execpolicy check --rules .codex/rules/agentic-workflow.rules git push origin main`
+   → `forbidden`. **Label this a syntax check**: `execpolicy check` reads the
+   file only and never consults the trust layer, so it returns `forbidden` even
+   in an untrusted repo — it proves the pattern parses, NOT that the rule is
+   live in a session. Do not treat this pass as protection.
+3. **Trust (the gate that makes the rules live).** Project-layer rules are
+   loaded but **disabled until the repo is trusted**. Ask with AskUserQuestion,
+   and ONLY on an explicit okay add
+   `[projects."<absolute repo path>"]` with `trust_level = "trusted"` to
+   `~/.codex/config.toml` — never a silent user-config edit. Then **re-read**
+   `~/.codex/config.toml` and confirm the `[projects."<absolute repo path>"]`
+   table is present with `trust_level = "trusted"` (this catches a write that
+   did not land, or landed under a different path spelling). If the owner
+   declines: stop, write no §10 row, and report that the guardrails are
+   loaded-but-disabled (inert).
+4. **Code index as an MCP server (when §10 has one).** If §10 **Code index**
+   names a stdio MCP command, `codex mcp add <name> -- <cmd>` (skip with a note
+   if already registered). §10 **Code index** = `none` → a no-op with a note.
+5. **Round-trip proof (one cheap read-only run).** Globals first:
+   `codex -a never exec -s read-only --json --output-schema <schema> -o <tmp> "<prompt>"`
+   where `<schema>` is `${CLAUDE_PLUGIN_ROOT}/templates/distillate.schema.json`.
+   The prompt asks the model to run a command the read-only sandbox would
+   otherwise ALLOW — `git commit --dry-run` or `gh pr create --help`, **never**
+   `git push --dry-run` (a push fails on the read-only network denial with or
+   without trust, so it cannot distinguish the two — a false positive). Read the
+   rejection from the `--json` **event stream**, not the model's prose: the proof
+   is an execpolicy-rejection event PLUS a schema-valid distillate at `<tmp>`,
+   which together demonstrate binary, auth, schema, rules AND trust in one shot.
+   (This is the owner's interactive step — it is the only real `codex exec` the
+   machinery runs.)
+6. **Record — only now.** Add the §10 **Runtimes** row:
+   `claude (default) · codex: <model> (connected <date>) · rules: .codex/rules/agentic-workflow.rules · trust: user-layer entry present`.
+   Leave the edits uncommitted for review; suggest `/agentic-workflow:doctor` as
+   the ongoing health check for the runtime.
+
+Output: what was configured, what the round trip proved (rejection event ✅ +
+valid distillate ✅), the files touched (`.codex/rules/agentic-workflow.rules`,
+the §10 row), and — if anything failed or the owner declined trust — exactly
+where it stopped and the state left behind.
