@@ -107,6 +107,18 @@ auto-detect **impeccable** — Paul Bakaus's design-quality plugin (Apache-2.0,
 github.com/pbakaus/impeccable) — and apply its rules when it is installed
 alongside the workflow; when it isn't, they proceed exactly as today.
 
+Runtimes (since 1.51.0): a role is a markdown prompt; the runtime is a spawn
+detail. Any role can run on a **second runtime** — the Codex CLI (GPT-6 Astra) —
+instead of a Claude subagent, chosen per brief (`runtime: codex`) or per agent
+(`/agentic-workflow:tune <role> codex`). A **runtime selector** resolves the
+runtime (brief field → tune override → default `claude`); the **adapter**
+`tools/run-codex.mjs` runs the role on `codex exec` with the sandbox derived
+from the role's `tools:`, guardrail parity from `templates/codex.rules`, and
+returns the same bounded distillate the protocol already demands — the
+orchestrator owns the ledger and the commit. `AGENTS.md` is the runtime-neutral
+conventions file both runtimes read; `CLAUDE.md` imports it. A project that never
+opts in is unchanged.
+
 ## The commands
 
 **Entry doors**
@@ -135,8 +147,8 @@ alongside the workflow; when it isn't, they proceed exactly as today.
 
 | Command | Does |
 |---|---|
-| `/agentic-workflow:plan` | Feature front door: interactive interview → the team drafts brief/journeys/memos/metrics → counsel → ONE approval → the planner's trio, ready to run |
-| `/agentic-workflow:mission` | Plan + drive a mission — **one session and one one-shot review by default**; `phases` opts into a multi-phase trio (master plan · session briefs · ledger) with an honest `Estimate:` and a hard 1.5× overrun stop; every phase lands via **staging → verify → PR to main**; `continue` resumes from the ledger, `replan` reconciles it with reality; loop-drivable |
+| `/agentic-workflow:plan` | Feature front door: interactive interview → the team drafts brief/journeys/memos/metrics → counsel → ONE approval → the planner's trio, judged by an automatic **plan-judge** (a fresh read-only reviewer, APPROVE/REVISE) before it runs |
+| `/agentic-workflow:mission` | Plan + drive a mission — **one session and one one-shot review by default**; `phases` opts into a multi-phase trio (master plan · session briefs · ledger) with an honest `Estimate:` and a hard 1.5× overrun stop; a **plan-judge** vets the trio; each brief routes to its runtime (`claude` subagent or, on a `runtime: codex` brief, the Codex adapter); every phase lands via **staging → verify → PR to main**; `continue` resumes from the ledger, `replan` reconciles it with reality; loop-drivable |
 | `/agentic-workflow:counsel` | Convene 2–3 lens-partitioned advisors on a pending decision → one-page brief in the decision log |
 | `/agentic-workflow:audit` | The V4 adversarial multi-vote on demand: lens-partitioned fresh reviewers, conservative merge, findings ranked and routed |
 | `/agentic-workflow:release` | Cut a version on a release branch: changelog, PR, and the post-merge tag commands — the human fires them |
@@ -151,9 +163,9 @@ alongside the workflow; when it isn't, they proceed exactly as today.
 
 | Command | Does |
 |---|---|
-| `/agentic-workflow:doctor` | Machinery diagnosis: environment tools (codegraph, ripgrep, jq, gh), §10 truthfulness (rows must RESOLVE), records, orphaned ledgers; `fix` installs missing dev tools and repairs provably-wrong rows |
-| `/agentic-workflow:tune` | Upgrade an underperforming agent's model per project (shadow copy in `.claude/agents/`); `reset` restores the default |
-| `/agentic-workflow:connect` | Interactive owner-channel setup (Telegram or Slack): guided steps, auto-discovered IDs, a proven round-trip test |
+| `/agentic-workflow:doctor` | Machinery diagnosis: environment tools (codegraph, ripgrep, jq, gh), §10 truthfulness (rows must RESOLVE), records, orphaned ledgers, and a **Runtimes** probe (fail-closed when §10 names codex and binary/auth/rules/schema is missing); `fix` installs missing dev tools and repairs provably-wrong rows |
+| `/agentic-workflow:tune` | Retune an agent per project (shadow copy in `.claude/agents/`): a Claude model tier, or a second **runtime** — `codex[:<model>] [effort]` to run the role on the Codex CLI; `reset` restores the default |
+| `/agentic-workflow:connect` | Interactive owner-channel setup (Telegram or Slack) or a **`codex`** runtime setup (binary + auth, install the rules file, owner-approved trust entry, a proven read-only round-trip, then the §10 Runtimes row): guided steps, auto-discovered IDs, a proven round-trip test |
 | `/agentic-workflow:sync` | Conform a project to the installed plugin: re-copy the protocol master (§10 + Local amendments preserved verbatim) and apply the structure ladder (`tools/conform.mjs`) — missing §10 rows, ledger budget fields, roadmap epic view, catalog tooling/files; hands off to `groom`/`adopt` for what needs the tracker or a seed |
 | `/agentic-workflow:ingest` | Harvest a reusable first-party artifact into the §13 portfolio **commons**: copy it into the registry repo under `commons/code/<slug>/`, pin provenance, write its index entry — a delegable bookkeeping PR |
 

@@ -1,6 +1,6 @@
 # The Workflow — one agentic protocol from idea to viable product
 
-<!-- protocol-master: v1.50.1 -->
+<!-- protocol-master: v1.51.0 -->
 
 ## Quick reference — humans start here
 
