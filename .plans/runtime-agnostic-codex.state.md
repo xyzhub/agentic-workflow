@@ -1,5 +1,5 @@
 ---
-status: living
+status: complete
 owner-agent: planner
 refresh-trigger: every-ship
 ---
@@ -68,6 +68,9 @@ the 1.51.0 merge as the `## Closing` row below; `Estimate:` unchanged by that an
 reviews stay on Fable and the orchestrator overrides the tune. All three are dated
 locked decisions in the master plan; execution may start at S1.)
 
+Closed: 2026-09-17
+
+
 ## Standing steers
 
 _File state preserves **decisions** but loses **taste** — how the human wants the
@@ -118,6 +121,12 @@ Deviating is allowed; deviating silently is not (§4)._
 
 _≤10 lines per entry: what this session did, the verify signal, the branch, and
 what the next session needs. Newest on top; crash-safe by write-ahead._
+
+- 2026-09-17 orchestrator (settle, CLOSE): every Closing row `[x]` or `[~] → OB-n`
+  (n=1 fired via mission `n1-codex-astra`, PR #85 merged f45423c, v1.51.1).
+  **Closed: 2026-09-17. Sessions used 6 / Estimate 5 = 1.2×** (the retro's first
+  number). Follow-ups: #81 hooks parity (incl. zsh -c/-ic re-add, adapter
+  mkdir/delta ordering), #82 Codex plugin packaging, OB-17..20.
 
 - 2026-09-17 orchestrator (settle): PR #80 MERGED 161defd (CI green); plugin
   1.51.0 installed by the owner. Reap fired (rung 2): `feat/` + `mission/`
@@ -280,4 +289,4 @@ what the next session needs. Newest on top; crash-safe by write-ahead._
   `--ignore-rules` proves project-level `.rules` files are loaded, so OQ1 is
   narrowed to the directory. Three open questions await the owner before S1.
 
-Next up: live-verify after reinstall (/doctor + /connect codex in a real 1.51.0 session), then the owner fires the n=1 Astra run; mission stays OPEN until both rows fire
+Next up: (none — mission CLOSED 2026-09-17; follow-ups live in #81, #82 and OB-17..20)
