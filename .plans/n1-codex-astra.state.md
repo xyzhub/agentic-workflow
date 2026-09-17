@@ -94,7 +94,17 @@ _Any departure from a brief — logged the moment it happens, with why._
   judge pass (protocol). **S1 started on codex:gpt-6-astra** via the backend
   tune: `run-codex.mjs --role backend --brief .plans/n1-codex-astra.sessions.md#S1
   --model gpt-6-astra --effort medium`, background, stdin closed, distillate →
-  `.plans/runs/n1-codex-astra-S1.json`. Sessions used 0 → 1. Result pending.
+  `.plans/runs/n1-codex-astra-S1.json`. Sessions used 0 → 1. **S1 BLOCKED** (adapter
+  exit 0 — adapter bug: blocked must exit 3): Astra read the brief + pre-resolved
+  files (3 read commands completed), then its single edit-and-test command
+  (`python3 - <<PY … PY; node tools/run-codex-test.mjs`) was REJECTED by OUR OWN
+  rule `["zsh",["-c","-lc","-ic"]]` — Codex wraps every command as
+  `/bin/zsh -lc` and normalises `/bin/zsh` → `zsh` for matching; read-only
+  commands passed via Codex's safe-command path, the write path hit the policy.
+  No file changed. Astra usage: 156,072 in / 3,193 out (thread
+  01a0b0ce-ffc6-7220-97c0-30d7c59de1c3). Gates skipped by the run; orchestrator
+  re-ran: harness 154 clean, lint clean (tree unchanged). Corrective would be
+  session 2 = 2.0× estimate → OVERRUN stop → owner scope decision pending.
 
  (newest first)
 
