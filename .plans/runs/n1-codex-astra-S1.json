@@ -1,0 +1,41 @@
+{
+  "status": "blocked",
+  "summary": "No edits were applied. Initial git status --porcelain showed only pre-existing ?? .plans/runs/; it was untouched.\nAutomatic approval review rejected the edit-and-test command through /bin/zsh -lc because policy forbids that shell-wrapper invocation.",
+  "changed_paths": [
+    ".plans/runs/"
+  ],
+  "gates": [
+    {
+      "name": "node tools/run-codex-test.mjs",
+      "result": "skipped",
+      "first_error": null
+    },
+    {
+      "name": "node tools/lint.mjs",
+      "result": "skipped",
+      "first_error": null
+    },
+    {
+      "name": "node plugins/agentic-workflow/tools/conform.mjs",
+      "result": "skipped",
+      "first_error": null
+    }
+  ],
+  "deviations": [],
+  "next": [
+    "Orchestrator must resolve the shell invocation policy conflict and rerun S1.",
+    "Implementation and independent review remain pending."
+  ],
+  "blocked_reason": "The owner must resolve the policy rejection of the /bin/zsh -lc command containing the Python edit script and node tools/run-codex-test.mjs; the brief requires stopping without a workaround.",
+  "runtime": {
+    "name": "codex",
+    "model": "gpt-6-astra",
+    "effort": "medium",
+    "thread_id": "01a0b0ce-ffc6-7220-97c0-30d7c59de1c3"
+  },
+  "usage": {
+    "input_tokens": 156072,
+    "output_tokens": 3193
+  },
+  "high_impact_touched": []
+}

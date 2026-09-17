@@ -59,7 +59,8 @@ const USAGE = `run-codex.mjs — run one workflow role on the Codex CLI.
             file (relative to --cwd), e.g. .plans/m.sessions.md#S3. A value
             that is not an existing file is used as the brief text itself.
   --cwd     the working directory of the run. Also the tree \`changed_paths\`
-            is read from — the tree, never the model's claim.
+            is the delta vs a snapshot taken before the spawn. The
+            orchestrator's own pre-spawn edits are not the run's changes.
   --out     where the distillate JSON is written. This is the interface.
   --model   default gpt-6-astra.       --effort  default medium.
   --resume  continue a persisted session (sessions are not --ephemeral).
@@ -320,19 +321,29 @@ export function parseEvents(text) {
 }
 
 // ── the tree, not the model's claim ────────────────────────────────────────
-export function changedPaths(cwd) {
+export function statusSnapshot(cwd) {
   const r = spawnSync('git', ['status', '--porcelain'], { cwd, encoding: 'utf8' });
-  if (r.status !== 0) return [];
-  const out = new Set();
+  if (r.status !== 0) return new Map();
+  const out = new Map();
   for (const line of (r.stdout || '').split('\n')) {
     if (!line.trim()) continue;
     let p = line.slice(3).trim();
     const arrow = p.indexOf(' -> ');
     if (arrow >= 0) p = p.slice(arrow + 4).trim();     // rename: keep the new path
     if (p.startsWith('"') && p.endsWith('"')) p = p.slice(1, -1);
-    if (p) out.add(p);
+    if (p) out.set(p, line.slice(0, 2));
   }
-  return [...out].sort();
+  return out;
+}
+
+// Compare porcelain statuses against the snapshot taken before the spawn.
+// Accepted residue: a path already dirty that Codex edits again with the
+// same status is not reported, even if its content changed.
+// A path reverted to clean is also not reported: it is absent from after.
+// With no snapshot supplied, retain whole-tree reporting behavior.
+export function changedPaths(cwd, before = new Map()) {
+  const after = statusSnapshot(cwd);
+  return [...after.keys()].filter((p) => !before.has(p) || before.get(p) !== after.get(p)).sort();
 }
 
 // The §10 "High-impact files" row, turned into matchers. `*` is a segment
@@ -405,6 +416,7 @@ export function main(argv = process.argv.slice(2)) {
     return 1;
   }
 
+  const before = statusSnapshot(o.cwd);
   const bin = resolveBin();
   const r = spawnSync(bin, args, {
     cwd: o.cwd, encoding: 'utf8', maxBuffer: 256 * 1024 * 1024, stdio: ['ignore', 'pipe', 'pipe'],
@@ -431,7 +443,7 @@ export function main(argv = process.argv.slice(2)) {
   try { parsed = JSON.parse(raw.trim()); } catch { parsed = null; }
   let errs = parsed === null ? ['not JSON'] : validate(parsed, schema);
 
-  const paths = changedPaths(o.cwd);
+  const paths = changedPaths(o.cwd, before);
   const hi = highImpactTouched(paths, highImpactPatterns(o.cwd));
 
   if (parsed === null || errs.length) {

@@ -6,3 +6,5 @@ evals/results/
 # codex adapter run artefacts: keep the distillate JSON (n=1 evidence), drop the raw streams
 .plans/runs/*.events.jsonl
 .plans/runs/*.raw.txt
+.plans/runs/*.stdout.jsonl
+.plans/runs/*.stderr.txt

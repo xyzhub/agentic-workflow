@@ -8,6 +8,16 @@ has no tags — each version-stamped commit on `main` IS the release.
 
 _(empty)_
 
+## [1.51.1] — 2026-09-17
+### Fixed — Codex change attribution and successful distillate discovery
+Both fixes came from the 1.51.0 checkpoint re-review (A2/A3).
+- `run-codex.mjs` `changed_paths` is now the delta vs a pre-spawn `git status`
+  snapshot, so the orchestrator's write-ahead ledger edit is never reported as
+  the Codex run's change; harness cases added.
+- The `codex-routing` eval's shape-discovery fallback requires
+  `status === "done"`, so a failed/blocked distillate no longer passes the
+  "distillate found" check; unit cases added.
+
 ## [1.51.0] — 2026-09-17
 ### Added — a second runtime: run any role on the Codex CLI (GPT-6 Astra), same protocol
 "Fable plans, Astra executes." A role is a markdown prompt; the runtime is a

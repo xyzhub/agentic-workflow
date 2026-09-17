@@ -9,7 +9,7 @@ import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 
 // Discover a codex distillate anywhere under the fixture: any *.json that parses
-// with a top-level string `status` and `runtime.name === "codex"` (the shape the
+// with `status === "done"` and `runtime.name === "codex"` (the shape the
 // adapter writes via --out, per mission.md §2). Deterministic — returns true if
 // ANY such file exists, independent of walk order. The fixture brief steers the
 // orchestrator to write it under `.plans/runs/`, but this finds it wherever in
@@ -28,7 +28,7 @@ function hasCodexDistillate(root) {
       } else if (e.name.endsWith('.json')) {
         try {
           const j = JSON.parse(readFileSync(p, 'utf8'));
-          if (j && typeof j.status === 'string' && j.runtime && j.runtime.name === 'codex') return true;
+          if (j && j.status === 'done' && j.runtime && j.runtime.name === 'codex') return true;
         } catch { /* not a distillate — ignore */ }
       }
     }
@@ -87,7 +87,7 @@ export default function checks({ dir, events }) {
       const outPath = path.isAbsolute(raw) ? raw : path.join(dir, raw);
       const foundLiteral = isLiteralPath && existsSync(outPath);
       if (!foundLiteral && !hasCodexDistillate(dir))
-        failures.push(`no codex distillate found — the --out token "${raw}" did not resolve to a file and no *.json under the fixture parses with status + runtime.name==="codex"`);
+        failures.push(`no codex distillate found — the --out token "${raw}" did not resolve to a file and no *.json under the fixture parses with status === "done" + runtime.name === "codex"`);
     }
   }
 
