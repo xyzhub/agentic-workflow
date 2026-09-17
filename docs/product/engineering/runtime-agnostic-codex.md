@@ -50,8 +50,11 @@ protocol prose is Claude-specific.
 >   `runtime: codex:gpt-6-astra`, never in `model:`.
 > - **§8 rules grammar** — `prefix_rule` tokens are literal (no globs);
 >   alternatives are nested lists (`["git", ["push","commit","tag"]]`) plus a
->   blanket `["git","-C"]`; the §14 host-pattern rules are NOT expressible and
->   ship as a named parity gap, not a rule.
+>   blanket `["git","-C"]` and the shell-wrapper / global-option-prefix bypasses;
+>   the §14 host guards would be `network_rule(host=…)` (parses in 0.146.0 but is
+>   not used or verified yet — probe at n=1), a named parity gap for now. Two
+>   residues stay open by construction: option equals-forms (`--git-dir=/x`) and
+>   absolute-path executables (`/usr/bin/git`).
 > - **§13 testing** — the adapter harness is `tools/run-codex-test.mjs` (reached
 >   by lint check 10.7), not `run-codex.test.mjs`; the eval reaches the fake
 >   binary through `CODEX_BIN`, not "a shim on PATH".
@@ -208,9 +211,29 @@ rule file and ignores the trust layer, so a verdict here proves the file parses,
 not that the rules are live in a session (see §10). Sandbox mode covers the rest
 (read-only roles cannot write; network off for reviewers).
 
-**Named parity gap:** the §14 paid-promotion / publish-host guards are
-host-pattern rules, which `prefix_rule` cannot express at all. They are recorded
-as a deliberate, accepted gap — not shipped as a rule.
+The rules also close the shell-wrapper and global-option-prefix bypasses that
+would otherwise smuggle a forbidden subcommand past the prefixes above:
+`["sh","-c"]` / `["bash","-c"]` / `["zsh",["-c","-lc","-ic"]]`, `["env"]`,
+`["command"]`, `["nohup"]`, `["xargs"]`, `["timeout"]`, a
+`["git",["-c","--no-pager","-p","--git-dir","--work-tree","--exec-path","--namespace"]]`
+global-option rule, and `["gh","api"]`. (`["bash","-lc"]` is deliberately NOT
+blocked — Codex's own shell tool may wrap commands that way; the unwrap question
+is settled at the `/connect codex` round trip, not here.)
+
+**Named parity gap:** the §14 paid-promotion / publish-host guards are not
+shipped as command rules. A `network_rule(host=…, protocol="https",
+decision="forbidden")` form parses in 0.146.0, but it is not used or verified
+yet — probe it at n=1. For now a read-only role is covered by the network-off
+sandbox, and a builder role with network on is a named, accepted gap.
+
+**Residue literal tokens cannot close:** two forms slip past the prefix rules by
+construction — the equals-form of an option (`git --git-dir=/x status`
+tokenizes with `--git-dir=/x` as one token, so only the space form
+`git --git-dir /x` matches) and an absolute-path executable (`/usr/bin/git push`
+presents `/usr/bin/git`, not `git`). `codex execpolicy check
+--resolve-host-executables` resolves absolute program paths against basename
+rules (gated by `host_executable()` definitions); it is noted, not relied on.
+The sandbox is the backstop.
 
 What is *not* replicated and why: the docs-reminder (`Write|Edit` hook) is
 covered by `high_impact_touched` in the distillate; the beat-enforcer keys on

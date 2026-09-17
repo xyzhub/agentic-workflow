@@ -221,8 +221,18 @@ builds argv that way — the commands below match it and must not contradict it.
    which together demonstrate binary, auth, schema, rules AND trust in one shot.
    (This is the owner's interactive step — it is the only real `codex exec` the
    machinery runs.)
+   **While reading that stream, record the command-execution WRAPPER SHAPE.**
+   Codex's own shell tool may present a command as `bash -lc "<cmd>"` rather than
+   the raw argv. Inspect the command-execution event's argv in the `--json`
+   stream: does it arrive wrapped (`["bash","-lc","git commit --dry-run"]`) or
+   unwrapped (`["git","commit","--dry-run"]`)? This settles the one open
+   guardrail question — the rules file deliberately does NOT forbid `bash -lc`
+   (only `bash -c`), because if the session wraps every command that way a
+   `bash -lc` block would wall off all work; if the execpolicy verdict here still
+   fired on the wrapped `git commit`, the trust layer is reading THROUGH the
+   wrapper and parity holds. Note which shape you observed.
 6. **Record — only now.** Add the §10 **Runtimes** row:
-   `claude (default) · codex: <model> (connected <date>) · rules: .codex/rules/agentic-workflow.rules · trust: user-layer entry present`.
+   `claude (default) · codex: <model> (connected <date>) · rules: .codex/rules/agentic-workflow.rules · trust: user-layer entry present · shell wrapper: <bash -lc | unwrapped> (from the round-trip event stream)`.
    Leave the edits uncommitted for review; suggest `/agentic-workflow:doctor` as
    the ongoing health check for the runtime.
 

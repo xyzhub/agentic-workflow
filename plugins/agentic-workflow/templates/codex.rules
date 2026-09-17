@@ -30,12 +30,26 @@
 # syntax and the pattern are right, not that the rule is live in a session.
 #
 # WHAT IS NOT HERE, AND WHY. `prefix_rule` tokens are matched literally — there
-# are no globs, and a host name cannot be expressed at all. So the §14
-# paid-promotion / publish HOST rules have no execpolicy form; that parity gap
-# is deliberate and recorded (mission master plan Risks, the `## Closing` row,
-# WORKFLOW.md §3). Alternatives are written as nested lists, e.g.
-# `["git", ["push", "commit", "tag"]]`. Sandbox mode covers the rest: a
-# read-only role cannot write, and network is off unless the adapter turns it on.
+# are no globs. Alternatives are written as nested lists, e.g.
+# `["git", ["push", "commit", "tag"]]`. The §14 paid-promotion / publish HOST
+# guards are not expressed here as command rules; a `network_rule(host=…,
+# protocol="https", decision="forbidden")` form parses in 0.146.0 but is not
+# used or verified yet — probe it at n=1. For now a read-only role is covered by
+# the network-off sandbox, and a builder role with network on is a named,
+# accepted gap (mission Risks, the `## Closing` row, WORKFLOW.md §3).
+#
+# THE RESIDUE LITERAL TOKENS CANNOT CLOSE. Two forms slip past the rules below by
+# construction, because a prefix token is compared literally:
+#   • equals-forms of an option — `git --git-dir=/x status` tokenizes as
+#     `["git", "--git-dir=/x", …]`, so the `--git-dir` token never matches (the
+#     space form `git --git-dir /x` does, and IS blocked). Same for
+#     `--work-tree=…`, `--namespace=…`.
+#   • an absolute-path executable — `/usr/bin/git push` presents the token
+#     `/usr/bin/git`, not `git`, so no `["git", …]` rule fires.
+# `codex execpolicy check --resolve-host-executables` resolves absolute program
+# paths against basename rules (gated by `host_executable()` definitions); it is
+# noted here, not relied on. Sandbox mode is the backstop: a read-only role
+# cannot write, and network is off unless the adapter turns it on.
 #
 # HOW THE EXAMPLES ARE READ. Each rule below carries machine-readable examples,
 # one command per line, with the stable prefixes `# match:` and `# not_match:`.
@@ -86,4 +100,126 @@ prefix_rule(
     pattern = ["git", "-C"],
     decision = "forbidden",
     justification = "The adapter sets this run's working directory, so `git -C <dir>` only ever reaches a repository you were not sent to work in. It is also the bypass rule 1 cannot see — `git -C <dir> push` puts the subcommand past the matched prefix, and with no globs no pattern could catch it — so the whole form is blocked, read-only uses included. Run git in your own working directory.",
+)
+
+# ── 4. Shell wrappers hide the real command from every rule above ────────────
+# covers: sh -c
+# match: sh -c git push
+# match: sh -c 'gh pr merge 1'
+# not_match: sh script.sh
+# not_match: ls -la
+prefix_rule(
+    pattern = ["sh", "-c"],
+    decision = "forbidden",
+    justification = "A shell wrapper hides the real command from every prefix rule below: `sh -c 'git push'` puts the push inside a string argument no literal token can inspect, so none of rules 1-3 can see it. A delegated run already has a shell; it never needs to wrap one to reach a plain command.",
+)
+
+# covers: bash -c
+# match: bash -c git push
+# match: bash -c 'gh pr merge 1'
+# not_match: bash script.sh
+# not_match: ls -la
+prefix_rule(
+    pattern = ["bash", "-c"],
+    decision = "forbidden",
+    justification = "Same bypass as `sh -c`: `bash -c 'gh pr merge 1'` smuggles a forbidden command inside a string argument no prefix token can reach. NOTE: `bash -lc` is deliberately NOT blocked — Codex's own shell tool may wrap commands that way, and whether the session unwraps it is settled at the `/connect codex` round trip, not here.",
+)
+
+# covers: zsh -c
+# match: zsh -c git push
+# match: zsh -lc 'gh pr merge 1'
+# match: zsh -ic git push
+# not_match: zsh script.sh
+# not_match: ls -la
+prefix_rule(
+    pattern = ["zsh", ["-c", "-lc", "-ic"]],
+    decision = "forbidden",
+    justification = "`zsh -c` / `-lc` / `-ic` are the same string-argument bypass as `sh -c`, one alternative per shell-invocation flavour. A delegated run has no reason to launch an interactive or login zsh to run a single command.",
+)
+
+# covers: env
+# match: env git push
+# match: env FOO=bar git push
+# not_match: printenv PATH
+# not_match: ls -la
+prefix_rule(
+    pattern = ["env"],
+    decision = "forbidden",
+    justification = "`env FOO=bar git push` (or a bare `env git push`) runs an arbitrary command after optional VAR=VALUE pairs, so the real executable sits past the matched prefix where no literal token can catch it. The adapter already sets this run's environment; reading it needs `printenv`, not `env <cmd>`.",
+)
+
+# covers: command
+# match: command git push
+# match: command gh pr merge 1
+# not_match: ls -la
+# not_match: node tools/lint.mjs
+prefix_rule(
+    pattern = ["command"],
+    decision = "forbidden",
+    justification = "`command git push` uses the shell builtin to run the binary directly, moving the real command past the matched prefix (and stripping any function shadowing). A delegated run never needs the `command` builtin to reach a plain executable.",
+)
+
+# covers: nohup
+# match: nohup git push
+# match: nohup gh pr merge 1
+# not_match: ls -la
+# not_match: node tools/lint.mjs
+prefix_rule(
+    pattern = ["nohup"],
+    decision = "forbidden",
+    justification = "`nohup git push &` detaches a command so it outlives the sandboxed process and hides its argv behind the `nohup` prefix. Delegated work is synchronous and owns no background daemons.",
+)
+
+# covers: xargs
+# match: xargs git push
+# match: xargs -n1 gh pr merge
+# not_match: ls -la
+# not_match: node tools/lint.mjs
+prefix_rule(
+    pattern = ["xargs"],
+    decision = "forbidden",
+    justification = "`xargs` builds and runs a command from its stdin, so the executable never appears in the argv these rules inspect. A delegated run has no pipeline that must fan out into a spawned command.",
+)
+
+# covers: timeout
+# match: timeout 5 git push
+# match: timeout 30s gh pr merge 1
+# not_match: ls -la
+# not_match: node tools/lint.mjs
+prefix_rule(
+    pattern = ["timeout"],
+    decision = "forbidden",
+    justification = "`timeout 5 git push` runs an arbitrary command after its duration argument, past the matched prefix. The adapter bounds runtime itself; a delegated run never needs `timeout` to wrap another command.",
+)
+
+# ── 5. git global options before the subcommand push it past rule 1 ─────────
+# The space form is blocked; the equals form (`--git-dir=/x`) is a documented
+# residue literal tokens cannot close (see the header). `-c` also sets config
+# that changes what a later command does.
+# covers: git -c
+# match: git -c x=y push
+# match: git --no-pager log
+# match: git -p log
+# match: git --git-dir /x status
+# match: git --work-tree /x add
+# match: git --exec-path status
+# match: git --namespace x status
+# not_match: git status
+# not_match: git add -A
+prefix_rule(
+    pattern = ["git", ["-c", "--no-pager", "-p", "--git-dir", "--work-tree", "--exec-path", "--namespace"]],
+    decision = "forbidden",
+    justification = "A git global option before the subcommand (`git -c ... push`, `git --git-dir /x commit`) pushes the subcommand past the `[\"git\", [\"push\",\"commit\",\"tag\"]]` prefix, and `-c` can additionally set config that changes what a later command does. The whole global-option-first form is blocked; run git plainly in your own working directory.",
+)
+
+# ── 6. gh api reaches every write endpoint, bypassing the pr-command rule ────
+# covers: gh api
+# match: gh api /repos/x/y/merges
+# match: gh api -X POST /repos/x/y/pulls
+# not_match: gh pr view 1
+# not_match: gh issue view 79
+prefix_rule(
+    pattern = ["gh", "api"],
+    decision = "forbidden",
+    justification = "`gh api` reaches every GitHub write endpoint directly — `gh api -X POST .../merges`, `.../pulls` — bypassing the `[\"gh\",\"pr\",[\"create\",\"merge\"]]` prefix entirely. Reading via `gh pr view` / `gh pr list` stays allowed; a delegated run performs no raw API writes.",
 )
