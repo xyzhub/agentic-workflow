@@ -60,11 +60,18 @@ const TMP = mkdtempSync(path.join(tmpdir(), 'run-codex-test-'));
 // follows -o, prints canned JSONL events, and exits with the canned code.
 const SHIM_SRC = `#!/usr/bin/env node
 const fs = require('node:fs');
+const path = require('node:path');
 const argv = process.argv.slice(2);
 const spec = JSON.parse(fs.readFileSync(process.env.SHIM_SPEC, 'utf8'));
 fs.writeFileSync(spec.record, JSON.stringify({ argv, cwd: process.cwd() }));
 const i = argv.indexOf('-o');
 if (i >= 0 && argv[i + 1] && spec.lastMessage != null) fs.writeFileSync(argv[i + 1], spec.lastMessage);
+if (spec.writes && typeof spec.writes === 'object') {
+  for (const [rel, content] of Object.entries(spec.writes)) {
+    fs.mkdirSync(path.dirname(rel), { recursive: true });
+    fs.writeFileSync(rel, content);
+  }
+}
 if (spec.events) process.stdout.write(spec.events);
 if (spec.stderr) process.stderr.write(spec.stderr);
 process.exit(spec.exit || 0);
@@ -311,7 +318,7 @@ function rulesGroup() {
 async function adapterGroup() {
   group('adapter — flag derivation and argv shape');
   const mod = await import(`file://${ADAPTER}`);
-  const { deriveFlags, buildExecArgv, buildResumeArgv, parseEvents, highImpactTouched, resolveBin } = mod;
+  const { deriveFlags, buildExecArgv, buildResumeArgv, parseEvents, highImpactTouched, resolveBin, statusSnapshot, changedPaths } = mod;
 
   const readOnly = deriveFlags({ role: 'reviewer', tools: ['Read', 'Bash', 'Grep', 'Glob'] });
   ok('no Write/Edit → -s read-only, no network, no --search',
@@ -368,20 +375,50 @@ async function adapterGroup() {
   ok('CODEX_BIN is the binary when set, `codex` otherwise',
     resolveBin({ CODEX_BIN: '/x/codex' }) === '/x/codex' && resolveBin({}) === 'codex');
 
+  const delta = makeRepo('delta');
+  writeFileSync(path.join(delta, 'notes.txt'), 'dirty before the run\n');
+  const deltaBefore = statusSnapshot(delta);
+  writeFileSync(path.join(delta, 'tools/lint.mjs'), '// edited by the run\n');
+  ok('changedPaths with a snapshot reports only the delta',
+    JSON.stringify(changedPaths(delta, deltaBefore)) === JSON.stringify(['tools/lint.mjs']));
+  ok('changedPaths without a snapshot retains whole-tree reporting',
+    JSON.stringify(changedPaths(delta)) === JSON.stringify(['notes.txt', 'tools/lint.mjs']));
+  ok('statusSnapshot captures raw two-character status', deltaBefore.get('notes.txt') === ' M');
+  ok('statusSnapshot omits clean tracked files', !deltaBefore.has('tools/lint.mjs'));
+  const dirtyBefore = statusSnapshot(delta);
+  writeFileSync(path.join(delta, 'notes.txt'), 'edited again with the same status\n');
+  ok('an already dirty path edited with the same status is not reported',
+    changedPaths(delta, dirtyBefore).length === 0);
+  writeFileSync(path.join(delta, 'notes.txt'), 'ordinary file\n');
+  ok('a path reverted to clean is not reported', changedPaths(delta, dirtyBefore).length === 0);
+  git(delta, 'add', 'tools/lint.mjs');
+  ok('a previously dirty path with a changed status is reported',
+    JSON.stringify(changedPaths(delta, dirtyBefore)) === JSON.stringify(['tools/lint.mjs']));
+  writeFileSync(path.join(delta, 'new.txt'), 'new file\n');
+  ok('statusSnapshot captures untracked files with their raw status',
+    statusSnapshot(delta).get('new.txt') === '??');
+  const missingSnapshot = statusSnapshot(path.join(TMP, 'missing-repo'));
+  ok('a failed git status returns an empty Map',
+    missingSnapshot instanceof Map && missingSnapshot.size === 0);
+
   group('adapter — end to end against the fake codex');
   const repo = makeRepo('proj');
-  // Dirty the tree so changed_paths has something real to find. Both files are
-  // tracked, so porcelain names them individually (an untracked new directory
-  // would collapse to `tools/`).
-  writeFileSync(path.join(repo, 'tools/lint.mjs'), '// edited by the run\n');
-  writeFileSync(path.join(repo, 'notes.txt'), 'edited by the run\n');
+  // Simulate the orchestrator's write-ahead edit before the spawn.
+  writeFileSync(path.join(repo, 'notes.txt'), 'edited by the orchestrator\n');
 
-  const done = runAdapter(['--role', 'backend', '--brief', '.plans/demo.sessions.md#S3'], { repo });
+  const done = runAdapter(['--role', 'backend', '--brief', '.plans/demo.sessions.md#S3'], {
+    repo, spec: { writes: {
+      'tools/lint.mjs': '// edited by the run\n',
+      'made-by-run.txt': 'made by the run\n',
+    } },
+  });
   ok('status done → exit 0', done.status === 0, `exit ${done.status} ${done.stderr}`);
   ok('the distillate file is the interface (written to --out)', done.out !== null);
-  ok('changed_paths comes from the tree, not the model',
-    JSON.stringify(done.out?.changed_paths) === JSON.stringify(['notes.txt', 'tools/lint.mjs']),
+  ok('changed_paths is the delta vs the pre-spawn snapshot',
+    JSON.stringify(done.out?.changed_paths) === JSON.stringify(['made-by-run.txt', 'tools/lint.mjs']),
     JSON.stringify(done.out?.changed_paths));
+  ok("a file dirty before the spawn is not reported as the run's change",
+    Array.isArray(done.out?.changed_paths) && !done.out.changed_paths.includes('notes.txt'));
   ok('high_impact_touched is the intersection with the §10 row',
     JSON.stringify(done.out?.high_impact_touched) === JSON.stringify(['tools/lint.mjs']),
     JSON.stringify(done.out?.high_impact_touched));
@@ -475,15 +512,16 @@ async function adapterGroup() {
   ok('status blocked → exit 3', blocked.status === 3 && blocked.out.status === 'blocked', `exit ${blocked.status}`);
 
   const failed = runAdapter(['--role', 'backend', '--brief', 'x'],
-    { repo, spec: { lastMessage: 'Sure! Here is the summary: I built the thing.' } });
+    { repo, spec: { lastMessage: 'Sure! Here is the summary: I built the thing.',
+      writes: { 'failed-run.txt': 'made by the failed run\n' } } });
   ok('a non-JSON last message → exit 1, status failed, "distillate not valid JSON"',
     failed.status === 1 && failed.out.status === 'failed'
     && failed.out.gates[0].first_error === 'distillate not valid JSON', `exit ${failed.status}`);
   ok('the raw last message is saved beside the distillate',
     existsSync(`${failed.outPath}.raw.txt`)
     && readFileSync(`${failed.outPath}.raw.txt`, 'utf8').includes('Sure!'));
-  ok('the failed distillate still carries the tree-derived fields',
-    JSON.stringify(failed.out.changed_paths) === JSON.stringify(['notes.txt', 'tools/lint.mjs'])
+  ok('the failed distillate still carries the tree-derived delta',
+    JSON.stringify(failed.out.changed_paths) === JSON.stringify(['failed-run.txt'])
     && failed.out.runtime.thread_id === 'thr_abc123');
 
   const invalid = runAdapter(['--role', 'backend', '--brief', 'x'],
@@ -513,10 +551,35 @@ async function adapterGroup() {
     allInvocations.every((a) => a.indexOf('-a') === 0 && a[1] === 'never' && a.indexOf('exec') > 1));
 }
 
+async function checksGroup() {
+  group('codex-routing checks — distillate discovery');
+  const { default: checks } = await import(`file://${path.join(ROOT, 'evals/scenarios/codex-routing/checks.mjs')}`);
+  const fx = path.join(TMP, 'checks-fx');
+  mkdirSync(path.join(fx, '.plans/runs'), { recursive: true });
+  writeFileSync(path.join(fx, '.plans/widget-tags.state.md'), 'Sessions used: 1\n- [x] S1 — thing\n');
+  const events = [{ message: { content: [{
+    type: 'tool_use', name: 'Bash',
+    input: { command: 'node /p/tools/run-codex.mjs --role backend --brief .plans/x.sessions.md#S1 --cwd "$PWD" --out "$OUT"' },
+  }] } }];
+  const out = path.join(fx, '.plans/runs/r.json');
+  writeFileSync(out, JSON.stringify({ status: 'failed', runtime: { name: 'codex' } }));
+  const failed = await checks({ dir: fx, events });
+  ok('a failed codex distillate does not satisfy shape discovery',
+    failed.some((f) => /no codex distillate found/.test(f)));
+  writeFileSync(out, JSON.stringify({ status: 'done', runtime: { name: 'codex' } }));
+  const done = await checks({ dir: fx, events });
+  ok('a done codex distillate satisfies shape discovery', done.length === 0, JSON.stringify(done));
+  writeFileSync(out, JSON.stringify({ status: 'blocked', runtime: { name: 'codex' } }));
+  const blocked = await checks({ dir: fx, events });
+  ok('a blocked distillate does not satisfy shape discovery',
+    blocked.some((f) => /no codex distillate found/.test(f)));
+}
+
 // ── run ────────────────────────────────────────────────────────────────────
 schemaGroup();
 rulesGroup();
 await adapterGroup();
+await checksGroup();
 
 console.log('');
 if (fails.length) {

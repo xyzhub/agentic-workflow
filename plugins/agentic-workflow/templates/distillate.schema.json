@@ -28,7 +28,7 @@
       "type": "string"
     },
     "changed_paths": {
-      "description": "Repository-relative paths the run touched. The adapter overwrites this from `git status --porcelain` in --cwd: the tree is the truth, not the model's claim.",
+      "description": "Repository-relative paths the run touched. The adapter overwrites this with paths whose `git status --porcelain` line is new or changed relative to a snapshot taken before the spawn in --cwd: the tree is the truth, not the model's claim.",
       "type": "array",
       "items": { "type": "string" }
     },

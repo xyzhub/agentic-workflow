@@ -1,0 +1,62 @@
+{
+  "status": "done",
+  "summary": "Implemented pre-spawn changed_paths deltas, strict done-only distillate discovery, and 1.51.1 release updates.\nHarness passed 160 cases; lint and conform are clean.\ngit status --porcelain lists the seven expected modified files plus untracked .plans/runs/; this run did not touch .plans/ or commit.",
+  "changed_paths": [
+    ".plans/runs/",
+    "CHANGELOG.md",
+    "docs/WORKFLOW.md",
+    "evals/scenarios/codex-routing/checks.mjs",
+    "plugins/agentic-workflow/.claude-plugin/plugin.json",
+    "plugins/agentic-workflow/templates/distillate.schema.json",
+    "plugins/agentic-workflow/tools/run-codex.mjs",
+    "tools/run-codex-test.mjs"
+  ],
+  "gates": [
+    {
+      "name": "node tools/run-codex-test.mjs — initial run: clean — 153 case(s)",
+      "result": "green",
+      "first_error": null
+    },
+    {
+      "name": "node tools/run-codex-test.mjs — run-codex harness: clean — 160 case(s)",
+      "result": "green",
+      "first_error": null
+    },
+    {
+      "name": "node tools/lint.mjs",
+      "result": "green",
+      "first_error": null
+    },
+    {
+      "name": "node plugins/agentic-workflow/tools/conform.mjs",
+      "result": "green",
+      "first_error": null
+    },
+    {
+      "name": "git diff --check",
+      "result": "green",
+      "first_error": null
+    }
+  ],
+  "deviations": [
+    "tools/run-codex-test.mjs: seven additional snapshot assertions beyond Do 2.",
+    "Verify 4: untracked .plans/runs/ present."
+  ],
+  "next": [
+    "Independent reviewer must inspect the diff and rerun the three gates.",
+    "Consumer-session plugin load remains pending.",
+    "Orchestrator must record deviations and vendor token usage in the ledger."
+  ],
+  "blocked_reason": null,
+  "runtime": {
+    "name": "codex",
+    "model": "gpt-6-astra",
+    "effort": "medium",
+    "thread_id": "01a0b0ce-ffc6-7220-97c0-30d7c59de1c3"
+  },
+  "usage": {
+    "input_tokens": 623690,
+    "output_tokens": 7499
+  },
+  "high_impact_touched": []
+}
