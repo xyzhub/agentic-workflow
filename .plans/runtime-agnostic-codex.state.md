@@ -190,6 +190,15 @@ what the next session needs. Newest on top; crash-safe by write-ahead._
   fixture defects — checks.mjs cannot resolve `--out "$OUT"`; fake codex
   over-claims vs its one edit so the orchestrator honestly left S1 `[~]`. Same
   builder continues (part 2): fix both fixture defects, one eval re-run.
+  **S5-fix part 2 done** — 3ccb0cd: fake codex makes exactly the (shrunk) brief's
+  edit; checks.mjs discovers the distillate by shape when `--out` is a shell var
+  (still fails on a genuine `[~]`). Eval `codex-routing`: **PASS, judge 100%,
+  $1.14**, 1/1. Orchestrator: A5 closed — `docs/WORKFLOW.md` re-synced from the
+  1.51.0 template (§3 row, §5 plan-judge, estimate rule; §10 Test users row
+  added) da79ede; conform clean; lint clean.
+- 2026-09-17 orchestrator (gate spawn): **ckpt-p1 re-review** — reviewer
+  spawned, fresh, Fable, one-shot, over `6932157^..HEAD` (S1–S4 + S5-fix).
+  Verdict pending.
 
 - 2026-09-11 planner (A3 split): owner ruled _"Split now, Estimate 5"_. S3 split
   at its documented point — S3 keeps routing + the plan-judge (#79), the new S4
@@ -245,4 +254,4 @@ what the next session needs. Newest on top; crash-safe by write-ahead._
   `--ignore-rules` proves project-level `.rules` files are loaded, so OQ1 is
   narrowed to the directory. Three open questions await the owner before S1.
 
-Next up: S5-fix — corrective for ckpt-p1 B1/B2/B3 (+ advisories), then re-review
+Next up: ckpt-p1 re-review (Fable, fresh) over 6932157^..HEAD after S5-fix; on APPROVE → verify → PR to main (issue #79 in the PR body)
