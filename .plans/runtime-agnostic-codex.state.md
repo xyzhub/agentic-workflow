@@ -51,7 +51,7 @@ done (verified, not merely written)._
 - [x] S2 — conventions + commands: `AGENTS.md` primary, conform ladder entry, bootstrap/sync/adopt, `/tune` runtime, `/connect codex`, `/doctor` probe
 - [x] S3 — routing + plan-judge: `mission.md` step 2/3 + the codex-reviewer Fable override, planner `runtime:` field, the permanent plan-judge (#79) in `mission.md` §1 / `plan.md` / `reviewer.md` / WORKFLOW §5 + the estimate rule at its three sites, WORKFLOW §3/§6/§9/§10 and this repo's §10 row
 - [x] S4 — record: memo corrections, CHANGELOG 1.51.0, version bump, both READMEs, `codex-routing` eval scenario + fixture + the `evals/run.mjs` `CODEX_BIN` edit (runs after S3 — it documents what S3 writes)
-- [~] Checkpoint ckpt-p1 — ONE fresh reviewer over the whole diff after S4 (**Fable required**: execpolicy rules + sandbox flag derivation are a security boundary), then staging → verify → one PR to `main` closing #79
+- [~] Checkpoint ckpt-p1 — **APPROVED 8dd87cd (2026-09-17), merge pending** — ONE fresh reviewer over the whole diff after S4 (**Fable required**: execpolicy rules + sandbox flag derivation are a security boundary), then staging → verify → one PR to `main` closing #79
 
 ## Open questions
 
@@ -198,7 +198,21 @@ what the next session needs. Newest on top; crash-safe by write-ahead._
   added) da79ede; conform clean; lint clean.
 - 2026-09-17 orchestrator (gate spawn): **ckpt-p1 re-review** — reviewer
   spawned, fresh, Fable, one-shot, over `6932157^..HEAD` (S1–S4 + S5-fix).
-  Verdict pending.
+  **Verdict: APPROVE — SHA 8dd87cd.** Scorecard (0–3): DX 3 · Security 2 ·
+  Efficiency 3 · QA 2 · Architecture 3 · UX n/a. B1/B2/B3 confirmed closed on
+  the real binary; eval PASS 5/5 read from results; CI green on 8dd87cd (run
+  35239425788); lint 0 · harness 154 · hook-test 0 · conform 0. Threat closure
+  stated plainly: enumerated wrapper/option families closed; interpreters
+  (`node -e`, `python3 -c`), script files, `npm run`/`make`, `git send-pack`,
+  commit-creating plumbing NOT closable by literal tokens — rest on the sandbox
+  backstop (unprobed here: `codex sandbox` needs a `[permissions]` table).
+  **Verify (§10 Staging = none)**: tier-1 lint green on the SHA (ci-wait 0) +
+  `claude --plugin-dir` load in a fresh consumer session clean (connect/tune
+  listed, no load errors) — PASS. Sessions used 6 / Estimate 5 (1.2×).
+  Advisory backlog (not re-review triggers): A1 rules header under-states the
+  residue + add `["git","send-pack"]`; A2 run-codex.mjs:453 `changed_paths`
+  should be the delta vs a pre-spawn `git status` snapshot; A3 checks.mjs:87
+  shape fallback should require `status === "done"`.
 
 - 2026-09-11 planner (A3 split): owner ruled _"Split now, Estimate 5"_. S3 split
   at its documented point — S3 keeps routing + the plan-judge (#79), the new S4
@@ -254,4 +268,4 @@ what the next session needs. Newest on top; crash-safe by write-ahead._
   `--ignore-rules` proves project-level `.rules` files are loaded, so OQ1 is
   narrowed to the directory. Three open questions await the owner before S1.
 
-Next up: ckpt-p1 re-review (Fable, fresh) over 6932157^..HEAD after S5-fix; on APPROVE → verify → PR to main (issue #79 in the PR body)
+Next up: PR to main open — awaiting the owner's merge (human-only); after merge: /settle → Closing rows (n=1 on Astra, obligations), chronicler record
