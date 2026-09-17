@@ -1,0 +1,109 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/xyzhub/agentic-workflow/templates/distillate.schema.json",
+  "title": "Run distillate",
+  "description": "The bounded hand-off one delegated run returns (WORKFLOW.md §6.2), as JSON. One shape for every runtime: a Claude subagent writes it in prose, a Codex run returns it as its final message under --output-schema, and tools/run-codex.mjs merges the tree-derived fields in. Strict-mode safe: every object sets additionalProperties:false and lists every property in required; fields that may be absent are nullable unions, never omitted.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "status",
+    "summary",
+    "changed_paths",
+    "gates",
+    "deviations",
+    "next",
+    "blocked_reason",
+    "runtime",
+    "usage",
+    "high_impact_touched"
+  ],
+  "properties": {
+    "status": {
+      "description": "done = the brief is built and its gates are green; blocked = something needs an owner decision; failed = the run did not produce a usable result.",
+      "type": "string",
+      "enum": ["done", "blocked", "failed"]
+    },
+    "summary": {
+      "description": "Three lines at most, plain words (the plain-report skill): what changed and what it means.",
+      "type": "string"
+    },
+    "changed_paths": {
+      "description": "Repository-relative paths the run touched. The adapter overwrites this from `git status --porcelain` in --cwd: the tree is the truth, not the model's claim.",
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "gates": {
+      "description": "Every gate the run actually executed, with its verdict.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "result", "first_error"],
+        "properties": {
+          "name": {
+            "description": "The command as run, e.g. `node tools/lint.mjs`.",
+            "type": "string"
+          },
+          "result": {
+            "type": "string",
+            "enum": ["green", "red", "skipped"]
+          },
+          "first_error": {
+            "description": "First failing line when red, else null. Never the whole log.",
+            "type": ["string", "null"]
+          }
+        }
+      }
+    },
+    "deviations": {
+      "description": "References to what departed from the brief (a line, a path, a decision id) — not the content of the change.",
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "next": {
+      "description": "What still needs an independent reviewer, a manual check, or a following session.",
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "blocked_reason": {
+      "description": "Required when status is blocked: the decision the owner has to make, in one sentence. Null otherwise.",
+      "type": ["string", "null"]
+    },
+    "runtime": {
+      "description": "Which runtime produced this distillate. The orchestrator prints `runtime · model · tokens` on the handoff line.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "model", "effort", "thread_id"],
+      "properties": {
+        "name": {
+          "description": "`codex` or `claude`.",
+          "type": "string"
+        },
+        "model": { "type": "string" },
+        "effort": {
+          "description": "Reasoning effort the run was launched with (`low`, `medium`, `high`), or an empty string when the runtime has no such dial.",
+          "type": "string"
+        },
+        "thread_id": {
+          "description": "Session id a corrective retry resumes from. Null when the runtime did not report one.",
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "usage": {
+      "description": "Token counts from the runtime's event stream. Null when the runtime reported none.",
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["input_tokens", "output_tokens"],
+      "properties": {
+        "input_tokens": { "type": "number" },
+        "output_tokens": { "type": "number" }
+      }
+    },
+    "high_impact_touched": {
+      "description": "Intersection of changed_paths with the §10 High-impact files row — the docs-reminder hook's job, done by the adapter because plugin hooks do not fire inside another runtime. Null when the adapter could not read the profile.",
+      "type": ["array", "null"],
+      "items": { "type": "string" }
+    }
+  }
+}

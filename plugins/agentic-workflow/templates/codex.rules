@@ -1,0 +1,89 @@
+# agentic-workflow — Codex execpolicy guardrails
+#
+# WHY THIS FILE EXISTS. The plugin's shell guardrails are Claude Code hooks
+# (hooks/hooks.json): they fire on Claude tool calls and on nothing else. A run
+# delegated to the Codex CLI never touches those hooks, so the mechanical
+# blocks — never push, never commit, never open or merge a PR — have to be
+# restated in the one place Codex does enforce: its execpolicy layer.
+#
+# WHERE IT IS DEPLOYED. `<repo>/.codex/rules/agentic-workflow.rules`, committed
+# in the consumer repo. That directory is Codex's **Project** config layer
+# (`$(git rev-parse --show-toplevel)/.codex/rules/*.rules`); every layer's
+# `rules/` folder loads automatically, so no flag points at this file. There is
+# deliberately no user-level copy: the guardrail travels with the repo it
+# guards. `/connect codex` writes it from this template.
+#
+# THE TRUST GATE (read this before you trust the file). Project-layer rules are
+# loaded but **disabled until the project is trusted**. Trust is a user-level
+# entry in `~/.codex/config.toml`:
+#
+#     [projects."<absolute path to the repo>"]
+#     trust_level = "trusted"
+#
+# Without that entry this file is inert and every command below is allowed.
+# `/connect codex` adds the entry as an explicit, owner-approved step — never a
+# silent edit — and proves it with a live round trip.
+#
+# `codex execpolicy check --rules <this file> <command>` answers a different,
+# narrower question: does the FILE decide this command? It reads the file only
+# and never consults the trust layer, so a `forbidden` verdict here says the
+# syntax and the pattern are right, not that the rule is live in a session.
+#
+# WHAT IS NOT HERE, AND WHY. `prefix_rule` tokens are matched literally — there
+# are no globs, and a host name cannot be expressed at all. So the §14
+# paid-promotion / publish HOST rules have no execpolicy form; that parity gap
+# is deliberate and recorded (mission master plan Risks, the `## Closing` row,
+# WORKFLOW.md §3). Alternatives are written as nested lists, e.g.
+# `["git", ["push", "commit", "tag"]]`. Sandbox mode covers the rest: a
+# read-only role cannot write, and network is off unless the adapter turns it on.
+#
+# HOW THE EXAMPLES ARE READ. Each rule below carries machine-readable examples,
+# one command per line, with the stable prefixes `# match:` and `# not_match:`.
+# `tools/run-codex-test.mjs` enumerates them and runs every one through
+# `codex execpolicy check`, so the examples are the test, not decoration.
+# The adapter never passes `--ignore-rules`; that flag would switch this file off.
+
+# ── 1. The git history belongs to the orchestrator ──────────────────────────
+# covers: git push, git commit, git tag
+# match: git push
+# match: git push origin main
+# match: git push --tags origin
+# match: git commit -m wip
+# match: git commit --amend --no-edit
+# match: git tag v1.2.0
+# not_match: git status
+# not_match: git diff --stat
+# not_match: git log --oneline -5
+prefix_rule(
+    pattern = ["git", ["push", "commit", "tag"]],
+    decision = "forbidden",
+    justification = "The orchestrator owns the git history: it commits from your distillate (which keeps the commit-format and close-keyword guards in force), it pushes, and a human merges. A delegated run never commits, pushes or tags. Report your changed paths and stop.",
+)
+
+# ── 2. Opening and merging pull requests is a human/orchestrator action ──────
+# covers: gh pr create, gh pr merge
+# match: gh pr create --fill
+# match: gh pr create --base main --head feature
+# match: gh pr merge 12 --squash
+# not_match: gh pr view 12
+# not_match: gh pr list --state open
+# not_match: gh issue view 79
+prefix_rule(
+    pattern = ["gh", "pr", ["create", "merge"]],
+    decision = "forbidden",
+    justification = "Opening a PR is the orchestrator's step after the phase gate, and merging is the human's call under the merge policy in WORKFLOW.md §10 — never a delegated run's, even when merge authority is delegated. Reading PRs (`gh pr view`, `gh pr list`) stays allowed.",
+)
+
+# ── 3. No reaching outside the working directory Codex was given ────────────
+# covers: git -C
+# match: git -C /tmp push
+# match: git -C /tmp/other-repo push origin main
+# match: git -C .. commit -m x
+# match: git -C /tmp status
+# not_match: git status
+# not_match: git add -A
+prefix_rule(
+    pattern = ["git", "-C"],
+    decision = "forbidden",
+    justification = "The adapter sets this run's working directory, so `git -C <dir>` only ever reaches a repository you were not sent to work in. It is also the bypass rule 1 cannot see — `git -C <dir> push` puts the subcommand past the matched prefix, and with no globs no pattern could catch it — so the whole form is blocked, read-only uses included. Run git in your own working directory.",
+)
