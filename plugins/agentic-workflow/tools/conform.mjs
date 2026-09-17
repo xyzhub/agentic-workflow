@@ -76,8 +76,31 @@ const has10 = (label) => new RegExp(`^\\|\\s*\\*\\*${label}\\b`, 'm').test(secti
 // extension, no globs/placeholders/vars, not absolute/~/URL) and
 // `pnpm|npm run <script>` names against package.json. Advisory like the rest.
 function conventionsFile() {
-  for (const f of ['CLAUDE.md', 'AGENTS.md']) if (existsSync(at(f))) return f;
+  // AGENTS.md is primary (runtime-neutral, read by Claude AND Codex); CLAUDE.md
+  // imports it (`@AGENTS.md`) and is the fallback for a not-yet-migrated project.
+  for (const f of ['AGENTS.md', 'CLAUDE.md']) if (existsSync(at(f))) return f;
   return null;
+}
+// The conventions ladder (since 1.51.0): AGENTS.md is the primary file, imported
+// by CLAUDE.md. Three gap states, each fixed by /agentic-workflow:sync. The
+// "pointer block" is the workflow pointer — a `docs/WORKFLOW.md` reference — the
+// template seeds; its presence is what distinguishes a real conventions file
+// from an empty stub.
+function agentsMdGap() {
+  const hasAgents = existsSync(at('AGENTS.md'));
+  const hasClaude = existsSync(at('CLAUDE.md'));
+  if (!hasAgents)
+    return hasClaude
+      ? 'conventions live in CLAUDE.md but there is no AGENTS.md (the primary, runtime-neutral conventions file both Claude and Codex read)'
+      : 'no AGENTS.md (the conventions file injected into every session; CLAUDE.md should @import it)';
+  if (!/docs\/WORKFLOW\.md/.test(read(at('AGENTS.md')) || ''))
+    return 'AGENTS.md is present but lacks the workflow pointer block (no `docs/WORKFLOW.md` reference)';
+  if (hasClaude) {
+    const first = (read(at('CLAUDE.md')) || '').split('\n').map((l) => l.trim()).find((l) => l.length);
+    if (first !== '@AGENTS.md')
+      return 'CLAUDE.md is present without the `@AGENTS.md` import as its first non-blank line (AGENTS.md is now primary)';
+  }
+  return true;
 }
 function deadClaudeMdAnchors() {
   const f = conventionsFile();
@@ -160,6 +183,9 @@ const LADDER = [
   { id: 'catalog-files', since: '1.46.0',
     check: () => { if (catalogOptOut()) return true; const miss = ['README.md', 'api.md', 'data-model.md', 'features.md'].filter((f) => !existsSync(at('docs/product/catalog', f))); return miss.length ? `docs/product/catalog/ missing ${miss.join(', ')} (sessions build on old knowledge without it)` : true; },
     fix: 'run `node tools/catalog.mjs` and seed features.md from templates/catalog-features.md (/agentic-workflow:adopt\'s catalog step)' },
+  { id: 'agents-md-primary', since: '1.51.0',
+    check: () => agentsMdGap(),
+    fix: 'run /agentic-workflow:sync (creates AGENTS.md from templates/agents-md.md, moves runtime-neutral CLAUDE.md content into it once, and makes `@AGENTS.md` the first line of CLAUDE.md)' },
   { id: 'claude-md-anchors', since: '1.47.2',
     check: () => { const dead = deadClaudeMdAnchors(); return dead.length ? `${conventionsFile()} names ${dead.length} anchor(s) that no longer resolve (it is injected into every session): ${dead.slice(0, 5).join(', ')}${dead.length > 5 ? ', …' : ''}` : true; },
     fix: 'update or delete those lines — conventions carry anchors and are rewritten in place when the thing they name moves (§6.1); a diff that renames/deletes a named anchor updates the line in the same PR' },

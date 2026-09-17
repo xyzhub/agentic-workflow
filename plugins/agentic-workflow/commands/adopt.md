@@ -56,7 +56,10 @@ Look for what the project already uses and fold it in rather than duplicating:
   counts; do not import unasked in the audit pass.
 - **Existing conventions** (CLAUDE.md/AGENTS.md, commit conventions, an
   existing CHANGELOG) → point the protocol at them (§10 high-impact files,
-  §4 commit format) instead of replacing them.
+  §4 commit format) instead of replacing them. Precedence: `AGENTS.md` is the
+  primary, runtime-neutral conventions file and `CLAUDE.md` imports it with a
+  first-line `@AGENTS.md`; `/agentic-workflow:sync` establishes that split (the
+  `agents-md-primary` ladder entry) — record it, don't re-fold it here.
 
 ## 3. Stage-gap audit
 
