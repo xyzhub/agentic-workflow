@@ -103,26 +103,31 @@ function agentsMdGap() {
   return true;
 }
 function deadClaudeMdAnchors() {
-  const f = conventionsFile();
-  if (!f) return [];   // absence is /doctor's business, not a broken anchor
-  const text = read(at(f)) || '';
+  // Both files are injected into a session when both exist (CLAUDE.md `@import`s
+  // AGENTS.md), so a dead anchor in EITHER misleads — scan both, not just the
+  // primary conventionsFile() picks. Absence of both is /doctor's business.
+  const files = ['AGENTS.md', 'CLAUDE.md'].filter((f) => existsSync(at(f)));
+  if (!files.length) return [];
   const dead = [];
   const seen = new Set();
-  for (const [, tok] of text.matchAll(/`([^`\n]+)`/g)) {
-    const t = tok.trim();
-    if (seen.has(t)) continue; seen.add(t);
-    const run = t.match(/^(?:pnpm|npm)\s+run\s+([A-Za-z0-9:_-]+)$/);
-    if (run) {
-      try {
-        const pkg = JSON.parse(read(at('package.json')) || '{}');
-        if (pkg.scripts && !(run[1] in pkg.scripts)) dead.push(`${t} (no such package script)`);
-      } catch { /* unparseable package.json → skip, not a CLAUDE.md problem */ }
-      continue;
+  for (const f of files) {
+    const text = read(at(f)) || '';
+    for (const [, tok] of text.matchAll(/`([^`\n]+)`/g)) {
+      const t = tok.trim();
+      if (seen.has(t)) continue; seen.add(t);
+      const run = t.match(/^(?:pnpm|npm)\s+run\s+([A-Za-z0-9:_-]+)$/);
+      if (run) {
+        try {
+          const pkg = JSON.parse(read(at('package.json')) || '{}');
+          if (pkg.scripts && !(run[1] in pkg.scripts)) dead.push(`${t} (no such package script)`);
+        } catch { /* unparseable package.json → skip, not a conventions problem */ }
+        continue;
+      }
+      if (!t.includes('/')) continue;
+      if (/[\s*<>{}$()\[\]|,]|^https?:|^~|^\//.test(t)) continue;
+      if (!/\.[A-Za-z0-9]{1,6}$/.test(t)) continue;
+      if (!existsSync(at(t))) dead.push(t);
     }
-    if (!t.includes('/')) continue;
-    if (/[\s*<>{}$()\[\]|,]|^https?:|^~|^\//.test(t)) continue;
-    if (!/\.[A-Za-z0-9]{1,6}$/.test(t)) continue;
-    if (!existsSync(at(t))) dead.push(t);
   }
   return dead;
 }
