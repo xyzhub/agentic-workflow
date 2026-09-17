@@ -1,5 +1,5 @@
 ---
-status: living
+status: complete
 owner-agent: planner
 refresh-trigger: every-ship
 ---
@@ -78,10 +78,13 @@ MUST carry `→ OB-<n>`. `Closed: YYYY-MM-DD` is written only once every row is
 `[x]` or `[~] … → OB-<n>`; `/agentic-workflow:settle` enforces it._
 
 - [x] branch + worktree cleanup · added 2026-09-17 (planner) — do: delete `mission/n1-codex-astra` (local and remote) and prune its stale worktrees — when: the PR to `main` is merged AND the lint run on its merge commit concluded green — probe: `gh pr list --state merged` + `gh run list` · fired 2026-09-17 (PR #85 merged f45423c, `ci-wait f45423c` GREEN — rung 2 (CI, merge to main is the release); `mission/n1-codex-astra` deleted local + origin, worktrees pruned)
-- [ ] docs/record synced · added 2026-09-17 (planner) — do: confirm the CHANGELOG 1.51.1 entry, the `run-codex.mjs` `--cwd` usage text and the distillate schema's `changed_paths` description all say "delta vs the pre-spawn snapshot" — when: S1 is `[x]` and the checkpoint reviewer returned APPROVE — probe: manual
+- [x] docs/record synced · added 2026-09-17 (planner) — do: confirm the CHANGELOG 1.51.1 entry, the `run-codex.mjs` `--cwd` usage text and the distillate schema's `changed_paths` description all say "delta vs the pre-spawn snapshot" — when: S1 is `[x]` and the checkpoint reviewer returned APPROVE — probe: manual · fired 2026-09-17 (owner-confirmed 2026-09-17: checkpoint APPROVE a981207 verified the CHANGELOG 1.51.1 entry (diff-backed facts), the `run-codex.mjs` `--cwd` usage text and the `distillate.schema.json` `changed_paths` description all read "delta vs the pre-spawn snapshot"; merged in f45423c)
 - [~] live-verify after reinstall · added 2026-09-17 (planner) — do: confirm in a real session that a codex run's distillate `changed_paths` omits the orchestrator's pre-spawn ledger edit — when: the 1.51.1 release is installed (`/plugin update` + `/reload-plugins`, post-merge) and the next codex-routed brief returns — probe: manual _(cannot fire before the next codex brief after merge; expect `/agentic-workflow:settle` to park it `[~] … → OB-<n>`)_ → OB-21 (promoted 2026-09-17, verbatim copy in `.plans/OBLIGATIONS.md` — condition unmet: 1.51.1 not yet reinstalled, no next codex brief)
-- [ ] version bumped + stamped · added 2026-09-17 (planner) — do: bump `plugins/agentic-workflow/.claude-plugin/plugin.json` to 1.51.1 (the §10 Version pin), stamp `docs/WORKFLOW.md` line 3 `protocol-master: v1.51.1`, and stamp this mission's CHANGELOG entry with 1.51.1 (all three are in the S1 brief's Do list; verify them in the diff) — when: this mission's CHANGELOG entry names a version — probe: manual
-- [ ] n=1 tokens recorded · added 2026-09-17 (planner) — do: copy the adapter distillate's `usage` (Astra `input_tokens`/`output_tokens` from `.plans/runs/n1-codex-astra-S1.json`) and the Claude reviewer's usage into the `n=1 real Astra run` row of `.plans/runtime-agnostic-codex.state.md` as its `· fired 2026-09-17 (…)` evidence, and note the outcome (APPROVE/REVISE, corrective count) beside it — when: the checkpoint reviewer returns — probe: manual
+- [x] version bumped + stamped · added 2026-09-17 (planner) — do: bump `plugins/agentic-workflow/.claude-plugin/plugin.json` to 1.51.1 (the §10 Version pin), stamp `docs/WORKFLOW.md` line 3 `protocol-master: v1.51.1`, and stamp this mission's CHANGELOG entry with 1.51.1 (all three are in the S1 brief's Do list; verify them in the diff) — when: this mission's CHANGELOG entry names a version — probe: manual · fired 2026-09-17 (owner-confirmed 2026-09-17: plugin.json 1.51.1, `docs/WORKFLOW.md` line 3 `protocol-master: v1.51.1`, CHANGELOG `## [1.51.1] — 2026-09-17` — all on main at f45423c)
+- [x] n=1 tokens recorded · added 2026-09-17 (planner) — do: copy the adapter distillate's `usage` (Astra `input_tokens`/`output_tokens` from `.plans/runs/n1-codex-astra-S1.json`) and the Claude reviewer's usage into the `n=1 real Astra run` row of `.plans/runtime-agnostic-codex.state.md` as its `· fired 2026-09-17 (…)` evidence, and note the outcome (APPROVE/REVISE, corrective count) beside it — when: the checkpoint reviewer returns — probe: manual · fired 2026-09-17 (owner-confirmed 2026-09-17: Astra usage (156,072/3,193 attempt 1 + 623,690/7,499 corrective = 779,762 in / 10,692 out) written into the `n=1 real Astra run` fired row of `.plans/runtime-agnostic-codex.state.md`; Claude side: planner + plan-judge + reviewer on Fable, usage in this ledger's handoff entries)
+
+Closed: 2026-09-17
+
 
 ## Deviations
 
@@ -89,7 +92,14 @@ _Any departure from a brief — logged the moment it happens, with why._
 
 (none)
 
-## Handoff log- 2026-09-17 orchestrator (write-ahead + gate spawn): plan-judge (Fable) REVISE →
+## Handoff log
+
+- 2026-09-17 orchestrator (settle, CLOSE): PR #85 merged f45423c, CI GREEN; reap
+  fired (rung 2); 3 manual rows owner-confirmed; live-verify parked → OB-21.
+  **Closed: 2026-09-17. Sessions used 2 / Estimate 2 = 1.0×** (after the dated
+  1 → 2 ruling). The n=1 is recorded in the parent ledger, which closed today too.
+
+- 2026-09-17 orchestrator (write-ahead + gate spawn): plan-judge (Fable) REVISE →
   planner revised once (B1 harness-count criterion; A1–A3, A5) — no second
   judge pass (protocol). **S1 started on codex:gpt-6-astra** via the backend
   tune: `run-codex.mjs --role backend --brief .plans/n1-codex-astra.sessions.md#S1
@@ -155,4 +165,4 @@ what the next session needs._
   question ruled the same day (17d1560). Plan-judge REVISE (B1 harness skip
   criterion, A1 line drift, A2 codex-rule wording, A3/A5 ledger) applied.
 
-Next up: PR to main open — awaiting the owner's merge (human-only); then /settle closes this mission and stamps runtime-agnostic-codex
+Next up: (none — mission CLOSED 2026-09-17; OB-21 parks the post-reinstall live-verify)
