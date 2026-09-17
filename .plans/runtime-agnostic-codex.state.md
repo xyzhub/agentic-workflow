@@ -15,7 +15,7 @@ everything since the last one — §12 LA-6)._
 Issue: #79 (plan-judge — the PR to `main` closes it)
 
 Estimate: 5 sessions
-Sessions used: 5
+Sessions used: 6
 
 _The two budget lines above are read by the mission-budget hook every turn. The
 planner writes `Estimate:` (5 = 4 briefs + 1 checkpoint; a corrective counts only
@@ -108,7 +108,11 @@ deferrals._
 _Any departure from a brief — logged here the moment it happens, with why.
 Deviating is allowed; deviating silently is not (§4)._
 
-(none)
+- S1: §14 host-pattern rules dropped (prefix tokens are literal); one combined git rule; adapter also refuses `--ignore-rules`/`--ephemeral` in built argv; raw JSONL saved as `<out>.events.jsonl`.
+- S2: `tools/hook-test.mjs` conform fixtures rebased onto an `AGENTS.md` baseline (the ladder entry broke 4 old fixtures).
+- S3: `docs/WORKFLOW.md:370` mirror left for `/sync`.
+- S4: `docs/WORKFLOW.md` protocol-master stamp bumped to v1.51.0; eval scenario authored, not run (the checkpoint ran it: FAIL → B1).
+- Process: S1 built on Opus 5 before the owner's 2026-09-17 Opus 4.8 rule; S2–S5 on Opus 4.8.
 
 ## Handoff log (newest first)
 
@@ -159,7 +163,24 @@ what the next session needs. Newest on top; crash-safe by write-ahead._
   pre-existing duplicate `## [Unreleased]` in CHANGELOG left alone.
 - 2026-09-17 orchestrator (gate spawn): **ckpt-p1** — reviewer spawned, fresh,
   Fable, one-shot, over `6932157^..HEAD` on `mission/runtime-agnostic-codex`.
-  Sessions used 4 → 5. Verdict pending.
+  Sessions used 4 → 5. **Verdict: REQUEST CHANGES.** Scorecard (0–3): DX 1 ·
+  Security 1 · Efficiency 3 · QA 2 · Architecture 2 · UX n/a. Blocking: **B1**
+  mission.md:136 unbraced `$CLAUDE_PLUGIN_ROOT` → codex spawn path unreachable
+  (eval `codex-routing` FAILED 0/5, $0.44, adapter never invoked); **B2**
+  codex.rules bypassed by shell wrappers (`bash -c`, `sh -c`, `zsh -lc`), `env`,
+  `command`, `nohup`, `xargs`, `timeout`, git option prefixes (`-c`, `--no-pager`,
+  `--git-dir`, `--work-tree`, `--exec-path`), `gh api` — all `matchedRules: []`
+  on the real binary; **B3** branch never pushed, CI 0 runs (LA-8). Advisory
+  A1–A10 (memo/§3 host-pattern wording: `network_rule` exists but unverified;
+  §9 import direction reversed; §3 row blank line; conform anchor coverage +
+  missing gap-state tests; docs/WORKFLOW.md mirror stale under 1.51.0 stamp →
+  `/sync`; ledger Deviations block stale; tune.md default model wording;
+  checks.mjs adapterIdx + post-adapter Task; CHANGELOG doctor bullet lacks
+  "trust"). Gates: lint 0 · harness 88/0 skip · conform 0 · five rule verdicts
+  as specified. Adapter itself judged clean.
+- 2026-09-17 orchestrator (write-ahead): **S5-fix** started — `devops` (Opus 4.8)
+  corrective for B1/B2 + A1–A4, A7–A9; orchestrator handles B3 (push + CI),
+  A5 (`/sync`), A6 (ledger). Sessions used 5 → 6 (1.2× estimate). Result pending.
 
 - 2026-09-11 planner (A3 split): owner ruled _"Split now, Estimate 5"_. S3 split
   at its documented point — S3 keeps routing + the plan-judge (#79), the new S4
@@ -215,4 +236,4 @@ what the next session needs. Newest on top; crash-safe by write-ahead._
   `--ignore-rules` proves project-level `.rules` files are loaded, so OQ1 is
   narrowed to the directory. Three open questions await the owner before S1.
 
-Next up: ckpt-p1 — Fable reviewer in flight over 6932157^..HEAD; on APPROVE: staging → verify → PR to main (issue #79 in the PR body)
+Next up: S5-fix — corrective for ckpt-p1 B1/B2/B3 (+ advisories), then re-review
