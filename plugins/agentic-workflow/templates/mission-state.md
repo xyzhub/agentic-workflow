@@ -24,7 +24,10 @@ mode and a justification in the master plan). The orchestrator increments
 reaches 1.5× the estimate the hook prints 🛑 OVERRUN on every prompt and the
 orchestrator must stop and give the owner the scope decision (subset / revised
 estimate / abort) — recorded below as a dated locked decision that revises
-`Estimate:`. Never edit `Estimate:` to silence the hook without that decision._
+`Estimate:`. Never edit `Estimate:` to silence the hook without that decision.
+The hooks go quiet on this ledger while `Sessions used:` is 0 (planned, not
+started) and for good once it carries `Closed: YYYY-MM-DD`; an optional
+`Status: blocked|parked|planned` line silences them explicitly._
 
 Gate policy: **_human-merge_** _(the default — after APPROVE the phase lands on
 `staging`, is verified there, and the human merges the PR to the default

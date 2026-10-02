@@ -70,12 +70,11 @@ elif [ "$BYTES" -ge "$ADVISORY_BYTES" ]; then BAND=advisory
 else exit 0
 fi
 
-# Silencer 4 — an active mission ledger exists (OQ7). Mission-budget (ex thread-keeper) predicate
-# verbatim: newest-mtime .plans/*.state.md that still has an open [ ]/[~] beat.
+# Silencer 4 — an active mission ledger exists (OQ7), per the shared predicate
+# (active-ledger.sh) that mission-budget and the beat-enforcers also source.
 if [ -d .plans ]; then
-  LEDGER=$(ls -t .plans/*.state.md 2>/dev/null | while IFS= read -r f; do
-    if grep -qE '^- \[( |~)\]' "$f"; then printf '%s' "$f"; break; fi
-  done)
+  . "$(dirname "${BASH_SOURCE[0]}")/active-ledger.sh"
+  LEDGER=$(active_ledger)
   [ -n "$LEDGER" ] && exit 0
 fi
 

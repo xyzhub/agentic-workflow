@@ -31,12 +31,11 @@ esac
 
 [ -d .plans ] || exit 0
 
-# Active ledger: newest-mtime .plans/*.state.md that still has an open [ ]/[~] beat
-# (a parked [~] ledger is still the active mission, so it is picked over an older
-# abandoned one — the nudge itself then keys on [ ] only, below).
-LEDGER=$(ls -t .plans/*.state.md 2>/dev/null | while IFS= read -r f; do
-  if grep -qE '^- \[( |~)\]' "$f"; then printf '%s' "$f"; break; fi
-done)
+# Active ledger: the shared predicate (active-ledger.sh) — newest-mtime ledger
+# that is not closed/never-started and still has an open [ ]/[~] beat (a parked
+# [~] ledger is still the active mission; the nudge itself keys on [ ] only, below).
+. "$(dirname "${BASH_SOURCE[0]}")/active-ledger.sh"
+LEDGER=$(active_ledger)
 [ -n "$LEDGER" ] || exit 0
 
 # First not-started checkpoint/chronicler/reviewer row. [~] (parked) and [x] (done)
