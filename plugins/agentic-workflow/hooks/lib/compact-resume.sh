@@ -67,13 +67,11 @@ if [ -n "$SOURCE" ] && [ "$SOURCE" != "compact" ]; then
   exit 0
 fi
 
-# Active ledger: newest-mtime .plans/*.state.md that still has an open [ ]/[~] beat
-# (a parked [~] ledger is still the active mission, so it is picked over an older
-# abandoned one). Identical to beat-enforcer-stop.sh by design. A missing .plans/
-# just yields no ledger — the fallback branches below take over.
-LEDGER=$(ls -t .plans/*.state.md 2>/dev/null | while IFS= read -r f; do
-  if grep -qE '^- \[( |~)\]' "$f"; then printf '%s' "$f"; break; fi
-done)
+# Active ledger: the shared predicate (active-ledger.sh), so this agrees with the
+# beat-enforcers and mission-budget by construction. A missing .plans/ just
+# yields no ledger — the fallback branches below take over.
+. "$(dirname "${BASH_SOURCE[0]}")/active-ledger.sh"
+LEDGER=$(active_ledger)
 
 HANDOFF=docs/product/session-handoff.md
 

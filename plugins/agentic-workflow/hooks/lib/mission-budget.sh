@@ -17,10 +17,11 @@
 #     owner has made the scope decision — but the hook itself never blocks:
 #     ALWAYS exit 0 on every path (no .plans/, no active ledger, missing
 #     fields, garbage stdin). stdout-inject only, like the router.
-#   - Active ledger = the thread-keeper predicate VERBATIM (newest-mtime
-#     .plans/*.state.md that still has an open [ ]/[~] beat), shared with
-#     handoff-budget.sh and the beat-enforcers so no two hooks can disagree
-#     about what "active" means.
+#   - Active ledger = active_ledger() from active-ledger.sh (newest-mtime
+#     .plans/*.state.md that is not Closed:-stamped, not never-started, and
+#     still has an open [ ]/[~] beat other than a promoted obligation), shared
+#     with handoff-budget.sh, compact-resume.sh and the beat-enforcers so no two
+#     hooks can disagree about what "active" means. No active ledger → silent.
 #   - `Next up:` is read with `head -1` (the FIRST line wins) and a second
 #     matching line is called out loudly — the ledger must carry exactly one.
 #   - Budget lines, both optional, both `^Key: <int>`:
@@ -43,9 +44,8 @@ INPUT=$(cat) # drain stdin; nothing in the event is load-bearing here
 
 [ -d .plans ] || exit 0
 
-LEDGER=$(ls -t .plans/*.state.md 2>/dev/null | while IFS= read -r f; do
-  if grep -qE '^- \[( |~)\]' "$f"; then printf '%s' "$f"; break; fi
-done)
+. "$(dirname "${BASH_SOURCE[0]}")/active-ledger.sh"
+LEDGER=$(active_ledger)
 [ -n "$LEDGER" ] || exit 0
 
 NAME=$(basename "$LEDGER" .state.md)

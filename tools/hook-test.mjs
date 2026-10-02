@@ -371,6 +371,101 @@ const HARD_PAUSE_NOT_STARTED = ledger(
       ledgers: { 'old.state.md': 'Estimate: 1 session\n- [ ] S1\nNext up: S1\n', 'pay.state.md': 'Estimate: 3 sessions\nSessions used: 1\n- [ ] S1\nNext up: S1\n' } });
     check('mission-budget: newest-mtime active ledger is the one reported', r.code === 0 && status(r) && /session 1\/3/.test(r.stdout), `stdout=${JSON.stringify(r.stdout)}`);
   }
+
+  // ── active-ledger predicate (orderly, 2026-10, v1.51.1) ──────────────────
+  // A closed ledger kept "active" by its promoted `[~] … → OBLIGATIONS.md` rows,
+  // and a planned never-started ledger, each printed a status line on EVERY
+  // prompt. Fixtures mirror orderly's real ledgers (kitchen-ticket-printing,
+  // track2-device-agent).
+  const PROMOTED = [
+    '- [~] OB-3 · added 2026-09-28 (planner) — do: drop column → promoted to .plans/OBLIGATIONS.md 2026-09-29 (OB-3)',
+    '- [~] OB-4 · added 2026-09-28 — do: J1 on paper (owner) → OB-4',
+  ];
+  // 11. Closed via `Next up:` only (no stamp), promoted [~] rows → silent.
+  {
+    const r = runHook({ event: 'UserPromptSubmit', desc: MB, input: {},
+      ledgers: led('Estimate: 15 sessions', 'Sessions used: 15', '- [x] S1 — build', ...PROMOTED, 'Next up: none — mission CLOSED 2026-09-29') });
+    check('mission-budget: closed ledger (Next up: mission CLOSED) with promoted [~] obligation rows → silent',
+      r.code === 0 && r.stdout === '', `stdout=${JSON.stringify(r.stdout)}`);
+  }
+  // 12. `Closed:` stamp wins over a stale `Next up:` and a leftover [ ] row.
+  {
+    const r = runHook({ event: 'UserPromptSubmit', desc: MB, input: {},
+      ledgers: led('Estimate: 7 sessions', 'Sessions used: 4', 'Closed: 2026-08-24', '- [ ] Checkpoint p2', 'Next up: checkpoint p2') });
+    check('mission-budget: `Closed: YYYY-MM-DD` stamp → silent even with a stale Next up and an open row',
+      r.code === 0 && r.stdout === '', `stdout=${JSON.stringify(r.stdout)}`);
+  }
+  // 13. Promoted rows alone are not open beats (no closed marker at all) → silent.
+  {
+    const r = runHook({ event: 'UserPromptSubmit', desc: MB, input: {},
+      ledgers: led('Estimate: 2 sessions', 'Sessions used: 2', '- [x] S1 — build', ...PROMOTED, 'Next up: owner rows') });
+    check('mission-budget: only promoted [~] → OB rows left → not active → silent',
+      r.code === 0 && r.stdout === '', `stdout=${JSON.stringify(r.stdout)}`);
+  }
+  // 14. Planned, never started (`Sessions used: 0`, owner said stop) → silent.
+  {
+    const beats = Array.from({ length: 21 }, (_, i) => `- [ ] S${i + 1} — build`);
+    const r = runHook({ event: 'UserPromptSubmit', desc: MB, input: {},
+      ledgers: led('Estimate: 20 sessions', 'Sessions used: 0', '> **⏸ STATUS: PLANNED — NOT STARTED.** owner: stop after planning', ...beats, 'Next up: S1 (blocked on OQ-1)') });
+    check('mission-budget: planned/blocked ledger (Sessions used: 0, 21 open [ ]) → silent',
+      r.code === 0 && r.stdout === '', `stdout=${JSON.stringify(r.stdout)}`);
+  }
+  // 15. Genuinely active: a promoted row does not hide a real open beat.
+  {
+    const r = runHook({ event: 'UserPromptSubmit', desc: MB, input: {},
+      ledgers: led('Status: active', 'Estimate: 4 sessions', 'Sessions used: 2', '- [x] S1 — build', ...PROMOTED, '- [ ] S2 — build', 'Next up: S2') });
+    check('mission-budget: genuinely active ledger (open [ ] beat beside promoted rows) → status line',
+      r.code === 0 && status(r) && /session 2\/4/.test(r.stdout) && nextLine(r) === 'Next up: S2', `stdout=${JSON.stringify(r.stdout)}`);
+  }
+  // 16. Explicit `Status:` — anything but active silences; `planned` is skipped.
+  {
+    const blocked = runHook({ event: 'UserPromptSubmit', desc: MB, input: {},
+      ledgers: led('Status: blocked', 'Estimate: 4 sessions', 'Sessions used: 2', '- [ ] S3', 'Next up: S3') });
+    const planned = runHook({ event: 'UserPromptSubmit', desc: MB, input: {},
+      ledgers: led('Status: planned', 'Estimate: 4 sessions', '- [ ] S1', 'Next up: S1') });
+    check('mission-budget: `Status: blocked` → silent; `Status: planned` → silent',
+      blocked.code === 0 && blocked.stdout === '' && planned.code === 0 && planned.stdout === '',
+      `blocked=${JSON.stringify(blocked.stdout)} planned=${JSON.stringify(planned.stdout)}`);
+  }
+  // 17. Newest is CLOSED, an older ledger was never closed → silent (no fall-through
+  //     to an abandoned mission — orderly surfaced a stale 7/13 ledger this way).
+  {
+    const r = runHook({ event: 'UserPromptSubmit', desc: MB, input: {},
+      ledgers: {
+        'stale.state.md': 'Estimate: 13 sessions\nSessions used: 7\n- [ ] S5\nNext up: P3 rendered gate\n',
+        'pay.state.md': ['Estimate: 15 sessions', 'Sessions used: 15', ...PROMOTED, 'Next up: none — mission CLOSED 2026-09-29', ''].join('\n'),
+      } });
+    check('mission-budget: newest closed + older never-closed open ledger → silent (no fall-through)',
+      r.code === 0 && r.stdout === '', `stdout=${JSON.stringify(r.stdout)}`);
+  }
+  // 18. Newest is planned-only, an older mission is running → the running one is
+  //     reported (planning mission B must not hide mission A).
+  {
+    const r = runHook({ event: 'UserPromptSubmit', desc: MB, input: {},
+      ledgers: {
+        'pay.state.md': 'Estimate: 3 sessions\nSessions used: 2\n- [ ] S3\nNext up: S3\n',
+        'next-mission.state.md': 'Estimate: 5 sessions\nSessions used: 0\n- [ ] S1\nNext up: S1\n',
+      } });
+    check('mission-budget: newest planned-only (Sessions used: 0) is skipped → the running older mission is reported',
+      r.code === 0 && status(r) && /session 2\/3/.test(r.stdout) && !/next-mission/.test(r.stdout), `stdout=${JSON.stringify(r.stdout)}`);
+  }
+  // 19. ONE predicate: the same closed ledger (with a leftover not-started
+  //     checkpoint row) is inactive for every consumer — Stop + PreToolUse
+  //     enforcers stay silent, compact-resume names no ledger, and the
+  //     handoff-budget is NOT silenced by it.
+  {
+    const closed = { 'pay.state.md': ['Closed: 2026-09-29', '## Checklist', '- [ ] Checkpoint — phase 2 review', ...PROMOTED, ''].join('\n') };
+    const stop = runHook({ event: 'Stop', desc: STOP, input: { stop_hook_active: false }, ledgers: closed });
+    const pre = runHook({ event: 'PreToolUse', desc: PRE, input: { tool_input: { command: 'git commit -m x' } }, ledgers: closed });
+    const cmp = runHook({ event: 'SessionStart', desc: 'compact-resume directive', input: { source: 'compact' }, ledgers: closed });
+    const hb = runHook({ event: 'UserPromptSubmit', desc: 'handoff-budget',
+      input: { session_id: `hb-closed-${process.pid}-${Date.now()}` }, transcript: { bytes: 3_700_000 }, ledgers: closed });
+    check('active-ledger: a closed ledger is inactive for ALL consumers (enforcers silent, compact names none, handoff-budget nudges)',
+      stop.code === 0 && !nudged(stop) && pre.code === 0 && !nudged(pre)
+        && cmp.code === 0 && !/pay\.state\.md/.test(cmp.stdout)
+        && hb.code === 0 && /Handoff budget/.test(hb.stdout),
+      `stop=${JSON.stringify(stop.stdout)} pre=${JSON.stringify(pre.stdout)} cmp=${JSON.stringify(cmp.stdout)} hb=${JSON.stringify(hb.stdout)}`);
+  }
 }
 
 // ── SessionStart:compact re-read directive ───────────────────────────────
@@ -621,17 +716,19 @@ const stamped = (iso) => `_Written: ${iso} · session s6-case · branch mission/
     r.code === 0 && reReadDirective(r) && /current\.state\.md/.test(r.stdout) && !/old-abandoned/.test(r.stdout),
     `stdout=${JSON.stringify(r.stdout)}`);
 }
-{ // the other half of `ls -t`: a newest ledger that is fully [x] is COMPLETE, so
-  // the scan falls through to the older ledger that still has an open beat.
+{ // the other half of `ls -t`: a newest ledger that is fully [x] is COMPLETE —
+  // the focus finished, so there is NO active mission. The scan must NOT fall
+  // through to an older ledger that was simply never closed (that is an
+  // abandoned mission; orderly 2026-10 surfaced a stale 7/13 ledger this way).
   const r = runHook({
     event: 'SessionStart', desc: COMPACT, input: { source: 'compact' },
     ledgers: {
-      'still-running.state.md': ['## Checklist', '- [ ] Checkpoint — phase 1 review', ''].join('\n'),
+      'never-closed.state.md': ['## Checklist', '- [ ] Checkpoint — phase 1 review', ''].join('\n'),
       'finished.state.md': ['## Checklist', '- [x] S1 — build', '- [x] Checkpoint — phase 1 review', ''].join('\n'),
     },
   });
-  check('SessionStart(compact): newest ledger complete → falls through to the older open one',
-    r.code === 0 && reReadDirective(r) && /still-running\.state\.md/.test(r.stdout) && !/finished/.test(r.stdout),
+  check('SessionStart(compact): newest ledger complete → no active ledger (no fall-through to an older open one)',
+    r.code === 0 && reReadDirective(r) && !/never-closed/.test(r.stdout) && !/finished\.state/.test(r.stdout),
     `stdout=${JSON.stringify(r.stdout)}`);
 }
 { // the directive the human contracted for is ≤6 lines.

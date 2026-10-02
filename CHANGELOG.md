@@ -8,6 +8,24 @@ has no tags — each version-stamped commit on `main` IS the release.
 
 _(empty)_
 
+## [1.51.2] — 2026-10-02
+### Fixed — closed and never-started missions no longer count as "active"
+Reported from orderly: every prompt printed the status line of a mission CLOSED
+three days earlier, and a planned, never-started ledger took over whenever its
+mtime was bumped.
+- One shared predicate, `hooks/lib/active-ledger.sh`, replaces five inline copies
+  in mission-budget, handoff-budget, compact-resume and both beat-enforcers.
+- The newest-touched ledger is the focus. It is skipped while never started
+  (`Sessions used: 0` or `Status: planned`). It is not active once it carries a
+  `Closed:` stamp, a `Status:` other than `active`, a first `Next up:` saying
+  the mission is closed/complete, or no open beat. `[~]` obligation rows
+  promoted to `.plans/OBLIGATIONS.md` (`→ OB-<n>`) no longer count as beats.
+- A finished newest ledger no longer falls back to an older, never-closed one.
+  This deliberately reverses one compact-resume case pinned in S5b.
+- 9 regression cases in `tools/hook-test.mjs` (all fail on 1.51.1), including
+  closed-with-promoted-obligations, planned/blocked, genuinely active, and one
+  fixture checked across all four consumers.
+
 ## [1.51.1] — 2026-09-17
 ### Fixed — Codex change attribution and successful distillate discovery
 Both fixes came from the 1.51.0 checkpoint re-review (A2/A3).
