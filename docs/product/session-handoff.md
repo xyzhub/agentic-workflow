@@ -10,7 +10,7 @@ _Written: 2026-10-07T01:00:00+03:00 · session d46a5a63 (Fable 5.1) · branch fe
 
 ## Where things stand
 
-- **Branch** `feat/launch-media-plan` is ONE commit ahead of `main` (29b1e92 on f767fa8, v1.51.2), NOT pushed.
+- **Branch** `feat/launch-media-plan` is pushed; PR #97 to main is open and awaits the owner's merge (plan records only, no plugin code).
   All of this session's work is committed in 29b1e92; the tree is clean
 - **Two missions planned and plan-judged, neither started.** Owner said "Later" on
   2026-10-06 to both.
@@ -49,4 +49,4 @@ _Written: 2026-10-07T01:00:00+03:00 · session d46a5a63 (Fable 5.1) · branch fe
 1. `/agentic-workflow:mission "publish-approval" run` — cuts `mission/publish-approval`
    from this branch and commits the plan files as its first act.
 2. After it merges: `/agentic-workflow:mission "operate-triage" run`.
-3. Nothing pending. The checkout IS this branch; the owner never switches branches by hand. Mission 1 pushes and cuts its own branch.
+3. Merge PR #97 (owner). Mission 1 then cuts its own branch; the owner never switches branches by hand.
