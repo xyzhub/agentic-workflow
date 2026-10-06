@@ -16,6 +16,28 @@ grades the protocol's own behavior the way a QA team would.
 
 ---
 
+## 2026-10-06 to 2026-10-07 — two features planned from ECC patterns, and a settle that had not run since July
+
+On 2026-10-06 the owner reviewed ECC (github.com/affaan-m/ECC), a popular public agent-workflow project, and asked what this plugin could borrow. Three patterns were chosen: recording a short demo video of the shipped product with Playwright (a browser-driving tool); finding people who publicly describe the pain we solve and drafting one message each, never sending it; and an approval step for the publish queue that is tied to the exact text approved. We borrow patterns only, never ECC's code. In July 2026 a poisoned file got into this repo's test fixtures; since then the rule is that outside code does not come in.
+
+Three advisors (separate review agents, each looking through a different lens) read the ask and agreed it was too big for one piece of work. Building all three at once is the shape that burned credits in August. The owner accepted a split into three one-session missions: the approval gate first, silent video recorded on staging second, and a hand-run trial of the outreach drafts third. Issues #88 (demo video) and #89 (outreach trial, 5 drafts, no automation) hold the second and third.
+
+Mission 1, publish-approval, is planned for version 1.52.0. Each queued post carries a fingerprint of its exact text. An approval is valid only for that fingerprint, so a post edited after approval cannot go out. Firing takes a one-time claim token, so nothing fires twice. One review sent the plan back once and the planner fixed it. The owner said "Later", so it has not started.
+
+The second feature came from the owner's wish for a finished project to watch bug reports filed in the app by its users, sort them, diagnose them, fix them on staging, and leave production to the owner. Some reports are not code bugs at all; a branch printer going offline is troubleshooting. Mission 1 of that feature, operate-triage (planned for v1.53.0, queued behind publish-approval), ships a spec for a two-way in-app support channel whose tickets sync to GitHub Issues. The venture builds that channel itself; this plugin never touches venture code. It also adds triage, diagnose and digest modes to the operate command. The plan passed two review reads and nine findings were fixed. Issue #90 holds the fix path, to start after ten real reports exist.
+
+Two owner decisions cut against advice. The advisors held back the unattended server runner on a subscription login; the owner kept it, with spending ceilings, a pinned CLI version and a safety check on every run as the conditions. And the owner ruled that the agent may merge to staging, carefully, while only the owner merges to production. That permission is written down, dated, and limited to the staging branch.
+
+PR #97 (the plan records: both mission plans, the counsel briefs and a new decision log) merged on 2026-10-07 as commit 32c1c61. No plugin code changed and the version stays 1.51.2. Issues #91 to #96 also arrived from the Gatehouse desktop app (per-project reviewer limits, prompt and tool overrides, a machine-readable agent list, effort settings, Codex skill headers, a remote executor fleet).
+
+Grooming the queue on 2026-10-07 checked 27 open issues: none closed, none stale, 11 labelled, and #78 re-sized from extra-small to small.
+
+Settle (the tidy-up that deletes merged branches) was then run and found a gap: seven stale remote branches had piled up since July because it was never run after merges #14 to #87. The owner deleted five by hand on evidence. GitHub now deletes a branch automatically when its pull request merges, for this repo only; Orderly keeps its protected staging branch. Two branches wait on the owner: `feat/execution-core-templates` and `fix/groom-autodetect`, one unlanded commit each. Keep means file an issue; drop means delete.
+
+The lesson is about process. "Commit and end cleanly" means check, commit, push, open the PR, and after the owner merges, run settle. This session stopped at the local commit and the owner had to ask twice. Recorded in memory so it does not repeat.
+
+---
+
 ## 2026-09-17 — the first real job handed to the second runtime, and it passed
 
 ### Milestone: n=1 — a foreign-built brief, reviewed and found sound
