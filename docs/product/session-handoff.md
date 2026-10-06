@@ -49,4 +49,4 @@ _Written: 2026-10-07T01:00:00+03:00 · session d46a5a63 (Fable 5.1) · branch fe
 1. `/agentic-workflow:mission "publish-approval" run` — cuts `mission/publish-approval`
    from this branch and commits the plan files as its first act.
 2. After it merges: `/agentic-workflow:mission "operate-triage" run`.
-3. Nothing pending. The branch is local only; push it (or let mission 1 do so) when you start.
+3. Nothing pending. The checkout IS this branch; the owner never switches branches by hand. Mission 1 pushes and cuts its own branch.
