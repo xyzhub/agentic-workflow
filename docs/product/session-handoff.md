@@ -4,59 +4,49 @@ _The interactive counterpart to a mission ledger: what a resuming agent needs wh
 no active `.plans/*.state.md`. Read it **verbatim** before continuing, then verify against
 `git log --oneline -5` and `git status` before trusting **Next**._
 
-_Written: 2026-08-04T00:00:00Z · session unknown · branch plan/interactive-handoff_
+_Written: 2026-10-07T01:00:00+03:00 · session d46a5a63 (Fable 5.1) · branch feat/launch-media-plan · next session on Opus 5.5_
 
 ---
 
 ## Where things stand
 
-- **`main` = `2c8487f`, v1.42.0 shipped.** PR #31 (`context-economy`) merged 2026-08-03T19:51Z.
-  The plugin was reloaded after the merge, so **v1.42.0's hooks are now the installed ones** —
-  `compact-resume.sh` and the due-ness-aware beat-enforcer are live for the first time.
-- **Mission `context-economy` — CLOSED.** Full record: `docs/product/engineering/context-economy-metrics.md`.
-- **Mission `compaction-continuity` — PLANNED, NOT STARTED.** Trio at
-  `.plans/compaction-continuity.{md,sessions.md,state.md}`, brief under `docs/product/decisions/`.
-  Branch `plan/interactive-handoff` (pushed). 4 phases, 11 sessions, 2 STRICT checkpoints,
-  gate policy **batch**. **Next up: S1** — harness fixtures in `tools/hook-test.mjs`, suits `backend`.
+- **Branch** `feat/launch-media-plan` is pushed; PR #97 to main is open and awaits the owner's merge (plan records only, no plugin code).
+  All of this session's work is committed in 29b1e92; the tree is clean
+- **Two missions planned and plan-judged, neither started.** Owner said "Later" on
+  2026-10-06 to both.
+  1. `publish-approval` — trio `.plans/publish-approval.{md,sessions.md,state.md}`,
+     Estimate 1 session, builder `security`, reviewer Fable, ships as v1.52.0.
+     Hash-pinned publish approval (`tools/publish-gate.mjs`, `publish-claims.jsonl`).
+  2. `operate-triage` — trio `.plans/operate-triage.*`, Estimate 1 session, builder
+     `backend`, two Fable reviewer spawns, ships as v1.53.0 (substitution rule in the
+     plan if publish-approval has not merged). Ships `templates/support-channel-spec.md`,
+     `tools/operate-triage.mjs`, `/operate triage|diagnose|digest` modes. Queued BEHIND
+     publish-approval; the active-ledger hook skips it while `Sessions used: 0`.
+- **Briefs and locks**: `docs/product/decisions/2026-10-06-launch-media-{brief,journeys,memos,metrics}.md`
+  and `…-operate-bugfix-{brief,journeys,memos,metrics}.md`; counsel briefs in
+  `docs/product/decision-log.md`. Locked decisions are dated tables inside each brief.
+- **Follow-on issues filed** on xyzhub/agentic-workflow: #88 demo-video (after a 30-min
+  Playwright spike on Orderly staging), #89 lead-intelligence hand trial, #90 operate-fix
+  (after ten real reports through a venture's in-app channel). Plan none of them until
+  mission 1 merges.
+- **Queue groomed 2026-10-07**: 27 open, 0 closed, 0 stale, 11 labelled, #78 re-sized to S.
+  No hand-written backlog files; `docs/product/roadmap.md` is the epic view.
+- **Status page** republished at https://claude.ai/artifact/LPmnmqx2rAosmWpM16HF9x (version 4).
+- **Memory** (auto-loaded): `launch-media-mission`, `operate-bugfix-missions`,
+  `plugin-specs-not-venture-work` hold the owner's locks and corrections.
+
+## Standing rules this session learned (do not relearn)
+
+- Plugin missions ship specs/templates for ventures, never venture code; Orderly stays
+  unregistered (2026-08-19 decision). On a rejected approval package ask "what would you
+  like to clarify?" before reformulating.
+- Patterns only from ECC; never copy third-party code (2026-07 incident).
+- Owner merges production; agent merges to staging carefully (L5-G2, operate-bugfix brief).
+- Baselines: `node tools/hook-test.mjs` 123 ok; `node tools/lint.mjs` clean.
 
 ## Next
 
-**Start S1 of `compaction-continuity`**, or leave it parked. Nothing is mid-flight; no branch
-is in a partial state; all gates green (`lint` clean · `hook-test` clean · `--selftest` 54).
-
-## Decisions that are locked and must not be re-litigated
-
-- **OQ1 (updated 2026-08-04): every phase bases off `main`.** The original "base off
-  `mission/context-economy-integration`, hold the PR, retarget" existed only while #31 was
-  open. It merged; the premise expired.
-- **OQ4: four mechanical silencers** on the write trigger. **If it nags, raise the bands —
-  do not add conditions.**
-- **OQ6: when neither ledger nor handoff exists, inject a distinct ≤6-line directive**
-  (`git log -5`, `git status`, `.remember/now.md`) and tell the human the record is missing.
-  It must **not** instruct the agent to author a handoff on the spot.
-- **L2: no phase ships the fallback before the trigger is merged.** A stale handoff is worse
-  than none — the directive says re-read it verbatim, so the agent resumes *confidently wrong*.
-
-## Owner action, outstanding, outside this repo
-
-**Prune `~/.claude/skills` (~140 skills, 208k chars) and unused MCP servers (93k).** The
-`context-economy` audit measured this as a larger context lever than everything Phases 0–4
-delivered combined. Minutes of settings work. Not scheduled by any session, because no
-session can do it.
-
-## Standing conventions in this repo
-
-- **Never `Read`/`cat`/`head`/`tail` a `*.jsonl` transcript** — 3–12 MB. Use `wc`, `grep -c`,
-  or pass the path to `tools/context-attrib.mjs`, which streams.
-- **Gates:** `node tools/lint.mjs` (spawns `hook-test`, `marker-test`, `context-attrib --selftest`).
-- **Never merge or push the default branch** — the human merges.
-- **Every behavior change ships with a test that fails without it**, mutation-proved in both
-  states, plus an anti-inert control (re-run the mutation against the pre-change checker).
-- **An agent loads its INSTALLED definition, not the working tree.** A mission that edits an
-  agent's contract cannot exercise that edit until merge + reinstall.
-
----
-
-_Note for `compaction-continuity` S5/OQ6: this file **now exists**, which changes a premise the
-plan records ("`session-handoff.md` has never been written in this repo"). The
-neither-ledger-nor-handoff branch is still required — it is the state any *other* repo starts in._
+1. `/agentic-workflow:mission "publish-approval" run` — cuts `mission/publish-approval`
+   from this branch and commits the plan files as its first act.
+2. After it merges: `/agentic-workflow:mission "operate-triage" run`.
+3. Merge PR #97 (owner). Mission 1 then cuts its own branch; the owner never switches branches by hand.
