@@ -1,0 +1,101 @@
+---
+status: living
+owner-agent: planner
+refresh-trigger: every-ship
+---
+
+# Mission: publish-approval — ledger
+
+_The durable state that outlives any transcript (WORKFLOW.md §2, principle 1): a
+fresh agent resumes the mission from this file alone. Write-ahead — update it
+**at every merge and every gate result**, not only before ending a session (the
+orchestrator has no session boundary to force a write; a compaction erases
+everything since the last one — §12 LA-6)._
+
+Status: planned
+
+Estimate: 1 session
+Sessions used: 0
+
+_The two budget lines above are read by the mission-budget hook every turn. The
+planner writes `Estimate:` (1 = one brief S1 + one one-shot Fable review at the
+checkpoint; no `phases`; a corrective `S1-fix` counts only when it fires, never
+pre-booked — brief L1, 2026-10-06, locks "each one session"). The orchestrator
+increments `Sessions used:` the moment it starts a brief, a corrective, or a
+`continue`/loop tick — write-ahead, before spawning — and flips `Status:` to
+`active` at the same moment. When `Sessions used` reaches 1.5× the estimate
+(i.e. the 2nd session) the hook prints 🛑 OVERRUN on every prompt and the
+orchestrator must stop and give the owner the scope decision (subset / revised
+estimate / abort) — recorded below as a dated locked decision that revises
+`Estimate:`. Never edit `Estimate:` to silence the hook without that decision._
+
+Paired metric (house rule): hash-gate strictness ⇄ **false refusals** — `reset`
+events in `docs/product/launch/publish-claims.jsonl` where the owner changed
+nothing material. Baseline 0 (mechanism absent, metrics doc §0); first read at
+the first `/agentic-workflow:operate` after merge.
+
+Gate policy: **human-merge** — after APPROVE the phase branch is verified (this
+repo's §10 **Staging** is `none`, so verify is `node tools/lint.mjs` green on
+the branch plus a `claude --plugin-dir plugins/agentic-workflow` load), and the
+human merges the PR to `main`. Recorded at mission start, 2026-10-06.
+
+Standing agent authorized: _(none — every review/counsel is a one-shot spawn at
+a decision point, §12 LA-5.)_
+
+Branch: one phase branch, `mission/publish-approval`, cut from
+`feat/launch-media-plan` (which carries the decision docs and this trio); one
+PR to `main`. Target version 1.52.0.
+
+## Checklist
+
+_Glyphs: `[ ]` not started · `[~]` in-flight / deferred / awaiting owner · `[x]`
+done (verified, not merely written)._
+
+- [ ] S1 — gate tool `tools/publish-gate.mjs`, lib hook `hooks/lib/publish-guard.sh` + hooks.json row, 7 named harness cases + siblings, lint row 10.8, queue/log templates, `/publish approve|reconcile`, WORKFLOW §3/§14 both copies, record (1.52.0, CHANGELOG, READMEs), n=1 tamper refusal in this repo (branch `mission/publish-approval`; builder `security`)
+- [ ] Checkpoint ckpt-p1 — ONE fresh `reviewer` on **Fable** over `feat/launch-media-plan..mission/publish-approval` (security boundary), then lint + `claude --plugin-dir` load → one PR to `main`, human merges
+
+## Open questions
+
+_Mirrored from the master plan with their recommendations; the human answers
+before execution starts._
+
+(none — the four candidate questions (X in the paid guard, commit the n=1
+artifacts, `--cancel` target state, gate-tool residency) were settled by the
+planner as locked decisions in the master plan, 2026-10-06.)
+
+## Standing steers
+
+_Captured **verbatim** at checkpoints only. Grammar:_ `- YYYY-MM-DD (ckpt <id>) — "<exact words>"`. _Retire by ~~strikethrough~~, never delete._
+
+(none)
+
+## Closing
+
+_A promised action with an observable condition and no trigger yet. Rows are
+never deleted: a fired row keeps its line and appends `· fired YYYY-MM-DD
+(<evidence>)`. A `[~]` row defers past this mission's close and MUST carry
+`→ OB-<n>`. `Closed: YYYY-MM-DD` is written only once every row is `[x]` or
+`[~] … → OB-<n>`; `/agentic-workflow:settle` enforces that._
+
+- [ ] branch + worktree cleanup · added 2026-10-06 (planner) — do: delete `mission/publish-approval` (local and remote) and prune its stale worktrees — when: the PR to `main` is merged AND the lint run on its merge commit concluded green per §10 — probe: `gh pr list --state merged` + `gh run list` _(deferred until green, via `/agentic-workflow:settle`)_
+- [ ] docs/record synced · added 2026-10-06 (planner) — do: confirm CHANGELOG 1.52.0, both READMEs, `templates/WORKFLOW.md` §3/§14 and the `docs/WORKFLOW.md` mirror (stamp v1.52.0) describe the shipped behaviour; `templates/publish-queue.md` / `publish-log.md` match what `publish-gate.mjs` writes — when: S1 is `[x]` and ckpt-p1 returned APPROVE — probe: manual
+- [ ] live-verify after reinstall · added 2026-10-06 (planner) — do: in a real session after `/plugin update` + `/reload-plugins`, run `/agentic-workflow:publish status` on this repo's queue and a tokenless `curl https://api.linkedin.com/v2/me` in Bash: the hook must BLOCK (exit 2) with the claim-token text; then `PUBLISH_CONNECT=1 curl …` must pass with the connect reminder — when: the 1.52.0 PR to `main` is merged and the plugin is reinstalled — probe: manual
+- [ ] version bumped + stamped · added 2026-10-06 (planner) — do: `plugins/agentic-workflow/.claude-plugin/plugin.json` → 1.52.0 (the §10 Version pin), `docs/WORKFLOW.md` line 3 → `v1.52.0`, CHANGELOG entry stamped `[1.52.0]` — when: this mission's CHANGELOG entry names a version — probe: `grep -c 1.52.0 plugins/agentic-workflow/.claude-plugin/plugin.json CHANGELOG.md docs/WORKFLOW.md`
+- [ ] Codex publish parity gap re-bounded · added 2026-10-06 (planner) — do: append to OB-17 in `.plans/OBLIGATIONS.md` (orchestrator edits, not the builder) that since 1.52.0 the gate tool's refusal is the only mechanical publish check inside a Codex run and the hook-side rules (tokenless block, outreach block, email hosts) are the parity target for #81 — when: the 1.52.0 PR to `main` is merged — probe: `grep -n 'OB-17' .plans/OBLIGATIONS.md` shows the 1.52.0 note
+- [ ] n=1 on Orderly queue (mission 2 precondition) · added 2026-10-06 (planner) — do: run `publish-gate.mjs stamp` on Orderly's `docs/product/launch/publish-queue.md` after the plugin reinstall (old 7-column rows migrate: `kind: post`, `epoch: 1`, state unchanged) and tamper one approved draft on purpose: `/publish run` must refuse it with the REFUSED line — when: 1.52.0 is installed in the Orderly session — probe: manual (owner or verifier), result recorded here
+
+## Deviations
+
+_Any departure from a brief — logged here the moment it happens, with why.
+Deviating is allowed; deviating silently is not (§4)._
+
+(none)
+
+## Handoff log (newest first)
+
+_≤10 lines per entry: what this session did, the verify signal, the branch, and
+what the next session needs. Newest on top; crash-safe by write-ahead._
+
+- 2026-10-06 planner: trio authored on `feat/launch-media-plan`, then one revision pass on the plan-judge's REVISE (anchors re-verified, the four OQs locked as planner decisions, 19-file count, cut list + order rule, tool/hook path contract aligned, `PUBLISH_CONNECT=` bypass named). Nothing built. Baseline `node tools/hook-test.mjs` = 123 ok, clean. Awaiting the plan-judge only; no owner question blocks S1.
+
+Next up: S1
