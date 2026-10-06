@@ -10,10 +10,8 @@ _Written: 2026-10-07T01:00:00+03:00 · session d46a5a63 (Fable 5.1) · branch fe
 
 ## Where things stand
 
-- **Branch** `feat/launch-media-plan` has zero commits ahead of `main` (f767fa8, v1.51.2).
-  All of this session's work is UNCOMMITTED: 16 untracked files + 2 modified
-  (`docs/product/overview.html`, this file). `git status` is the truth; do not
-  assume the plan is lost because `git log` looks empty.
+- **Branch** `feat/launch-media-plan` is ONE commit ahead of `main` (29b1e92 on f767fa8, v1.51.2), NOT pushed.
+  All of this session's work is committed in 29b1e92; the tree is clean
 - **Two missions planned and plan-judged, neither started.** Owner said "Later" on
   2026-10-06 to both.
   1. `publish-approval` — trio `.plans/publish-approval.{md,sessions.md,state.md}`,
@@ -51,6 +49,4 @@ _Written: 2026-10-07T01:00:00+03:00 · session d46a5a63 (Fable 5.1) · branch fe
 1. `/agentic-workflow:mission "publish-approval" run` — cuts `mission/publish-approval`
    from this branch and commits the plan files as its first act.
 2. After it merges: `/agentic-workflow:mission "operate-triage" run`.
-3. Optional now: commit the 18 pending files on `feat/launch-media-plan` as
-   `chore(plan): launch-media + operate-bugfix plans and groom 2026-10-07` so the
-   plans are not lost if the branch is switched. Owner has not asked for this commit.
+3. Nothing pending. The branch is local only; push it (or let mission 1 do so) when you start.
