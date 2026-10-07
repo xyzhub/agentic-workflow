@@ -1,6 +1,6 @@
 ---
 description: Interactive setup with a proven round-trip before anything is recorded — the owner channel (telegram | slack), a remote work server (server <tailscale-host>) so heavy work (Docker, integration suites, builds) runs off the local machine, or a codex runtime (codex) so agents can be delegated to the Codex CLI under committed guardrails. Writes the §10 rows only after the tests pass.
-argument-hint: '[telegram | slack | server <tailscale-hostname> | codex]'
+argument-hint: '[telegram | slack | server <tailscale-hostname> [--label a,b] [--name n] | server remove <name> | codex]'
 allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, AskUserQuestion, WebFetch]
 ---
 
@@ -25,6 +25,8 @@ transcript — rotate it — and continue with the rotated one.
 
 **`server` mode** — `$ARGUMENTS` starts with `server` → skip the owner-channel
 flow entirely and run the **remote work server** setup at the end of this file.
+`server remove <name>` drops that executor from §10.1 (see the removal note at
+the end of that section).
 
 **`codex` mode** — `$ARGUMENTS` starts with `codex` → skip the owner-channel
 flow entirely and run the **codex runtime** setup at the end of this file.
@@ -131,8 +133,11 @@ you.
 
 1. **Collect** (AskUserQuestion where missing): Tailscale hostname (from
    `$ARGUMENTS`), SSH user on the server, repo path there (default
-   `~/apps/<repo>`). Sanity: `tailscale status 2>/dev/null | grep <host>` when
-   the CLI exists — absent is fine, Tailscale MagicDNS still resolves.
+   `~/apps/<repo>`), and — from the flags — `--name <name>` (the §10.1
+   executor name; default `default` for the first, else derived from the host)
+   and `--label a,b` (the §10.1 labels; default none). Sanity: `tailscale
+   status 2>/dev/null | grep <host>` when the CLI exists — absent is fine,
+   Tailscale MagicDNS still resolves.
 2. **Key + alias.** No `~/.ssh/id_ed25519*`? → `ssh-keygen -t ed25519 -N ""`.
    Test `ssh -o BatchMode=yes <user>@<host> true`; on failure tell the human
    to run `! ssh-copy-id <user>@<host>` (they type the password, once) and
@@ -157,15 +162,29 @@ you.
    fetch -q && git rev-parse origin/<default>'` equals the local
    `git rev-parse origin/<default>` · `docker --context <repo>-server ps`
    exits 0.
-7. **Record — only now**: §10 **Remote executor** row (`ssh <repo>-server ·
-   repo at <path> · sync: push + fetch (pushed-branch-tip only, LA-8)`);
-   rewrite the heavy §10 gate rows in remote form with the owner's okay
-   (`ssh <repo>-server 'cd <path> && git fetch -q && git checkout -q <branch>
-   && <gate>'` — integration first: it runs next to the Tailscale Postgres);
-   document the alias + docker context in `docs/AUTH.md` §"Databases & remote
-   access" (names and recipes, no values). Report: what runs remotely now,
-   what stayed local, and the one command that undoes it (`docker context use
-   default`, remove the §10 row).
+7. **Record — only now**: **append** a §10.1 Executors row (`<name> · ssh
+   <repo>-server · repo at <path> · labels: <labels> · default: yes|no`),
+   never replacing an existing one — a fleet grows a row at a time. If the
+   project still carries only the legacy single **Remote executor** row,
+   migrate it into the §10.1 table as the `default` executor first, then append
+   this one (the first server added becomes `default: yes`; later ones
+   `default: no` unless `--name default`). Rewrite the heavy §10 gate rows in
+   remote form with the owner's okay, tagging label-scoped gates
+   `→ executor:<label>` (`ssh <repo>-server 'cd <path> && git fetch -q && git
+   checkout -q <branch> && <gate>'` — integration first: it runs next to the
+   Tailscale Postgres); document the alias + docker context in `docs/AUTH.md`
+   §"Databases & remote access" (names and recipes, no values). Report: what
+   runs remotely now, what stayed local, and the one command that undoes it
+   (`docker context use default`, `connect server remove <name>`).
+
+**Removal — `/agentic-workflow:connect server remove <name>`**: drop that row
+from the §10.1 Executors table (if it was the only row, the project falls back
+to all-local; if it was `default`, promote the next row or tell the owner to
+pick one). Revert any §10 gate rows pinned to that executor's labels to the
+`default` executor or local form. Then print the ssh-config and docker-context
+cleanup for the owner to run (`ssh-config` `Host <repo>-server` block and
+`docker context rm <repo>-server`) — never delete the owner's SSH config or
+contexts for them.
 
 
 ---

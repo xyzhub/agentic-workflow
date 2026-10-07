@@ -77,8 +77,11 @@ defects; three merges and a gate went unrecorded and a compaction erased them.
    auth / a session credential / authorization / tenancy / money / schema /
    migrations / a security boundary — regardless of how few lines it is). The
    saving is in *shape* (one-shot, at decision points), not in the tier; a
-   two-line auth diff still gets Fable (orderly #605→#730). The reviewer flags
-   a miscalled tier as a process finding.
+   two-line auth diff still gets Fable (orderly #605→#730) — unless the
+   project's `.claude/agents/reviewer.md` carries `boundary_escalation: off`
+   (#91), in which case the tuned reviewer takes boundary diffs and flags a
+   miscalled tier as a process finding. The reviewer flags a miscalled tier as
+   a process finding.
 
 ## 1. Plan (if no trio exists)
 
@@ -132,14 +135,19 @@ Read `.plans/<mission>.state.md` → `Next up:`. For each pending brief:
    right agent from the brief (`backend`/`frontend`/`security`/`devops`, or the
    main session for cross-cutting work) and spawn it on the resolved runtime:
    - **`claude`** (the default — every run today is exactly this, unchanged): the
-     **Agent tool**, as now.
+     **Agent tool**, as now. When the resolved tune carries `effort:` (#94),
+     pass the Agent tool's effort parameter where the harness exposes one; where
+     it does not, prepend `Effort: <level>.` as the first line of the spawn
+     prompt. The tune's report says which applied.
    - **`codex`**: `node ${CLAUDE_PLUGIN_ROOT}/tools/run-codex.mjs --role <role>
      --brief <file>#<anchor> --cwd <repo> --out <distillate.json>
-     [--model <m>] [--effort <low|medium|high>]` via the **Bash tool with
+     [--model <m>] [--effort <low|medium|high|xhigh|max>]` via the **Bash tool with
      `run_in_background: true`**; on return read the distillate **FILE** named by
      `--out` — **never stdout** (the adapter's stdout is a raw JSONL event
      stream). The role prompt, the sandbox mode, and guardrail parity are the
      adapter's job (§9); never pass `--ignore-rules`.
+   A brief may also carry an optional `executor: <name>` header field that pins
+   its remote gates to one §10.1 executor (resolution in step 3, Remote gates).
    Either way it follows the pre-resolved reads and read budget, builds, and
    verifies gates. Design-quality tooling (impeccable, §0.2) runs **once** before
    the builder's hand-off and its findings are **reported, not looped on** — the
@@ -172,9 +180,23 @@ session/entry credential, authorization, tenancy, money, schema, migrations, or
 any security boundary, **including the rules file
 `.codex/rules/agentic-workflow.rules` and the adapter's sandbox-flag
 derivation** — you **override the tune and spawn the Claude `reviewer` on Fable**
-(§5 rule 7). A miscalled tier is a reviewer process finding.
+(§5 rule 7) — unless the project's `.claude/agents/reviewer.md` carries
+`boundary_escalation: off` (#91), in which case the tuned reviewer takes the
+boundary diff and the orchestrator's choice stands. A miscalled tier is a
+reviewer process finding either way.
 
 ## 3. Checkpoint at each phase end (the only phase end, without `phases`)
+
+**Remote gates (§10.1).** When a gate runs on a remote executor, resolve WHERE
+in this order: the brief's `executor: <name>` pin → the first healthy executor
+carrying the gate row's `→ executor:<label>` → the `default` executor → local.
+Probe each candidate with `ssh -o BatchMode=yes <alias> true` first; on failure
+fall to the next matching executor and log the switch in the ledger's
+Deviations (LA-8 holds: pushed branch tip only, never a dirty tree). If no
+matching executor is healthy, **block** with a plain reason — never report the
+gate green. Each mission checks out its own `<path>/.worktrees/<mission>` so
+concurrent missions don't share a working tree. A project with only the legacy
+single **Remote executor** row needs no change — it resolves as `default`.
 
 **Pre-merge Closing pass (first).** Probe every `## Closing` row marked
 `(…, pre-merge)`; tick each that passes (`[x]` + `· fired YYYY-MM-DD

@@ -119,6 +119,18 @@ orchestrator owns the ledger and the commit. `AGENTS.md` is the runtime-neutral
 conventions file both runtimes read; `CLAUDE.md` imports it. A project that never
 opts in is unchanged.
 
+Tuning (since 1.54.0): `/agentic-workflow:tune` now covers every agent setting —
+model, runtime, per-agent **effort** (honoured on both runtimes), the **tools**
+list (which widens the codex sandbox), the **skills** list (loaded natively on
+claude, inlined by the adapter on codex), the reviewer's **boundary-escalation**
+opt-out, and **prompt** edits — each stamped with the base version and a base
+hash, with `diff`, `rebase` and `reset`. `tools/agents.mjs --json` prints a
+machine-readable **agent registry** (schema `templates/agents-registry.schema.json`)
+a wrapper reads instead of parsing frontmatter. A project can also spread heavy
+gates over a **fleet** of remote executors (§10.1): one row per server, routed
+by label with health-checked fallback, set up with
+`/agentic-workflow:connect server <host> [--label …] [--name …]`.
+
 ## The commands
 
 **Entry doors**
@@ -164,7 +176,7 @@ opts in is unchanged.
 | Command | Does |
 |---|---|
 | `/agentic-workflow:doctor` | Machinery diagnosis: environment tools (codegraph, ripgrep, jq, gh), §10 truthfulness (rows must RESOLVE), records, orphaned ledgers, and a **Runtimes** probe (fail-closed when §10 names codex and binary/auth/rules/schema is missing); `fix` installs missing dev tools and repairs provably-wrong rows |
-| `/agentic-workflow:tune` | Retune an agent per project (shadow copy in `.claude/agents/`): a Claude model tier, or a second **runtime** — `codex[:<model>] [effort]` to run the role on the Codex CLI; `reset` restores the default |
+| `/agentic-workflow:tune` | Retune an agent per project (shadow copy in `.claude/agents/`): a Claude model tier, a second **runtime** (`codex[:<model>]`), per-agent **effort** (both runtimes), the **tools** list, the **skills** list, the reviewer's **boundary-escalation**, or a **prompt** edit — each stamped with the base version + hash, with `diff`/`rebase`/`reset`; `tools/agents.mjs --json` prints the machine-readable registry the no-arg table renders from |
 | `/agentic-workflow:connect` | Interactive owner-channel setup (Telegram or Slack) or a **`codex`** runtime setup (binary + auth, install the rules file, owner-approved trust entry, a proven read-only round-trip, then the §10 Runtimes row): guided steps, auto-discovered IDs, a proven round-trip test |
 | `/agentic-workflow:sync` | Conform a project to the installed plugin: re-copy the protocol master (§10 + Local amendments preserved verbatim) and apply the structure ladder (`tools/conform.mjs`) — missing §10 rows, ledger budget fields, roadmap epic view, catalog tooling/files; hands off to `groom`/`adopt` for what needs the tracker or a seed |
 | `/agentic-workflow:ingest` | Harvest a reusable first-party artifact into the §13 portfolio **commons**: copy it into the registry repo under `commons/code/<slug>/`, pin provenance, write its index entry — a delegable bookkeeping PR |

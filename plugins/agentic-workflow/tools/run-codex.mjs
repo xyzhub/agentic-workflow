@@ -5,7 +5,7 @@
 //
 //   node run-codex.mjs --role <role> --brief <plan.md#S3 | text>
 //                      --cwd <dir> --out <distillate.json>
-//                      [--model <m>] [--effort low|medium|high]
+//                      [--model <m>] [--effort low|medium|high|xhigh|max]
 //                      [--resume <thread-id>] [--note "<corrective>"] [--help]
 //
 // Exit codes (the orchestrator branches on these, never on stdout):
@@ -47,7 +47,7 @@ const USAGE = `run-codex.mjs — run one workflow role on the Codex CLI.
 
   node run-codex.mjs --role <role> --brief <plan.md#S3 | "text">
                      --cwd <dir> --out <distillate.json>
-                     [--model <model>] [--effort low|medium|high]
+                     [--model <model>] [--effort low|medium|high|xhigh|max]
                      [--resume <thread-id>] [--note "<corrective text>"]
 
   --role    a role in the plugin's agents/ (backend, reviewer, …). Its
@@ -92,8 +92,8 @@ export function parseArgs(argv) {
   for (const req of ['role', 'brief', 'cwd', 'out']) {
     if (!o[req]) return { error: `--${req} is required` };
   }
-  if (!['low', 'medium', 'high'].includes(o.effort)) {
-    return { error: `--effort must be low, medium or high (got "${o.effort}")` };
+  if (!['low', 'medium', 'high', 'xhigh', 'max'].includes(o.effort)) {
+    return { error: `--effort must be low, medium, high, xhigh or max (got "${o.effort}")` };
   }
   return o;
 }
@@ -155,6 +155,69 @@ export function namedSkills(roleText) {
   return names.filter((n) => new RegExp('`' + n + '`|\\b' + n + ' skill\\b').test(roleText));
 }
 
+// The `skills:` frontmatter value as a list of names. Handles the inline
+// `skills: [a, b]`, the bare inline `skills: a, b`, and the YAML block form
+//   skills:
+//     - a
+//     - b
+// Claude Code loads these natively; on Codex we inline them (resolveSkills).
+export function parseSkillsList(roleText) {
+  const m = roleText.match(/^---\n([\s\S]*?)\n---/);
+  if (!m) return [];
+  const lines = m[1].split('\n');
+  const idx = lines.findIndex((l) => /^skills:/.test(l));
+  if (idx < 0) return [];
+  const strip = (s) => s.trim().replace(/^['"]|['"]$/g, '').trim();
+  const rest = lines[idx].slice('skills:'.length).trim();
+  if (rest) {
+    return rest.replace(/^\[|\]$/g, '').split(',').map(strip).filter(Boolean);
+  }
+  const out = [];
+  for (let i = idx + 1; i < lines.length; i++) {
+    const t = lines[i].match(/^\s*-\s+(.+?)\s*$/);
+    if (t) { out.push(strip(t[1])); continue; }
+    if (lines[i].trim() === '') continue;
+    break;
+  }
+  return out.filter(Boolean);
+}
+
+// Skill-name grammar. Validated BEFORE any path is built so a crafted name
+// (`../etc`, an absolute path, a prefix we don't own) can never escape the
+// three skills folders.
+export const SKILL_NAME_RE = /^[a-z0-9][a-z0-9-]*(:[a-z0-9][a-z0-9-]*)?$/;
+
+// Resolve the role's `skills:` list the way Claude Code does:
+//   agentic-workflow:<name> → plugin skills only;
+//   <name>                  → project (<cwd>/.claude/skills) → personal
+//                             ($HOME/.claude/skills) → plugin.
+// Returns found blocks with their origin and the names that could not resolve
+// (invalid grammar or no SKILL.md), which the adapter reports as deviations.
+export function resolveSkills(roleText, cwd, home = process.env.HOME) {
+  const found = [];
+  const missing = [];
+  for (const name of parseSkillsList(roleText)) {
+    if (!SKILL_NAME_RE.test(name)) { missing.push({ name, reason: 'invalid name' }); continue; }
+    if (name.includes(':')) {
+      const [prefix, bare] = name.split(':');
+      if (prefix !== 'agentic-workflow') { missing.push({ name, reason: 'invalid name' }); continue; }
+      const f = path.join(PLUGIN_ROOT, 'skills', bare, 'SKILL.md');
+      if (existsSync(f)) found.push({ name, file: f, origin: 'plugin' });
+      else missing.push({ name, reason: 'not found' });
+      continue;
+    }
+    const candidates = [
+      { file: path.join(cwd, '.claude/skills', name, 'SKILL.md'), origin: 'project' },
+      ...(home ? [{ file: path.join(home, '.claude/skills', name, 'SKILL.md'), origin: 'personal' }] : []),
+      { file: path.join(PLUGIN_ROOT, 'skills', name, 'SKILL.md'), origin: 'plugin' },
+    ];
+    const hit = candidates.find((c) => existsSync(c.file));
+    if (hit) found.push({ name, file: hit.file, origin: hit.origin });
+    else missing.push({ name, reason: 'not found' });
+  }
+  return { found, missing };
+}
+
 export function briefText(brief, cwd) {
   const [maybeFile, anchor] = brief.split('#');
   const abs = path.isAbsolute(maybeFile) ? maybeFile : path.join(cwd, maybeFile);
@@ -194,14 +257,24 @@ export function assemblePrompt(o) {
   blocks.push(`# Your role: ${o.role}\n\n${stripFrontmatter(roleText)}`);
   const s10 = workflowSection10(o.cwd);
   blocks.push(`# Project profile — docs/WORKFLOW.md §10 (verbatim)\n\n${s10 || '(no docs/WORKFLOW.md §10 in this project — ask before assuming a gate, a branch policy or a deploy step.)'}`);
-  for (const skill of namedSkills(roleText)) {
+  const named = namedSkills(roleText);
+  const namedFiles = new Set();
+  for (const skill of named) {
     const f = path.join(PLUGIN_ROOT, 'skills', skill, 'SKILL.md');
+    namedFiles.add(f);
     if (existsSync(f)) blocks.push(`# Skill: ${skill} (inlined — your role prompt names it)\n\n${stripFrontmatter(readFileSync(f, 'utf8'))}`);
+  }
+  // Skills the override's `skills:` frontmatter names, in addition to the ones
+  // the body mentions — deduped against those by resolved file path.
+  const { found, missing } = resolveSkills(roleText, o.cwd);
+  for (const s of found) {
+    if (namedFiles.has(s.file)) continue;
+    blocks.push(`# Skill: ${s.name} (preloaded — listed in skills:)\n\n${stripFrontmatter(readFileSync(s.file, 'utf8'))}`);
   }
   blocks.push(`# Your brief\n\n${briefText(o.brief, o.cwd)}`);
   blocks.push(`# Return contract\n\n${RETURN_CONTRACT(SCHEMA_PATH)}`);
   if (o.note) blocks.push(`# Correction from the orchestrator (this overrides the brief where they conflict)\n\n${o.note}`);
-  return blocks.join('\n\n---\n\n');
+  return { prompt: blocks.join('\n\n---\n\n'), missingSkills: missing };
 }
 
 // ── flag derivation + argv ─────────────────────────────────────────────────
@@ -397,7 +470,12 @@ export function main(argv = process.argv.slice(2)) {
   const flags = deriveFlags({ role: o.role, tools: toolsOf(readFileSync(rf, 'utf8')) });
 
   let prompt;
-  try { prompt = assemblePrompt(o); } catch (e) { console.error(`run-codex: ${e.message}`); return 1; }
+  let missingSkills = [];
+  try { const a = assemblePrompt(o); prompt = a.prompt; missingSkills = a.missingSkills; }
+  catch (e) { console.error(`run-codex: ${e.message}`); return 1; }
+  const skillDeviations = missingSkills.map((m) => m.reason === 'invalid name'
+    ? `skill "${m.name}" listed in skills: invalid name`
+    : `skill "${m.name}" listed in skills: not found (searched project, personal, plugin)`);
 
   const tmp = mkdtempSync(path.join(tmpdir(), 'run-codex-'));
   const lastMessageFile = path.join(tmp, 'last-message.txt');
@@ -453,6 +531,7 @@ export function main(argv = process.argv.slice(2)) {
       : `distillate did not match the schema: ${errs.slice(0, 3).join('; ')}`);
     d.changed_paths = paths;
     d.high_impact_touched = hi;
+    d.deviations = skillDeviations;
     d.runtime.thread_id = thread_id || o.resume || null;
     d.usage = usage;
     d.gates = [{ name: 'distillate schema', result: 'red', first_error: parsed === null ? 'distillate not valid JSON' : errs[0] }];
@@ -464,6 +543,7 @@ export function main(argv = process.argv.slice(2)) {
   const d = { ...parsed };
   d.changed_paths = paths;                       // the tree wins
   d.high_impact_touched = hi;
+  d.deviations = [...(Array.isArray(d.deviations) ? d.deviations : []), ...skillDeviations];
   d.runtime = {
     name: 'codex',
     model: (d.runtime && d.runtime.model) || o.model,

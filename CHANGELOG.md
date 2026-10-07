@@ -8,6 +8,58 @@ has no tags — each version-stamped commit on `main` IS the release.
 
 _(empty)_
 
+## [1.54.0] — 2026-10-07
+### Added — the Gatehouse asks: every agent setting is a first-class, tunable, machine-readable shadow
+- **Reviewer boundary-escalation is a per-project tune (#91).** `tune reviewer
+  boundary-escalation on|off` writes a `boundary_escalation` key into
+  `.claude/agents/reviewer.md`. Default (`on`/absent) keeps today's behaviour —
+  the orchestrator escalates any boundary-class diff to Fable (§5 rule 7). `off`
+  lets the tuned tier handle boundary diffs; the reviewer still files a process
+  finding when it judges the tier miscalled. `mission.md`, `agents/reviewer.md`
+  and `templates/WORKFLOW.md` LA-5 all honour the key; `reset` removes it.
+- **First-class prompt/tools/skills/effort/boundary tunes with one banner, diff,
+  rebase, reset (#92).** Every tune now stamps `> Tuned from agentic-workflow
+  v<ver> (base sha256:<12 hex>) — <kind> override. Reset with /tune <agent>
+  reset.`. `tune <agent> prompt` stamps a fresh copy for body edits; `diff`
+  prints `diff -u` base vs shadow; `rebase` three-way merges onto the current
+  base (clean merge only, else prints conflict markers and writes nothing);
+  `tools <a,b,…>` sets `tools:` and prints the sandbox consequence. `reset`
+  deletes any bannered shadow (old or new form, prompt tunes included);
+  un-bannered files keep report-don't-delete.
+- **Machine-readable agent registry (#93).** `node
+  ${CLAUDE_PLUGIN_ROOT}/tools/agents.mjs --json [--project <repo>]` prints every
+  agent's defaults, `effective` settings and `override` (kind derived by
+  comparison, so hand edits classify too), validated by the new
+  `templates/agents-registry.schema.json`. `/tune`'s no-arg table renders from
+  it. New `tools/agents-test.mjs`, registered in lint as
+  `checkAgentsRegistryHarness`.
+- **`effort:` on the claude runtime (#94).** `tune <agent> effort <level>`
+  (`low|medium|high|xhigh|max`) as a standalone tune; `mission.md` step 2 passes
+  the Agent tool's effort parameter where exposed, else prepends `Effort:
+  <level>.`. The adapter widens `--effort` to `xhigh|max` (pass-through).
+- **`tune <agent> skills <a,b,…>` (#95).** Validates each name and writes
+  `skills: [a, b]`; the registry and the `/tune` table show it; honoured on both
+  runtimes (claude natively, codex via the inlining below).
+- **Multi-executor fleet (#96).** `templates/WORKFLOW.md` §10.1 Executors table
+  (name · ssh alias · repo path · labels · default); the legacy single **Remote
+  executor** row counts as `default`. Gate rows may end `→ executor:<label>`;
+  resolution is brief `executor:` pin → first healthy labelled → default →
+  local, probing `ssh -o BatchMode=yes <alias> true` and blocking (never green)
+  when none is healthy, with per-mission `<path>/.worktrees/<mission>` checkouts.
+  `connect server <host> [--label …] [--name …]` appends a row and `server
+  remove <name>` drops one; `doctor` probes every row.
+
+### Fixed
+- **The codex adapter now honours the role's `skills:` frontmatter (#95).**
+  `run-codex.mjs` `resolveSkills(roleText, cwd, home)` resolves each listed
+  skill — `agentic-workflow:<name>` → plugin, bare name → project → personal →
+  plugin — validating `^[a-z0-9][a-z0-9-]*(:[a-z0-9][a-z0-9-]*)?$` before any
+  path is built, inlines each as a `# Skill: <name> (preloaded — listed in
+  skills:)` block deduped against `namedSkills`, and reports an unresolved or
+  invalid name in the distillate `deviations` on every written path. Previously
+  the `skills:` list was dropped with the rest of the frontmatter, so a role
+  behaved differently on the two runtimes. Harness +16 cases.
+
 ## [1.53.2] — 2026-10-07
 ### Security — close the wrapper gap opened in 1.53.1 (#108)
 - 1.53.1 made the last-resort check require `gh` at command position, which

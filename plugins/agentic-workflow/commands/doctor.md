@@ -31,11 +31,14 @@ command, or "run `/agentic-workflow:doctor fix`").
   (Paul Bakaus's design-quality plugin, Apache-2.0). Present, or absent with
   no UI surface → 🟢. In `fix` mode, OFFER that install command in the report
   — never run it unprompted; installing a plugin is the owner's call.
-- **Remote executor** — if §10 records one: `ssh -o BatchMode=yes <alias> true`
-  exits 0; remote repo present at the recorded path and `git fetch` works;
-  when the docker context exists, `docker --context <alias> ps` exits 0. Any
-  failure → 🟡 with the failing probe and `/agentic-workflow:connect server
-  <host>` as the fix.
+- **Remote executor(s)** — probe EVERY §10.1 Executors row, and the legacy
+  single **Remote executor** row if the project still uses that form (it counts
+  as `default`). For each: `ssh -o BatchMode=yes <alias> true` exits 0; remote
+  repo present at the recorded path and `git fetch` works; when the docker
+  context exists, `docker --context <alias> ps` exits 0. One report line per
+  executor (name + alias + verdict); any failing row → 🟡 for that row with the
+  failing probe and `/agentic-workflow:connect server <host>` as the fix — a
+  healthy fleet with one row down is still 🟡, not 🔴, since routing falls back.
 - **Runtimes** (§5 / §10 **Runtimes** row) — probe only when the row exists.
   - No **Runtimes** row → advisory 🟢 "Runtimes: claude only — not configured"
     (the opt-in default; a project with no row behaves exactly as today).

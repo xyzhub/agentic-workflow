@@ -422,7 +422,10 @@ mechanical half):
   points), not tier. And a security/auth/money review must **close the threat,
   not just verify the diff** — step outside the changed lines for a second
   path to the same asset (orderly #605→#730). A miscalled tier is a process
-  finding.
+  finding. A project may opt out of this escalation per-project by tuning the
+  reviewer's `boundary_escalation: off` (#91) — the tuned tier then stands for
+  boundary diffs, and the reviewer records a process finding when the tier reads
+  as miscalled.
   *Incident:* six supervisor beats ≈ 1.08M tokens, 94% of a session's Fable
   spend, against 70k for the one-shot review that found the real defects.
 - **Write-ahead at every merge, gate result, and gate SPAWN (LA-6).** Builders
@@ -881,7 +884,13 @@ drive the real flow, confirm monitoring is receiving, record the result).
   upgrade an underperformer, `/agentic-workflow:tune <agent> reset` to restore the default.
   When a `TUNED`-prefixed variant of an agent exists, orchestrators spawn
   THAT one. Tunes are files: committed and reviewed like any harness change
-  (§8).
+  (§8). A tune may also set the **runtime** (codex), per-agent **effort**
+  (both runtimes, #94), the **tools** list (which widens the codex sandbox),
+  the **skills** list (loaded natively on claude, inlined on codex, #95), the
+  reviewer's **boundary-escalation** (#91), or the **prompt** body — each
+  stamped with the base version and a base hash, with `diff`, `rebase` and
+  `reset`; `${CLAUDE_PLUGIN_ROOT}/tools/agents.mjs --json` prints the registry
+  a wrapper reads (#93).
 - Guardrail hooks (§3) install automatically.
 - Commands: `/agentic-workflow:welcome` (the guided front door — orient, then
   guide or auto-drive, filling the project docs), `/agentic-workflow:brainstorm` (shape a raw idea into a chosen framing via the
@@ -954,7 +963,7 @@ concrete values.
 | **Typecheck/lint gate** | _(e.g. `npm run typecheck`)_ |
 | **Build** | _(e.g. `npm run build`)_ |
 | **Datastore seed/reset** | _(e.g. `npm run seed`)_ |
-| **Remote executor** (optional) | _(`ssh <alias> · repo at <path> · sync: push + fetch` — heavy work (Docker via the docker context, integration suites, builds) runs on this server while the session stays local; set up by `/agentic-workflow:connect server <tailscale-host>`, probed by `/agentic-workflow:doctor`. Pushed-branch-tip only, never a dirty tree (LA-8). `none` (or absent) → everything local)_ |
+| **Remote executor** (optional) | _(`ssh <alias> · repo at <path> · sync: push + fetch` — heavy work (Docker via the docker context, integration suites, builds) runs on this server while the session stays local; set up by `/agentic-workflow:connect server <tailscale-host>`, probed by `/agentic-workflow:doctor`. Pushed-branch-tip only, never a dirty tree (LA-8). This single-row legacy form equals a default executor named `default` in §10.1; a fleet lives in §10.1 instead. `none` (or absent) → everything local)_ |
 | **Runtimes** | _(which agent runtimes this repo can spawn. `claude` (the Agent tool) is always the default. `codex: connected` once the repo is trusted in `~/.codex/config.toml` and `.codex/rules/agentic-workflow.rules` is committed (via `/agentic-workflow:connect codex`); `codex: not connected` otherwise. A role runs on Codex only when its tune or a brief's `runtime:` field names it — read-only roles get a network-off sandbox, builder roles get workspace-write. `claude only` → no foreign runtime configured)_ |
 | **Test users / auth access** | _(`docs/AUTH.md` — seeded dev/staging app credentials, per-surface sign-in flows, AND the access recipes for DBs/remote servers (`templates/auth.md`): agents read it instead of asking or digging through transcripts. Seed-derived values only; everything real by env NAME; production never. `none` → nothing to authenticate to)_ |
 | **Deploy + live-verify** | _(how it ships and how you confirm on the deployed instance)_ |
@@ -968,6 +977,31 @@ concrete values.
 | **Catalog** | _(`docs/product/catalog/` — the default: derived `api.md` + `data-model.md` via `tools/catalog.mjs`, curated `features.md` (§6.1). `none — <why>` ONLY for a repo with nothing to derive and no marketable surface (a markdown-only plugin, a pure library); the conform ladder then skips the catalog gaps)_ |
 | **Issue tracker** | _(the queue's system of record — e.g. `GitHub Issues via gh`; `/agentic-workflow:groom` probes it, `/agentic-workflow:next` reads it, `/agentic-workflow:mission`/`fix` close items on merge. `none` → the markdown backlog is groomed in place and adopting a tracker is recommended)_ |
 | **Issue tracker** | _(e.g. GitHub Issues via `gh`)_ |
+
+### 10.1 Executors (optional)
+
+A project may run heavy work on a **fleet** of remote servers, not just one. One
+row per executor; the legacy **Remote executor** row above counts as the entry
+named `default`. `/agentic-workflow:connect server <host> [--label …] [--name …]`
+appends a row (migrating a legacy row in as `default`), `connect server remove
+<name>` drops one, and `/agentic-workflow:doctor` probes every row.
+
+| name | ssh alias | repo path | labels | default |
+|---|---|---|---|---|
+| _default_ | _`<repo>-server`_ | _`~/apps/<repo>`_ | _(comma-separated, e.g. `docker, integration`)_ | _yes_ |
+| _gpubox_ | _`<repo>-gpu`_ | _`~/apps/<repo>`_ | _`gpu, evals`_ | _no_ |
+
+- **Gate routing.** A §10 gate row may end `→ executor:<label>` to pin it to a
+  label (e.g. `| **Integration gate** | `pnpm test:int` → executor:integration |`).
+- **Resolution order** (for a gate or a mission): a brief's `executor: <name>`
+  pin → the first healthy executor carrying the gate's label → the `default`
+  executor → local. Before a remote gate runs, probe it with
+  `ssh -o BatchMode=yes <alias> true`; on failure fall to the next matching
+  executor and log the switch in the mission ledger's Deviations (LA-8 still
+  holds: pushed branch tip only, never a dirty tree). If **none** is healthy,
+  **block** with a plain reason — never report the gate green. Each mission
+  checks out its own worktree `<path>/.worktrees/<mission>` so two missions can
+  run remote gates on different executors at once without sharing a tree.
 
 ## 11. Autopilot mode
 
