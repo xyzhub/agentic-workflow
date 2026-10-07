@@ -1717,6 +1717,17 @@ const CLOSING_NONE_DUE = {
     const r = mg(cmd, { cell: BOOK });
     check(`merge-guard: registry (bookkeeping) row stays warn-only for \`${cmd.slice(0, 40)}\``, r.code === 0 && r.stdout.includes('reviewer APPROVE'), why(r));
   }
+  // #108: the last-resort check no longer refuses a non-pr gh subcommand or a guard dry run
+  for (const cmd of ['gh issue create --title "guard false refusal" --body "any gh pr text that mentions a merge is refused"',
+    'gh issue comment 108 --body "after the gh pr lands we merge the follow-up pr"',
+    `printf '{"tool_input":{"command":"gh pr merg%s 107 --squash"}}' e | bash "$HOME/.claude/plugins/cache/xyz/agentic-workflow/1.53.0/hooks/lib/merge-guard.sh"`]) {
+    const r = mg(cmd, { cell: 'human-only' });
+    check(`merge-guard #108: \`${cmd.slice(0, 50)}\` → silent exit 0`, r.code === 0 && !r.stderr, why(r));
+  }
+  for (const cmd of ['X=merge; gh pr $X 101', 'gh issue list && gh pr `echo merge` 101']) {
+    const r = mg(cmd, { cell: FULL });
+    check(`merge-guard #108: \`${cmd.slice(0, 40)}\` still → BLOCK (unrecognized merge shape)`, blocks(r, 'unrecognized merge shape') && !ghRan(r), why(r));
+  }
   for (const cmd of ['gh pr view 5', 'gh pr create --title "merge guard: S1-fix" --body x', 'gh pr list --state open']) {
     const r = mg(cmd, { cell: 'human-only' });
     check(`merge-guard: non-merge \`${cmd.slice(0, 40)}\` → silent exit 0`, r.code === 0 && !r.stderr, why(r));
