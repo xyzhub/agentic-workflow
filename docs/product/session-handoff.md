@@ -4,12 +4,13 @@ _The interactive counterpart to a mission ledger: what a resuming agent needs wh
 no active `.plans/*.state.md`. Read it **verbatim** before continuing, then verify against
 `git log --oneline -5` and `git status` before trusting **Next**._
 
-_Written: 2026-10-07T03:55:00+03:00 · session on Opus 5.5 · branch chore/end-2026-10-07-publish-approval_
+_Written: 2026-10-07T05:45:00+03:00 · session on Opus 5.5 · branch chore/pr-economy-bookkeeping_
 
 ---
 
 ## Where things stand
 
+- **pr-economy is shipped.** v1.53.0 is on `main` (PR #106, merge 4684220). A mission now closes in at most two PRs. This repo's §10 Merge policy is `agent-may-merge (records-only, delegated 2026-10-07)`: the agent may merge a PR only when every file is `.plans/**`, `docs/product/JOURNEY.md`, `overview.html` or `session-handoff.md`, CI is green, and the merge carries `--squash --delete-branch --match-head-commit <head sha>`. Anything else is the owner's merge. The registry keeps full delegation. Mission ledger `.plans/pr-economy.state.md`; 2 sessions of a revised 2.
 - **publish-approval is shipped and closed.** v1.52.0 is on `main` (PR #101, merge e92cd7c,
   CI green). One session used of one estimated. A fresh Fable reviewer approved with no
   blocking findings. The ledger `.plans/publish-approval.state.md` carries `Closed: 2026-10-07`.
@@ -29,15 +30,16 @@ _Written: 2026-10-07T03:55:00+03:00 · session on Opus 5.5 · branch chore/end-2
 
 ## Standing rules this session learned (do not relearn)
 
+- Never type the literal three-word merge command inside a Bash command other than a real merge; the 1.52.0+ hooks block it. Build test payloads with `merg%s e`.
+- Owner 2026-10-07: "be conservative with tokens". Resume agents that hold context; narrow correctives and re-reviews.
 - The plugin's `security` agent has no `.claude/agents/` model pin, so it inherits the session
   model. A pin written mid-session only registers at the next session start.
 - Auto mode flags a subagent report that asks for an artifact republish. Inspect the commit
   diff first, then republish; the page is private to the owner.
-- Baselines: `node tools/hook-test.mjs` 156 ok; `node tools/lint.mjs` clean;
+- Baselines: `node tools/hook-test.mjs` 251 ok; `node tools/lint.mjs` clean;
   `node plugins/agentic-workflow/tools/publish-gate.mjs --selftest` clean.
 
 ## Next
 
-1. Merge this session's closing PR (owner).
-2. `/agentic-workflow:mission "operate-triage" run`.
-3. When an Orderly session is open: run OB-22, then record the result on its register row.
+1. `/agentic-workflow:mission "operate-triage" run`.
+2. When an Orderly session is open: run OB-22, then record the result on its register row.

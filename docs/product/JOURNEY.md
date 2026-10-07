@@ -16,6 +16,18 @@ grades the protocol's own behavior the way a QA team would.
 
 ---
 
+## 2026-10-07 — a mission now closes in two PRs, and the agent merges the second
+
+The publish-approval mission needed four PRs to close: the feature, then three separate bookkeeping PRs, each waiting on the owner. The owner asked why, and chose all three fixes. Version 1.53.0 makes a mission close in at most two PRs. The owner merges the feature PR. Then one bookkeeping PR carries the ledger, the journey log, the status page and the handoff note, and the agent may merge that one itself.
+
+The agent's merge permission is deliberately narrow. A new project-profile setting, records-only, allows a merge only when every changed file is a mission ledger or one of those three record files, CI is green, and the merge names the exact commit that was checked. A new guard enforces this and refuses anything it cannot verify. The registry keeps its existing permission to merge anything; the owner said so twice, so the new limit got its own name and the registry needed no edit.
+
+Getting the guard right took most of the effort. The plan reviewer found seven holes before any code was written, including one where an unfilled project profile would have switched agent merges on. Automated reviews flagged more during the build. The Fable checkpoint reviewer then found two ways around the finished guard: a repo flag placed before the subcommand, and a merge checked against one repo's settings while it ran in another. That needed a second session, past the one-session estimate, so the owner chose to fix it at a revised estimate of two. The re-review approved. The harness grew from 156 cases to 251.
+
+Subagents used about 690,000 tokens, the planning round alone about 333,000. Midway the owner asked for token restraint, and the corrective cost about 25,000 by resuming the builder instead of starting a fresh one. This PR is the first bookkeeping PR merged by the agent under the new rule.
+
+---
+
 ## 2026-10-07 — publish approval built, reviewed and approved; waiting on the owner's merge
 
 The first of the three missions from the launch-media plan is done. The publish queue is the list of posts the project is allowed to send out on a schedule. Before today, the rule "if an approved post is edited, it goes back to draft" was only a sentence in the instructions; the run was trusted to follow it. Now a small tool enforces it. Each post is fingerprinted. An approval is tied to that fingerprint and to a version counter. When a post is about to go out, the tool re-checks the fingerprint. If the text changed, the post is refused, put back to draft, and the owner sees a plain line saying so. The tool also hands out a one-time claim token, so a post cannot be fired twice, and a draft of an outreach message (a direct message to a person) can never be fired by a scheduled run.
