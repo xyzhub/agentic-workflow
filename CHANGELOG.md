@@ -8,6 +8,43 @@ has no tags — each version-stamped commit on `main` IS the release.
 
 _(empty)_
 
+## [1.53.0] — 2026-10-07
+### Changed — a mission closes in two PRs (pr-economy)
+- **L3 — merge guard as a lib hook.** PR merges move from the inline git/gh
+  row to `hooks/lib/merge-guard.sh`, which adds a new §10 value,
+  `agent-may-merge (records-only, delegated <date>)`: the agent may merge a PR
+  only when every changed path is on the exact allowlist — `.plans/**`,
+  `docs/product/JOURNEY.md`, `docs/product/overview.html`,
+  `docs/product/session-handoff.md`. Fail closed throughout: the policy cell
+  is read from `origin/<default>` (a branch cannot grant itself authority) and
+  matched anchored at the cell, so placeholder prose or a malformed value
+  never widens it; numeric PR ref only; no `-R`/`--repo`/`GH_REPO`, no
+  compound command, no `--auto`, flags limited to
+  `--squash`/`--merge`/`--rebase`/`--delete-branch`; the merge must carry
+  `--match-head-commit` equal to the head the hook just viewed (no
+  check-then-push race); `gh api` merges block outright; RENAMED/COPIED
+  files, 0 or ≥ 100 files (gh's cap) and pending/failed checks block; the
+  hooks.json wrapper blocks a merge when the script is missing or crashes.
+  `gh` output is read only through `jq`. Harness `156 → 237 ok` (gh stubbed on
+  a PATH-only `bin/`).
+- **L2 — Closing-row markers.** A row's source parens end with
+  `(<source>, pre-merge)` (fires on the phase branch before the checkpoint,
+  rides the feature PR) or `(<source>, post-merge)`; no marker = legacy, read
+  as post-merge. The template's four seeded rows are classified; lint rejects
+  any other merge-shaped tag and an unclassified template row.
+- **L1 — one bookkeeping PR per close.** `mission`, `settle` and `end` route
+  every post-merge record edit through ONE `chore/<mission>-bookkeeping`
+  branch and PR (session-altitude: `chore/bookkeeping-<YYYY-MM-DD>`), merged
+  by number at the end of the close; the chronicler runs record-only
+  post-merge (CHANGELOG ships in the feature PR).
+- **L4 — the registry is unchanged.** Its `(bookkeeping, …)` row stays full
+  delegation; `records-only` is a new, separate value, adopted by this repo's
+  §10.
+- **Transitional window:** the previously installed inline hook reads the
+  WORKING-TREE §10 and treats any `agent-may-merge …` as warn-only
+  delegation, so in a checkout whose §10 already says `records-only` it does
+  not block until `/plugin update` installs this release.
+
 ## [1.52.0] — 2026-10-07
 ### Added — hash-pinned, claim-token publish approval (§14)
 A publish-queue item now fires only for the exact body the owner approved, and
