@@ -1,0 +1,2 @@
+{"ts":"2026-10-07T00:19:05Z","event":"approved","id":"P-001","kind":"post","sha8":"262e68d7","epoch":1,"token":null,"run":null,"by":"human","note":null}
+{"ts":"2026-10-07T00:19:05Z","event":"reset","id":"P-001","kind":"post","sha8":"9b735788","epoch":2,"token":null,"run":null,"by":"human","note":"body changed after approval (approved@262e68d7/e1)"}

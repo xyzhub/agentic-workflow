@@ -1,6 +1,6 @@
 # The Workflow — one agentic protocol from idea to viable product
 
-<!-- protocol-master: v1.51.2 -->
+<!-- protocol-master: v1.52.0 -->
 
 ## Quick reference — humans start here
 
@@ -253,6 +253,7 @@ Shipped by this plugin as hooks. Advisory except where marked:
 | `git push` | Warns when tracked files are modified-but-uncommitted (untracked scratch dirs don't warn) |
 | `gh pr merge` | **BLOCKS** unless the §10 **Merge policy** is `agent-may-merge` (fail closed when unset/absent); when delegated, reminds: merge only on a reviewer APPROVE |
 | `gh pr create` | Reminder to have run the gates |
+| publish-host call (socials, article platforms, mailing-list AND email APIs, bare mailers) | **BLOCKS** under EVERY Publish policy unless the command carries an open claim token `PUBLISH_CLAIM=<token>` minted by `tools/publish-gate.mjs claim` (approved, hash-pinned, epoch-bound, due, `kind: post`) and moved to `dispatching` by `publish-gate.mjs dispatch` (which re-hashes the body); the passing call appends a `fired` event, so the token is spent and a retry under it **BLOCKS**; a token resolving to `kind: outreach` **BLOCKS** regardless of policy (§11); `PUBLISH_CONNECT=` marks a `/agentic-workflow:publish connect` round-trip (allowed, reminder); paid/ad endpoints — now including `api.elevenlabs.io` and `api.x.com` — **BLOCK** without the literal `PAID_CONFIRMED_BY_HUMAN`. Threat model: accident and double-fire, not an adversarial agent (§14) |
 | `Write`/`Edit` | Reminder to update docs when high-impact files change; on a route file (`server/api/**`) or the schema, when the project ships `tools/catalog.mjs`, it names the catalog (§6.1: regenerate + rewrite the feature row in the same PR — the reviewer gates it) |
 | `Read` (whole file, no `limit`) | **Read advisory** (context discipline) — nudges toward a ranged read or a delegating subagent (§6.2 Delegated reads) when a whole-file read targets a file over `READ_ADVISORY_LINES` (800 lines); a discipline line, not a measured optimum — this repo has no corpus to confirm an effect size, so none is claimed; never blocks |
 | Prompt submit | **Router** (governance) — an un-prefixed work request gets a soft "route it through the protocol — hand to `intake`" nudge; silent on plain chat, never blocks |
@@ -263,7 +264,7 @@ Shipped by this plugin as hooks. Advisory except where marked:
 | After a compaction | **Compact-resume** (governance) — on `SessionStart` with matcher `compact` only, injects a directive (≤6 lines) and is **never silent** (OQ6): active mission ledger → re-read the ledger and the last handoff **verbatim**; no ledger but `docs/product/session-handoff.md` exists → re-read it verbatim with freshness stated — its `_Written:` provenance stamp preferred over file mtime; **CURRENT** only if provably newer than the transcript's last append, else **SUSPECT** (older than the transcript's last append, or the transcript is missing/unreadable — fail closed): treat the handoff as a lead, not the truth, and verify against `git log`/`git status` before trusting its **Next**; neither record exists → names `git log -5`, `git status`, `.remember/now.md` and tells the agent to report the gap to the human, never to author a handoff on the spot; never blocks |
 | Session start | **Conform-check** (governance, `SessionStart` matcher `startup|resume` — never `compact`) — runs the plugin's `tools/conform.mjs --brief` against the cwd: a versioned ladder of structural expectations (protocol stamp vs installed plugin; §10 **Staging** / **Issue tracker** rows; active ledgers carrying `Estimate:` / `Sessions used:` and exactly one `Next up:`; `docs/product/roadmap.md` as the epic view; a generated (not hand-written) backlog view; `tools/catalog.mjs` present and current; the `docs/product/catalog/` files). Gaps → a ≤3-line advisory naming the count, the first gap, and `/agentic-workflow:sync`, which applies the SAME ladder; silent when the cwd is not adopted, when conformant, when node/the script is missing; once per session; filesystem-only; never blocks. *Incident (2026-08-19):* a project adopted on v1.43 ran on v1.46 with ledgers that lacked the budget fields — the overrun stop could not fire — and nothing said so |
 | Session start | **Obligations-due** (governance, `SessionStart` matcher `startup|resume` — never `compact`: compact-resume owns that beat, and the two directives must not compete) — grep-counts unticked `- [ ] OB-` rows in `.plans/OBLIGATIONS.md` plus unticked `- [ ]` rows inside any mission ledger's `## Closing` section, and injects a ≤3-line advisory naming both counts, the oldest unticked row (register first — it is append-only, so its first unticked row waited longest; bounded to 140 characters), and `/agentic-workflow:settle`; **grep-only, no network** — it never runs `gh` and probes no row's condition (the real probes live in `/agentic-workflow:settle`, `/agentic-workflow:end`, and `/agentic-workflow:check`); four silencers exactly: no register and no `## Closing` block anywhere → silent, zero unticked rows → silent, once per session (a silent dispatch does not consume the session's one advisory), always exit 0 on every path; advisory, never blocks |
-| Foreign runtime (Codex) | Claude hooks fire **only on Claude tool calls**, so inside a `codex` run **none of the rows above fire**. Mechanical parity there is two things: the **execpolicy rules file** (`templates/codex.rules`, deployed to `<repo>/.codex/rules/agentic-workflow.rules` — inert until the repo carries a user-layer `trust_level = "trusted"` entry in `~/.codex/config.toml`, added only by `/agentic-workflow:connect codex`) whose literal `prefix_rule` tokens forbid push / commit / tag / `gh pr create` / `gh pr merge` / `git -C`, the shell-wrapper and global-option-prefix bypasses (`sh -c` / `bash -c` / `zsh -c`, `env`, `command`, `nohup`, `xargs`, `timeout`, `git -c …`, `gh api`), and the **sandbox mode** the adapter derives from the role's `tools:` (read-only vs workspace-write; network on only for builder roles). The `Write`/`Edit` docs-reminder has no analogue inside Codex — the distillate's `high_impact_touched` flag replaces it. **NOT replicated:** the §14 paid-promotion / publish-host guards ship as no execpolicy command rule — a `network_rule(host=…)` form parses in 0.146.0 but is not used or verified yet (probe at n=1) — so read-only roles are covered by the network-off sandbox, but a **builder role running with network on is a named, accepted gap** (carried as a mission Risk + `## Closing` row, not silently) |
+| Foreign runtime (Codex) | Claude hooks fire **only on Claude tool calls**, so inside a `codex` run **none of the rows above fire**. Mechanical parity there is two things: the **execpolicy rules file** (`templates/codex.rules`, deployed to `<repo>/.codex/rules/agentic-workflow.rules` — inert until the repo carries a user-layer `trust_level = "trusted"` entry in `~/.codex/config.toml`, added only by `/agentic-workflow:connect codex`) whose literal `prefix_rule` tokens forbid push / commit / tag / `gh pr create` / `gh pr merge` / `git -C`, the shell-wrapper and global-option-prefix bypasses (`sh -c` / `bash -c` / `zsh -c`, `env`, `command`, `nohup`, `xargs`, `timeout`, `git -c …`, `gh api`), and the **sandbox mode** the adapter derives from the role's `tools:` (read-only vs workspace-write; network on only for builder roles). The `Write`/`Edit` docs-reminder has no analogue inside Codex — the distillate's `high_impact_touched` flag replaces it. **NOT replicated:** the §14 paid-promotion / publish-host guards ship as no execpolicy command rule — a `network_rule(host=…)` form parses in 0.146.0 but is not used or verified yet (probe at n=1) — so inside a Codex run the §14 gate tool's refusal (`tools/publish-gate.mjs claim`) is the ONLY mechanical publish check; a builder role with network on remains a named gap (OB-17, #81) |
 
 Blockers exit 2 (hard stop); reminders exit 0. Guardrails catch autopilot
 mistakes; they never replace judgment. Checks evaluate in the command's
@@ -1201,9 +1202,11 @@ connect` (per-channel credentials, secret-rule, round-trip test); driven by
 **Prepare — always automated, always safe.** The `marketing` agent (short-form,
 strategy) and `writer` agent (long-form articles) populate the **publish queue**
 (`docs/product/launch/publish-queue.md`) from the launch assets and content
-plan. Each item carries its channel, scheduled time, full body, source asset,
-and a state (`draft → approved → posted`). Writing to the queue **fires
-nothing**.
+plan. Each item carries `kind` (`post` | `outreach`), its channel, scheduled
+time, full body, source asset, and — written by `tools/publish-gate.mjs stamp`,
+never by hand — `body-sha256` and `epoch`. States:
+`draft → approved → claimed → dispatching → delivered | unknown`. Writing to the
+queue **fires nothing**.
 
 **Fire — gated by the §10 Publish policy.**
 
@@ -1216,26 +1219,56 @@ The delegation is a §11 authority — the second delegable one alongside merge 
 explicit, dated, scoped (channels, rate limit, organic-only), and revocable by
 editing the §10 row. **Paid promotion is never in it**: paid crosses the money
 boundary (§11 spending), so every paid item is human-fired and bounded by the
-flight-plan budget ceiling, confirmed each time. A change to an approved body
-resets it to `draft` — re-approval before it can fire.
+flight-plan budget ceiling, confirmed each time.
+
+**Pin.** `approve <id>` records `approved-for: <sha8>@<epoch>`; `run` re-hashes
+first and REFUSES any item whose hash or epoch moved (`publish run: REFUSED <id>
+approved@<h>/e<n>, current <h'>/e<m> -> reset to draft`), resetting it to
+`draft`. **Claim.** Firing takes a one-time token minted by `claim` before any
+network call; the row moves `claimed → dispatching → delivered | unknown`;
+`dispatch` re-hashes once more and voids the token if the body moved; a claimed
+row cannot be claimed again; `unknown` is terminal until a human runs
+`reconcile <id>`. Nothing retries by itself. `kind: outreach` is never
+claimable — no policy delegates individual outreach (§11); the owner sends it
+by hand from the approved draft.
 
 **Record — the audit trail.** Every successful post appends to the **publish
-log** (`docs/product/launch/publish-log.md`: what, where, when, permalink,
-source, and the firing authority) and the queue item becomes a receipt — the
-same auditability §12 gives channel decisions. **Measure**: the `analyst` reads
+log** (`docs/product/launch/publish-log.md`: what, `kind`, where, when,
+permalink, source, the firing authority, and the `claim` token) and the queue
+item becomes a receipt — the same auditability §12 gives channel decisions.
+`docs/product/launch/publish-claims.jsonl` is the append-only event trail
+(approved, claimed, dispatching, fired, delivered, unknown, cancelled, reset) —
+committed, PR-reviewed, the machine truth for state; the queue stays the
+human-reviewed truth for content. **Measure**: the `analyst` reads
 the log to attribute funnel results back to posts, into the V6 review.
+
+**Threat model.** The pin, epoch and claim guard against ACCIDENT — a body
+edited after approval, a run that fires twice, a crash between post and
+record — not against an adversarial agent: the hook sees command text, a token
+can be pasted, MCP/HTTP tools and the Codex runtime never pass through the
+hook. The gate tool is the invariant every runtime obeys; the hook is the
+Claude-side backstop; the committed jsonl is the review surface.
 
 **Channels**: socials (X, LinkedIn, Mastodon, Bluesky), article platforms
 (dev.to, Medium, Hashnode, own-blog), mailing list (Buttondown/Mailchimp/
-ConvertKit), and own site / RSS (PR-based). Credentials follow the §12 secret
+ConvertKit), and own site / RSS (PR-based). Email APIs (SendGrid, Postmark,
+Resend, Mailgun, Brevo) and bare mailers count as publish hosts. Credentials follow the §12 secret
 rule — never echoed, var NAMES only in the profile and `.env.example`, verified
 by a round-trip test, values in the human's env.
 
-**Mechanical backstop.** Like the push/merge guardrails (§3), a hook fails
-closed: an autonomous publish is **blocked unless the §10 Publish policy
-delegates it**, and any paid action is blocked without an explicit human
-confirmation regardless of policy. Interactive human-fired `/agentic-workflow:publish run` is
-allowed. As with §12, a publish is **never fired from an owner-channel chat
+**Mechanical backstop.** Like the push/merge guardrails (§3), a hook
+(`hooks/lib/publish-guard.sh`) fails closed, four rules in order: (1) it reads
+the same files as the gate tool (git toplevel, else cwd); (2) a paid/ad
+endpoint — including `api.elevenlabs.io` and `api.x.com` — is blocked without
+the literal `PAID_CONFIRMED_BY_HUMAN`, regardless of policy; (3) a non-publish
+command is silent; (4) a publish-host call (socials, article platforms,
+mailing-list and email APIs, bare mailers) is blocked under EVERY policy,
+`human-only` included, unless it carries `PUBLISH_CONNECT=` (a connect
+round-trip) or `PUBLISH_CLAIM=<token>` for a dispatched `kind: post` claim —
+the passing call spends the token (`fired`), and a token resolving to outreach
+is blocked regardless of policy. An interactive `/agentic-workflow:publish run`
+is allowed because it mints the token; the hook cannot tell who typed, so it
+checks the token, not the policy. As with §12, a publish is **never fired from an owner-channel chat
 tap** — the delegated firing is a scheduled command within policy, not a button.
 
 ## Local amendments

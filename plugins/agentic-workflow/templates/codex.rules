@@ -36,7 +36,9 @@
 # protocol="https", decision="forbidden")` form parses in 0.146.0 but is not
 # used or verified yet — probe it at n=1. For now a read-only role is covered by
 # the network-off sandbox, and a builder role with network on is a named,
-# accepted gap (mission Risks, the `## Closing` row, WORKFLOW.md §3).
+# accepted gap (mission Risks, the `## Closing` row, WORKFLOW.md §3). The §14
+# gate tool (`tools/publish-gate.mjs`) is the only mechanical publish check
+# inside a Codex run.
 #
 # THE RESIDUE LITERAL TOKENS CANNOT CLOSE. Two forms slip past the rules below by
 # construction, because a prefix token is compared literally:

@@ -10,7 +10,8 @@
 //   [ ] not started → may nudge   ·   [~] parked/in-flight/deferred → silent
 //   [x] done → silent
 
-import { readFileSync, mkdtempSync, mkdirSync, writeFileSync, rmSync, utimesSync } from 'node:fs';
+import { readFileSync, existsSync, mkdtempSync, mkdirSync, writeFileSync, rmSync, utimesSync, chmodSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -19,6 +20,7 @@ import { fileURLToPath } from 'node:url';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const PLUGIN = path.join(ROOT, 'plugins/agentic-workflow');
 const HOOKS = path.join(PLUGIN, 'hooks/hooks.json');
+const GATE = path.join(PLUGIN, 'tools/publish-gate.mjs');
 
 // Pull one hook command out of hooks.json by event, disambiguated by a substring
 // of its authored `description` (the file gives every hook a descriptive one).
@@ -86,6 +88,21 @@ function runHook({ event, desc, command, input = {}, ledgers, files, transcript 
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
+}
+
+// Run the shipped publish gate (tools/publish-gate.mjs) in a throwaway cwd with the
+// same `files:` staging as runHook. Pass an existing `dir` to chain calls (claim →
+// claim, gate → hook) in one cwd; the CALLER rmSync()s `dir` when done.
+function runGate({ args, files, dir }) {
+  dir ??= mkdtempSync(path.join(tmpdir(), 'gatetest-'));
+  for (const [rel, spec] of Object.entries(files || {})) {
+    const p = path.join(dir, rel);
+    mkdirSync(path.dirname(p), { recursive: true });
+    writeFileSync(p, spec.content);
+  }
+  const r = spawnSync(process.execPath, [GATE, ...args], { cwd: dir, encoding: 'utf8' });
+  const read = (rel) => (existsSync(path.join(dir, rel)) ? readFileSync(path.join(dir, rel), 'utf8') : '');
+  return { code: r.status, stdout: r.stdout || '', stderr: r.stderr || '', dir, read };
 }
 
 const failures = [];
@@ -1312,6 +1329,154 @@ const CLOSING_NONE_DUE = {
 
   { const r = runHook({ event: 'SessionStart', desc: CONF, input: { source: 'compact', session_id: sid('h') }, files: { ...conformant, 'docs/WORKFLOW.md': { content: wf('1.43.0', ['Default branch']) } } });
     check('conform-check: source=compact → silent (compact-resume owns that beat)', r.code === 0 && r.stdout === '', r.stdout); }
+}
+
+// ── publish-approval (v1.52.0): the §14 gate tool (hash pin, epoch, one-time claim
+// token) and the lib hook hooks/lib/publish-guard.sh. Every case asserts exit code AND
+// text. The gate is the runtime-agnostic invariant; the hook is the Claude-side backstop
+// that sees command text only (threat model: accident and double-fire, not an adversary).
+{
+  const PG = 'publishing guardrail';
+  const QP = 'docs/product/launch/publish-queue.md', CP = 'docs/product/launch/publish-claims.jsonl', LP = 'docs/product/launch/publish-log.md';
+  const NOW = ['--now', '2026-10-06T12:00:00Z'];
+  const sha = (t) => createHash('sha256').update(t).digest('hex');
+  const H = sha('hello world'), H8 = H.slice(0, 8);
+  const queue = ({ id = 'P-001', kind = 'post', state = 'approved', approvedFor, epoch = 1, scheduled = '2026-10-06 09:00', paid = 'no', body = 'hello world', bodySha } = {}) => {
+    const h = bodySha ?? sha(body);
+    const pin = approvedFor ?? (state === 'approved' ? `${h.slice(0, 8)}@${epoch}` : '');
+    return { content: ['Policy: **human-only**', '',
+      '| id | kind | channel | scheduled (UTC) | state | paid | body-sha256 | epoch | approved-for | claim | source asset | summary |',
+      '|---|---|---|---|---|---|---|---|---|---|---|---|',
+      `| ${id} | ${kind} | devto | ${scheduled} | ${state} | ${paid} | ${h} | ${epoch} | ${pin} |  | a.md | one |`,
+      '', `### ${id} — devto`, body, '', '---', ''].join('\n') };
+  };
+  const wfPolicy = (policy) => ({ content: `# WORKFLOW\n\n| Field | Value |\n|---|---|\n| **Publish policy** | ${policy} |\n` });
+  const MAY = 'may-publish (delegated 2026-10-01, channels: linkedin, rate: 5/wk, organic-only)';
+  const gate = (args, files, dir) => runGate({ args: [...args, ...NOW], files, dir });
+  const row = (g, id = 'P-001') => {
+    const c = (g.read(QP).split('\n').find((l) => l.startsWith(`| ${id} |`)) || '').split('|').slice(1, -1).map((s) => s.trim());
+    return { state: c[4], epoch: c[7], pin: c[8], claim: c[9] };
+  };
+  const events = (g) => g.read(CP).trim().split('\n').filter(Boolean).map((l) => JSON.parse(l));
+  const done = (g) => rmSync(g.dir, { recursive: true, force: true });
+  const fire = (cmd, files) => runHook({ event: 'PreToolUse', desc: PG, input: { tool_input: { command: cmd } }, files });
+  const claimLine = (tok, event, kind = 'post', id = 'P-001') => JSON.stringify({ ts: '2026-10-06T12:00:00Z', event, id, kind, sha8: H8, epoch: 1, token: tok, run: 'r-0001', by: 'human', note: null }) + '\n';
+
+  { const g = gate(['claim', 'P-001'], { [QP]: queue({ body: 'hello world, edited', bodySha: H, approvedFor: `${H8}@1` }), 'docs/WORKFLOW.md': wfPolicy('human-only') });
+    const r = row(g), ev = events(g);
+    check('publish-gate: tampered body → claim REFUSED (exit 2), row reset to draft, epoch+1, REFUSED line',
+      g.code === 2 && /^publish run: REFUSED P-001 approved@[0-9a-f]{8}\/e1, current [0-9a-f]{8}\/e2 -> reset to draft$/m.test(g.stdout) &&
+      r.state === 'draft' && r.epoch === '2' && r.pin === '' && ev.at(-1)?.event === 'reset', `code=${g.code} ${g.stdout}${g.stderr} ${JSON.stringify(r)}`); done(g); }
+  { const g = gate(['claim', 'P-001'], { [QP]: queue({ epoch: 2, approvedFor: `${H8}@1` }), 'docs/WORKFLOW.md': wfPolicy('human-only') });
+    check('publish-gate: stale epoch (body reverted, pin from epoch 1) → claim REFUSED (exit 2), "epoch 1 approved, now 2"',
+      g.code === 2 && g.stderr.includes('epoch 1 approved, now 2') && row(g).state === 'draft', `code=${g.code} ${g.stderr}`); done(g); }
+  { const a = gate(['claim', 'P-001'], { [QP]: queue(), 'docs/WORKFLOW.md': wfPolicy('human-only') });
+    const b = gate(['claim', 'P-001'], undefined, a.dir);
+    check('publish-gate: double claim → first mints PUBLISH_CLAIM, second REFUSED (exit 2) "already claimed"',
+      a.code === 0 && /^PUBLISH_CLAIM=[0-9a-f]{8}$/.test(a.stdout.trim().split('\n').at(-1)) &&
+      b.code === 2 && /already claimed \d\d:\d\d \(run r-[0-9a-f]{4}\)\. If that run died, reconcile it\./.test(b.stderr), `${a.code} ${a.stdout} | ${b.code} ${b.stderr}`);
+    const c = events(a).filter((e) => e.event === 'claimed');
+    check('publish-gate: the claimed event carries kind + id + token (the hook reads only the jsonl)',
+      c.length === 1 && c[0].kind === 'post' && c[0].id === 'P-001' && /^[0-9a-f]{8}$/.test(c[0].token) && row(a).claim.startsWith(`${c[0].token} claimed `), JSON.stringify(c)); done(a); }
+  { const a = gate(['claim', 'P-001'], { [QP]: queue(), 'docs/WORKFLOW.md': wfPolicy('human-only') });
+    const tok = a.stdout.trim().split('\n').at(-1).split('=')[1];
+    const u = gate(['outcome', tok, 'unknown'], undefined, a.dir);
+    const s = gate(['status'], undefined, a.dir);
+    const again = gate(['claim', 'P-001'], undefined, a.dir);
+    const rec = gate(['reconcile', 'P-001', '--delivered', 'https://dev.to/x/1'], undefined, a.dir);
+    const log = rec.read(LP).split('\n').find((l) => l.includes('https://dev.to/x/1')) || '';
+    check('publish-gate: unknown outcome → row unknown, status "Needs you", re-claim REFUSED, reconcile --delivered writes the log row',
+      u.code === 0 && u.stderr.includes('may or may not have posted') && /Needs you \(1\)/.test(s.stdout) && s.stdout.includes('reconcile P-001') &&
+      again.code === 2 && again.stderr.includes('outcome unknown') && rec.code === 0 && row(rec).state === 'delivered' && / human /.test(log),
+      `${u.code}/${s.stdout}/${again.code} ${again.stderr}/${rec.code} ${rec.stderr} log=${log}`); done(a); }
+  { const g = gate(['claim', 'O-001'], { [QP]: queue({ id: 'O-001', kind: 'outreach' }), 'docs/WORKFLOW.md': wfPolicy(MAY) });
+    const gateOk = g.code === 2 && g.stderr.includes('O-001 is outreach — only you can send it, by hand') && !events(g).some((e) => e.event === 'claimed');
+    const h = fire('PUBLISH_CLAIM=deadbeef curl -X POST https://api.linkedin.com/v2/messages -d @dm.json',
+      { 'docs/WORKFLOW.md': wfPolicy(MAY), [CP]: { content: claimLine('deadbeef', 'claimed', 'outreach', 'O-001') } });
+    check('publish-guard: outreach under delegation → gate never mints; hook BLOCKS a forged token (exit 2) regardless of policy',
+      gateOk && h.code === 2 && h.stderr.includes('O-001 is outreach — individual outreach is never delegable'), `${g.code} ${g.stderr} | ${h.code} ${h.stderr}`); done(g); }
+  { const post = 'curl -X POST https://api.linkedin.com/v2/ugcPosts';
+    const blocked = (r) => r.code === 2 && r.stderr.includes('publish-host call without a claim token');
+    const a = fire(post, { 'docs/WORKFLOW.md': wfPolicy('human-only') }), b = fire(post, { 'docs/WORKFLOW.md': wfPolicy(MAY) });
+    const c = fire('curl https://api.resend.com/emails -d @body.json', { 'docs/WORKFLOW.md': wfPolicy('human-only') });
+    check('publish-guard: tokenless publish-host call → BLOCK (exit 2) under human-only, under may-publish, and for an email host',
+      blocked(a) && blocked(b) && blocked(c), `${a.code} ${b.code} ${c.code} ${c.stderr}`);
+    const quiet = [fire('git commit -m "mail merge copy"'), fire('echo mutton')];
+    check('publish-guard: "mail merge" prose and `echo mutton` → silent (a mailer counts only in command position)',
+      quiet.every((r) => r.code === 0 && r.stdout === '' && r.stderr === ''), JSON.stringify(quiet));
+    const m = [fire('cat note.txt | sendmail owner@example.com'), fire('/usr/sbin/sendmail -t < msg')];
+    check('publish-guard: bare mailer after a pipe or by absolute path, no token → BLOCK', m.every(blocked), JSON.stringify(m.map((r) => r.code))); }
+  { const r = fire('PUBLISH_CONNECT=1 curl https://api.linkedin.com/v2/me');
+    check('publish-guard: PUBLISH_CONNECT= marker → connect round-trip allowed (exit 0, reminder)', r.code === 0 && r.stdout.includes('Connect round-trip'), `${r.code} ${r.stderr}`); }
+  // Preserved behaviour + fail-closed siblings.
+  { const r = fire('curl -X POST https://ads-api.twitter.com/12/accounts/abc/campaigns');
+    check('publish-guard: ads endpoint without PAID_CONFIRMED_BY_HUMAN → BLOCK', r.code === 2 && r.stderr.includes('BLOCKED: paid'), r.stderr);
+    const p = fire('PAID_CONFIRMED_BY_HUMAN=1 curl -X POST https://ads-api.twitter.com/12/accounts/abc/campaigns');
+    check('publish-guard: … with PAID_CONFIRMED_BY_HUMAN → paid rule passes, then the tokenless rule BLOCKS (claim text, not paid text)',
+      p.code === 2 && p.stderr.includes('without a claim token') && !p.stderr.includes('BLOCKED: paid'), p.stderr);
+    const e = fire('curl -X POST https://api.elevenlabs.io/v1/text-to-speech/abc -d @script.json');
+    check('publish-guard: api.elevenlabs.io joins the paid guard → BLOCK', e.code === 2 && e.stderr.includes('BLOCKED: paid'), e.stderr);
+    const x = fire('PUBLISH_CLAIM=deadbeef curl -X POST https://api.x.com/2/tweets -d @t.json', { [CP]: { content: claimLine('deadbeef', 'claimed') } });
+    check('publish-guard: api.x.com joins the paid guard → BLOCK even with an open claim', x.code === 2 && x.stderr.includes('BLOCKED: paid'), x.stderr); }
+  { // Gate → hook chain in ONE cwd (runHook with a raw command whose cwd is the gate's dir).
+    const a = gate(['claim', 'P-001'], { [QP]: queue(), 'docs/WORKFLOW.md': wfPolicy('human-only') });
+    const tok = a.stdout.trim().split('\n').at(-1).split('=')[1];
+    const hookIn = (cmd) => spawnSync('bash', [path.join(PLUGIN, 'hooks/lib/publish-guard.sh')], { cwd: a.dir, input: JSON.stringify({ tool_input: { command: cmd } }), encoding: 'utf8' });
+    const call = `PUBLISH_CLAIM=${tok} curl -X POST https://dev.to/api/articles -d @a.json`;
+    const early = hookIn(call);
+    check('publish-guard: claimed but not dispatched → BLOCK (dispatch, which re-hashes the body, cannot be skipped)',
+      early.status === 2 && early.stderr.includes('claimed but not dispatched'), `${early.status} ${early.stderr}`);
+    const d = gate(['dispatch', tok], undefined, a.dir), r = hookIn(call), again = hookIn(call);
+    check('publish-guard: valid open claim (kind post, dispatched) → exit 0 with the 📣 Firing reminder',
+      d.code === 0 && r.status === 0 && r.stdout.includes(`📣 Firing P-001 under claim ${tok}`) && r.stdout.includes('policy: human-only'), `${d.code} ${r.status} ${r.stdout}${r.stderr}`);
+    check('publish-guard: the same token a second time → BLOCK (last event: fired — a token fires once)',
+      again.status === 2 && again.stderr.includes('not an open claim (last event: fired)') && events(a).at(-1)?.event === 'fired' && events(a).at(-1)?.by === 'publish-guard hook', `${again.status} ${again.stderr}`);
+    const o = gate(['outcome', tok, 'delivered', '--permalink', 'https://dev.to/x/2'], undefined, a.dir);
+    check('publish-gate: outcome delivered after the hook spent the token → exit 0, row delivered', o.code === 0 && row(o).state === 'delivered', `${o.code} ${o.stderr}`); done(a); }
+  { const a = gate(['claim', 'P-001'], { [QP]: queue(), 'docs/WORKFLOW.md': wfPolicy('human-only') });
+    const tok = a.stdout.trim().split('\n').at(-1).split('=')[1];
+    writeFileSync(path.join(a.dir, QP), a.read(QP).replace('\nhello world\n', '\nhello world, edited after claim\n'));
+    const d = gate(['dispatch', tok], undefined, a.dir);
+    const h = spawnSync('bash', [path.join(PLUGIN, 'hooks/lib/publish-guard.sh')], { cwd: a.dir, input: JSON.stringify({ tool_input: { command: `PUBLISH_CLAIM=${tok} curl -X POST https://dev.to/api/articles` } }), encoding: 'utf8' });
+    check('publish-gate: edit between claim and dispatch → dispatch REFUSED (exit 2), row draft, token void; the hook then BLOCKS it',
+      d.code === 2 && /REFUSED P-001 approved@[0-9a-f]{8}\/e1, current [0-9a-f]{8}\/e2/.test(d.stdout) && row(d).state === 'draft' && row(d).claim === '' &&
+      h.status === 2 && h.stderr.includes('last event: reset'), `${d.code} ${d.stderr} | ${h.status} ${h.stderr}`); done(a); }
+  if (process.getuid?.() !== 0) { // fail closed: a claim whose event cannot be recorded hands out no token
+    const g = gate(['status'], { [QP]: queue(), 'docs/WORKFLOW.md': wfPolicy('human-only'), [CP]: { content: '' } });
+    chmodSync(path.join(g.dir, CP), 0o444);
+    const c = gate(['claim', 'P-001'], undefined, g.dir);
+    check('publish-gate: claims log not writable → claim exits non-zero and prints NO PUBLISH_CLAIM line',
+      c.code !== 0 && !c.stdout.includes('PUBLISH_CLAIM='), `${c.code} ${c.stdout}`); done(g); }
+  { const r = fire('PUBLISH_CLAIM=deadbeef curl -X POST https://dev.to/api/articles', { [CP]: { content: claimLine('deadbeef', 'claimed') + claimLine('deadbeef', 'delivered') } });
+    check('publish-guard: token whose last event is delivered → BLOCK (spent token)', r.code === 2 && r.stderr.includes('not an open claim (last event: delivered)'), r.stderr);
+    const n = fire('PUBLISH_CLAIM=deadbeef curl -X POST https://dev.to/api/articles');
+    check('publish-guard: token with no publish-claims.jsonl → BLOCK', n.code === 2 && n.stderr.includes('no publish-claims.jsonl'), n.stderr);
+    const u = fire('PUBLISH_CLAIM=cafef00d curl -X POST https://dev.to/api/articles', { [CP]: { content: claimLine('deadbeef', 'claimed') } });
+    check('publish-guard: token never minted → BLOCK (last event: none)', u.code === 2 && u.stderr.includes('last event: none'), u.stderr);
+    const m = fire('PUBLISH_CLAIM=deadbeef curl -X POST https://dev.to/api/articles', { [CP]: { content: claimLine('deadbeef', 'claimed') + '{not json\n' } });
+    check('publish-guard: malformed publish-claims.jsonl → BLOCK (fail closed, never trusts a partial read)', m.code === 2 && m.stderr.includes('not an open claim'), m.stderr);
+    const s = fire('ls -la docs/product/launch');
+    check('publish-guard: non-publish command → silent', s.code === 0 && s.stdout === '' && s.stderr === '', s.stdout + s.stderr); }
+  // Gate refusal matrix — each refusal exits 2 with its reason and mints nothing.
+  { const cases = [
+      ['paid without --paid-confirmed-by-human', { paid: 'yes' }, 'human-only', 'is paid — human-fired only (§11)'],
+      ['not due', { scheduled: '2026-10-07 09:00' }, 'human-only', 'not due until 2026-10-07 09:00'],
+      ['approved by hand, no pin', { approvedFor: '' }, 'human-only', 'says approved but has no pinned hash — run publish approve P-001'],
+      ['draft', { state: 'draft' }, 'human-only', 'P-001 is draft, not approved'],
+      ['policy none', {}, 'none', 'publishing not configured (Publish policy: none)'],
+    ];
+    for (const [name, opts, pol, text] of cases) {
+      const g = gate(['claim', 'P-001'], { [QP]: queue(opts), 'docs/WORKFLOW.md': wfPolicy(pol) });
+      check(`publish-gate: claim refuses ${name} (exit 2) and mints no token`, g.code === 2 && g.stderr.includes(text) && !g.stdout.includes('PUBLISH_CLAIM='), `${g.code} ${g.stderr}`); done(g);
+    }
+    const s = gate(['claim', 'P-001', '--by', 'may-publish (delegated 2026-10-01)'], { [QP]: queue(), 'docs/WORKFLOW.md': wfPolicy('human-only') });
+    check('publish-gate: a scheduled run (--by may-publish) under human-only → REFUSED', s.code === 2 && s.stderr.includes('policy is human-only — a scheduled run cannot fire'), s.stderr); done(s);
+    const p = gate(['claim', 'P-001', '--paid-confirmed-by-human'], { [QP]: queue({ paid: 'yes' }), 'docs/WORKFLOW.md': wfPolicy('human-only') });
+    check('publish-gate: paid + --paid-confirmed-by-human (a human at the keyboard) → claim mints', p.code === 0 && /PUBLISH_CLAIM=[0-9a-f]{8}$/.test(p.stdout.trim()), p.stderr); done(p); }
+  { const g = gate(['claim', 'P-001'], { [QP]: { content: queue().content.replace('| a.md | one |', '| a.md |') }, 'docs/WORKFLOW.md': wfPolicy('human-only') });
+    const before = queue().content.replace('| a.md | one |', '| a.md |');
+    check('publish-gate: unparseable queue (11-cell row) → exit 4 with the line number, nothing written',
+      g.code === 4 && /:5: row has 11 cells/.test(g.stderr) && g.read(QP) === before && g.read(CP) === '', g.stderr); done(g); }
 }
 
 // ── close-keyword guard (v1.50.1): a commit message must not carry a GitHub

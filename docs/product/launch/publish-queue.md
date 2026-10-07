@@ -4,7 +4,7 @@ owner-agent: marketing
 refresh-trigger: every-ship
 ---
 
-# {{PROJECT_NAME}} — Publish Queue
+# agentic-workflow — Publish Queue
 
 _The staging surface for outward publishing (WORKFLOW.md §14). The `marketing`
 and `writer` agents fill this from the launch assets and content plan; **writing
@@ -40,8 +40,7 @@ rows are examples — the gate ignores them; delete them once real rows exist._
 
 | id | kind | channel | scheduled (UTC) | state | paid | body-sha256 | epoch | approved-for | claim | source asset | summary |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| _P-001_ | _post_ | _x / linkedin / devto / mailing / site_ | _YYYY-MM-DD HH:MM_ | _draft_ | _no_ |  |  |  |  | _`docs/product/launch/announcements/x.md`_ | _one line_ |
-| _O-001_ | _outreach_ | _email / x-dm / x-reply / linkedin-dm_ | _YYYY-MM-DD HH:MM_ | _draft_ | _no_ |  |  |  |  | _`docs/product/launch/announcements/x.md`_ | _person + the one ask_ |
+| P-001 | post | devto | 2026-10-07 09:00 | draft | no | 9b735788be4d0c4da32fc26649f89d745c0177dec0ddbaff11c6a2b514a9ad42 | 2 |  |  | docs/product/launch/announcements/dev-to.md | 1.52.0 release note |
 
 ## Drafts (full bodies)
 
@@ -50,15 +49,8 @@ exactly what was reviewed — no re-drafting at fire time. Media/asset paths
 referenced, not inlined. The body is everything under the `### <id>` heading up
 to the next `### `, a `---` rule, or the end of the file._
 
-### P-001 — _channel_
-_The exact body to post. For a thread, number the parts. For an article, link
-the source file and the target platform's canonical-URL setting._
-
-### O-001 — _email_
-to: _name <address> / @handle_
-subject: _one line (email only)_
-
-_The exact message you will paste and send yourself._
+### P-001 — devto
+agentic-workflow 1.52.0: a publish-queue item now fires only for the exact body you approved — hash-pinned, epoch-bound, claimed twice.
 
 ---
 _A change to an approved body is **DETECTED** by `publish-gate.mjs stamp` (run by
