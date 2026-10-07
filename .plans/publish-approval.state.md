@@ -51,8 +51,8 @@ PR to `main`. Target version 1.52.0.
 _Glyphs: `[ ]` not started · `[~]` in-flight / deferred / awaiting owner · `[x]`
 done (verified, not merely written)._
 
-- [~] S1 — gate tool `tools/publish-gate.mjs`, lib hook `hooks/lib/publish-guard.sh` + hooks.json row, 7 named harness cases + siblings, lint row 10.8, queue/log templates, `/publish approve|reconcile`, WORKFLOW §3/§14 both copies, record (1.52.0, CHANGELOG, READMEs), n=1 tamper refusal in this repo (branch `mission/publish-approval`; builder `security`)
-- [ ] Checkpoint ckpt-p1 — ONE fresh `reviewer` on **Fable** over `feat/launch-media-plan..mission/publish-approval` (security boundary), then lint + `claude --plugin-dir` load → one PR to `main`, human merges
+- [x] S1 — gate tool `tools/publish-gate.mjs`, lib hook `hooks/lib/publish-guard.sh` + hooks.json row, 7 named harness cases + siblings, lint row 10.8, queue/log templates, `/publish approve|reconcile`, WORKFLOW §3/§14 both copies, record (1.52.0, CHANGELOG, READMEs), n=1 tamper refusal in this repo (branch `mission/publish-approval`; builder `security`)
+- [~] Checkpoint ckpt-p1 (Fable reviewer spawned 2026-10-07 03:21 over 9b8c241..39cc88c) — ONE fresh `reviewer` on **Fable** over `9b8c241..mission/publish-approval` (security boundary), then lint + `claude --plugin-dir` load → one PR to `main`, human merges
 
 ## Open questions
 
@@ -91,13 +91,19 @@ Deviating is allowed; deviating silently is not (§4)._
 
 - 2026-10-07 orchestrator — phase branch `mission/publish-approval` cut from `main` (9b8c241), not `feat/launch-media-plan`: PR #97 merged that branch into main and it was deleted. Checkpoint range becomes `9b8c241..mission/publish-approval`.
 - 2026-10-07 orchestrator — builder `security` has no `.claude/agents/` tune pin, so it inherits the session model (Opus 5.5, the owner's default set 2026-10-07) rather than Opus 4.8. Overrides register only at session start.
+- 2026-10-07 S1 builder — size caps exceeded: publish-gate.mjs 445 lines (cap 320), publish-guard.sh 109 (cap 90); cause: full verb set + selftest + security fixes.
+- 2026-10-07 S1 builder — hook rules changed by security finding 1: a `claimed` token is blocked until dispatched; new `fired` event (writer: publish-guard hook) added to the locked event list. Recorded in §3, §14, the command and CHANGELOG.
+- 2026-10-07 S1 builder — unrequested fail-closed additions: queue lock; claim refuses kind≠post, paid≠no, unparseable schedule; status lists `claimed` rows; template italic rows ignored; 6-column log migration; absolute-path/indented mailer counts as bare.
+- 2026-10-07 S1 builder — `claude --plugin-dir` load check not run (needs a live session); left to the checkpoint.
 
 ## Handoff log (newest first)
 
 _≤10 lines per entry: what this session did, the verify signal, the branch, and
 what the next session needs. Newest on top; crash-safe by write-ahead._
 
+- 2026-10-07 orchestrator: S1 returned done, 11 commits ebc7dca..39cc88c, 4 new + 15 edited files. Gates re-run by orchestrator: publish-gate selftest clean (8 cases), hook-test 156 ok clean (baseline 123), lint clean. n=1 REFUSED line: `publish run: REFUSED P-001 approved@262e68d7/e1, current 9b735788/e2 -> reset to draft`. All 3 security findings fixed in a7cae20 (1 and 3 real, 2 partly real). Nothing deferred. ckpt-p1 Fable reviewer spawned over 9b8c241..39cc88c.
+- 2026-10-07 orchestrator: automated commit security review flagged 3 unverified findings mid-S1 (claim token not single-use in publish-guard.sh; fail-open default in publish-gate.mjs; hash-pin bypass after claim). Forwarded to the running S1 builder to verify and fix in-session; ckpt-p1 Fable reviewer must re-check all three.
 - 2026-10-07 orchestrator: mission started (gate policy human-merge). Branch `mission/publish-approval` cut from main 9b8c241. Sessions used 1/1. S1 spawned to `security` builder.
 - 2026-10-06 planner: trio authored on `feat/launch-media-plan`, then one revision pass on the plan-judge's REVISE (anchors re-verified, the four OQs locked as planner decisions, 19-file count, cut list + order rule, tool/hook path contract aligned, `PUBLISH_CONNECT=` bypass named). Nothing built. Baseline `node tools/hook-test.mjs` = 123 ok, clean. Awaiting the plan-judge only; no owner question blocks S1.
 
-Next up: S1 (in flight, builder `security`), then ckpt-p1
+Next up: ckpt-p1 (Fable reviewer in flight)
