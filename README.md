@@ -33,8 +33,8 @@ plugins/agentic-workflow/            # the plugin
   commands/  welcome, brainstorm, bootstrap, adopt, autopilot, plan, mission, counsel, audit, release, verify, settle, groom, operate, publish, sync, ingest, next, doctor, tune, connect, start, check, pr, end, fix, retro, handoff
   hooks/     hooks.json               # guardrails
   skills/    protocol/                # the entry-point skill
-  tools/     run-codex.mjs            # run a role on the Codex CLI (second runtime); catalog.mjs, ci-wait.mjs, conform.mjs, publish-gate.mjs
-  templates/ WORKFLOW.md, overview.html, idea.md, prd.md, ux-brief.md, architecture.md, interface-contract.md, flight-plan.md, decision-log.md, decision-memo.md, mission-*.md (plan, sessions, state), agents-md.md, codex.rules, distillate.schema.json, registry.md, launch-*.md (plan, positioning, landing-page, announcement, content-plan), publish-queue.md, publish-log.md, session-handoff.md, business-*.md (executive-summary, model, pricing)
+  tools/     run-codex.mjs            # run a role on the Codex CLI (second runtime); agents.mjs (machine-readable agent registry), catalog.mjs, ci-wait.mjs, conform.mjs, publish-gate.mjs
+  templates/ WORKFLOW.md, overview.html, idea.md, prd.md, ux-brief.md, architecture.md, interface-contract.md, flight-plan.md, decision-log.md, decision-memo.md, mission-*.md (plan, sessions, state), agents-md.md, agents-registry.schema.json, codex.rules, distillate.schema.json, registry.md, launch-*.md (plan, positioning, landing-page, announcement, content-plan), publish-queue.md, publish-log.md, session-handoff.md, business-*.md (executive-summary, model, pricing)
   README.md
 ```
 
@@ -42,7 +42,11 @@ Since v1.51.0 any role can run on a **second runtime** — the Codex CLI (GPT-6
 Astra) — chosen per brief or per agent (`/agentic-workflow:tune <role> codex`,
 `/agentic-workflow:connect codex`), with `AGENTS.md` as the runtime-neutral
 conventions file and a permanent plan-judge over every mission plan. Nothing
-changes for a project that never opts in. See the
+changes for a project that never opts in. Since v1.54.0 `/agentic-workflow:tune`
+also carries per-agent effort, tools, skills, the reviewer's boundary-escalation
+and prompt edits — each stamped, with diff/rebase/reset — and
+`tools/agents.mjs --json` prints a machine-readable agent registry; a project
+can run heavy gates across a fleet of remote executors (§10.1). See the
 [plugin README](./plugins/agentic-workflow/README.md) for the full description.
 
 ## Development — running the checks

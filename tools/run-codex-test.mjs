@@ -26,7 +26,7 @@
 // the resume path — that flag would switch the guardrail rules off.
 
 import {
-  readFileSync, writeFileSync, existsSync, mkdirSync, mkdtempSync, chmodSync, realpathSync,
+  readFileSync, writeFileSync, existsSync, mkdirSync, mkdtempSync, chmodSync, realpathSync, rmSync,
 } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
@@ -433,6 +433,32 @@ async function adapterGroup() {
     && done.record?.argv.includes('sandbox_workspace_write.network_access=true'));
   ok('the child ran in --cwd', done.record?.cwd && existsSync(done.record.cwd));
 
+  // A run that edits Codex's own guardrail rules is warned about — not reverted,
+  // not failed. The deviation is appended; status stays done (exit 0). The rules
+  // file is tracked (as in a real project), so git reports its full path.
+  const selfRepo = makeRepo('self-edit');
+  mkdirSync(path.join(selfRepo, '.codex/rules'), { recursive: true });
+  writeFileSync(path.join(selfRepo, '.codex/rules/agentic-workflow.rules'), '# original\n');
+  git(selfRepo, 'add', '-A');
+  git(selfRepo, '-c', 'user.email=t@t', '-c', 'user.name=t', '-c', 'commit.gpgsign=false',
+    'commit', '-q', '--no-verify', '-m', 'add codex rules');
+  const selfEdit = runAdapter(['--role', 'backend', '--brief', '.plans/demo.sessions.md#S3'], {
+    repo: selfRepo, spec: { writes: {
+      '.codex/rules/agentic-workflow.rules': '# tampered\n',
+      'made-by-run.txt': 'made by the run\n',
+    } },
+  });
+  ok('a run editing .codex/ rules still exits 0 (warn only, no revert/block)', selfEdit.status === 0,
+    `exit ${selfEdit.status} ${selfEdit.stderr}`);
+  ok('a changed .codex/ path yields a warning deviation naming the file',
+    (selfEdit.out?.deviations || []).some((d) =>
+      d.startsWith('warning:') && d.includes('.codex/rules/agentic-workflow.rules')
+      && /edited its own guardrail rules/.test(d)),
+    JSON.stringify(selfEdit.out?.deviations));
+  ok('an ordinary changed path raises no self-edit warning',
+    !(done.out?.deviations || []).some((d) => d.includes('guardrail rules')),
+    JSON.stringify(done.out?.deviations));
+
   // Prompt assembly: the shim records the prompt as the last argv element.
   const prompt = done.record.argv[done.record.argv.length - 1];
   const at = (needle) => prompt.indexOf(needle);
@@ -575,10 +601,125 @@ async function checksGroup() {
     blocked.some((f) => /no codex distillate found/.test(f)));
 }
 
+// ── group: skills: frontmatter honoured on codex (#95) ─────────────────────
+async function skillsGroup() {
+  group('adapter — skills: frontmatter (#95)');
+  const mod = await import(`file://${ADAPTER}`);
+  const { resolveSkills, parseSkillsList } = mod;
+
+  // List parser: inline [a,b], bare inline a,b, and the YAML block form.
+  const inline = parseSkillsList('---\nname: x\nskills: [a, b]\n---\nbody');
+  ok('parseSkillsList reads the inline [a, b] form', JSON.stringify(inline) === JSON.stringify(['a', 'b']));
+  const bare = parseSkillsList('---\nname: x\nskills: a, b\n---\nbody');
+  ok('parseSkillsList reads the bare inline a, b form', JSON.stringify(bare) === JSON.stringify(['a', 'b']));
+  const yaml = parseSkillsList('---\nname: x\nskills:\n  - a\n  - b\n---\nbody');
+  ok('parseSkillsList reads the YAML block - a form', JSON.stringify(yaml) === JSON.stringify(['a', 'b']));
+
+  // DIRECT unit assertion (plan-judge): invalid names never touch the fs.
+  const bad = resolveSkills('---\nskills: [../etc, Foo]\n---\n', TMP, path.join(TMP, 'nohome'));
+  ok('resolveSkills rejects ../etc and Foo as invalid name, found empty',
+    bad.found.length === 0
+    && bad.missing.length === 2
+    && bad.missing.every((m) => m.reason === 'invalid name')
+    && bad.missing.map((m) => m.name).join(',') === '../etc,Foo',
+    JSON.stringify(bad));
+
+  // A project with a project skill, a personal skill (HOME-overridden) and the
+  // plugin-prefixed form. Every resolved file must live under a skills dir.
+  const home = path.join(TMP, 'home');
+  mkdirSync(path.join(home, '.claude/skills/personalskill'), { recursive: true });
+  writeFileSync(path.join(home, '.claude/skills/personalskill/SKILL.md'),
+    '---\nname: personalskill\n---\n\nPERSONAL SKILL BODY.\n');
+  const proj = makeRepo('skills-proj');
+  mkdirSync(path.join(proj, '.claude/agents'), { recursive: true });
+  mkdirSync(path.join(proj, '.claude/skills/houserule'), { recursive: true });
+  writeFileSync(path.join(proj, '.claude/skills/houserule/SKILL.md'),
+    '---\nname: houserule\n---\n\nHOUSE RULE SKILL BODY.\n');
+
+  const projectRole = '---\nname: backend\ntools: Read, Write, Edit\nskills: [houserule]\n---\n\nbackend body, no backticks.\n';
+  const r1 = resolveSkills(projectRole, proj, home);
+  ok('a project skill resolves to <cwd>/.claude/skills with origin project',
+    r1.found.length === 1 && r1.found[0].origin === 'project'
+    && r1.found[0].file === path.join(proj, '.claude/skills/houserule/SKILL.md'), JSON.stringify(r1));
+
+  const personalRole = '---\nname: backend\nskills: [personalskill]\n---\n\nbody.\n';
+  const r2 = resolveSkills(personalRole, proj, home);
+  ok('a personal skill falls back to $HOME/.claude/skills with origin personal',
+    r2.found.length === 1 && r2.found[0].origin === 'personal'
+    && r2.found[0].file === path.join(home, '.claude/skills/personalskill/SKILL.md'), JSON.stringify(r2));
+
+  const pluginRole = '---\nname: backend\nskills: [agentic-workflow:protocol]\n---\n\nbody.\n';
+  const r3 = resolveSkills(pluginRole, proj, home);
+  ok('the agentic-workflow:<name> form resolves to the plugin skills dir',
+    r3.found.length === 1 && r3.found[0].origin === 'plugin'
+    && r3.found[0].file === path.join(PLUGIN, 'skills/protocol/SKILL.md'), JSON.stringify(r3));
+
+  const skillsDirs = [path.join(proj, '.claude/skills'), path.join(home, '.claude/skills'), path.join(PLUGIN, 'skills')];
+  const allFound = [...r1.found, ...r2.found, ...r3.found];
+  ok('every resolved skill file lives under one of the three skills dirs',
+    allFound.length > 0 && allFound.every((s) => skillsDirs.some((d) => s.file.startsWith(d + path.sep))),
+    JSON.stringify(allFound.map((s) => s.file)));
+
+  // End to end through the adapter: the project skill is inlined as preloaded.
+  writeFileSync(path.join(proj, '.claude/agents/backend.md'), projectRole);
+  const run1 = runAdapter(['--role', 'backend', '--brief', 'x'], { repo: proj, env: { HOME: home } });
+  const p1 = run1.record.argv[run1.record.argv.length - 1];
+  ok('a skills: entry is inlined as a preloaded block',
+    p1.includes('# Skill: houserule (preloaded — listed in skills:, project copy)') && p1.includes('HOUSE RULE SKILL BODY.'), p1.slice(0, 80));
+
+  // Dedupe: a backticked skill the body names AND lists in skills: appears once.
+  const dedupeRole = '---\nname: backend\nskills: [agentic-workflow:protocol]\n---\n\nbody that names `protocol` in backticks.\n';
+  writeFileSync(path.join(proj, '.claude/agents/backend.md'), dedupeRole);
+  const run2 = runAdapter(['--role', 'backend', '--brief', 'x'], { repo: proj, env: { HOME: home } });
+  const p2 = run2.record.argv[run2.record.argv.length - 1];
+  ok('a skill both backticked and in skills: is inlined once (deduped by file)',
+    p2.includes('# Skill: protocol (inlined — your role prompt names it)')
+    && !p2.includes('(preloaded — listed in skills:)'), p2.match(/# Skill:[^\n]*/g)?.join(' | '));
+
+  // A missing skill becomes a deviation on the written (done) distillate.
+  const missRole = '---\nname: backend\nskills: [nosuchskill]\n---\n\nbody.\n';
+  writeFileSync(path.join(proj, '.claude/agents/backend.md'), missRole);
+  const run3 = runAdapter(['--role', 'backend', '--brief', 'x'], { repo: proj, env: { HOME: home } });
+  ok('a missing skills: entry is reported in the distillate deviations',
+    run3.out?.deviations.includes('skill "nosuchskill" listed in skills: not found (searched project, personal, plugin)'),
+    JSON.stringify(run3.out?.deviations));
+
+  // The same deviations ride the FAILED distillate too: a missing skill and a
+  // .codex/ self-edit are both reported when the run's last message is not JSON.
+  const run4 = runAdapter(['--role', 'backend', '--brief', 'x'], { repo: proj, env: { HOME: home },
+    spec: { lastMessage: 'not json', writes: { '.codex/rules/agentic-workflow.rules': '# tampered\n' } } });
+  ok('a failed run still reports the missing skill and the .codex/ self-edit warning',
+    run4.status === 1 && run4.out?.status === 'failed'
+    && run4.out.deviations.some((d) => d.startsWith('skill "nosuchskill"'))
+    && run4.out.deviations.some((d) => d.startsWith('warning:') && d.includes('.codex')),
+    JSON.stringify(run4.out?.deviations));
+
+  // A project skill sharing a plugin skill's name is labelled as the project copy,
+  // so the two same-named blocks can be told apart.
+  mkdirSync(path.join(proj, '.claude/skills/protocol'), { recursive: true });
+  writeFileSync(path.join(proj, '.claude/skills/protocol/SKILL.md'), '---\nname: protocol\n---\n\nPROJECT PROTOCOL BODY.\n');
+  writeFileSync(path.join(proj, '.claude/agents/backend.md'),
+    '---\nname: backend\nskills: [protocol]\n---\n\nbody that names `protocol` in backticks.\n');
+  const run5 = runAdapter(['--role', 'backend', '--brief', 'x'], { repo: proj, env: { HOME: home } });
+  const p5 = run5.record.argv[run5.record.argv.length - 1];
+  ok('a same-named project skill is labelled "project copy" beside the plugin one',
+    p5.includes('# Skill: protocol (inlined — your role prompt names it)')
+    && p5.includes('# Skill: protocol (preloaded — listed in skills:, project copy)')
+    && p5.includes('PROJECT PROTOCOL BODY.'), p5.match(/# Skill:[^\n]*/g)?.join(' | '));
+  rmSync(path.join(proj, '.claude/skills/protocol'), { recursive: true, force: true });
+  writeFileSync(path.join(proj, '.claude/agents/backend.md'), missRole);
+
+  // --effort accepts the widened levels (#94 pass-through).
+  const hiEffort = runAdapter(['--role', 'backend', '--brief', 'x', '--effort', 'xhigh'], { repo: proj, env: { HOME: home } });
+  ok('--effort xhigh is accepted and passed through unchanged to the codex reasoning-effort config',
+    hiEffort.status === 0 && hiEffort.record.argv.includes('model_reasoning_effort=xhigh'), `exit ${hiEffort.status}`);
+}
+
 // ── run ────────────────────────────────────────────────────────────────────
 schemaGroup();
 rulesGroup();
 await adapterGroup();
+await skillsGroup();
 await checksGroup();
 
 console.log('');

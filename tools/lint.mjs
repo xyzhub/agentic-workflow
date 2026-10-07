@@ -493,6 +493,27 @@ function checkRunCodexHarness() {
   }
 }
 
+// ── 10.9 agents registry harness (tier-1.5) ─────────────────────────────
+// The agent registry (tools/agents.mjs) is a public interface a wrapper reads
+// instead of parsing frontmatter and banner wording, and /tune's no-arg table
+// renders FROM it. Lint can only prove the script parses, so delegate to the
+// behavioral harness — it pins the schema's strict-mode shape, the 20-agent
+// listing, and the override.kind / effective / base_sha derivation across the
+// four shadow kinds. Fail-closed on a missing runner — same shape as 10.7.
+function checkAgentsRegistryHarness() {
+  const runner = path.join(ROOT, 'tools/agents-test.mjs');
+  if (!existsSync(runner)) {
+    fail(runner, null, 'agents-registry harness missing — tools/agents-test.mjs must exist so the gate proves the registry\'s schema strictness, agent listing and override derivation (do not silently drop the check)');
+    return;
+  }
+  const res = spawnSync('node', [runner], { encoding: 'utf8' });
+  if (res.status !== 0) {
+    const detail = `${res.stdout ?? ''}${res.stderr ?? ''}`
+      .split('\n').filter((l) => /FAIL|failure|Error/.test(l)).join(' | ');
+    fail(runner, null, `agents-registry harness failed — run \`node tools/agents-test.mjs\`: ${detail || '(no detail)'}`);
+  }
+}
+
 // ── Mission-ledger helpers (checks 11 + 12) ─────────────────────────────────
 // Both ledger checks read `.plans/*.state.md` — deployed ledgers, not templates.
 // A repo with no `.plans/` (a fresh consumer) simply has nothing to check.
@@ -891,7 +912,7 @@ const isEntryPoint = () => {
 };
 
 if (isEntryPoint()) {
-  for (const check of [checkManifests, checkAgents, checkCommands, checkCrossRefs, checkTemplateRefs, checkPluginRootBraced, checkSections, checkFrontmatterYaml, checkTemplateFrontmatter, checkHooks, checkObfuscation, checkHookBehavior, checkClockGuard, checkMarkerMutation, checkContextAttrib, checkCatalogSelftest, checkCiWaitSelftest, checkPublishGateSelftest, checkRunCodexHarness, checkStandingSteers, checkNextUpAgreement, checkClosing, checkObligationsRegister]) {
+  for (const check of [checkManifests, checkAgents, checkCommands, checkCrossRefs, checkTemplateRefs, checkPluginRootBraced, checkSections, checkFrontmatterYaml, checkTemplateFrontmatter, checkHooks, checkObfuscation, checkHookBehavior, checkClockGuard, checkMarkerMutation, checkContextAttrib, checkCatalogSelftest, checkCiWaitSelftest, checkPublishGateSelftest, checkRunCodexHarness, checkAgentsRegistryHarness, checkStandingSteers, checkNextUpAgreement, checkClosing, checkObligationsRegister]) {
     check();
   }
 

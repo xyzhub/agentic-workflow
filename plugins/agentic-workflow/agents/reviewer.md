@@ -28,6 +28,13 @@ review still runs, but the tier was miscalled. *Incident (orderly #605,
 diff-size judgment; a follow-up Fable pass found the threat only half-closed
 (#730) for ~74k tokens — the tier rule keys on risk, and this is what it buys.*
 
+This escalation is keyed by a per-project `boundary_escalation` tune (#91): the
+key lives in `.claude/agents/reviewer.md` and defaults to `on` (the behaviour
+above). When a project sets `boundary_escalation: off`, the orchestrator's
+chosen tier stands even for a boundary-class diff — but you still file a
+**process finding** whenever you judge the tier miscalled for the risk, so the
+record shows the call was made deliberately.
+
 ## Close the threat, not just the diff
 
 For a security/auth/money fix, verifying that the DIFF is correct is not the
