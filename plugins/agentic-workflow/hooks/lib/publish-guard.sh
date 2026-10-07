@@ -15,8 +15,10 @@
 #      mailer in command position) → exit 0, silent.
 #   4. Publish-host call: PUBLISH_CONNECT= → exit 0 (connect round-trip reminder); no
 #      PUBLISH_CLAIM=<8 hex> → exit 2 under EVERY policy; a token whose last event in
-#      publish-claims.jsonl is not claimed|dispatching → exit 2 (a token fires once); kind
-#      outreach (or anything but post) → exit 2 regardless of policy (§11); else exit 0 + reminder.
+#      publish-claims.jsonl is not claimed|dispatching → exit 2; kind outreach (or anything but
+#      post) → exit 2 regardless of policy (§11); still `claimed` (dispatch, which re-hashes the
+#      body, was skipped) → exit 2; `dispatching` → append a `fired` event (the token is now
+#      spent — a retry or a parallel call under it BLOCKS) and exit 0 + reminder.
 #   - jsonl values are read only through `jq --arg`, character-whitelisted before printing,
 #     and never eval'ed or interpolated into a command.
 #   - Fail closed: no jq, or an unreadable/malformed jsonl → the token cannot be verified → exit 2.
@@ -62,12 +64,17 @@ fi
 [ -f "$CLAIMS" ] || { echo "❌ BLOCKED: PUBLISH_CLAIM=$TOK — no publish-claims.jsonl at $CLAIMS" >&2; exit 2; }
 
 # Last event for this token. jq failing on ANY line (malformed jsonl, jq missing) fails closed.
-LAST=$(jq -r --arg t "$TOK" 'select(.token==$t) | "\(.event) \(.kind) \(.id)"' "$CLAIMS" 2>/dev/null) || LAST='unreadable-claims-file'
+# One check-and-spend at a time (parallel Bash calls under one token); a stale lock fails closed.
+LOCK="$CLAIMS.hook-lock"
+mkdir "$LOCK" 2>/dev/null || { echo "❌ BLOCKED: another publish-host call is being checked ($LOCK) — one call per token; if none is running, remove the lock." >&2; exit 2; }
+trap 'rmdir "$LOCK" 2>/dev/null' EXIT
+LAST=$(jq -r --arg t "$TOK" 'select(.token==$t) | "\(.event) \(.kind) \(.id) \(.run) \(.sha8) \(.epoch)"' "$CLAIMS" 2>/dev/null) || LAST='unreadable-claims-file'
 LAST=$(printf '%s\n' "$LAST" | tail -1)
-read -r EV KIND ID _ <<EOF
+read -r EV KIND ID RUN SHA8 EPOCH _ <<EOF
 $LAST
 EOF
 EV=$(printf '%s' "$EV" | tr -cd 'a-z-'); KIND=$(printf '%s' "$KIND" | tr -cd 'a-z'); ID=$(printf '%s' "$ID" | tr -cd 'A-Za-z0-9._-')
+RUN=$(printf '%s' "$RUN" | tr -cd 'a-z0-9-'); SHA8=$(printf '%s' "$SHA8" | tr -cd '0-9a-f'); EPOCH=$(printf '%s' "$EPOCH" | tr -cd '0-9')
 
 case "$EV" in
   claimed|dispatching) ;;
@@ -80,6 +87,18 @@ if [ "$KIND" = outreach ]; then
 fi
 if [ "$KIND" != post ]; then
   echo "❌ BLOCKED: PUBLISH_CLAIM=$TOK resolves to kind '${KIND:-none}' — only a kind: post claim ever fires." >&2
+  exit 2
+fi
+if [ "$EV" = claimed ]; then
+  echo "❌ BLOCKED: PUBLISH_CLAIM=$TOK is claimed but not dispatched — run publish-gate.mjs dispatch $TOK first (it re-checks the approved hash), then fire." >&2
+  exit 2
+fi
+
+# Spend the token BEFORE the call: the next call under it sees `fired` and blocks. Built by jq --arg.
+FIRED=$(jq -nc --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" --arg id "$ID" --arg s "$SHA8" --arg e "$EPOCH" --arg t "$TOK" --arg r "$RUN" \
+  '{ts:$ts,event:"fired",id:$id,kind:"post",sha8:(if $s=="" then null else $s end),epoch:(if $e=="" then null else ($e|tonumber) end),token:$t,run:(if $r=="" then null else $r end),by:"publish-guard hook",note:"publish-host call passed the §3 hook; token spent"}' 2>/dev/null)
+if [ -z "$FIRED" ] || ! printf '%s\n' "$FIRED" >> "$CLAIMS" 2>/dev/null; then
+  echo "❌ BLOCKED: PUBLISH_CLAIM=$TOK — could not record the fire in $CLAIMS, so the token cannot be spent; refusing." >&2
   exit 2
 fi
 

@@ -8,7 +8,7 @@
 //   node publish-gate.mjs approve <id>               pin approved-for: <sha8>@<epoch> (prints the body)
 //   node publish-gate.mjs claim <id> [--by human|"may-publish (delegated <date>)"] [--paid-confirmed-by-human]
 //                                                    mint a one-time token; last stdout line PUBLISH_CLAIM=<token>
-//   node publish-gate.mjs dispatch <token>           claimed → dispatching (right before the network call)
+//   node publish-gate.mjs dispatch <token>           re-hash; claimed → dispatching (right before the network call)
 //   node publish-gate.mjs outcome <token> delivered --permalink <url> | outcome <token> unknown
 //   node publish-gate.mjs reconcile <id> --delivered <url> | --cancel     (claimed | dispatching | unknown)
 //   node publish-gate.mjs status                     the "Needs you / Ready to fire / Drafts" block
@@ -332,9 +332,19 @@ export function gate(argv) {
     });
     else if (verb === 'claim') mutate(ctx, (q) => claim(ctx, q, need(arg)));
     else if (verb === 'dispatch') mutate(ctx, (q) => {
-      const r = rowByToken(q, arg), tok = arg;
-      if (r.cells[STATE] !== 'claimed') refuse(`${r.id} is ${r.cells[STATE]}, not claimed — a token fires once`);
-      setter(r)(STATE, 'dispatching'); setter(r)(CLAIM, `${tok} dispatching ${ctx.utc}`);
+      const r = rowByToken(q, arg), tok = arg, c = r.cells, set = setter(r);
+      if (c[STATE] !== 'claimed') refuse(`${r.id} is ${c[STATE]}, not claimed — a token fires once`);
+      // Re-hash right before the network call: an edit between claim and dispatch voids the token.
+      const cur = sha(q.bodies.get(r.id).text), c8 = cur.slice(0, 8);
+      if (c[SHA] !== cur || c[PIN] !== `${c8}@${c[EPOCH]}`) {
+        const [a8, an] = pinOf(c) ?? [c[PIN] || '?', '?'], ne = c[SHA] !== cur ? (+c[EPOCH] || 1) + 1 : +c[EPOCH];
+        set(SHA, cur); set(EPOCH, String(ne)); set(STATE, 'draft'); set(PIN, ''); set(CLAIM, '');
+        ctx.events.push(ev(r, { event: 'reset', token: tok, run: runOf(ctx, tok), note: 'body changed between claim and dispatch — token void' }));
+        const line = `publish run: REFUSED ${r.id} approved@${a8}/e${an}, current ${c8}/e${ne} -> reset to draft`;
+        out.push(line);
+        refuse(`${line}\n${r.id} not fired: body changed after it was claimed; token ${tok} is void. Reset to draft. Re-approve to fire.`);
+      }
+      set(STATE, 'dispatching'); setter(r)(CLAIM, `${tok} dispatching ${ctx.utc}`);
       ctx.events.push(ev(r, { event: 'dispatching', token: tok, run: runOf(ctx, tok) }));
       out.push(`dispatching ${r.id} under claim ${tok}`);
     });
@@ -364,9 +374,11 @@ export function gate(argv) {
     else throw new Exit(1, USAGE);
     return { code: 0, out, err };
   } catch (e) {
-    if (!(e instanceof Exit)) { err.push(`publish-gate: ${e.message}`); return { code: 1, out, err }; }
+    // Fail closed: a non-zero exit never hands out a token, even if one was minted before the error.
+    const kept = out.filter((l) => !l.startsWith('PUBLISH_CLAIM=') && !l.startsWith('claimed '));
+    if (!(e instanceof Exit)) { err.push(`publish-gate: ${e.message}`); return { code: 1, out: kept, err }; }
     if (e.message) err.push(e.message);
-    return { code: e.code, out, err };
+    return { code: e.code, out: kept, err };
   }
 }
 
@@ -409,6 +421,15 @@ function selftest() {
     writeFileSync(Q, [render(COLS), sepRow(COLS), `| O-001 | outreach | email | 2026-10-01 09:00 | approved | no | ${h} | 1 | ${h.slice(0, 8)}@1 | | a.md | person + ask |`, '', '### O-001 — email', 'to: a@b.c', 'hi', ''].join('\n'));
     r = g('claim', 'O-001');
     ok('(g) claim on outreach → exit 2 "only you can send it, by hand", no claimed event', r.code === 2 && txt(r).includes('O-001 is outreach — only you can send it, by hand') && !events().includes('claimed'), txt(r));
+    writeFileSync(W, '| **Publish policy** | human-only |\n');
+    writeFileSync(Q, [render(COLS), sepRow(COLS), `| P-001 | post | devto | 2026-10-01 09:00 | approved | no | ${sha('hello')} | 1 | ${sha('hello').slice(0, 8)}@1 | | a.md | one |`, ...body].join('\n'));
+    const tok = g('claim', 'P-001').out.at(-1).split('=')[1];
+    writeFileSync(Q, readFileSync(Q, 'utf8').replace('### P-001 — devto\nhello\n', '### P-001 — devto\nhello, edited after claim\n'));
+    r = g('dispatch', tok);
+    const h1 = row('P-001');
+    ok('(h) claim → edit → dispatch: exit 2, REFUSED, row draft with pin + claim cleared, token void (last event reset)',
+      r.code === 2 && /REFUSED P-001 approved@[0-9a-f]{8}\/e1, current [0-9a-f]{8}\/e2/.test(r.out.join('\n')) && h1.state === 'draft' && h1.claim === '' && h1['approved-for'] === '' &&
+      JSON.parse(readFileSync(C, 'utf8').trim().split('\n').at(-1)).event === 'reset', `${txt(r)} ${JSON.stringify(h1)}`);
   } finally { rmSync(dir, { recursive: true, force: true }); }
   if (fails.length) { console.error(`publish-gate selftest: ${fails.length} failure(s)`); return 1; }
   console.log('publish-gate selftest: clean');
