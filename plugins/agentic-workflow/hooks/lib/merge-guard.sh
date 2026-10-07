@@ -33,7 +33,10 @@ fi
 BARE=$(printf '%s' "$CMD" | tr -d "\"'\\\\")
 MRX='gh[[:space:]]+pr([[:space:]]+-[^[:space:]]*([[:space:]]+[^-[:space:]][^[:space:]]*)?)*[[:space:]]+merge([[:space:];&|()<>]|$)'
 if ! printf '%s' "$BARE" | grep -qE "$MRX"; then
-  printf '%s' "$BARE" | grep -qE '(^|[^[:alnum:]_])gh[^[:alnum:]_](.*[^[:alnum:]_])?pr[^[:alnum:]_].*merge' || exit 0
+  # Last resort only for a `gh pr|api` at command position plus a standalone `merge` word (#108):
+  # `gh issue create --body "…PR…merge…"` and `… | bash …/merge-guard.sh` are not merges.
+  printf '%s' "$BARE" | grep -qE '(^|[;&|(`])[[:space:]]*([A-Za-z_][A-Za-z0-9_]*=[^[:space:]]*[[:space:]]+)*gh([[:space:]]+-[^[:space:]]*)*[[:space:]]+(pr|api)([[:space:]]|$)' || exit 0
+  printf '%s' "$BARE" | grep -qE '(^|[^[:alnum:]_.-])merge([^[:alnum:]_.-]|$)' || exit 0
   # Coarse fallback: every `gh pr` is a known non-merge subcommand (a title may say "merge") → pass.
   NPR=$(printf '%s' "$BARE" | grep -oE 'gh[[:space:]]+pr' | wc -l | tr -d ' ')
   NOK=$(printf '%s' "$BARE" | grep -oE 'gh[[:space:]]+pr[[:space:]]+(view|create|list|status|checks|diff|checkout|comment|edit|review|close|reopen|ready)([[:space:]]|$)' | wc -l | tr -d ' ')
