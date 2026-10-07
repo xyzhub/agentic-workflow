@@ -12,10 +12,10 @@ fresh agent resumes the mission from this file alone. Write-ahead — update it
 orchestrator has no session boundary to force a write; a compaction erases
 everything since the last one — §12 LA-6)._
 
-Status: planned
+Status: active
 
 Estimate: 1 session
-Sessions used: 0
+Sessions used: 1
 
 _The two budget lines above are read by the mission-budget hook every turn. The
 planner writes `Estimate:` (1 = one brief S1 + one one-shot Fable review at the
@@ -51,7 +51,7 @@ PR to `main`. Target version 1.52.0.
 _Glyphs: `[ ]` not started · `[~]` in-flight / deferred / awaiting owner · `[x]`
 done (verified, not merely written)._
 
-- [ ] S1 — gate tool `tools/publish-gate.mjs`, lib hook `hooks/lib/publish-guard.sh` + hooks.json row, 7 named harness cases + siblings, lint row 10.8, queue/log templates, `/publish approve|reconcile`, WORKFLOW §3/§14 both copies, record (1.52.0, CHANGELOG, READMEs), n=1 tamper refusal in this repo (branch `mission/publish-approval`; builder `security`)
+- [~] S1 — gate tool `tools/publish-gate.mjs`, lib hook `hooks/lib/publish-guard.sh` + hooks.json row, 7 named harness cases + siblings, lint row 10.8, queue/log templates, `/publish approve|reconcile`, WORKFLOW §3/§14 both copies, record (1.52.0, CHANGELOG, READMEs), n=1 tamper refusal in this repo (branch `mission/publish-approval`; builder `security`)
 - [ ] Checkpoint ckpt-p1 — ONE fresh `reviewer` on **Fable** over `feat/launch-media-plan..mission/publish-approval` (security boundary), then lint + `claude --plugin-dir` load → one PR to `main`, human merges
 
 ## Open questions
@@ -89,13 +89,15 @@ never deleted: a fired row keeps its line and appends `· fired YYYY-MM-DD
 _Any departure from a brief — logged here the moment it happens, with why.
 Deviating is allowed; deviating silently is not (§4)._
 
-(none)
+- 2026-10-07 orchestrator — phase branch `mission/publish-approval` cut from `main` (9b8c241), not `feat/launch-media-plan`: PR #97 merged that branch into main and it was deleted. Checkpoint range becomes `9b8c241..mission/publish-approval`.
+- 2026-10-07 orchestrator — builder `security` has no `.claude/agents/` tune pin, so it inherits the session model (Opus 5.5, the owner's default set 2026-10-07) rather than Opus 4.8. Overrides register only at session start.
 
 ## Handoff log (newest first)
 
 _≤10 lines per entry: what this session did, the verify signal, the branch, and
 what the next session needs. Newest on top; crash-safe by write-ahead._
 
+- 2026-10-07 orchestrator: mission started (gate policy human-merge). Branch `mission/publish-approval` cut from main 9b8c241. Sessions used 1/1. S1 spawned to `security` builder.
 - 2026-10-06 planner: trio authored on `feat/launch-media-plan`, then one revision pass on the plan-judge's REVISE (anchors re-verified, the four OQs locked as planner decisions, 19-file count, cut list + order rule, tool/hook path contract aligned, `PUBLISH_CONNECT=` bypass named). Nothing built. Baseline `node tools/hook-test.mjs` = 123 ok, clean. Awaiting the plan-judge only; no owner question blocks S1.
 
-Next up: S1
+Next up: S1 (in flight, builder `security`), then ckpt-p1
