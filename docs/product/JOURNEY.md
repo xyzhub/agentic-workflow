@@ -30,6 +30,8 @@ The review approved with no blocking findings. Scores out of 3: security 3, qual
 
 What waits on the merge: delete the mission branch, a note that inside a Codex run this tool's refusal is the only automatic publish check, a live check after the plugin is reinstalled (a call to LinkedIn without a token must be blocked), and the same tamper test on the Orderly queue, which mission 2 needs. Next mission queued: operate-triage (v1.53.0).
 
+Update, same day: the owner merged PR #101 (version 1.52.0 is on `main`). After the plugin was reinstalled, the live check passed: the installed hook blocked a call to a publish site with no token. The Orderly tamper test could not run because there is no Orderly checkout on this machine, so on the owner's words "close today and test later" it is logged as OB-22 (an open obligation, to run in an Orderly session). The mission is closed, one session used of one planned. Next mission: operate-triage.
+
 ---
 
 ## 2026-10-06 to 2026-10-07 — two features planned from ECC patterns, and a settle that had not run since July
