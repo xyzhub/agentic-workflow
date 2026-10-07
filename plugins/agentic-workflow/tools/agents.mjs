@@ -43,6 +43,8 @@ const PHASE = {
 // Allowed phase values (schema enum); an unknown frontmatter phase: falls back.
 const PHASES = new Set([...Object.values(PHASE), 'on-demand']);
 const validPhase = (v) => (PHASES.has(v) ? v : null);
+// No `tools:` line means unset (all tools on claude, read-only on codex) — null, never [].
+const toolsOrNull = (v) => (v ? toList(v) : null);
 
 // The banner every /tune writes (old form has no `(base sha256:…)`).
 const BANNER_RE = /^> Tuned from agentic-workflow v(\S+?)(?: \(base sha256:([0-9a-f]{12})\))? —/m;
@@ -132,7 +134,7 @@ export function registry(projectDir = process.cwd()) {
       effort: fmValue(src, 'effort'),
       boundary_escalation: name === 'reviewer' ? (fmValue(src, 'boundary_escalation') || 'on') : null,
       skills: skillsList(src),
-      tools: hasShadow ? toList(fmValue(src, 'tools')) : baseTools,
+      tools: hasShadow ? toolsOrNull(fmValue(src, 'tools')) : baseTools,
     };
 
     let override = null;
@@ -178,14 +180,14 @@ export function registry(projectDir = process.cwd()) {
         summary: summaryOf(description),
         phase: validPhase(fmValue(text, 'phase')) || 'on-demand',
         model: fmValue(text, 'model') || 'inherit',
-        tools: toList(fmValue(text, 'tools')),
+        tools: toolsOrNull(fmValue(text, 'tools')),
         effective: {
           model: fmValue(text, 'model') || 'inherit',
           runtime: fmValue(text, 'runtime') || 'claude',
           effort: fmValue(text, 'effort'),
           boundary_escalation: name === 'reviewer' ? (fmValue(text, 'boundary_escalation') || 'on') : null,
           skills: skillsList(text),
-          tools: toList(fmValue(text, 'tools')),
+          tools: toolsOrNull(fmValue(text, 'tools')),
         },
         override: null,
       });

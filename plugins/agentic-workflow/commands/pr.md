@@ -28,10 +28,13 @@ Report ✅ PASS / ⚠️ WARNING / ❌ BLOCKER for each step.
 7.5 **Queue item named (§4)** — when the project records a §10 **Issue
    tracker**, every PR names its queue item in the DESCRIPTION (that is what
    GitHub's auto-close reads — a bare `#N` mention only links):
-   - the work finishes the item → `Closes #N` in the PR body ONLY (never in a
+   - the work finishes the item → `Closes #N` in the PR body ONLY — one
+     `Closes #N` line PER issue (`Closes #91` / `Closes #92` …): GitHub reads the
+     keyword for the first number only, so `Closes #91, #92` closes #91 alone
+     (gatehouse-asks, 2026-10-07). Never in a
      commit message — a commit's closing keyword fires when it reaches the
      default branch, e.g. at the promote, closing the issue done-or-not; the
-     guardrail hook blocks it, orderly #605);
+     guardrail hook blocks it, orderly #605;
    - it ships part of the item → `Part of #N`, plus a comment on the issue
      saying what remains (never `Closes` — a half-done issue that auto-closes
      is a silent drop);

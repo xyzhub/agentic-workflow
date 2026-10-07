@@ -203,6 +203,8 @@ async function registryGroup(schema) {
   const tk = byName.tinker;
   ok('(f) a project-only agent with no phase falls back to on-demand',
     tk && tk.source === 'project' && tk.phase === 'on-demand', JSON.stringify(tk));
+  ok('(f) an agent file with no tools: line reports tools null (unset), never []',
+    tk && tk.tools === null && tk.effective.tools === null, JSON.stringify(tk));
   ok('(g) an unknown frontmatter phase falls back to on-demand (schema enum holds)',
     byName.zed && byName.zed.phase === 'on-demand', JSON.stringify(byName.zed));
   ok('a plugin agent shadowed by a project file is not duplicated as project-only',
