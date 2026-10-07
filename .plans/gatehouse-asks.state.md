@@ -9,8 +9,8 @@ refresh-trigger: every-ship
 Issue: #91, #92, #93, #94, #95, #96
 Branch: `mission/gatehouse-asks` (cut from main @ eaac7fe) · Version: 1.53.2 → 1.54.0
 
-Estimate: 2 sessions
-Sessions used: 2
+Estimate: 3 sessions
+Sessions used: 3
 
 Gate policy: **human-merge** — after the Fable APPROVE the branch passes the §10
 staging verify (tier-1 lint + plugin load) and the human merges the PR to `main`.
@@ -20,6 +20,7 @@ Standing agent authorized: (none — one-shot reviewer at the checkpoint, §12 L
 ## Checklist
 
 - [x] S1 — all six Gatehouse asks + release hygiene (branch `mission/gatehouse-asks`)
+- [~] S2 — owner follow-ups on PR #112: codex-edits-own-rules warning, `on-demand` phase + project-only agents in registry
 - [~] Checkpoint — phase 1 **Fable** review + staging verify + PR to `main` (human merge) · Fable APPROVE 2026-10-07 06:52 · merge-pending (human)
 
 ## Open questions
@@ -49,6 +50,8 @@ decisions in `.plans/gatehouse-asks.md`)
 
 ## Handoff log (newest first)
 
+- 2026-10-07 07:30 — LOCKED (owner, 2026-10-07): "in the case of codex changing its own rules, just warn. and add the on-demand value". Estimate 2 → 3 (owner-requested follow-up = the scope decision). S2 spawned: (1) run-codex warns in distillate when a run changed `.codex/` paths, and `/tune reviewer boundary-escalation off` prints a warning when the reviewer runtime is codex — no revert/block/forced tier; (2) registry `phase` allows `on-demand` (default when absent) and lists project-only agents from `.claude/agents/` with `source`. Advisories 3–6 stay backlog. Narrow Fable re-review of the S2 delta follows. Sessions used 3/3.
+
 - 2026-10-07 06:58 — Staging verify: lint clean, `claude plugin validate` passed, ci-wait GREEN on ca5c696. PR #112 opened to main (body carries the close keywords for #91–#96) — awaiting human merge. Sessions used 2/2 (on estimate).
 
 - 2026-10-07 06:55 — Checkpoint **APPROVE** (Fable). Scorecard: Security 3 · QA 3 · DX 2 · Architecture 2 · UX n/a · Efficiency n/a. Blocking 1 (false node:crypto sentence, tune.md) fixed by orchestrator + 2 advisories (mission.md duplicate sentence, rebase no-stamp wording); lint clean. Blocking 2 (branch unpushed / CI not run) → push + ci-wait next. Advisory backlog (not looped): codex-runtime reviewer with boundary-escalation off should print a warning about reviewing its own rules file; registry schema `phase`/`override.kind` could be enums; agents-test lacks a `tools`-kind fixture and run-codex-test lacks a failed-path deviation case; dedupe-by-file header could say "project copy"; pre-existing duplicate **Issue tracker** row in templates/WORKFLOW.md §10.
@@ -61,4 +64,4 @@ decisions in `.plans/gatehouse-asks.md`)
 
 (none yet)
 
-Next up: human merges PR #112 → post-merge bookkeeping PR (settle Closing rows, reinstall live-verify)
+Next up: S2 builder result → narrow Fable re-review of delta → push, CI, update PR #112
