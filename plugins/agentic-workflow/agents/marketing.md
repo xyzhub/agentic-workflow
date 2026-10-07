@@ -130,10 +130,13 @@ Two rules govern the kit:
 
 Your assets become posts through the **publish queue**
 (`docs/product/launch/publish-queue.md`), not by your hand on the send button.
-Populate it (via `/agentic-workflow:publish stage`) with `draft` items — channel, scheduled time,
-full body, source asset — for short-form posts and the channel plan; the
-`writer` stages the long-form article lane. Everything you stage waits at
-`draft` until a human (or a delegated §10 Publish policy) approves and fires it.
+Populate it (via `/agentic-workflow:publish stage`) with `draft` rows of `kind: post` — channel,
+scheduled time, full body, source asset — for short-form posts and the channel
+plan; the `writer` stages the long-form article lane. `stage` stamps each body's
+hash (`publish-gate.mjs stamp`); never write the pin columns by hand. An edit
+after approval un-approves the item — that is the design, not a bug. Everything
+you stage waits at `draft` until a human approves it (`publish approve <id>`)
+and a run fires it under a one-time claim token.
 
 ## The boundary (never crossed)
 

@@ -47,8 +47,10 @@ A string with no pattern is a kit gap: add the pattern, then the string.
 - **Long-form** — articles/docs/emails from the content plan, evidence-linked,
   in the owner's voice from the flight plan where one exists. Stage publishable
   articles into the publish queue (`docs/product/launch/publish-queue.md`, §14)
-  as `draft` items for the article channels (dev.to, Medium, Hashnode,
-  own-blog); firing is gated by the §10 Publish policy, never your hand.
+  as `draft` rows of `kind: post` for the article channels (dev.to, Medium,
+  Hashnode, own-blog); `stage` stamps the body hash, and an edit after approval
+  un-approves the item — that is the design, not a bug. Firing is gated by the
+  §10 Publish policy, never your hand.
 
 ## Boundaries
 
