@@ -155,7 +155,7 @@ opts in is unchanged.
 | `/agentic-workflow:verify` | Post-deploy verification on the deployed instance: drive the real flow, confirm monitoring receives, record the result |
 | `/agentic-workflow:settle` | Probe every deferred obligation (`.plans/OBLIGATIONS.md` + mission ledgers' `## Closing`), fire the condition-met safe class — merged-branch and worktree reaping behind the deploy-green gate, never `-D` — surface what a probe can't prove, and refuse to close a mission while `[ ]` rows remain |
 | `/agentic-workflow:operate` | The V6 loop: analyst numbers → ops/marketing/business reviews → one report with a ranked backlog; in a registry repo it sweeps the whole portfolio |
-| `/agentic-workflow:publish` | The §14 publishing pipeline: connect channels, stage posts into the queue (marketing/writer), then fire — human-fired by default, or a scheduled run within a scoped, revocable `may-publish` delegation; paid always human-fired |
+| `/agentic-workflow:publish` | The §14 publishing pipeline: connect channels, stage posts into the queue (marketing/writer), then fire — human-fired by default, or a scheduled run within a scoped, revocable `may-publish` delegation; paid always human-fired. `approve <id>` pins the body hash + epoch, `run` fires only with a one-time claim token, `reconcile <id>` resolves an unknown outcome |
 | `/agentic-workflow:groom` | Keep the queue true: probe every open issue against the tree, close what shipped (quoted evidence), flag stale, re-size, regenerate the backlog view; detects hand-written backlog files (`BACKLOG.md`, `TODO.md`, an item-level roadmap) and imports them into the tracker once — `--from` only overrides the path |
 | `/agentic-workflow:retro` | Turn lessons into protocol amendments, eval scenarios, hook proposals — filed as issues in the queue — via PR like any change |
 
@@ -188,6 +188,7 @@ tools/catalog.mjs           # shipped by the plugin: generate · --check · --ve
 tools/ci-wait.mjs           # shipped by the plugin: CI/deploy verdict for the
                             # diff-bearing commit — exit 0 green / 1 red / 2 timeout /
                             # 3 no-runs / 4 expected-workflow-missing; background-safe
+tools/publish-gate.mjs      # shipped by the plugin: stamp · approve · claim · outcome · reconcile · status
 .plans/                     # one trio per mission + pending-gates
 CHANGELOG.md                # Keep-a-Changelog, chronicler-maintained (history)
 .env.example                # var names for the owner channel etc. (never values)

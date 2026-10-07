@@ -8,6 +8,46 @@ has no tags — each version-stamped commit on `main` IS the release.
 
 _(empty)_
 
+## [1.52.0] — 2026-10-07
+### Added — hash-pinned, claim-token publish approval (§14)
+A publish-queue item now fires only for the exact body the owner approved, and
+only once. Before this, "a change to an approved body resets it to `draft`" was
+prose the run was trusted to follow.
+- **Gate tool** `tools/publish-gate.mjs` (zero-dep, shipped by the plugin):
+  `stamp` (hash every body; drift → epoch +1, `approved` → `draft` with
+  `publish run: REFUSED <id> approved@<h>/e<n>, current <h'>/e<m> -> reset to draft`),
+  `approve <id>` (pins `approved-for: <sha8>@<epoch>`), `claim <id>` (mints a
+  one-time `PUBLISH_CLAIM=<token>` only for an approved, pinned, due,
+  `kind: post` item within policy; refuses outreach, paid without
+  confirmation, not-due, no-pin, double claim, unknown outcome), `dispatch`
+  (re-hashes; an edit after the claim voids the token), `outcome … delivered |
+  unknown`, `reconcile <id> --delivered | --cancel`, `status`, `--selftest`
+  (lint row 10.8, fail-closed). Queue/log writes are temp + rename under a lock.
+- **Hook** `hooks/lib/publish-guard.sh` replaces the inline guardrail, four
+  rules: same file root as the gate tool; paid/ad endpoints (now incl.
+  `api.elevenlabs.io`, `api.x.com`) BLOCK without `PAID_CONFIRMED_BY_HUMAN`; a
+  publish-host call (now incl. SendGrid, Postmark, Resend, Mailgun,
+  ConvertKit, Brevo, `smtp(s)://`, bare mailers) BLOCKS under EVERY policy
+  unless it carries `PUBLISH_CONNECT=` or a dispatched `kind: post` claim; the
+  passing call appends a `fired` event, so a retry under the same token BLOCKS;
+  a token resolving to outreach BLOCKS regardless of policy. Unreadable jsonl
+  fails closed.
+- **Harness**: `tools/hook-test.mjs` gains `runGate` and the publish-approval
+  block — tampered body, stale epoch, double claim, unknown outcome,
+  outreach under delegation, tokenless call under every policy, connect
+  marker, spent/forged/unminted tokens, edit-after-claim (123 → 156 ok).
+- **Schema**: queue gains `kind | body-sha256 | epoch | approved-for | claim`
+  (12 columns); log gains `kind` and `claim`; `publish-claims.jsonl` is the
+  committed event trail. `stamp` migrates an old 7-column queue in place
+  (`kind: post`, `epoch: 1`, state unchanged — an `approved` row without a pin
+  must be re-approved) and is idempotent.
+- **Protocol** (§3 new publish-host row; §14 Prepare/Pin/Claim/Record,
+  **Threat model** — accident and double-fire, not an adversarial agent — and
+  the rewritten backstop); `/agentic-workflow:publish` gains `approve <id>` and
+  `reconcile <id>`; `run` = stamp → claim → dispatch → fire → outcome.
+- **Codex gap named**: inside a Codex run the gate tool's refusal is the only
+  mechanical publish check; a network-on builder role remains OB-17 (#81).
+
 ## [1.51.2] — 2026-10-02
 ### Fixed — closed and never-started missions no longer count as "active"
 Reported from orderly: every prompt printed the status line of a mission CLOSED

@@ -33,7 +33,7 @@ plugins/agentic-workflow/            # the plugin
   commands/  welcome, brainstorm, bootstrap, adopt, autopilot, plan, mission, counsel, audit, release, verify, settle, groom, operate, publish, sync, ingest, next, doctor, tune, connect, start, check, pr, end, fix, retro, handoff
   hooks/     hooks.json               # guardrails
   skills/    protocol/                # the entry-point skill
-  tools/     run-codex.mjs            # run a role on the Codex CLI (second runtime); catalog.mjs, ci-wait.mjs, conform.mjs
+  tools/     run-codex.mjs            # run a role on the Codex CLI (second runtime); catalog.mjs, ci-wait.mjs, conform.mjs, publish-gate.mjs
   templates/ WORKFLOW.md, overview.html, idea.md, prd.md, ux-brief.md, architecture.md, interface-contract.md, flight-plan.md, decision-log.md, decision-memo.md, mission-*.md (plan, sessions, state), agents-md.md, codex.rules, distillate.schema.json, registry.md, launch-*.md (plan, positioning, landing-page, announcement, content-plan), publish-queue.md, publish-log.md, session-handoff.md, business-*.md (executive-summary, model, pricing)
   README.md
 ```
