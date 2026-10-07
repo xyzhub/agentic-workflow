@@ -976,7 +976,6 @@ concrete values.
 | **Portfolio** (§13, optional) | _(path or remote of the registry repo this venture is registered in; `none` if standalone)_ |
 | **Catalog** | _(`docs/product/catalog/` — the default: derived `api.md` + `data-model.md` via `tools/catalog.mjs`, curated `features.md` (§6.1). `none — <why>` ONLY for a repo with nothing to derive and no marketable surface (a markdown-only plugin, a pure library); the conform ladder then skips the catalog gaps)_ |
 | **Issue tracker** | _(the queue's system of record — e.g. `GitHub Issues via gh`; `/agentic-workflow:groom` probes it, `/agentic-workflow:next` reads it, `/agentic-workflow:mission`/`fix` close items on merge. `none` → the markdown backlog is groomed in place and adopting a tracker is recommended)_ |
-| **Issue tracker** | _(e.g. GitHub Issues via `gh`)_ |
 
 ### 10.1 Executors (optional)
 

@@ -25,8 +25,9 @@ node ${CLAUDE_PLUGIN_ROOT}/tools/agents.mjs --json --project .
 One row per agent: **agent · source · phase · model · runtime · effort · skills ·
 override kinds · base version** — `source` is `plugin` or `project` (a
 `.claude/agents` file shadowing no plugin agent, listed too), `phase` is the
-lifecycle phase or `on-demand` when no phase maps the role, `model`/`runtime`/
-`effort`/`skills` from each agent's `effective`, `override kinds` from
+lifecycle phase (an agent file's own `phase:` frontmatter wins when it is a
+valid value; otherwise the plugin's map, else `on-demand`), `model`/`runtime`/
+`effort`/`skills`/`tools` from each agent's `effective`, `override kinds` from
 `override.kind` (`—` when `override` is null; always `—` for a project-only
 agent), `base version` from `override.base_version`. Close with the one-liners:
 

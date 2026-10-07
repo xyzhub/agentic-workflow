@@ -269,7 +269,8 @@ export function assemblePrompt(o) {
   const { found, missing } = resolveSkills(roleText, o.cwd);
   for (const s of found) {
     if (namedFiles.has(s.file)) continue;
-    blocks.push(`# Skill: ${s.name} (preloaded — listed in skills:)\n\n${stripFrontmatter(readFileSync(s.file, 'utf8'))}`);
+    const copy = s.origin === 'plugin' ? '' : `, ${s.origin} copy`;
+    blocks.push(`# Skill: ${s.name} (preloaded — listed in skills:${copy})\n\n${stripFrontmatter(readFileSync(s.file, 'utf8'))}`);
   }
   blocks.push(`# Your brief\n\n${briefText(o.brief, o.cwd)}`);
   blocks.push(`# Return contract\n\n${RETURN_CONTRACT(SCHEMA_PATH)}`);

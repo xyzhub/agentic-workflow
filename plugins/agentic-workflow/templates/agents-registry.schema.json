@@ -28,13 +28,14 @@
             "description": "The settings a project override resolves to; equals the defaults when there is no override.",
             "type": "object",
             "additionalProperties": false,
-            "required": ["model", "runtime", "effort", "boundary_escalation", "skills"],
+            "required": ["model", "runtime", "effort", "boundary_escalation", "skills", "tools"],
             "properties": {
               "model": { "description": "The resolved model; the literal 'inherit' is kept (no session to resolve it).", "type": "string" },
               "runtime": { "description": "'claude' by default, else the override's runtime value.", "type": "string" },
               "effort": { "description": "The resolved effort, or null when unset.", "type": ["string", "null"] },
               "boundary_escalation": { "description": "'on' for reviewer by default, null for every other agent.", "type": ["string", "null"] },
-              "skills": { "type": "array", "items": { "type": "string" } }
+              "skills": { "type": "array", "items": { "type": "string" } },
+              "tools": { "description": "The tools list the agent actually runs with (the override's tools: when set, else the plugin default). On codex it also sets the sandbox: Write/Edit → workspace-write.", "type": "array", "items": { "type": "string" } }
             }
           },
           "override": {

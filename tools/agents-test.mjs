@@ -147,6 +147,11 @@ async function registryGroup(schema) {
     banner: `> Tuned from agentic-workflow v${version} (base sha256:${sha12(path.join(BASE_DIR, 'reviewer.md'))}) — boundary-escalation override (off). Reset with /tune reviewer reset.`,
   }));
 
+  // (h) bannered tools tune on designer → kind is exactly ["tools"].
+  writeFileSync(path.join(ad, 'designer.md'), shadow('designer', {
+    banner: `> Tuned from agentic-workflow v${version} (base sha256:${sha12(path.join(BASE_DIR, 'designer.md'))}) — tools override. Reset with /tune designer reset.`,
+  }).replace(/^tools: .*$/m, 'tools: Read, Grep, Glob'));
+
   // Project-only agents: .claude/agents files that shadow no plugin agent.
   // (e) carries its own phase: ; (f) has none → on-demand.
   writeFileSync(path.join(ad, 'scout.md'),
@@ -180,6 +185,12 @@ async function registryGroup(schema) {
   ok('(d) effective reflects the tuned skills', JSON.stringify(rv.effective.skills) === JSON.stringify(['stripe-testing']));
   ok('(d) override.kind includes boundary_escalation and skills',
     rv.override.kind.includes('boundary_escalation') && rv.override.kind.includes('skills'), JSON.stringify(rv.override));
+
+  const dz = byName.designer;
+  ok('(h) a tools tune → kind ["tools"], effective.tools is the tuned list, tools stays the default',
+    JSON.stringify(dz.override?.kind) === JSON.stringify(['tools'])
+    && JSON.stringify(dz.effective.tools) === JSON.stringify(['Read', 'Grep', 'Glob'])
+    && dz.tools.includes('Write'), JSON.stringify(dz));
 
   ok('every plugin agent carries source "plugin"',
     clean.agents.every((a) => a.source === 'plugin'));

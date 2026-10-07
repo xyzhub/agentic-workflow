@@ -55,6 +55,11 @@ _(empty)_
   `project`), lists `.claude/agents` files that shadow no plugin agent, and uses
   an `on-demand` phase (a frontmatter `phase:` wins) where no lifecycle phase maps
   the role; `/tune`'s no-arg table and `agents-registry.schema.json` follow.
+- **`effective.tools` in the registry.** A tools tune now shows the tools list the
+  agent actually runs with (`tools` stays the plugin default). A preloaded skill
+  from the project or personal folder is labelled `project copy` / `personal copy`,
+  so it can be told apart from a same-named plugin skill. The template's duplicate
+  §10 **Issue tracker** row is removed.
 
 ### Fixed
 - **The codex adapter now honours the role's `skills:` frontmatter (#95).**

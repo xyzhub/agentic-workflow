@@ -9,8 +9,8 @@ refresh-trigger: every-ship
 Issue: #91, #92, #93, #94, #95, #96
 Branch: `mission/gatehouse-asks` (cut from main @ eaac7fe) · Version: 1.53.2 → 1.54.0
 
-Estimate: 3 sessions
-Sessions used: 3
+Estimate: 4 sessions
+Sessions used: 4
 
 Gate policy: **human-merge** — after the Fable APPROVE the branch passes the §10
 staging verify (tier-1 lint + plugin load) and the human merges the PR to `main`.
@@ -49,6 +49,8 @@ decisions in `.plans/gatehouse-asks.md`)
 - S1: missing-skill deviations attach to the done + failed distillate paths only, not the two blocked (binary/auth) paths.
 
 ## Handoff log (newest first)
+
+- 2026-10-07 08:45 — LOCKED (owner, 2026-10-07): "also do items 3–6". Estimate 3 → 4. S3 (orchestrator, small): (3) agents-test tools-kind fixture — surfaced a real gap: a tools tune was not visible in the registry, so `effective.tools` added (code + schema + tune.md); (4) failed-path test for missing-skill + .codex/ warning deviations; (5) a non-plugin skill copy is labelled `, project copy` / `, personal copy` in its preloaded header (+ same-name test); (6) duplicate **Issue tracker** row removed from templates/WORKFLOW.md §10; plus advisory: tune.md documents frontmatter `phase:`. Gates: lint clean, run-codex-test 177, agents-test 26. No re-review: test-only + label/doc changes, plus an additive schema field (owner steer: conserve tokens). Sessions used 4/4.
 
 - 2026-10-07 07:40 — S2 re-review (Fable, narrow): REQUEST CHANGES, 1 blocking (unvalidated frontmatter `phase:` violated schema enum). Fixed by orchestrator exactly as prescribed (validPhase set + harness case g; agents-test 25, lint clean) — no corrective session, no further re-review (owner steer: conserve tokens). Advisory backlog: failed-path codex warning unasserted; tune.md doesn't document `phase:` as an input.
 

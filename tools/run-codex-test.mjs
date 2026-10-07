@@ -26,7 +26,7 @@
 // the resume path — that flag would switch the guardrail rules off.
 
 import {
-  readFileSync, writeFileSync, existsSync, mkdirSync, mkdtempSync, chmodSync, realpathSync,
+  readFileSync, writeFileSync, existsSync, mkdirSync, mkdtempSync, chmodSync, realpathSync, rmSync,
 } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
@@ -665,7 +665,7 @@ async function skillsGroup() {
   const run1 = runAdapter(['--role', 'backend', '--brief', 'x'], { repo: proj, env: { HOME: home } });
   const p1 = run1.record.argv[run1.record.argv.length - 1];
   ok('a skills: entry is inlined as a preloaded block',
-    p1.includes('# Skill: houserule (preloaded — listed in skills:)') && p1.includes('HOUSE RULE SKILL BODY.'), p1.slice(0, 80));
+    p1.includes('# Skill: houserule (preloaded — listed in skills:, project copy)') && p1.includes('HOUSE RULE SKILL BODY.'), p1.slice(0, 80));
 
   // Dedupe: a backticked skill the body names AND lists in skills: appears once.
   const dedupeRole = '---\nname: backend\nskills: [agentic-workflow:protocol]\n---\n\nbody that names `protocol` in backticks.\n';
@@ -683,6 +683,31 @@ async function skillsGroup() {
   ok('a missing skills: entry is reported in the distillate deviations',
     run3.out?.deviations.includes('skill "nosuchskill" listed in skills: not found (searched project, personal, plugin)'),
     JSON.stringify(run3.out?.deviations));
+
+  // The same deviations ride the FAILED distillate too: a missing skill and a
+  // .codex/ self-edit are both reported when the run's last message is not JSON.
+  const run4 = runAdapter(['--role', 'backend', '--brief', 'x'], { repo: proj, env: { HOME: home },
+    spec: { lastMessage: 'not json', writes: { '.codex/rules/agentic-workflow.rules': '# tampered\n' } } });
+  ok('a failed run still reports the missing skill and the .codex/ self-edit warning',
+    run4.status === 1 && run4.out?.status === 'failed'
+    && run4.out.deviations.some((d) => d.startsWith('skill "nosuchskill"'))
+    && run4.out.deviations.some((d) => d.startsWith('warning:') && d.includes('.codex')),
+    JSON.stringify(run4.out?.deviations));
+
+  // A project skill sharing a plugin skill's name is labelled as the project copy,
+  // so the two same-named blocks can be told apart.
+  mkdirSync(path.join(proj, '.claude/skills/protocol'), { recursive: true });
+  writeFileSync(path.join(proj, '.claude/skills/protocol/SKILL.md'), '---\nname: protocol\n---\n\nPROJECT PROTOCOL BODY.\n');
+  writeFileSync(path.join(proj, '.claude/agents/backend.md'),
+    '---\nname: backend\nskills: [protocol]\n---\n\nbody that names `protocol` in backticks.\n');
+  const run5 = runAdapter(['--role', 'backend', '--brief', 'x'], { repo: proj, env: { HOME: home } });
+  const p5 = run5.record.argv[run5.record.argv.length - 1];
+  ok('a same-named project skill is labelled "project copy" beside the plugin one',
+    p5.includes('# Skill: protocol (inlined — your role prompt names it)')
+    && p5.includes('# Skill: protocol (preloaded — listed in skills:, project copy)')
+    && p5.includes('PROJECT PROTOCOL BODY.'), p5.match(/# Skill:[^\n]*/g)?.join(' | '));
+  rmSync(path.join(proj, '.claude/skills/protocol'), { recursive: true, force: true });
+  writeFileSync(path.join(proj, '.claude/agents/backend.md'), missRole);
 
   // --effort accepts the widened levels (#94 pass-through).
   const hiEffort = runAdapter(['--role', 'backend', '--brief', 'x', '--effort', 'xhigh'], { repo: proj, env: { HOME: home } });

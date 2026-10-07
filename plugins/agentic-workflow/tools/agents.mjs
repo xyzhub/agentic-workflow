@@ -22,7 +22,7 @@ const USAGE = `agents.mjs — the machine-readable agent registry.
   node agents.mjs --help
 
 Prints { plugin_version, agents: [ { name, source, description, summary, phase,
-model, tools, effective:{model, runtime, effort, boundary_escalation, skills},
+model, tools, effective:{model, runtime, effort, boundary_escalation, skills, tools},
 override: null | {path, kind[], base_version, base_sha} } ] }, validated by
 templates/agents-registry.schema.json. source is 'plugin' or 'project' (a
 .claude/agents file that shadows nothing); phase is on-demand when no lifecycle
@@ -132,6 +132,7 @@ export function registry(projectDir = process.cwd()) {
       effort: fmValue(src, 'effort'),
       boundary_escalation: name === 'reviewer' ? (fmValue(src, 'boundary_escalation') || 'on') : null,
       skills: skillsList(src),
+      tools: hasShadow ? toList(fmValue(src, 'tools')) : baseTools,
     };
 
     let override = null;
@@ -184,6 +185,7 @@ export function registry(projectDir = process.cwd()) {
           effort: fmValue(text, 'effort'),
           boundary_escalation: name === 'reviewer' ? (fmValue(text, 'boundary_escalation') || 'on') : null,
           skills: skillsList(text),
+          tools: toList(fmValue(text, 'tools')),
         },
         override: null,
       });
