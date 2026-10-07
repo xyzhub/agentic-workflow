@@ -53,6 +53,10 @@ incidents, any stage transition). It updates CHANGELOG.md, docs/product/JOURNEY.
 and docs/product/overview.html — then **republish the status page** via the
 Artifact tool to the URL in its `artifact-url` comment.
 
+Post-merge (the feature PR already merged): brief the chronicler record-only —
+JOURNEY + overview; CHANGELOG.md is not a record path and shipped in the
+feature PR.
+
 ## 5. Docs & issue
 
 - Conventions file / architecture docs updated if behavior/config changed —
@@ -81,7 +85,16 @@ git push -u origin <branch>   # includes the ledger — the push is what makes
 ```
 
 Run `/agentic-workflow:pr` before opening the PR (no remote yet → it says so; skip the
-push). **Never merge the default branch** — that's the human owner's act.
+push). **Never merge beyond the §10 scope** — a feature PR is the human owner's act.
+
+On the default branch with only record paths changed (`.plans/**`,
+`docs/product/JOURNEY.md`, `docs/product/overview.html`,
+`docs/product/session-handoff.md`): never commit there — use the active
+mission's `chore/<mission>-bookkeeping` (reuse its open PR) or
+`chore/bookkeeping-<YYYY-MM-DD>`; commit, push, open-or-reuse ONE PR; then,
+under `agent-may-merge (records-only, …)`, `node tools/ci-wait.mjs <sha>` →
+merge it by number with `--squash --delete-branch --match-head-commit <head
+sha>` (hook BLOCK → leave it, report).
 
 ## Output
 

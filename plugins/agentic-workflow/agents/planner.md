@@ -58,6 +58,27 @@ open questions, empty deviations + handoff logs, `Next up: S1` — **exactly one
 such line** — and the two budget lines in the header: `Estimate: N sessions`
 and `Sessions used: 0`.
 
+## Classify every Closing row
+
+Every `## Closing` row ends its source parens with a marker:
+`(<source>, pre-merge)` or `(<source>, post-merge)` — lint rejects any other
+merge-shaped tag, and a row with no marker is legacy, read as post-merge.
+
+- **pre-merge** — its `when:` is observable on the branch (a grep, a diff, a
+  gate), never the merge, a deploy or a reinstall. It fires on the phase branch
+  before the checkpoint, the reviewer re-verifies it, and it rides the feature
+  PR. The template seeds `version bumped + stamped` and `docs/record synced`
+  this way.
+- **post-merge** — anything that waits on the merge, a deploy or a reinstall
+  (the template seeds `branch + worktree cleanup` and `live-verify after
+  reinstall`). It fires at a later `/agentic-workflow:settle` from the
+  mission's ONE `chore/<mission>-bookkeeping` branch and PR.
+
+A mission closes in two PRs: the feature PR the human merges, and one
+bookkeeping PR the agent may merge under the §10 `records-only` scope (every
+changed path a record path; the hook enforces it). Write the Closing block so
+the close needs no third PR.
+
 ## Estimate honestly, default to one session
 
 The mission-budget hook reads `Estimate:` every turn and stops the orchestrator
