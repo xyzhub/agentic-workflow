@@ -21,7 +21,7 @@ Standing agent authorized: (none — one-shot reviewer at the checkpoint, §12 L
 
 - [x] S1 — all six Gatehouse asks + release hygiene (branch `mission/gatehouse-asks`)
 - [x] S2 — owner follow-ups on PR #112: codex-edits-own-rules warning, `on-demand` phase + project-only agents in registry
-- [~] Checkpoint — phase 1 **Fable** review + staging verify + PR to `main` (human merge) · Fable APPROVE 2026-10-07 06:52 · merge-pending (human)
+- [x] Checkpoint — phase 1 **Fable** review + staging verify + PR to `main` (human merge) · Fable APPROVE 2026-10-07 06:52 · merge-pending (human)
 
 ## Open questions
 
@@ -50,6 +50,8 @@ decisions in `.plans/gatehouse-asks.md`)
 
 ## Handoff log (newest first)
 
+- 2026-10-07 07:40 — S2 re-review (Fable, narrow): REQUEST CHANGES, 1 blocking (unvalidated frontmatter `phase:` violated schema enum). Fixed by orchestrator exactly as prescribed (validPhase set + harness case g; agents-test 25, lint clean) — no corrective session, no further re-review (owner steer: conserve tokens). Advisory backlog: failed-path codex warning unasserted; tune.md doesn't document `phase:` as an input.
+
 - 2026-10-07 07:36 — S2 DONE, committed 758b01f (7 files, +123/−12). Gates: lint clean; run-codex-test 175; agents-test 24. Narrow Fable re-review spawned on d5311a2..758b01f (resumed checkpoint reviewer).
 
 - 2026-10-07 07:30 — LOCKED (owner, 2026-10-07): "in the case of codex changing its own rules, just warn. and add the on-demand value". Estimate 2 → 3 (owner-requested follow-up = the scope decision). S2 spawned: (1) run-codex warns in distillate when a run changed `.codex/` paths, and `/tune reviewer boundary-escalation off` prints a warning when the reviewer runtime is codex — no revert/block/forced tier; (2) registry `phase` allows `on-demand` (default when absent) and lists project-only agents from `.claude/agents/` with `source`. Advisories 3–6 stay backlog. Narrow Fable re-review of the S2 delta follows. Sessions used 3/3.
@@ -66,4 +68,4 @@ decisions in `.plans/gatehouse-asks.md`)
 
 (none yet)
 
-Next up: S2 builder result → narrow Fable re-review of delta → push, CI, update PR #112
+Next up: human merges PR #112 → post-merge bookkeeping PR (settle Closing rows, reinstall live-verify)
