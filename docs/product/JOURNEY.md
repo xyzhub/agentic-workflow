@@ -16,6 +16,16 @@ grades the protocol's own behavior the way a QA team would.
 
 ---
 
+## 2026-10-07 — six owner asks shipped together as v1.54.0
+
+Gatehouse asks, issues #91 to #96, landed in version 1.54.0 through PR #112, which the owner merged. Each agent can now be tuned on its own: skills, effort level, tools and prompt, with commands to stamp, compare, rebase and reset a tune. The reviewer can be told to stop escalating boundary questions. A machine-readable registry lists every agent, including project-only ones and an on-demand phase. Codex runs get skills inlined and a warning when a run changes Codex's own rules. A fleet of executors rounds it out.
+
+It took four sessions against a plan of two. The owner asked for two follow-ups mid-mission, and each counted as a session. The checkpoint review caught one false sentence in the docs and the later narrow re-review one unchecked setting; both were fixed without extra builder sessions.
+
+Lesson: writing a comma list of issues after one closing keyword closes only the first issue. The fix, version 1.54.1, is in PR #114 and awaits the owner. Issue #113 is filed too: the commit guard reads the whole command rather than just the message, and wrongly blocked clean commits twice.
+
+---
+
 ## 2026-10-07 — a mission now closes in two PRs, and the agent merges the second
 
 The publish-approval mission needed four PRs to close: the feature, then three separate bookkeeping PRs, each waiting on the owner. The owner asked why, and chose all three fixes. Version 1.53.0 makes a mission close in at most two PRs. The owner merges the feature PR. Then one bookkeeping PR carries the ledger, the journey log, the status page and the handoff note, and the agent may merge that one itself.
