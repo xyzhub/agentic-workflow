@@ -40,6 +40,10 @@ const PHASE = {
   ops: 'operate', analyst: 'operate', compass: 'operate',
 };
 
+// Allowed phase values (schema enum); an unknown frontmatter phase: falls back.
+const PHASES = new Set([...Object.values(PHASE), 'on-demand']);
+const validPhase = (v) => (PHASES.has(v) ? v : null);
+
 // The banner every /tune writes (old form has no `(base sha256:…)`).
 const BANNER_RE = /^> Tuned from agentic-workflow v(\S+?)(?: \(base sha256:([0-9a-f]{12})\))? —/m;
 
@@ -148,7 +152,7 @@ export function registry(projectDir = process.cwd()) {
       summary: summaryOf(baseDescription),
       // A frontmatter `phase:` (base or shadow) wins; else the fixed map; else
       // on-demand (a role no lifecycle phase spawns on a schedule).
-      phase: fmValue(src, 'phase') || PHASE[name] || 'on-demand',
+      phase: validPhase(fmValue(src, 'phase')) || PHASE[name] || 'on-demand',
       model: baseModel,
       tools: baseTools,
       effective,
@@ -171,7 +175,7 @@ export function registry(projectDir = process.cwd()) {
         source: 'project',
         description,
         summary: summaryOf(description),
-        phase: fmValue(text, 'phase') || 'on-demand',
+        phase: validPhase(fmValue(text, 'phase')) || 'on-demand',
         model: fmValue(text, 'model') || 'inherit',
         tools: toList(fmValue(text, 'tools')),
         effective: {

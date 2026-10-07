@@ -153,6 +153,8 @@ async function registryGroup(schema) {
     '---\nname: scout\ndescription: Recon agent for the repo. Runs ad hoc.\nmodel: claude-opus-4-8\ntools: Read, Grep\nruntime: codex\neffort: high\nphase: discover\nskills: [plain-report]\n---\n\nScout body.\n');
   writeFileSync(path.join(ad, 'tinker.md'),
     '---\nname: tinker\ndescription: On-demand helper.\n---\n\nTinker body.\n');
+  writeFileSync(path.join(ad, 'zed.md'),
+    '---\nname: zed\ndescription: Bad phase.\nphase: bogus\n---\n\nZed body.\n');
 
   const reg = registry(proj);
   const byName = Object.fromEntries(reg.agents.map((a) => [a.name, a]));
@@ -190,6 +192,8 @@ async function registryGroup(schema) {
   const tk = byName.tinker;
   ok('(f) a project-only agent with no phase falls back to on-demand',
     tk && tk.source === 'project' && tk.phase === 'on-demand', JSON.stringify(tk));
+  ok('(g) an unknown frontmatter phase falls back to on-demand (schema enum holds)',
+    byName.zed && byName.zed.phase === 'on-demand', JSON.stringify(byName.zed));
   ok('a plugin agent shadowed by a project file is not duplicated as project-only',
     reg.agents.filter((a) => a.name === 'backend').length === 1
     && byName.backend.source === 'plugin');
