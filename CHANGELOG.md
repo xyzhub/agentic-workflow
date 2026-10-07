@@ -8,6 +8,17 @@ has no tags — each version-stamped commit on `main` IS the release.
 
 _(empty)_
 
+## [1.54.1] — 2026-10-07
+### Fixed
+- **One closing keyword per issue.** `/pr`, `/mission` and `/end` now tell agents
+  to write a separate `Closes #N` line for each issue — GitHub reads a closing
+  keyword for the first number only, so a comma list after one keyword closed
+  only the first issue (seen on PR #112; the other five were closed by hand).
+- **Registry: an agent file with no `tools:` line reports `tools: null`**
+  (unset — all tools on claude, read-only on codex), not `[]`, in both `tools`
+  and `effective.tools`. The registry schema now states its versioning rule:
+  any added, removed or retyped field ships as a minor bump with a CHANGELOG line.
+
 ## [1.54.0] — 2026-10-07
 ### Added — the Gatehouse asks: every agent setting is a first-class, tunable, machine-readable shadow
 - **Reviewer boundary-escalation is a per-project tune (#91).** `tune reviewer

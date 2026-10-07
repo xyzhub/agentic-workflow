@@ -90,7 +90,8 @@ needs DEFINING — scope, journeys, shape decisions — `/agentic-workflow:plan`
 the interview-driven front door that ends here with everything locked.) It
 explores once and writes the trio, including `Estimate:` and `Sessions used: 0`
 in the ledger header — and `Issue: #N` when the goal names a queue item (§4);
-the PR body then carries `Closes #N` so the merge closes it, and the reviewer
+the PR body then carries one `Closes #N` line per issue (GitHub closes only
+the first number after a keyword, so never `Closes #91, #92`) so the merge closes them, and the reviewer
 reads the issue as the acceptance criteria.
 
 **Plan-judge (automatic, before any brief spends a session).** As soon as the

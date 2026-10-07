@@ -69,7 +69,7 @@ feature PR.
   chronicler in step 4 does the rows; you confirm it happened). The next
   session builds on this, not on the CHANGELOG.
 - If the work maps to a tracked issue, comment progress or link the PR
-  (`Closes #N` in the PR body when it finishes the item). When §10 records an
+  (`Closes #N` in the PR body when it finishes the item — one line per issue). When §10 records an
   Issue tracker and this session's work maps to nothing in the queue, file the
   issue now (`gh issue create`) so the queue stays the one place work waits (§4)
   — hand-off notes are not a backlog.
