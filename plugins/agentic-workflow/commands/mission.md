@@ -80,8 +80,7 @@ defects; three merges and a gate went unrecorded and a compaction erased them.
    two-line auth diff still gets Fable (orderly #605→#730) — unless the
    project's `.claude/agents/reviewer.md` carries `boundary_escalation: off`
    (#91), in which case the tuned reviewer takes boundary diffs and flags a
-   miscalled tier as a process finding. The reviewer flags a miscalled tier as
-   a process finding.
+   miscalled tier as a process finding.
 
 ## 1. Plan (if no trio exists)
 

@@ -20,7 +20,7 @@ Standing agent authorized: (none — one-shot reviewer at the checkpoint, §12 L
 ## Checklist
 
 - [x] S1 — all six Gatehouse asks + release hygiene (branch `mission/gatehouse-asks`)
-- [~] Checkpoint — phase 1 **Fable** review + staging verify + PR to `main` (human merge) · Fable reviewer spawned 2026-10-07 06:49 on 2a6581d..55e4175
+- [~] Checkpoint — phase 1 **Fable** review + staging verify + PR to `main` (human merge) · Fable APPROVE 2026-10-07 06:52 · merge-pending (human)
 
 ## Open questions
 
@@ -43,9 +43,13 @@ decisions in `.plans/gatehouse-asks.md`)
 
 ## Deviations
 
-(none)
+- S1: `agents.mjs` reports `override.base_sha` by parsing the banner stamp, not hashing live (locked decision said node:crypto) — ruled correct by the Fable checkpoint 2026-10-07 (the field is the base the shadow was cut from); tune.md sentence corrected.
+- S1: `assemblePrompt` has one caller in `main`, not two as the brief said.
+- S1: missing-skill deviations attach to the done + failed distillate paths only, not the two blocked (binary/auth) paths.
 
 ## Handoff log (newest first)
+
+- 2026-10-07 06:55 — Checkpoint **APPROVE** (Fable). Scorecard: Security 3 · QA 3 · DX 2 · Architecture 2 · UX n/a · Efficiency n/a. Blocking 1 (false node:crypto sentence, tune.md) fixed by orchestrator + 2 advisories (mission.md duplicate sentence, rebase no-stamp wording); lint clean. Blocking 2 (branch unpushed / CI not run) → push + ci-wait next. Advisory backlog (not looped): codex-runtime reviewer with boundary-escalation off should print a warning about reviewing its own rules file; registry schema `phase`/`override.kind` could be enums; agents-test lacks a `tools`-kind fixture and run-codex-test lacks a failed-path deviation case; dedupe-by-file header could say "project copy"; pre-existing duplicate **Issue tracker** row in templates/WORKFLOW.md §10.
 
 - 2026-10-07 06:49 — S1 DONE, committed 55e4175 (16 files, +989/−90). Gates: lint clean; run-codex-test 172 cases clean; agents-test 19 cases clean; agents.mjs --json → 1.54.0, 20 agents. Builder deviations: agents.mjs parses base_sha from banner (no live hash); one assemblePrompt caller not two; skill deviations on done+failed paths only. Checkpoint: Fable reviewer spawned on 2a6581d..55e4175. Sessions used 2/2.
 
@@ -55,4 +59,4 @@ decisions in `.plans/gatehouse-asks.md`)
 
 (none yet)
 
-Next up: Checkpoint — Fable review verdict on 2a6581d..55e4175
+Next up: push → ci-wait green → plugin-load check → PR to main (human merge)

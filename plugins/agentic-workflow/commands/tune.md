@@ -57,8 +57,8 @@ null), `base version` from `override.base_version`. Close with the one-liners:
    shasum -a 256 ${CLAUDE_PLUGIN_ROOT}/agents/<agent>.md | cut -c1-12
    ```
 
-   (The registry tool hashes the same bytes with `node:crypto`, so the stamp
-   and `override.base_sha` agree.) `<kind>` names what changed (`model`,
+   (`override.base_sha` in the registry is this stamp read back from the
+   banner; `rebase` re-hashes the cached old base and compares.) `<kind>` names what changed (`model`,
    `runtime`, `effort`, `boundary-escalation`, `tools`, `skills`, `prompt`);
    when several compose, list them. Pre-1.54 shadows whose banner has no
    `(base sha256:…)` stay valid — `reset` still deletes them and the registry
@@ -176,7 +176,8 @@ Three-way merge the project's edits onto the CURRENT plugin base:
   but ONLY when its `shasum -a 256 … | cut -c1-12` matches the banner's
   `base sha256:` stamp. If the sibling is absent or its hash does not match,
   report "old base unavailable" and print `diff` for a manual merge — never
-  guess;
+  guess. A pre-1.54 shadow has no stamp, so its old base is always
+  unavailable: manual merge via `diff`;
 - **new base** = `${CLAUDE_PLUGIN_ROOT}/agents/<agent>.md`;
 - merge: `git merge-file -p .claude/agents/<agent>.md <old base> <new base>`.
   On a clean merge (exit 0) write the result back and re-stamp the banner to the
