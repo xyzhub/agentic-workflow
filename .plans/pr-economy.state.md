@@ -12,10 +12,10 @@ fresh agent resumes the mission from this file alone. Write-ahead — update it
 orchestrator has no session boundary to force a write; a compaction erases
 everything since the last one — §12 LA-6)._
 
-Status: planned
+Status: active
 
 Estimate: 1 session
-Sessions used: 0
+Sessions used: 1
 
 _The two budget lines above are read by the mission-budget hook every turn. The
 planner writes `Estimate:` (1 = one brief S1 + one one-shot Fable review at the
@@ -67,7 +67,7 @@ touched.
 _Glyphs: `[ ]` not started · `[~]` in-flight / deferred / awaiting owner · `[x]`
 done (verified, not merely written)._
 
-- [ ] S1 — lib hook `hooks/lib/merge-guard.sh` + hooks.json row (inline row loses its merge case), ≥ 42 harness cases (allow + every block path incl. template placeholder cell, `-R`/`--repo`, URL ref, compound commands, RENAMED/COPIED, 100 files, `gh api`; gh stubbed via a PATH-only `bin/`), lint marker rule, ledger template + planner prompt classify Closing rows, `mission`/`settle`/`end`/chronicler one-bookkeeping-PR flow, WORKFLOW §3/§4/§5/§10/§11 both copies (this repo's §10 → `records-only`; §13 untouched), record 1.53.0 (plugin.json, CHANGELOG, plugin README, stamp), pre-merge probe evidence reported; the builder runs no merge command (branch `mission/pr-economy`; builder `security`)
+- [~] S1 — lib hook `hooks/lib/merge-guard.sh` + hooks.json row (inline row loses its merge case), ≥ 42 harness cases (allow + every block path incl. template placeholder cell, `-R`/`--repo`, URL ref, compound commands, RENAMED/COPIED, 100 files, `gh api`; gh stubbed via a PATH-only `bin/`), lint marker rule, ledger template + planner prompt classify Closing rows, `mission`/`settle`/`end`/chronicler one-bookkeeping-PR flow, WORKFLOW §3/§4/§5/§10/§11 both copies (this repo's §10 → `records-only`; §13 untouched), record 1.53.0 (plugin.json, CHANGELOG, plugin README, stamp), pre-merge probe evidence reported; the builder runs no merge command (branch `mission/pr-economy`; builder `security`)
 - [ ] Checkpoint ckpt-p1 — pre-merge Closing pass first (orchestrator ticks the two pre-merge rows from S1's evidence), then ONE fresh `reviewer` on **Fable** over `49fb2e7..mission/pr-economy` (security boundary), then lint + `claude --plugin-dir` load → one PR to `main`, human merges
 
 ## Open questions
@@ -117,7 +117,8 @@ Deviating is allowed; deviating silently is not (§4)._
 _≤10 lines per entry: what this session did, the verify signal, the branch, and
 what the next session needs. Newest on top; crash-safe by write-ahead._
 
+- 2026-10-07 orchestrator: plan-judge (Fable) REVISE with 7 blocking findings (unanchored policy match, cross-repo ref, compound commands, renames, harness stderr, verify blocked by installed hook, 3rd-PR Closing rows); planner revised once and added owner decision L4 (records-only name, registry untouched); re-judge APPROVE, no new blocking. Advisory for S1: (a) add `cat` to the hook externals line or check externals ⊆ BIN_LIST; (b) verify the hooks.json row by piping `sed -n 55p` into the grep; (c) CHANGELOG must name 1.53.0 exactly once. Mission started, gate policy human-merge, Sessions used 1/1, S1 spawned to `security`.
 - 2026-10-07 planner (revision 1): plan-judge REVISE + owner L4 folded in. Scope renamed `agent-may-merge (records-only, delegated <date>)`; the registry's `(bookkeeping, …)` row stays full delegation, no registry edit, §13 untouched, OQ1 gone. Hook: anchored §10 cell match (template placeholder = harness BLOCK), numeric refs only, `-R`/`--repo`, compound tails, multiple merges, `--auto`, `gh api pulls/N/merge`, RENAMED/COPIED, ≥100 files all BLOCK; gh stderr not redirected (stub marker); harness `bin/` mirrors the hook's `# externals:` line. Builder never runs or types the literal merge command (`'gh pr merg[e]'` for greps). Closing: registry row removed; live-verify = dry invocation + 999999 BLOCK; two-PR row keyed on `--state all` (one MERGED, one OPEN). Target hook-test ≥ 198 ok. Nothing built.
 - 2026-10-07 planner: trio authored on `mission/pr-economy` (cut from `main` 49fb2e7). Nothing built. Baseline `node tools/hook-test.mjs` = 156 ok, clean; `node tools/lint.mjs` clean. L2 marker chosen `(<source>, pre-merge|post-merge)` — grammar-valid today (this ledger lints under the current rules). L3 allowlist = owner's four exact paths; policy read from `origin/<default>`. S1 → `security` builder; ckpt-p1 on Fable.
 
-Next up: S1
+Next up: S1 (in flight, builder `security`), then ckpt-p1
