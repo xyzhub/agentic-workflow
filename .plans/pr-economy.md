@@ -231,6 +231,8 @@ is at 1.52.0; the §10 Version pin; `docs/WORKFLOW.md` line 3 stamp;
   fixture stamp (`evals/scenarios/mission-batch-gate/fixture/docs/WORKFLOW.md`);
   any registry-repo edit; `.gitignore`/scratch artifacts.
 
+- **L5 — overrun scope decision (owner, 2026-10-07).** ckpt-p1 Fable review returned REQUEST CHANGES (two merge-guard escapes: `-R`/`--repo` between `pr` and the subcommand bypasses detection; policy read from one repo while the merge runs in another). A corrective is session 2 of estimate 1, the 1.5x overrun stop. Owner chose, verbatim: "Fix it, estimate 2 (Recommended)". Estimate revised 1 to 2 sessions. One corrective S1-fix, then a fresh Fable re-review; if it fails again, stop and surface to the owner. Accepted side effect on the registry: cross-repo or ambiguous-target merge shapes refuse even under full delegation; plain `gh pr merg[e] N` and a single leading `cd <registry> &&` still warn-only.
+
 ## Risks
 
 | Risk | Bound / mitigation |

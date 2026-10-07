@@ -14,8 +14,8 @@ everything since the last one — §12 LA-6)._
 
 Status: active
 
-Estimate: 1 session
-Sessions used: 1
+Estimate: 2 sessions
+Sessions used: 2
 
 _The two budget lines above are read by the mission-budget hook every turn. The
 planner writes `Estimate:` (1 = one brief S1 + one one-shot Fable review at the
@@ -68,6 +68,7 @@ _Glyphs: `[ ]` not started · `[~]` in-flight / deferred / awaiting owner · `[x
 done (verified, not merely written)._
 
 - [x] S1 — lib hook `hooks/lib/merge-guard.sh` + hooks.json row (inline row loses its merge case), ≥ 42 harness cases (allow + every block path incl. template placeholder cell, `-R`/`--repo`, URL ref, compound commands, RENAMED/COPIED, 100 files, `gh api`; gh stubbed via a PATH-only `bin/`), lint marker rule, ledger template + planner prompt classify Closing rows, `mission`/`settle`/`end`/chronicler one-bookkeeping-PR flow, WORKFLOW §3/§4/§5/§10/§11 both copies (this repo's §10 → `records-only`; §13 untouched), record 1.53.0 (plugin.json, CHANGELOG, plugin README, stamp), pre-merge probe evidence reported; the builder runs no merge command (branch `mission/pr-economy`; builder `security`)
+- [~] S1-fix — corrective for ckpt-p1 blocking findings 1 and 2 plus fold-ins (builder `security`, started 2026-10-07)
 - [~] Checkpoint ckpt-p1 (REQUEST CHANGES 2026-10-07; corrective awaits the owner's overrun decision) — pre-merge Closing pass first (orchestrator ticks the two pre-merge rows from S1's evidence), then ONE fresh `reviewer` on **Fable** over `49fb2e7..mission/pr-economy` (security boundary), then lint + `claude --plugin-dir` load → one PR to `main`, human merges
 
 ## Open questions
@@ -113,13 +114,13 @@ Deviating is allowed; deviating silently is not (§4)._
 - 2026-10-07 S1 builder — hook 140 lines vs brief 130 (fail-closed wrapper + head-SHA pin).
 - 2026-10-07 S1 builder — unrequested fail-closed hardening, each with harness cases: merge flags are an allowlist (squash, merge, rebase, delete-branch, match-head-commit) with exactly one PR-ref token; only a single leading `cd <dir> &&` allowed, a `git -C` elsewhere blocks; `GH_REPO=`, attached or quoted `-R`, a lone `&`, non-canonical spacing, and the GraphQL `mergePullRequest` call all block; a malformed records-only cell blocks instead of widening; the hook input `cwd` is honoured; "CI configured" is read from `origin/<default>`.
 - 2026-10-07 orchestrator — live-verify recipe updated: the dry run now carries `--match-head-commit <its head sha>` (the TOCTOU fix makes the old recipe BLOCK); the 999999 probe expects any exit-2 BLOCK, not a specific message.
-(none)
 
 ## Handoff log (newest first)
 
 _≤10 lines per entry: what this session did, the verify signal, the branch, and
 what the next session needs. Newest on top; crash-safe by write-ahead._
 
+- 2026-10-07 orchestrator: owner overrun decision "Fix it, estimate 2 (Recommended)" recorded as L5 in the master plan; Estimate 1 → 2 sessions. Sessions used 2/2. S1-fix spawned to the S1 builder with the reviewer's findings.
 - 2026-10-07 orchestrator: ckpt-p1 Fable reviewer returned REQUEST CHANGES. Scorecard: Security 1, QA 2, DX 2, Architecture 3 (UX, Efficiency n/a). Gates re-run: hook-test 237 ok, lint clean, plugin validate passed, plugin-dir load ok; CI NO-RUNS (branch unpushed). Blocking: (1) `-R`/`--repo` placed between `pr` and the subcommand is not recognised as a merge, so it runs unchecked under every policy; (2) policy can be read from one repo while the merge runs in another (`git -C`, chained `cd`, non-git fallback), so the registry's full delegation redirects onto any repo. Fold-ins: REST `pulls/$N/merge` and GraphQL auto-merge regex gaps; a harness case for the `origin/<default>` read path. Advisory: revocation lag (local origin ref), hung-gh timeout, transitional window procedural only, stale "(none)" under Deviations. A corrective S1-fix would be session 2 of estimate 1 = OVERRUN STOP; scope decision put to the owner.
 - 2026-10-07 orchestrator: S1 returned done, 7 commits b788812..2b2a0af, 1 new + 14 edited files. Gates re-run by orchestrator: hook-test 237 ok clean (baseline 156, target 198), lint clean. Security: allowlist fail-open not real in committed code (builder test snapshot) but hardened, 12 path cases; wrapper fail-open REAL, fixed 5b2202c, 5 cases; TOCTOU REAL, fixed 5b2202c with head-SHA pin, 5 cases. Pre-merge rows fired (version, docs). Builder dry run: branch §10 = records-only but origin/main = human-only, so PR 999999 still BLOCKED (a branch cannot grant itself merge authority). ckpt-p1 Fable reviewer spawned over 49fb2e7..2b2a0af.
 - 2026-10-07 orchestrator: commit security review flagged 2 more mid-S1: fail-open in hooks.json merge row; time-of-check/time-of-use in merge-guard.sh (PR head can move between file check and merge). Forwarded to S1 builder: fail-closed row + head-SHA pin via `--match-head-commit`.
@@ -128,4 +129,4 @@ what the next session needs. Newest on top; crash-safe by write-ahead._
 - 2026-10-07 planner (revision 1): plan-judge REVISE + owner L4 folded in. Scope renamed `agent-may-merge (records-only, delegated <date>)`; the registry's `(bookkeeping, …)` row stays full delegation, no registry edit, §13 untouched, OQ1 gone. Hook: anchored §10 cell match (template placeholder = harness BLOCK), numeric refs only, `-R`/`--repo`, compound tails, multiple merges, `--auto`, `gh api pulls/N/merge`, RENAMED/COPIED, ≥100 files all BLOCK; gh stderr not redirected (stub marker); harness `bin/` mirrors the hook's `# externals:` line. Builder never runs or types the literal merge command (`'gh pr merg[e]'` for greps). Closing: registry row removed; live-verify = dry invocation + 999999 BLOCK; two-PR row keyed on `--state all` (one MERGED, one OPEN). Target hook-test ≥ 198 ok. Nothing built.
 - 2026-10-07 planner: trio authored on `mission/pr-economy` (cut from `main` 49fb2e7). Nothing built. Baseline `node tools/hook-test.mjs` = 156 ok, clean; `node tools/lint.mjs` clean. L2 marker chosen `(<source>, pre-merge|post-merge)` — grammar-valid today (this ledger lints under the current rules). L3 allowlist = owner's four exact paths; policy read from `origin/<default>`. S1 → `security` builder; ckpt-p1 on Fable.
 
-Next up: OWNER scope decision (overrun): corrective S1-fix at revised estimate 2, ship a subset, or abort
+Next up: S1-fix (in flight, builder `security`), then ckpt-p1 re-review on Fable
