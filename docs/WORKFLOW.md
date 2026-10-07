@@ -1,6 +1,6 @@
 # The Workflow — one agentic protocol from idea to viable product
 
-<!-- protocol-master: v1.52.0 -->
+<!-- protocol-master: v1.53.0 -->
 
 ## Quick reference — humans start here
 
@@ -934,7 +934,7 @@ drive the real flow, confirm monitoring is receiving, record the result).
 | Key | Value |
 |---|---|
 | **HITL (merge/deploy authority)** | Baker |
-| **Merge policy** | human-only |
+| **Merge policy** | agent-may-merge (records-only, delegated 2026-10-07) |
 | **Publish policy** | human-only (default, fail-closed — no publishing delegation recorded; §14) |
 | **Default branch** | main |
 | **Staging** | none — markdown plugin with no deploy; a phase's "staging verify" is the tier-1 lint on the phase branch + `claude --plugin-dir` load in a consumer session; the PR to `main` opens after that (added 2026-08-19 with the §5 staging flow) |
