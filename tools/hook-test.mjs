@@ -49,7 +49,7 @@ const whichBin = (name) => {
   const w = spawnSync('which', [name], { encoding: 'utf8' });
   return w.status === 0 ? w.stdout.trim().split('\n')[0] : '';
 };
-function runHook({ event, desc, command, input = {}, ledgers, files, transcript, bin }) {
+function runHook({ event, desc, command, input = {}, ledgers, files, transcript, bin, env: envOver }) {
   const dir = mkdtempSync(path.join(tmpdir(), 'hooktest-'));
   try {
     if (ledgers) {
@@ -89,7 +89,7 @@ function runHook({ event, desc, command, input = {}, ledgers, files, transcript,
     }
     // Claude Code exports CLAUDE_PLUGIN_ROOT to hook processes; mirror it so a
     // hook that invokes `${CLAUDE_PLUGIN_ROOT}/hooks/lib/*.sh` resolves here.
-    const env = { ...process.env, CLAUDE_PLUGIN_ROOT: PLUGIN };
+    const env = { ...process.env, CLAUDE_PLUGIN_ROOT: PLUGIN, ...envOver };
     let shell = 'bash';
     if (bin) {
       const b = path.join(dir, 'bin');
@@ -1528,6 +1528,9 @@ const CLOSING_NONE_DUE = {
   const GUARD = 'merge guardrail';
   const M = 'gh pr merge';
   const REC = 'agent-may-merge (records-only, delegated 2026-10-07)';
+  const HEAD = '0123456789abcdef0123456789abcdef01234567';
+  const MH = `--match-head-commit ${HEAD}`;
+  const OK101 = `${M} 101 --squash ${MH}`;
   const TPL_ROW = readFileSync(path.join(PLUGIN, 'templates/WORKFLOW.md'), 'utf8')
     .split('\n').find((l) => /^\| \*\*Merge policy\*\* \| /.test(l)) || '';
   const TPL_CELL = TPL_ROW.replace(/^\| \*\*Merge policy\*\* \| /, '').replace(/ \|$/, '');
@@ -1537,18 +1540,18 @@ const CLOSING_NONE_DUE = {
   const ctx = (state) => ({ __typename: 'StatusContext', state, context: 'ci' });
   const GREEN = [run('SUCCESS'), run('SKIPPED'), ctx('SUCCESS')];
   const wfMerge = (cell) => `## 10. Project profile\n\n| Key | Value |\n|---|---|\n| **Merge policy** | ${cell} |\n`;
-  const prJson = ({ state = 'OPEN', files = FOUR, checks = GREEN } = {}) => ({
-    state, statusCheckRollup: checks,
+  const prJson = ({ state = 'OPEN', files = FOUR, checks = GREEN, head = HEAD } = {}) => ({
+    state, statusCheckRollup: checks, headRefOid: head,
     files: files.map((f) => (typeof f === 'string' ? { path: f, changeType: 'MODIFIED' } : f)),
   });
   const shq = (s) => `'${s.replace(/'/g, `'\\''`)}'`;
   const ghStub = (json, { exit = 0 } = {}) => ['#!/bin/bash', 'echo "gh-stub-called $*" >&2',
     `case "$*" in *"pr view"*) printf '%s' ${shq(JSON.stringify(json))}; exit ${exit};; esac`, 'exit 1', ''].join('\n');
-  const mg = (cmd, { cell = REC, wf = true, pr = {}, exit = 0, gh, jq = true, files = {}, input = {} } = {}) =>
+  const mg = (cmd, { cell = REC, wf = true, pr = {}, exit = 0, gh, jq = true, files = {}, input = {}, env } = {}) =>
     runHook({
       event: 'PreToolUse', desc: GUARD, input: { tool_input: { command: cmd }, ...input },
       files: { ...(wf ? { 'docs/WORKFLOW.md': { content: wfMerge(cell) } } : {}), ...files },
-      bin: { gh: gh === undefined ? ghStub(prJson(pr), { exit }) : gh, jq },
+      bin: { gh: gh === undefined ? ghStub(prJson(pr), { exit }) : gh, jq }, env,
     });
   const blocks = (r, text) => r.code === 2 && r.stderr.includes(text);
   const sawView = (r, n) => r.stderr.includes(`gh-stub-called pr view ${n} `);
@@ -1565,21 +1568,21 @@ const CLOSING_NONE_DUE = {
   }
 
   // allow
-  { const r = mg(`${M} 101 --squash --delete-branch`);
+  { const r = mg(`${M} 101 --squash --delete-branch ${MH}`);
     check('merge-guard: records-only, FOUR record paths + green checks → allowed (exit 0) after gh pr view',
       r.code === 0 && r.stdout.includes('records-only scope') && sawView(r, 101), why(r)); }
-  { const r = mg(`${M} --squash 7`); check('merge-guard: flags before the ref → allowed, gh viewed PR 7', r.code === 0 && sawView(r, 7), why(r)); }
-  { const r = mg(`cd . && ${M} 101`); check('merge-guard: one leading `cd <repo> &&` → allowed', r.code === 0 && sawView(r, 101), why(r)); }
-  { const r = mg(`${M} 101 -sd`); check('merge-guard: short boolean cluster -sd → allowed', r.code === 0, why(r)); }
-  { const r = mg(`${M} 101`, { pr: { checks: [] } });
+  { const r = mg(`${M} --squash ${MH} 7`); check('merge-guard: flags before the ref → allowed, gh viewed PR 7', r.code === 0 && sawView(r, 7), why(r)); }
+  { const r = mg(`cd . && ${M} 101 --match-head-commit=${HEAD}`); check('merge-guard: one leading `cd <repo> &&` → allowed', r.code === 0 && sawView(r, 101), why(r)); }
+  { const r = mg(`${M} 101 -sd ${MH}`); check('merge-guard: short boolean cluster -sd → allowed', r.code === 0, why(r)); }
+  { const r = mg(OK101, { pr: { checks: [] } });
     check('merge-guard: empty rollup, no .github/workflows → allowed with the no-CI note', r.code === 0 && r.stdout.includes('no CI configured'), why(r)); }
-  { const r = mg(`${M} 101`, { pr: { files: [{ path: '.plans/old.md', changeType: 'DELETED' }, { path: '.plans/new.md', changeType: 'ADDED' }] } });
+  { const r = mg(OK101, { pr: { files: [{ path: '.plans/old.md', changeType: 'DELETED' }, { path: '.plans/new.md', changeType: 'ADDED' }] } });
     check('merge-guard: DELETED + ADDED on record paths → allowed', r.code === 0, why(r)); }
-  { const r = mg(`${M} 101`, { pr: { checks: [run('NEUTRAL'), ctx('SUCCESS')] } });
+  { const r = mg(OK101, { pr: { checks: [run('NEUTRAL'), ctx('SUCCESS')] } });
     check('merge-guard: NEUTRAL CheckRun + SUCCESS StatusContext → allowed', r.code === 0, why(r)); }
 
   // regression — full delegation and non-merges
-  { const r = mg(`${M} 101`, { cell: 'agent-may-merge (delegated 2026-01-01)' });
+  { const r = mg(OK101, { cell: 'agent-may-merge (delegated 2026-01-01)' });
     check('merge-guard: full delegation → reminder (exit 0), gh NOT run', r.code === 0 && r.stdout.includes('reviewer APPROVE') && !ghRan(r), why(r)); }
   { const r = mg(`${M} chore/x --admin`, { cell: 'agent-may-merge (bookkeeping, delegated 2026-07-08)' });
     check("merge-guard: the registry's (bookkeeping, …) row stays FULL delegation (L4) → reminder, gh NOT run",
@@ -1588,14 +1591,14 @@ const CLOSING_NONE_DUE = {
   { const r = mg('git status'); check('merge-guard: git status → silent exit 0', r.code === 0 && !r.stdout && !r.stderr, why(r)); }
 
   // block — policy
-  { const r = mg(`${M} 101`, { cell: 'human-only' }); check('merge-guard: human-only → BLOCK', blocks(r, 'human (HITL) merges') && !ghRan(r), why(r)); }
-  { const r = mg(`${M} 101`, { wf: false }); check('merge-guard: no docs/WORKFLOW.md → BLOCK (fail closed)', blocks(r, 'human (HITL) merges'), why(r)); }
-  { const r = mg(`${M} 101`, { cell: TPL_CELL });
+  { const r = mg(OK101, { cell: 'human-only' }); check('merge-guard: human-only → BLOCK', blocks(r, 'human (HITL) merges') && !ghRan(r), why(r)); }
+  { const r = mg(OK101, { wf: false }); check('merge-guard: no docs/WORKFLOW.md → BLOCK (fail closed)', blocks(r, 'human (HITL) merges'), why(r)); }
+  { const r = mg(OK101, { cell: TPL_CELL });
     check('merge-guard: the template placeholder prose, verbatim → BLOCK, gh NOT run', blocks(r, 'human (HITL) merges') && !ghRan(r), why(r)); }
-  { const r = mg(`${M} 101`, { cell: 'agent-may-merge (records-only, delegated 2026-10)' });
+  { const r = mg(OK101, { cell: 'agent-may-merge (records-only, delegated 2026-10)' });
     check('merge-guard: a malformed records-only value never widens to full delegation → BLOCK', blocks(r, 'human (HITL) merges'), why(r)); }
-  { const r = mg(`${M} 101`, { cell: `x ${REC}` }); check('merge-guard: records-only not at the start of the cell → BLOCK', blocks(r, 'human (HITL) merges'), why(r)); }
-  { const r = mg(`${M} 101`, { input: { cwd: '/nonexistent-merge-guard-dir' } });
+  { const r = mg(OK101, { cell: `x ${REC}` }); check('merge-guard: records-only not at the start of the cell → BLOCK', blocks(r, 'human (HITL) merges'), why(r)); }
+  { const r = mg(OK101, { input: { cwd: '/nonexistent-merge-guard-dir' } });
     check('merge-guard: a session cwd that is not a directory → BLOCK', blocks(r, 'not a directory'), why(r)); }
 
   // block — command shape
@@ -1652,28 +1655,54 @@ const CLOSING_NONE_DUE = {
   ];
   for (const [files, text] of filesCases) {
     const label = files.length > 3 ? `${files.length} files` : JSON.stringify(files);
-    const r = mg(`${M} 101`, { pr: { files } });
+    const r = mg(OK101, { pr: { files } });
     check(`merge-guard: files ${label.slice(0, 90)} → BLOCK`, blocks(r, text) && sawView(r, 101), why(r));
   }
-  { const r = mg(`${M} 101`, { pr: { state: 'MERGED' } }); check('merge-guard: PR state MERGED → BLOCK', blocks(r, 'is MERGED, not OPEN'), why(r)); }
+  { const r = mg(OK101, { pr: { state: 'MERGED' } }); check('merge-guard: PR state MERGED → BLOCK', blocks(r, 'is MERGED, not OPEN'), why(r)); }
 
   // block — checks
-  { const r = mg(`${M} 101`, { pr: { checks: [...GREEN, { __typename: 'CheckRun', status: 'IN_PROGRESS', conclusion: null, name: 'lint' }] } });
+  { const r = mg(OK101, { pr: { checks: [...GREEN, { __typename: 'CheckRun', status: 'IN_PROGRESS', conclusion: null, name: 'lint' }] } });
     check('merge-guard: CheckRun IN_PROGRESS (no conclusion) → BLOCK', blocks(r, 'not green'), why(r)); }
-  { const r = mg(`${M} 101`, { pr: { checks: [{ __typename: 'CheckRun', status: 'IN_PROGRESS', conclusion: '', name: 'lint' }] } });
+  { const r = mg(OK101, { pr: { checks: [{ __typename: 'CheckRun', status: 'IN_PROGRESS', conclusion: '', name: 'lint' }] } });
     check('merge-guard: CheckRun with empty-string conclusion (gh in-progress shape) → BLOCK', blocks(r, 'not green'), why(r)); }
-  { const r = mg(`${M} 101`, { pr: { checks: [run('FAILURE')] } }); check('merge-guard: CheckRun FAILURE → BLOCK', blocks(r, 'lint is FAILURE'), why(r)); }
-  { const r = mg(`${M} 101`, { pr: { checks: [ctx('PENDING')] } }); check('merge-guard: StatusContext PENDING → BLOCK', blocks(r, 'ci is PENDING'), why(r)); }
-  { const r = mg(`${M} 101`, { pr: { checks: [] }, files: { '.github/workflows/lint.yml': { content: 'on: push\n' } } });
+  { const r = mg(OK101, { pr: { checks: [run('FAILURE')] } }); check('merge-guard: CheckRun FAILURE → BLOCK', blocks(r, 'lint is FAILURE'), why(r)); }
+  { const r = mg(OK101, { pr: { checks: [ctx('PENDING')] } }); check('merge-guard: StatusContext PENDING → BLOCK', blocks(r, 'ci is PENDING'), why(r)); }
+  { const r = mg(OK101, { pr: { checks: [] }, files: { '.github/workflows/lint.yml': { content: 'on: push\n' } } });
     check('merge-guard: empty rollup WITH .github/workflows → BLOCK (wait for CI)', blocks(r, 'wait for CI'), why(r)); }
 
+  // block — TOCTOU: the merge must pin the head the hook just viewed
+  { const r = mg(`${M} 101 --squash`); check('merge-guard: no --match-head-commit → BLOCK (names the head to pin)',
+      blocks(r, `add --match-head-commit ${HEAD}`) && sawView(r, 101), why(r)); }
+  { const r = mg(`${M} 101 --squash --match-head-commit ${'f'.repeat(40)}`);
+    check('merge-guard: --match-head-commit ≠ the viewed headRefOid → BLOCK', blocks(r, 'does not match PR #101'), why(r)); }
+  { const r = mg(`${M} 101 --match-head-commit`); check('merge-guard: --match-head-commit with no value → BLOCK', blocks(r, 'add --match-head-commit'), why(r)); }
+  { const r = mg(OK101, { pr: { head: 'not-a-sha' } }); check('merge-guard: headRefOid missing/malformed in gh JSON → BLOCK', blocks(r, 'could not read PR #101'), why(r)); }
+  { const r = mg(OK101); check('merge-guard: --match-head-commit = the viewed headRefOid → allowed', r.code === 0 && r.stdout.includes('records-only scope'), why(r)); }
+
+  // block — the hooks.json wrapper fails closed when the lib script cannot run
+  { const gone = path.join(tmpdir(), 'no-such-plugin-root-merge-guard');
+    const r = mg(OK101, { env: { CLAUDE_PLUGIN_ROOT: gone } });
+    check('merge-guard wrapper: lib script absent → merge BLOCKS', blocks(r, 'merge guard is unavailable'), why(r));
+    const q = mg('git status', { env: { CLAUDE_PLUGIN_ROOT: gone } });
+    check('merge-guard wrapper: lib script absent → a non-merge command still passes', q.code === 0, why(q));
+    const u = mg(OK101, { env: { CLAUDE_PLUGIN_ROOT: '' } });
+    check('merge-guard wrapper: CLAUDE_PLUGIN_ROOT unset/empty → merge BLOCKS', blocks(u, 'merge guard is unavailable'), why(u));
+    const a = mg('gh api -X PUT repos/o/r/pulls/1/merge', { env: { CLAUDE_PLUGIN_ROOT: gone } });
+    check('merge-guard wrapper: lib script absent → gh api merge BLOCKS', blocks(a, 'merge guard is unavailable'), why(a)); }
+  { const fake = mkdtempSync(path.join(tmpdir(), 'fakeroot-'));
+    mkdirSync(path.join(fake, 'hooks/lib'), { recursive: true });
+    writeFileSync(path.join(fake, 'hooks/lib/merge-guard.sh'), 'exit 1\n');
+    const r = mg(OK101, { env: { CLAUDE_PLUGIN_ROOT: fake } });
+    rmSync(fake, { recursive: true, force: true });
+    check('merge-guard wrapper: lib script crashes (exit 1) → merge BLOCKS', blocks(r, 'exit 1'), why(r)); }
+
   // block — tools and gh failures
-  { const r = mg(`${M} 101`, { gh: false }); check('merge-guard: gh missing → BLOCK', blocks(r, 'gh and jq'), why(r)); }
-  { const r = mg(`${M} 101`, { jq: false }); check('merge-guard: jq missing → BLOCK', blocks(r, 'gh and jq') && !ghRan(r), why(r)); }
-  { const r = mg(`${M} 101`, { exit: 1 }); check('merge-guard: gh pr view exits 1 → BLOCK', blocks(r, 'could not read PR #101') && sawView(r, 101), why(r)); }
-  { const r = mg(`${M} 101`, { gh: '#!/bin/bash\necho "gh-stub-called $*" >&2\nprintf "not json"\n' });
+  { const r = mg(OK101, { gh: false }); check('merge-guard: gh missing → BLOCK', blocks(r, 'gh and jq'), why(r)); }
+  { const r = mg(OK101, { jq: false }); check('merge-guard: jq missing → BLOCK', blocks(r, 'gh and jq') && !ghRan(r), why(r)); }
+  { const r = mg(OK101, { exit: 1 }); check('merge-guard: gh pr view exits 1 → BLOCK', blocks(r, 'could not read PR #101') && sawView(r, 101), why(r)); }
+  { const r = mg(OK101, { gh: '#!/bin/bash\necho "gh-stub-called $*" >&2\nprintf "not json"\n' });
     check('merge-guard: gh prints non-JSON → BLOCK', blocks(r, 'could not read PR #101'), why(r)); }
-  { const r = mg(`${M} 101`, { gh: `#!/bin/bash\nprintf '%s' '{"state":"OPEN","files":"x","statusCheckRollup":[]}'\n` });
+  { const r = mg(OK101, { gh: `#!/bin/bash\nprintf '%s' '{"state":"OPEN","files":"x","statusCheckRollup":[]}'\n` });
     check('merge-guard: files is not an array → BLOCK', blocks(r, 'could not read PR #101'), why(r)); }
 }
 

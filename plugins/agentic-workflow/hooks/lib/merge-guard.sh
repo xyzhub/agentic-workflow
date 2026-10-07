@@ -9,9 +9,10 @@
 #      other `agent-may-merge…` without `records-only` → reminder, exit 0, gh not run; else → 2.
 #   4. Records-only, first failure BLOCKS: gh/jq missing; -R/--repo/GH_REPO=; --auto; ≠ 1 merge;
 #      anything but one leading `cd <dir> &&` before it or ; & | newline after it; a flag beyond
-#      --squash/--merge/--rebase/--delete-branch; not one numeric ref; gh pr view fails; not OPEN;
-#      0 or ≥ 100 files; changeType not ADDED|MODIFIED|DELETED; a path outside .plans/** + three
-#      record files; a check not SUCCESS|SKIPPED|NEUTRAL, or none while CI exists. Pass → exit 0.
+#      --squash/--merge/--rebase/--delete-branch/--match-head-commit; not one numeric ref; gh pr
+#      view fails; not OPEN; 0 or ≥ 100 files; changeType not ADDED|MODIFIED|DELETED; a path outside .plans/** + three
+#      record files; a check not SUCCESS|SKIPPED|NEUTRAL, or none while CI exists;
+#      --match-head-commit absent or ≠ the viewed headRefOid (TOCTOU). Pass → exit 0.
 #   gh output passes only through jq (@tsv) — never eval'ed or interpolated. No set -e.
 # externals: cat git grep sed head tr cut wc jq gh
 # stdin: the hook event JSON. cwd: the project dir.
@@ -76,14 +77,18 @@ if [ -n "$PRE" ]; then
 elif [ "$D" != . ]; then
   block "$ALONE"
 fi
-N=; GOT=; POS=0; set -f
+N=; GOT=; POS=0; SHA=; WANT=0; set -f
+badflag() { block "$RO flag $1 is not allowed (allowed: --squash --merge --rebase --delete-branch --match-head-commit <sha>)"; }
 for T in ${SEG#"$M"}; do
   T=${T//[\"\'\\]/}
+  if [ "$WANT" = 1 ]; then SHA=$T; WANT=0; continue; fi
   case "$T" in
     '') ;;
     --squash|--merge|--rebase|--delete-branch|--) ;;
-    --*|-) block "$RO flag $T is not allowed (allowed: --squash --merge --rebase --delete-branch)";;
-    -*) case "${T#-}" in *[!smrd]*) block "$RO flag $T is not allowed (allowed: --squash --merge --rebase --delete-branch)";; esac;;
+    --match-head-commit) WANT=1;;
+    --match-head-commit=*) SHA=${T#*=};;
+    --*|-) badflag "$T";;
+    -*) case "${T#-}" in *[!smrd]*) badflag "$T";; esac;;
     *) POS=$((POS + 1)); N=$T; GOT="$GOT $T";;
   esac
 done
@@ -93,7 +98,7 @@ if [ "$POS" != 1 ] || ! [[ $N =~ ^[0-9]+$ ]]; then
   block "$RO PR ref must be a plain number (got: ${GOT:-none}) — URLs, branch names and the current-branch form are ambiguous"
 fi
 RT=${TOP:-$D}
-JSON=$(cd "$RT" && gh pr view "$N" --json state,files,statusCheckRollup); RC=$?
+JSON=$(cd "$RT" && gh pr view "$N" --json state,files,statusCheckRollup,headRefOid); RC=$?
 UNREAD="$RO could not read PR #$N via gh pr view"
 [ "$RC" = 0 ] && [ -n "$JSON" ] && printf '%s' "$JSON" | jq -e . >/dev/null 2>&1 || block "$UNREAD"
 ST=$(printf '%s' "$JSON" | jq -r '.state // "UNKNOWN" | tostring' 2>/dev/null)
@@ -126,5 +131,10 @@ else
     case "$V" in SUCCESS|SKIPPED|NEUTRAL) ;; *) block "$RO check $NAME is ${V:-EMPTY}, not green — wait for CI (node tools/ci-wait.mjs) or hand the merge to the human";; esac
   done <<< "$CHK"
 fi
+# TOCTOU: the checks above read one snapshot; --match-head-commit makes gh refuse if the head moved.
+OID=$(printf '%s' "$JSON" | jq -r '.headRefOid // "" | tostring' 2>/dev/null); HEXRX='^[0-9a-f]{40}([0-9a-f]{24})?$'
+[[ $OID =~ $HEXRX ]] || block "$UNREAD"
+[ -n "$SHA" ] || block "$RO add --match-head-commit $OID — gh then refuses the merge if PR #$N's head moves after this check"
+[ "$SHA" = "$OID" ] || block "$RO --match-head-commit $SHA does not match PR #$N's head $OID — the PR moved; re-check it"
 echo "✅ records-only scope (§10): PR #$N — $COUNT record path(s), checks green$NOTE — merging; log it in the ledger."
 exit 0
