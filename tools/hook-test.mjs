@@ -1726,7 +1726,11 @@ const CLOSING_NONE_DUE = {
   }
   for (const cmd of ['X=merge; gh pr $X 101', 'gh issue list && gh pr `echo merge` 101',
     'X=merge; bash -c "gh pr $X 101"', 'X=merge; command gh pr $X 101', 'X=merge; env gh pr $X 101',
-    'X=merge; /usr/local/bin/gh pr $X 101', 'gh pr-merge 101']) {
+    'X=merge; /usr/local/bin/gh pr $X 101', 'gh pr-merge 101',
+    'X=merged; gh pr ${X%d} 101', 'X=merge_; gh pr ${X%_} 101', 'X=.merge; gh pr ${X#.} 101',
+    'gh pr $(echo merged | tr -d d) 101', 'gh pr `echo merger | tr -d r` 101',
+    'gh pr view 1; echo merged | tr -d d | xargs -I{} gh pr {} 101', 'echo "gh pr merged 101" | tr -d d | bash',
+    'echo "gh pr merged 101" | tr -d d | sh -s', 'eval gh pr merged']) {
     const r = mg(cmd, { cell: FULL });
     check(`merge-guard #108: \`${cmd.slice(0, 40)}\` still → BLOCK (unrecognized merge shape)`, blocks(r, 'unrecognized merge shape') && !ghRan(r), why(r));
   }

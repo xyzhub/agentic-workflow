@@ -8,16 +8,26 @@ has no tags — each version-stamped commit on `main` IS the release.
 
 _(empty)_
 
+## [1.53.2] — 2026-10-07
+### Security — close the wrapper gap opened in 1.53.1 (#108)
+- 1.53.1 made the last-resort check require `gh` at command position, which
+  let wrapped forms through (`X=merge; bash -c "gh pr $X 101"`, `env gh …`,
+  `command gh …`, a full path to gh). `gh … pr` is matched anywhere again;
+  the standalone-`merge`-word rule alone keeps both #108 false refusals fixed.
+- The standalone-word rule let a trimmed word through (`X=merged; gh pr
+  ${X%d}`, `$(echo merged | tr -d d)`). When the command holds `${`, `$(`, a
+  backtick, `xargs`, `eval` or a pipe into a shell's stdin, any `merge`
+  substring counts again (fail closed). Harness +14 cases.
+
 ## [1.53.1] — 2026-10-07
 ### Fixed — merge guard false refusals (#108)
 - The last-resort check in `hooks/lib/merge-guard.sh` refused any `gh` command
   whose text held "gh", "pr" and "merge" in that order — an issue body that
   mentions merging a pr, or a guard dry run piped into `merge-guard.sh` (the
-  file name supplied the word). It now also needs `merge` as a standalone word
-  (`merging`, `merged`, `merge-guard.sh` don't count), in any position — so
-  `X=merge; gh pr $X 101` now blocks too. `gh … pr` is still matched anywhere,
-  so wrapped forms (`bash -c`, `env`, `command`, a full path to gh) stay
-  blocked. Harness +10 cases.
+  file name supplied the word). It now fires only when a `gh pr` or `gh api`
+  sits at command position AND `merge` appears as a standalone word. Side
+  gain: `X=merge; gh pr $X 101` (word before the subcommand) now blocks.
+  Harness +5 cases.
 
 ## [1.53.0] — 2026-10-07
 ### Changed — a mission closes in two PRs (pr-economy)

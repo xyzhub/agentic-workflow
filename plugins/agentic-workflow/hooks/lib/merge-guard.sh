@@ -34,9 +34,14 @@ BARE=$(printf '%s' "$CMD" | tr -d "\"'\\\\")
 MRX='gh[[:space:]]+pr([[:space:]]+-[^[:space:]]*([[:space:]]+[^-[:space:]][^[:space:]]*)?)*[[:space:]]+merge([[:space:];&|()<>]|$)'
 if ! printf '%s' "$BARE" | grep -qE "$MRX"; then
   # Last resort: `gh … pr` anywhere (wrappers like bash -c / env / command included) plus `merge`
-  # as a standalone word (#108) — `merging` and `… | bash …/merge-guard.sh` are not merges.
+  # as a standalone word (#108) — `merging` and `… | bash …/merge-guard.sh` are not merges. With
+  # ${ $( a backtick, xargs, eval or a pipe into a shell's stdin present, any `merge` counts:
+  # ${X%d} / tr can trim `merged` down to `merge`.
   printf '%s' "$BARE" | grep -qE '(^|[^[:alnum:]_])gh[^[:alnum:]_](.*[^[:alnum:]_])?pr[^[:alnum:]_]' || exit 0
-  printf '%s' "$BARE" | grep -qE '(^|[^[:alnum:]_.])merge([^[:alnum:]_.-]|$)' || exit 0
+  if ! printf '%s' "$BARE" | grep -qE '(^|[^[:alnum:]_.])merge([^[:alnum:]_.-]|$)'; then
+    EXP='\$\{|\$\(|`|(^|[^[:alnum:]_])(xargs|eval)([^[:alnum:]_]|$)|\|[[:space:]]*(ba|z|da|k)?sh([[:space:]]+-[^[:space:]]*)*[[:space:]]*($|[;&|)<])'
+    printf '%s' "$BARE" | grep -qE "$EXP" && printf '%s' "$BARE" | grep -q 'merge' || exit 0
+  fi
   # Coarse fallback: every `gh pr` is a known non-merge subcommand (a title may say "merge") → pass.
   NPR=$(printf '%s' "$BARE" | grep -oE 'gh[[:space:]]+pr' | wc -l | tr -d ' ')
   NOK=$(printf '%s' "$BARE" | grep -oE 'gh[[:space:]]+pr[[:space:]]+(view|create|list|status|checks|diff|checkout|comment|edit|review|close|reopen|ready)([[:space:]]|$)' | wc -l | tr -d ' ')
