@@ -13,10 +13,11 @@ _(empty)_
 - The last-resort check in `hooks/lib/merge-guard.sh` refused any `gh` command
   whose text held "gh", "pr" and "merge" in that order — an issue body that
   mentions merging a pr, or a guard dry run piped into `merge-guard.sh` (the
-  file name supplied the word). It now fires only when a `gh pr` or `gh api`
-  sits at command position AND `merge` appears as a standalone word. Side
-  gain: `X=merge; gh pr $X 101` (word before the subcommand) now blocks.
-  Harness +5 cases.
+  file name supplied the word). It now also needs `merge` as a standalone word
+  (`merging`, `merged`, `merge-guard.sh` don't count), in any position — so
+  `X=merge; gh pr $X 101` now blocks too. `gh … pr` is still matched anywhere,
+  so wrapped forms (`bash -c`, `env`, `command`, a full path to gh) stay
+  blocked. Harness +10 cases.
 
 ## [1.53.0] — 2026-10-07
 ### Changed — a mission closes in two PRs (pr-economy)
