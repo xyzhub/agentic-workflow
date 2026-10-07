@@ -25,7 +25,7 @@ _(empty)_
   check-then-push race); `gh api` merges block outright; RENAMED/COPIED
   files, 0 or ≥ 100 files (gh's cap) and pending/failed checks block; the
   hooks.json wrapper blocks a merge when the script is missing or crashes.
-  `gh` output is read only through `jq`. Harness `156 → 237 ok` (gh stubbed on
+  `gh` output is read only through `jq`. Harness `156 → 251 ok` (gh stubbed on
   a PATH-only `bin/`).
 - **L2 — Closing-row markers.** A row's source parens end with
   `(<source>, pre-merge)` (fires on the phase branch before the checkpoint,
@@ -37,9 +37,14 @@ _(empty)_
   branch and PR (session-altitude: `chore/bookkeeping-<YYYY-MM-DD>`), merged
   by number at the end of the close; the chronicler runs record-only
   post-merge (CHANGELOG ships in the feature PR).
-- **L4 — the registry is unchanged.** Its `(bookkeeping, …)` row stays full
-  delegation; `records-only` is a new, separate value, adopted by this repo's
-  §10.
+- **L4 — the registry's scope is unchanged.** Its `(bookkeeping, …)` row
+  stays full delegation (warn-only); `records-only` is a new, separate value,
+  adopted by this repo's §10. Under EVERY policy, full delegation included, a
+  merge now BLOCKS when it is cross-repo (`-R`/`--repo` anywhere, even before
+  the subcommand, or `GH_REPO=`), when one command holds more than one merge,
+  or when anything but one leading `cd <repo> &&` precedes it — so the policy
+  is always read from the repo the merge runs in. A merge-like command the
+  guard cannot parse also blocks.
 - **Transitional window:** the previously installed inline hook reads the
   WORKING-TREE §10 and treats any `agent-may-merge …` as warn-only
   delegation, so in a checkout whose §10 already says `records-only` it does

@@ -1624,7 +1624,7 @@ const CLOSING_NONE_DUE = {
     [`${M} 101 --auto`, '--auto', '--auto'],
     [`cd docs/..; cd . && ${M} 101`, 'stand alone', 'two cds before'],
     [`git -C docs/.. status && ${M} 101`, 'stand alone', 'git -C before'],
-    [`${M} 101 --body=x git -C docs/..`, 'stand alone', 'a git -C target after the merge'],
+    [`${M} 101 --body=x git -C docs/..`, 'not allowed', 'a git -C target after the merge (never a policy source)'],
     ['gh api -X PUT repos/xyzhub/agentic-workflow/pulls/101/merge', 'bypasses', 'gh api pulls/N/merge'],
     ['gh api graphql -f query="mutation { mergePullRequest(input: {}) { clientMutationId } }"', 'bypasses', 'GraphQL mergePullRequest'],
   ];
@@ -1695,6 +1695,48 @@ const CLOSING_NONE_DUE = {
     const r = mg(OK101, { env: { CLAUDE_PLUGIN_ROOT: fake } });
     rmSync(fake, { recursive: true, force: true });
     check('merge-guard wrapper: lib script crashes (exit 1) → merge BLOCKS', blocks(r, 'exit 1'), why(r)); }
+
+  // S1-fix (ckpt-p1): detection + target shape apply under EVERY policy
+  const FULL = 'agent-may-merge (delegated 2026-01-01)';
+  const BOOK = 'agent-may-merge (bookkeeping, delegated 2026-07-08)';
+  const everyPolicy = [
+    ['A1', 'gh pr -R other/repo merge 101 --squash', 'human-only', 'cross-repo'],
+    ['A2', 'gh pr --repo=other/repo merge 101 --squash', FULL, 'cross-repo'],
+    ['B1', `git -C docs/.. status && ${M} 101 --admin`, BOOK, 'stand alone'],
+    ['B2', `cd docs/.. && cd . && ${M} 101`, BOOK, 'stand alone'],
+    ['B3', `cd docs/..; cd .; ${M} 101`, FULL, 'stand alone'],
+    ['B4', `cd docs/.. && GH_REPO=xyzhub/registry ${M} 101`, FULL, 'cross-repo'],
+    ['C1', `${M};echo`, REC, 'last command'],
+    ['C2', 'gh pr $(echo merge) 101', FULL, 'unrecognized merge shape'],
+  ];
+  for (const [id, cmd, cell, text] of everyPolicy) {
+    const r = mg(cmd, { cell });
+    check(`merge-guard ${id}: ${cmd.slice(0, 60)} under ${cell.slice(0, 28)} → BLOCK (${text})`, blocks(r, text) && !ghRan(r), why(r));
+  }
+  for (const cmd of [`${M} 101`, `cd docs/.. && ${M} 101 --admin`]) {
+    const r = mg(cmd, { cell: BOOK });
+    check(`merge-guard: registry (bookkeeping) row stays warn-only for \`${cmd.slice(0, 40)}\``, r.code === 0 && r.stdout.includes('reviewer APPROVE'), why(r));
+  }
+  for (const cmd of ['gh pr view 5', 'gh pr create --title "merge guard: S1-fix" --body x', 'gh pr list --state open']) {
+    const r = mg(cmd, { cell: 'human-only' });
+    check(`merge-guard: non-merge \`${cmd.slice(0, 40)}\` → silent exit 0`, r.code === 0 && !r.stderr, why(r));
+  }
+  // origin/<default> is the policy source inside a real git tree (bare origin; working tree disagrees)
+  { const root = mkdtempSync(path.join(tmpdir(), 'mg-git-'));
+    const g = (cwd, ...a) => spawnSync('git', ['-c', 'user.name=t', '-c', 'user.email=t@t', '-c', 'init.defaultBranch=main', ...a], { cwd, encoding: 'utf8' });
+    const wt = path.join(root, 'wt'); const wfp = path.join(wt, 'docs/WORKFLOW.md');
+    g(root, 'init', '-q', '--bare', path.join(root, 'origin.git')); g(root, 'init', '-q', wt);
+    mkdirSync(path.join(wt, 'docs')); writeFileSync(wfp, wfMerge(REC));
+    g(wt, 'add', '.'); g(wt, 'commit', '-qm', 'rec'); g(wt, 'remote', 'add', 'origin', path.join(root, 'origin.git'));
+    g(wt, 'push', '-q', 'origin', 'HEAD:main'); g(wt, 'remote', 'set-head', 'origin', 'main');
+    writeFileSync(wfp, wfMerge('human-only'));
+    const allow = mg(OK101, { input: { cwd: wt }, wf: false });
+    g(wt, 'commit', '-qam', 'human'); g(wt, 'push', '-q', 'origin', 'HEAD:main');
+    writeFileSync(wfp, wfMerge(REC));
+    const deny = mg(OK101, { input: { cwd: wt }, wf: false });
+    rmSync(root, { recursive: true, force: true });
+    check('merge-guard: git tree — policy read from origin/main, not the working tree (records-only on origin → allowed; working-tree-only → BLOCK)',
+      allow.code === 0 && allow.stdout.includes('records-only scope') && blocks(deny, 'human (HITL) merges'), `${why(allow)} || ${why(deny)}`); }
 
   // block — tools and gh failures
   { const r = mg(OK101, { gh: false }); check('merge-guard: gh missing → BLOCK', blocks(r, 'gh and jq'), why(r)); }

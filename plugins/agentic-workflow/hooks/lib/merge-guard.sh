@@ -1,14 +1,15 @@
 #!/usr/bin/env bash
 # merge guardrail (§10, PreToolUse/Bash) — extracted from the inline git/gh row (v1.53.0,
 # pr-economy). Threat model: accident, not an adversarial agent. Rules in order, on CMD:
-#   1. API merge (`gh api …pulls/<n>/merge`, `gh api … mergePullRequest`) → exit 2.
-#   2. Not a merge command (any spacing) → exit 0, silent.
-#   3. Policy = the §10 Merge policy row of docs/WORKFLOW.md AS COMMITTED on origin/<default> of
-#      the TARGET repo (leading `cd <dir>` / `git -C <dir>`, else the session cwd); working tree
-#      only outside a git tree (the publish-guard contract). Anchored records-only value → 4;
-#      other `agent-may-merge…` without `records-only` → reminder, exit 0, gh not run; else → 2.
-#   4. Records-only, first failure BLOCKS: gh/jq missing; -R/--repo/GH_REPO=; --auto; ≠ 1 merge;
-#      anything but one leading `cd <dir> &&` before it or ; & | newline after it; a flag beyond
+#   1. API merge (`gh api …pulls/<x>/merge`, `gh api … mergePullRequest|enablePullRequestAutoMerge`) → 2.
+#   2. Not merge-shaped (`gh pr`, any flags, `merge`; quotes stripped) → exit 0, silent.
+#   3. Under EVERY policy: jq missing, -R/--repo/GH_REPO=, ≠ 1 merge, or anything before it but
+#      ONE leading `cd <dir> &&` → 2. Policy = the §10 Merge policy row of docs/WORKFLOW.md AS
+#      COMMITTED on origin/<default> of that dir (else the session cwd); working tree only
+#      outside a git tree (the publish-guard contract). Anchored records-only value → 4; other
+#      `agent-may-merge…` without `records-only` → reminder, exit 0, gh not run; else → 2.
+#   4. Records-only, first failure BLOCKS: gh missing; --auto; non-canonical spacing;
+#      ; & | newline after the merge; a flag beyond
 #      --squash/--merge/--rebase/--delete-branch/--match-head-commit; not one numeric ref; gh pr
 #      view fails; not OPEN; 0 or ≥ 100 files; changeType not ADDED|MODIFIED|DELETED; a path outside .plans/** + three
 #      record files; a check not SUCCESS|SKIPPED|NEUTRAL, or none while CI exists;
@@ -24,23 +25,41 @@ RO='❌ BLOCKED (records-only scope):'
 block() { echo "$1" >&2; exit 2; }
 
 # 1. API merges never pass.
-if printf '%s' "$CMD" | grep -qE 'pulls/[0-9]+/merge|gh[[:space:]]+api.*mergePullRequest'; then
+if printf '%s' "$CMD" | grep -qE 'pulls/[^/[:space:]]+/merge|gh[[:space:]]+api.*(mergePullRequest|enablePullRequestAutoMerge)'; then
   block "❌ BLOCKED: merging through the API bypasses the merge guard — use the $M form or hand it to the human."
 fi
 
-# 2. Not a merge → silent.
-MRX='gh[[:space:]]+pr[[:space:]]+merge'
-printf '%s' "$CMD" | grep -qE "$MRX" || exit 0
+# 2. Not a merge → silent. Merge-shaped = `gh pr`, any flags (e.g. -R x/y), then `merge`, quotes stripped.
+BARE=$(printf '%s' "$CMD" | tr -d "\"'\\\\")
+MRX='gh[[:space:]]+pr([[:space:]]+-[^[:space:]]*([[:space:]]+[^-[:space:]][^[:space:]]*)?)*[[:space:]]+merge([[:space:];&|()<>]|$)'
+if ! printf '%s' "$BARE" | grep -qE "$MRX"; then
+  printf '%s' "$BARE" | grep -qE '(^|[^[:alnum:]_])gh[^[:alnum:]_](.*[^[:alnum:]_])?pr[^[:alnum:]_].*merge' || exit 0
+  # Coarse fallback: every `gh pr` is a known non-merge subcommand (a title may say "merge") → pass.
+  NPR=$(printf '%s' "$BARE" | grep -oE 'gh[[:space:]]+pr' | wc -l | tr -d ' ')
+  NOK=$(printf '%s' "$BARE" | grep -oE 'gh[[:space:]]+pr[[:space:]]+(view|create|list|status|checks|diff|checkout|comment|edit|review|close|reopen|ready)([[:space:]]|$)' | wc -l | tr -d ' ')
+  [ "$NPR" -gt 0 ] && [ "$NPR" = "$NOK" ] && exit 0
+  block "❌ BLOCKED: unrecognized merge shape (fail closed) — write it as cd <repo> && $M <number> …, or hand it to the human."
+fi
 
-# 3. Target repo, then the policy row from the human-merged copy.
+command -v jq >/dev/null 2>&1 || block "❌ BLOCKED: gh and jq are required by the merge guard (jq is missing, so the command cannot be parsed) — fail closed"
+
+# 3. Target shape, under EVERY policy — so the policy is read from the repo the merge runs in.
+printf '%s' "$BARE" | grep -qE '(^|[[:space:]])(-[A-Za-z]*R|--repo)|GH_REPO=' && block "❌ BLOCKED: cross-repo merge (-R/--repo/GH_REPO) is never delegated — run it as cd <repo> && $M … in the target repo (fail closed)."
+NM=$(printf '%s' "$BARE" | grep -oE "$MRX" | wc -l | tr -d ' ')
+[ "$NM" = 1 ] || block "❌ BLOCKED: more than one merge in a single command — one merge per command, so the guard checks the repo each runs in (fail closed)."
+ALONE="❌ BLOCKED: the merge must stand alone or follow exactly one leading cd <repo> && — the guard reads the policy from the repo the merge runs in (fail closed)."
+FIRST=${BARE%%$'\n'*}
+printf '%s' "$FIRST" | grep -qE "$MRX" || block "$ALONE"
+PRE=$(printf '%s' "$FIRST" | sed -E "s/${MRX}.*//")
+D=.
+if [ -n "$PRE" ]; then
+  printf '%s' "$PRE" | grep -qE '^ *cd +[^;&|]+&& *$' || block "$ALONE"
+  D=$(printf '%s' "$PRE" | sed -E 's/^ *cd +//; s/ *&& *$//')
+fi
 BASE=$(printf '%s' "$INPUT" | jq -r '.cwd // ""' 2>/dev/null)
 if [ -n "$BASE" ]; then
   cd "$BASE" 2>/dev/null || block "❌ BLOCKED: the session cwd ($BASE) is not a directory — the merge guard cannot locate the target repo (fail closed)."
 fi
-DCD=$(printf '%s' "$CMD" | sed -n 's/^ *cd  *\([^;&|]*\).*/\1/p' | sed 's/"//g; s/ *$//')
-D=$DCD
-if [ -z "$D" ]; then D=$(printf '%s' "$CMD" | sed -n 's/.*git -C  *\([^ ;&|]*\).*/\1/p' | sed 's/"//g'); fi
-D=${D:-.}
 TOP=$(git -C "$D" rev-parse --show-toplevel 2>/dev/null)
 DEF=$(git -C "$D" symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null | sed 's|^origin/||'); DEF=${DEF:-main}
 ROWRX='^\| *\*\*Merge policy\*\* *\|'
@@ -62,21 +81,10 @@ fi
 
 # 4. Records-only scope.
 { command -v gh && command -v jq; } >/dev/null 2>&1 || block "$RO gh and jq are required to read the PR's file list — fail closed"
-BARE=$(printf '%s' "$CMD" | tr -d "\"'\\\\")
-printf '%s' "$BARE" | grep -qE '(^|[[:space:]])(-[A-Za-z]*R|--repo)|GH_REPO=' && block "$RO cross-repo merge (-R/--repo) is never delegated"
 printf '%s' "$BARE" | grep -q -- '--auto' && block "$RO --auto defers the merge past this check"
-NM=$(printf '%s' "$CMD" | grep -oE "$MRX" | wc -l | tr -d ' ')
-[ "$NM" = 1 ] || block "$RO more than one merge in a single command"
 case "$CMD" in *"$M"*) ;; *) block "$RO write the merge as \`$M\` with single spaces";; esac
 PRE=${CMD%%"$M"*}; SEG=${CMD#"$PRE"}
 case "$SEG" in *$'\n'*|*';'*|*'&'*|*'|'*) block "$RO the merge must be the last command in the line — no ; && || | or newline after it";; esac
-ALONE="$RO the merge must stand alone or follow exactly one leading cd <repo> && — the hook verifies the PR in that repo"
-if [ -n "$PRE" ]; then
-  case "$PRE" in *$'\n'*) block "$ALONE";; esac
-  printf '%s' "$PRE" | grep -qE '^ *cd +[^;&|]+&& *$' && [ -n "$DCD" ] || block "$ALONE"
-elif [ "$D" != . ]; then
-  block "$ALONE"
-fi
 N=; GOT=; POS=0; SHA=; WANT=0; set -f
 badflag() { block "$RO flag $1 is not allowed (allowed: --squash --merge --rebase --delete-branch --match-head-commit <sha>)"; }
 for T in ${SEG#"$M"}; do
