@@ -16,6 +16,22 @@ grades the protocol's own behavior the way a QA team would.
 
 ---
 
+## 2026-10-07 — publish approval built, reviewed and approved; waiting on the owner's merge
+
+The first of the three missions from the launch-media plan is done. The publish queue is the list of posts the project is allowed to send out on a schedule. Before today, the rule "if an approved post is edited, it goes back to draft" was only a sentence in the instructions; the run was trusted to follow it. Now a small tool enforces it. Each post is fingerprinted. An approval is tied to that fingerprint and to a version counter. When a post is about to go out, the tool re-checks the fingerprint. If the text changed, the post is refused, put back to draft, and the owner sees a plain line saying so. The tool also hands out a one-time claim token, so a post cannot be fired twice, and a draft of an outreach message (a direct message to a person) can never be fired by a scheduled run.
+
+It took one build session, as planned, by the security-focused builder. Eleven commits. We ran the real test on this repo's own queue: we changed the text of an approved post on purpose, and the tool refused it and reset it to draft, as designed.
+
+What went wrong, and what it taught us. Partway through, an automated security check on the commits raised three concerns: the claim token could be reused, the tool allowed a post through when it could not read its own records, and an edit after the claim could slip past the fingerprint. The orchestrator did not trust the check blindly or ignore it. It passed the three concerns to the builder to verify. Two were real and one was partly real, and all three were fixed in the same session. The independent reviewer (a fresh agent on the strongest model, which had not seen the build) then attacked all three again, including four calls fired in parallel, and only one got through. The lesson is that an automated finding is a lead to test, and a fix counts only when someone outside the build tries to break it.
+
+Departures from the brief, all logged. Two files ran over their size limits (the gate tool at 445 lines against a cap of 320, the hook at 109 against 90) because the tool needed the full set of commands plus a self-test. The builder added several refusals nobody asked for (a lock on the queue file, refusing items that are not plain posts or have an unreadable schedule). The check that the plugin loads in a live session was left to the reviewer, who ran it and it passed.
+
+The review approved with no blocking findings. Scores out of 3: security 3, quality 3, developer experience 2, architecture 3. The test harness grew from 123 to 156 checks. Seven smaller follow-ups are on the list, for example that the fingerprint stops at a second `---` line inside a post, and that the host list misses a few social sites. The pull request (PR #101, version 1.52.0) is open and CI passed. The owner merges it.
+
+What waits on the merge: delete the mission branch, a note that inside a Codex run this tool's refusal is the only automatic publish check, a live check after the plugin is reinstalled (a call to LinkedIn without a token must be blocked), and the same tamper test on the Orderly queue, which mission 2 needs. Next mission queued: operate-triage (v1.53.0).
+
+---
+
 ## 2026-10-06 to 2026-10-07 — two features planned from ECC patterns, and a settle that had not run since July
 
 On 2026-10-06 the owner reviewed ECC (github.com/affaan-m/ECC), a popular public agent-workflow project, and asked what this plugin could borrow. Three patterns were chosen: recording a short demo video of the shipped product with Playwright (a browser-driving tool); finding people who publicly describe the pain we solve and drafting one message each, never sending it; and an approval step for the publish queue that is tied to the exact text approved. We borrow patterns only, never ECC's code. In July 2026 a poisoned file got into this repo's test fixtures; since then the rule is that outside code does not come in.
