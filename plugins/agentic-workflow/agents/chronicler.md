@@ -60,6 +60,9 @@ Docs / Infra. One line per meaningful change, PR-referenced, written for an
 engineer deciding whether to upgrade — behavior and breaking-change first,
 implementation detail only when it matters to operators (env vars, migrations,
 new endpoints).
+Invoked post-merge for a mission whose entry already shipped in the feature
+PR, leave CHANGELOG.md alone (it is not a record path) and update JOURNEY + the
+status page only.
 
 ## Artifact 2 — docs/product/JOURNEY.md (posterity, for humans)
 

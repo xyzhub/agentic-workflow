@@ -10,7 +10,7 @@
 //   [ ] not started → may nudge   ·   [~] parked/in-flight/deferred → silent
 //   [x] done → silent
 
-import { readFileSync, existsSync, mkdtempSync, mkdirSync, writeFileSync, rmSync, utimesSync, chmodSync } from 'node:fs';
+import { readFileSync, existsSync, mkdtempSync, mkdirSync, writeFileSync, rmSync, utimesSync, chmodSync, symlinkSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
@@ -39,8 +39,17 @@ function hookCommand(event, descNeedle) {
 // staged files ({ 'rel/path.md': { content, mtime? } }), and/or a sized
 // transcript ({ bytes } | { lines }) whose absolute path is injected into the
 // stdin JSON as `transcript_path`. `command` (harness self-proof cases only)
-// dispatches a raw probe command in place of a hooks.json lookup.
-function runHook({ event, desc, command, input = {}, ledgers, files, transcript }) {
+// dispatches a raw probe command in place of a hooks.json lookup. `bin`
+// ({ gh: <script text> | false, jq: true | false }) runs the hook with PATH set
+// to ONLY a temp bin/ of BIN_LIST symlinks (+ jq, + the gh stub) — how "gh
+// missing" / "jq missing" are produced, and proof that a hook's `# externals:`
+// line is complete.
+const BIN_LIST = ['bash', 'sh', 'git', 'grep', 'sed', 'head', 'tr', 'cut', 'wc', 'cat', 'mkdir', 'dirname'];
+const whichBin = (name) => {
+  const w = spawnSync('which', [name], { encoding: 'utf8' });
+  return w.status === 0 ? w.stdout.trim().split('\n')[0] : '';
+};
+function runHook({ event, desc, command, input = {}, ledgers, files, transcript, bin, env: envOver }) {
   const dir = mkdtempSync(path.join(tmpdir(), 'hooktest-'));
   try {
     if (ledgers) {
@@ -78,11 +87,26 @@ function runHook({ event, desc, command, input = {}, ledgers, files, transcript 
         : 'x\n'.repeat(transcript.lines));
       input = { ...input, transcript_path: tPath };
     }
-    const r = spawnSync('bash', ['-c', command ?? hookCommand(event, desc)], {
-      cwd: dir, input: JSON.stringify(input), encoding: 'utf8',
-      // Claude Code exports CLAUDE_PLUGIN_ROOT to hook processes; mirror it so a
-      // hook that invokes `${CLAUDE_PLUGIN_ROOT}/hooks/lib/*.sh` resolves here.
-      env: { ...process.env, CLAUDE_PLUGIN_ROOT: PLUGIN },
+    // Claude Code exports CLAUDE_PLUGIN_ROOT to hook processes; mirror it so a
+    // hook that invokes `${CLAUDE_PLUGIN_ROOT}/hooks/lib/*.sh` resolves here.
+    const env = { ...process.env, CLAUDE_PLUGIN_ROOT: PLUGIN, ...envOver };
+    let shell = 'bash';
+    if (bin) {
+      const b = path.join(dir, 'bin');
+      mkdirSync(b);
+      for (const name of [...BIN_LIST, ...(bin.jq === false ? [] : ['jq'])]) {
+        const real = whichBin(name);
+        if (real) symlinkSync(real, path.join(b, name));
+      }
+      if (typeof bin.gh === 'string') {
+        writeFileSync(path.join(b, 'gh'), bin.gh);
+        chmodSync(path.join(b, 'gh'), 0o755);
+      }
+      env.PATH = b; // ONLY the temp bin/ — no inherited PATH
+      shell = path.join(b, 'bash');
+    }
+    const r = spawnSync(shell, ['-c', command ?? hookCommand(event, desc)], {
+      cwd: dir, input: JSON.stringify(input), encoding: 'utf8', env,
     });
     return { code: r.status, stdout: r.stdout || '', stderr: r.stderr || '' };
   } finally {
@@ -1493,6 +1517,235 @@ const CLOSING_NONE_DUE = {
   { const r = c('git commit -m "docs: describe how fixes propagate downstream"'); check('close-guard: prose mentioning "fixes" with no #ref → allowed', r.code === 0, `code=${r.code}`); }
   { const r = c('git commit -m "chore: refs #605 — partial, does not close"'); check('close-guard: "refs #605" → allowed', r.code === 0, `code=${r.code}`); }
   { const r = c('git status'); check('close-guard: non-commit command → allowed', r.code === 0, `code=${r.code}`); }
+}
+
+// ── pr-economy (v1.53.0): the §10 records-only merge scope — path-enforced, fail closed ──
+// hooks/lib/merge-guard.sh runs with PATH = a temp bin/ (BIN_LIST + jq + a gh stub), so every
+// case also proves the hook's `# externals:` line. The stub never touches the network: it
+// echoes `gh-stub-called <args>` to stderr (the temp dir is gone before the assertion, so the
+// marker is the proof gh ran) and prints the canned `gh pr view --json` payload.
+{
+  const GUARD = 'merge guardrail';
+  const M = 'gh pr merge';
+  const REC = 'agent-may-merge (records-only, delegated 2026-10-07)';
+  const HEAD = '0123456789abcdef0123456789abcdef01234567';
+  const MH = `--match-head-commit ${HEAD}`;
+  const OK101 = `${M} 101 --squash ${MH}`;
+  const TPL_ROW = readFileSync(path.join(PLUGIN, 'templates/WORKFLOW.md'), 'utf8')
+    .split('\n').find((l) => /^\| \*\*Merge policy\*\* \| /.test(l)) || '';
+  const TPL_CELL = TPL_ROW.replace(/^\| \*\*Merge policy\*\* \| /, '').replace(/ \|$/, '');
+  const FOUR = ['.plans/pr-economy.state.md', '.plans/OBLIGATIONS.md', 'docs/product/JOURNEY.md',
+    'docs/product/overview.html', 'docs/product/session-handoff.md'];
+  const run = (conclusion) => ({ __typename: 'CheckRun', status: 'COMPLETED', conclusion, name: 'lint' });
+  const ctx = (state) => ({ __typename: 'StatusContext', state, context: 'ci' });
+  const GREEN = [run('SUCCESS'), run('SKIPPED'), ctx('SUCCESS')];
+  const wfMerge = (cell) => `## 10. Project profile\n\n| Key | Value |\n|---|---|\n| **Merge policy** | ${cell} |\n`;
+  const prJson = ({ state = 'OPEN', files = FOUR, checks = GREEN, head = HEAD } = {}) => ({
+    state, statusCheckRollup: checks, headRefOid: head,
+    files: files.map((f) => (typeof f === 'string' ? { path: f, changeType: 'MODIFIED' } : f)),
+  });
+  const shq = (s) => `'${s.replace(/'/g, `'\\''`)}'`;
+  const ghStub = (json, { exit = 0 } = {}) => ['#!/bin/bash', 'echo "gh-stub-called $*" >&2',
+    `case "$*" in *"pr view"*) printf '%s' ${shq(JSON.stringify(json))}; exit ${exit};; esac`, 'exit 1', ''].join('\n');
+  const mg = (cmd, { cell = REC, wf = true, pr = {}, exit = 0, gh, jq = true, files = {}, input = {}, env } = {}) =>
+    runHook({
+      event: 'PreToolUse', desc: GUARD, input: { tool_input: { command: cmd }, ...input },
+      files: { ...(wf ? { 'docs/WORKFLOW.md': { content: wfMerge(cell) } } : {}), ...files },
+      bin: { gh: gh === undefined ? ghStub(prJson(pr), { exit }) : gh, jq }, env,
+    });
+  const blocks = (r, text) => r.code === 2 && r.stderr.includes(text);
+  const sawView = (r, n) => r.stderr.includes(`gh-stub-called pr view ${n} `);
+  const ghRan = (r) => r.stderr.includes('gh-stub-called');
+  const why = (r) => `code=${r.code} out=${r.stdout.trim()} err=${r.stderr.trim()}`.slice(0, 400);
+
+  // Harness self-proof: the hook's declared externals are exactly what the PATH-only bin/ holds.
+  {
+    const src = readFileSync(path.join(PLUGIN, 'hooks/lib/merge-guard.sh'), 'utf8');
+    const ext = (src.match(/^# externals: (.+)$/m) || [, ''])[1].trim().split(/\s+/).filter(Boolean);
+    const missing = ext.filter((e) => !BIN_LIST.includes(e) && e !== 'jq' && e !== 'gh');
+    check('merge-guard: `# externals:` line present and ⊆ BIN_LIST + jq + gh', ext.length > 0 && missing.length === 0, missing.join(' '));
+    check('merge-guard: the template §10 Merge policy row was found (TPL_CELL is not empty)', TPL_CELL.length > 20, TPL_ROW);
+  }
+
+  // allow
+  { const r = mg(`${M} 101 --squash --delete-branch ${MH}`);
+    check('merge-guard: records-only, FOUR record paths + green checks → allowed (exit 0) after gh pr view',
+      r.code === 0 && r.stdout.includes('records-only scope') && sawView(r, 101), why(r)); }
+  { const r = mg(`${M} --squash ${MH} 7`); check('merge-guard: flags before the ref → allowed, gh viewed PR 7', r.code === 0 && sawView(r, 7), why(r)); }
+  { const r = mg(`cd . && ${M} 101 --match-head-commit=${HEAD}`); check('merge-guard: one leading `cd <repo> &&` → allowed', r.code === 0 && sawView(r, 101), why(r)); }
+  { const r = mg(`${M} 101 -sd ${MH}`); check('merge-guard: short boolean cluster -sd → allowed', r.code === 0, why(r)); }
+  { const r = mg(OK101, { pr: { checks: [] } });
+    check('merge-guard: empty rollup, no .github/workflows → allowed with the no-CI note', r.code === 0 && r.stdout.includes('no CI configured'), why(r)); }
+  { const r = mg(OK101, { pr: { files: [{ path: '.plans/old.md', changeType: 'DELETED' }, { path: '.plans/new.md', changeType: 'ADDED' }] } });
+    check('merge-guard: DELETED + ADDED on record paths → allowed', r.code === 0, why(r)); }
+  { const r = mg(OK101, { pr: { checks: [run('NEUTRAL'), ctx('SUCCESS')] } });
+    check('merge-guard: NEUTRAL CheckRun + SUCCESS StatusContext → allowed', r.code === 0, why(r)); }
+
+  // regression — full delegation and non-merges
+  { const r = mg(OK101, { cell: 'agent-may-merge (delegated 2026-01-01)' });
+    check('merge-guard: full delegation → reminder (exit 0), gh NOT run', r.code === 0 && r.stdout.includes('reviewer APPROVE') && !ghRan(r), why(r)); }
+  { const r = mg(`${M} chore/x --admin`, { cell: 'agent-may-merge (bookkeeping, delegated 2026-07-08)' });
+    check("merge-guard: the registry's (bookkeeping, …) row stays FULL delegation (L4) → reminder, gh NOT run",
+      r.code === 0 && r.stdout.includes('reviewer APPROVE') && !ghRan(r), why(r)); }
+  { const r = mg('gh pr view 1'); check('merge-guard: gh pr view (not a merge) → silent exit 0', r.code === 0 && !r.stdout && !r.stderr, why(r)); }
+  { const r = mg('git status'); check('merge-guard: git status → silent exit 0', r.code === 0 && !r.stdout && !r.stderr, why(r)); }
+
+  // block — policy
+  { const r = mg(OK101, { cell: 'human-only' }); check('merge-guard: human-only → BLOCK', blocks(r, 'human (HITL) merges') && !ghRan(r), why(r)); }
+  { const r = mg(OK101, { wf: false }); check('merge-guard: no docs/WORKFLOW.md → BLOCK (fail closed)', blocks(r, 'human (HITL) merges'), why(r)); }
+  { const r = mg(OK101, { cell: TPL_CELL });
+    check('merge-guard: the template placeholder prose, verbatim → BLOCK, gh NOT run', blocks(r, 'human (HITL) merges') && !ghRan(r), why(r)); }
+  { const r = mg(OK101, { cell: 'agent-may-merge (records-only, delegated 2026-10)' });
+    check('merge-guard: a malformed records-only value never widens to full delegation → BLOCK', blocks(r, 'human (HITL) merges'), why(r)); }
+  { const r = mg(OK101, { cell: `x ${REC}` }); check('merge-guard: records-only not at the start of the cell → BLOCK', blocks(r, 'human (HITL) merges'), why(r)); }
+  { const r = mg(OK101, { input: { cwd: '/nonexistent-merge-guard-dir' } });
+    check('merge-guard: a session cwd that is not a directory → BLOCK', blocks(r, 'not a directory'), why(r)); }
+
+  // block — command shape
+  const shape = [
+    [`${M} 101 -R xyzhub/other`, 'cross-repo', '-R'],
+    [`${M} --repo xyzhub/other 101`, 'cross-repo', '--repo'],
+    [`${M} 101 "-Rxyzhub/other"`, 'cross-repo', 'quoted attached -R'],
+    [`${M} 101 -sR xyzhub/other`, 'cross-repo', '-R inside a short cluster'],
+    [`GH_REPO=xyzhub/other ${M} 101`, 'cross-repo', 'GH_REPO='],
+    [`${M} https://github.com/xyzhub/agentic-workflow/pull/7`, 'plain number', 'URL ref'],
+    [`${M} --squash`, 'plain number', 'no ref (current-branch form)'],
+    [`${M} chore/x-bookkeeping`, 'plain number', 'branch ref'],
+    [`${M} 101 7`, 'plain number', 'two positional refs'],
+    [`${M} --body 5 101`, 'not allowed', 'a value flag that would shift the ref'],
+    [`${M} -b 5`, 'not allowed', 'short value flag'],
+    [`${M} 101 --admin`, 'not allowed', '--admin'],
+    [`${M} 101 && git push`, 'last command', '&& after'],
+    [`${M} 101 | cat`, 'last command', '| after'],
+    [`${M} 101 & echo x`, 'last command', '& after'],
+    [`${M} 101; ${M} 102`, 'more than one merge', 'two merges'],
+    [`${M} 101\ngit push`, 'last command', 'newline after'],
+    [`gh  pr merge 101`, 'single spaces', 'double space'],
+    [`${M} 101 --auto`, '--auto', '--auto'],
+    [`cd docs/..; cd . && ${M} 101`, 'stand alone', 'two cds before'],
+    [`git -C docs/.. status && ${M} 101`, 'stand alone', 'git -C before'],
+    [`${M} 101 --body=x git -C docs/..`, 'not allowed', 'a git -C target after the merge (never a policy source)'],
+    ['gh api -X PUT repos/xyzhub/agentic-workflow/pulls/101/merge', 'bypasses', 'gh api pulls/N/merge'],
+    ['gh api graphql -f query="mutation { mergePullRequest(input: {}) { clientMutationId } }"', 'bypasses', 'GraphQL mergePullRequest'],
+  ];
+  for (const [cmd, text, name] of shape) {
+    const r = mg(cmd);
+    check(`merge-guard: ${name} → BLOCK (${text})`, blocks(r, text) && !ghRan(r), why(r));
+  }
+
+  // block — the PR's file list
+  const filesCases = [
+    [[...FOUR, 'docs/product/decisions/2026-10-06-launch-media-brief.md'], 'docs/product/decisions/2026-10-06-launch-media-brief.md'],
+    [['docs/WORKFLOW.md'], 'docs/WORKFLOW.md is not a record path'],
+    [['CHANGELOG.md'], 'CHANGELOG.md is not a record path'],
+    [['plugins/agentic-workflow/hooks/hooks.json'], 'hooks.json is not a record path'],
+    [['docs/product/roadmap.md'], 'roadmap.md is not a record path'],
+    [['.plans/../CHANGELOG.md'], 'is not a record path'],
+    [['docs/product/JOURNEY.md.bak'], 'is not a record path'],
+    [['.plansx/a.md'], 'is not a record path'],
+    [['.plans/'], 'is not a record path'],
+    [['/.plans/x.md'], 'is not a record path'],
+    [['hooks/hooks.json'], 'hooks/hooks.json is not a record path'],
+    [['docs/product/decisions/x.md'], 'docs/product/decisions/x.md is not a record path'],
+    [[{ path: '.plans/x.md', changeType: 'RENAMED' }], 'renames and copies'],
+    [[{ path: '.plans/x.md', changeType: 'COPIED' }], 'renames and copies'],
+    [[{ path: '.plans/x.md' }], 'is UNKNOWN'],
+    [Array.from({ length: 100 }, (_, i) => `.plans/f${i}.md`), 'caps the file list'],
+    [[], 'changes no files'],
+  ];
+  for (const [files, text] of filesCases) {
+    const label = files.length > 3 ? `${files.length} files` : JSON.stringify(files);
+    const r = mg(OK101, { pr: { files } });
+    check(`merge-guard: files ${label.slice(0, 90)} → BLOCK`, blocks(r, text) && sawView(r, 101), why(r));
+  }
+  { const r = mg(OK101, { pr: { state: 'MERGED' } }); check('merge-guard: PR state MERGED → BLOCK', blocks(r, 'is MERGED, not OPEN'), why(r)); }
+
+  // block — checks
+  { const r = mg(OK101, { pr: { checks: [...GREEN, { __typename: 'CheckRun', status: 'IN_PROGRESS', conclusion: null, name: 'lint' }] } });
+    check('merge-guard: CheckRun IN_PROGRESS (no conclusion) → BLOCK', blocks(r, 'not green'), why(r)); }
+  { const r = mg(OK101, { pr: { checks: [{ __typename: 'CheckRun', status: 'IN_PROGRESS', conclusion: '', name: 'lint' }] } });
+    check('merge-guard: CheckRun with empty-string conclusion (gh in-progress shape) → BLOCK', blocks(r, 'not green'), why(r)); }
+  { const r = mg(OK101, { pr: { checks: [run('FAILURE')] } }); check('merge-guard: CheckRun FAILURE → BLOCK', blocks(r, 'lint is FAILURE'), why(r)); }
+  { const r = mg(OK101, { pr: { checks: [ctx('PENDING')] } }); check('merge-guard: StatusContext PENDING → BLOCK', blocks(r, 'ci is PENDING'), why(r)); }
+  { const r = mg(OK101, { pr: { checks: [] }, files: { '.github/workflows/lint.yml': { content: 'on: push\n' } } });
+    check('merge-guard: empty rollup WITH .github/workflows → BLOCK (wait for CI)', blocks(r, 'wait for CI'), why(r)); }
+
+  // block — TOCTOU: the merge must pin the head the hook just viewed
+  { const r = mg(`${M} 101 --squash`); check('merge-guard: no --match-head-commit → BLOCK (names the head to pin)',
+      blocks(r, `add --match-head-commit ${HEAD}`) && sawView(r, 101), why(r)); }
+  { const r = mg(`${M} 101 --squash --match-head-commit ${'f'.repeat(40)}`);
+    check('merge-guard: --match-head-commit ≠ the viewed headRefOid → BLOCK', blocks(r, 'does not match PR #101'), why(r)); }
+  { const r = mg(`${M} 101 --match-head-commit`); check('merge-guard: --match-head-commit with no value → BLOCK', blocks(r, 'add --match-head-commit'), why(r)); }
+  { const r = mg(OK101, { pr: { head: 'not-a-sha' } }); check('merge-guard: headRefOid missing/malformed in gh JSON → BLOCK', blocks(r, 'could not read PR #101'), why(r)); }
+  { const r = mg(OK101); check('merge-guard: --match-head-commit = the viewed headRefOid → allowed', r.code === 0 && r.stdout.includes('records-only scope'), why(r)); }
+
+  // block — the hooks.json wrapper fails closed when the lib script cannot run
+  { const gone = path.join(tmpdir(), 'no-such-plugin-root-merge-guard');
+    const r = mg(OK101, { env: { CLAUDE_PLUGIN_ROOT: gone } });
+    check('merge-guard wrapper: lib script absent → merge BLOCKS', blocks(r, 'merge guard is unavailable'), why(r));
+    const q = mg('git status', { env: { CLAUDE_PLUGIN_ROOT: gone } });
+    check('merge-guard wrapper: lib script absent → a non-merge command still passes', q.code === 0, why(q));
+    const u = mg(OK101, { env: { CLAUDE_PLUGIN_ROOT: '' } });
+    check('merge-guard wrapper: CLAUDE_PLUGIN_ROOT unset/empty → merge BLOCKS', blocks(u, 'merge guard is unavailable'), why(u));
+    const a = mg('gh api -X PUT repos/o/r/pulls/1/merge', { env: { CLAUDE_PLUGIN_ROOT: gone } });
+    check('merge-guard wrapper: lib script absent → gh api merge BLOCKS', blocks(a, 'merge guard is unavailable'), why(a)); }
+  { const fake = mkdtempSync(path.join(tmpdir(), 'fakeroot-'));
+    mkdirSync(path.join(fake, 'hooks/lib'), { recursive: true });
+    writeFileSync(path.join(fake, 'hooks/lib/merge-guard.sh'), 'exit 1\n');
+    const r = mg(OK101, { env: { CLAUDE_PLUGIN_ROOT: fake } });
+    rmSync(fake, { recursive: true, force: true });
+    check('merge-guard wrapper: lib script crashes (exit 1) → merge BLOCKS', blocks(r, 'exit 1'), why(r)); }
+
+  // S1-fix (ckpt-p1): detection + target shape apply under EVERY policy
+  const FULL = 'agent-may-merge (delegated 2026-01-01)';
+  const BOOK = 'agent-may-merge (bookkeeping, delegated 2026-07-08)';
+  const everyPolicy = [
+    ['A1', 'gh pr -R other/repo merge 101 --squash', 'human-only', 'cross-repo'],
+    ['A2', 'gh pr --repo=other/repo merge 101 --squash', FULL, 'cross-repo'],
+    ['B1', `git -C docs/.. status && ${M} 101 --admin`, BOOK, 'stand alone'],
+    ['B2', `cd docs/.. && cd . && ${M} 101`, BOOK, 'stand alone'],
+    ['B3', `cd docs/..; cd .; ${M} 101`, FULL, 'stand alone'],
+    ['B4', `cd docs/.. && GH_REPO=xyzhub/registry ${M} 101`, FULL, 'cross-repo'],
+    ['C1', `${M};echo`, REC, 'last command'],
+    ['C2', 'gh pr $(echo merge) 101', FULL, 'unrecognized merge shape'],
+  ];
+  for (const [id, cmd, cell, text] of everyPolicy) {
+    const r = mg(cmd, { cell });
+    check(`merge-guard ${id}: ${cmd.slice(0, 60)} under ${cell.slice(0, 28)} → BLOCK (${text})`, blocks(r, text) && !ghRan(r), why(r));
+  }
+  for (const cmd of [`${M} 101`, `cd docs/.. && ${M} 101 --admin`]) {
+    const r = mg(cmd, { cell: BOOK });
+    check(`merge-guard: registry (bookkeeping) row stays warn-only for \`${cmd.slice(0, 40)}\``, r.code === 0 && r.stdout.includes('reviewer APPROVE'), why(r));
+  }
+  for (const cmd of ['gh pr view 5', 'gh pr create --title "merge guard: S1-fix" --body x', 'gh pr list --state open']) {
+    const r = mg(cmd, { cell: 'human-only' });
+    check(`merge-guard: non-merge \`${cmd.slice(0, 40)}\` → silent exit 0`, r.code === 0 && !r.stderr, why(r));
+  }
+  // origin/<default> is the policy source inside a real git tree (bare origin; working tree disagrees)
+  { const root = mkdtempSync(path.join(tmpdir(), 'mg-git-'));
+    const g = (cwd, ...a) => spawnSync('git', ['-c', 'user.name=t', '-c', 'user.email=t@t', '-c', 'init.defaultBranch=main', ...a], { cwd, encoding: 'utf8' });
+    const wt = path.join(root, 'wt'); const wfp = path.join(wt, 'docs/WORKFLOW.md');
+    g(root, 'init', '-q', '--bare', path.join(root, 'origin.git')); g(root, 'init', '-q', wt);
+    mkdirSync(path.join(wt, 'docs')); writeFileSync(wfp, wfMerge(REC));
+    g(wt, 'add', '.'); g(wt, 'commit', '-qm', 'rec'); g(wt, 'remote', 'add', 'origin', path.join(root, 'origin.git'));
+    g(wt, 'push', '-q', 'origin', 'HEAD:main'); g(wt, 'remote', 'set-head', 'origin', 'main');
+    writeFileSync(wfp, wfMerge('human-only'));
+    const allow = mg(OK101, { input: { cwd: wt }, wf: false });
+    g(wt, 'commit', '-qam', 'human'); g(wt, 'push', '-q', 'origin', 'HEAD:main');
+    writeFileSync(wfp, wfMerge(REC));
+    const deny = mg(OK101, { input: { cwd: wt }, wf: false });
+    rmSync(root, { recursive: true, force: true });
+    check('merge-guard: git tree — policy read from origin/main, not the working tree (records-only on origin → allowed; working-tree-only → BLOCK)',
+      allow.code === 0 && allow.stdout.includes('records-only scope') && blocks(deny, 'human (HITL) merges'), `${why(allow)} || ${why(deny)}`); }
+
+  // block — tools and gh failures
+  { const r = mg(OK101, { gh: false }); check('merge-guard: gh missing → BLOCK', blocks(r, 'gh and jq'), why(r)); }
+  { const r = mg(OK101, { jq: false }); check('merge-guard: jq missing → BLOCK', blocks(r, 'gh and jq') && !ghRan(r), why(r)); }
+  { const r = mg(OK101, { exit: 1 }); check('merge-guard: gh pr view exits 1 → BLOCK', blocks(r, 'could not read PR #101') && sawView(r, 101), why(r)); }
+  { const r = mg(OK101, { gh: '#!/bin/bash\necho "gh-stub-called $*" >&2\nprintf "not json"\n' });
+    check('merge-guard: gh prints non-JSON → BLOCK', blocks(r, 'could not read PR #101'), why(r)); }
+  { const r = mg(OK101, { gh: `#!/bin/bash\nprintf '%s' '{"state":"OPEN","files":"x","statusCheckRollup":[]}'\n` });
+    check('merge-guard: files is not an array → BLOCK', blocks(r, 'could not read PR #101'), why(r)); }
 }
 
 if (failures.length) {

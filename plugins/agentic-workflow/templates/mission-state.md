@@ -86,20 +86,27 @@ promotion ref for the copy landed in `.plans/OBLIGATIONS.md` (the repo-level
 register, `templates/obligations.md`). `Closed: YYYY-MM-DD` is written only
 once every row above is `[x]` or `[~] … → OB-<n>` — never while a bare `[ ]`
 remains; the mission-close step (`/agentic-workflow:settle`) enforces this
-before the mission may be reported done._
+before the mission may be reported done. Every row is classified in its source
+parens: `(<source>, pre-merge)` — no dependency on the merge, a deploy or a
+reinstall; fires on the phase branch BEFORE the checkpoint and rides the
+feature PR — or `(<source>, post-merge)` — fires at a later
+`/agentic-workflow:settle` from the mission's ONE bookkeeping branch
+`chore/<mission>-bookkeeping` and its ONE PR, which the agent may merge under
+the §10 `records-only` scope. A row with no marker is legacy and read as
+post-merge. A mission closes in two PRs._
 
-- [ ] branch + worktree cleanup · added YYYY-MM-DD (planner) — do: delete this
+- [ ] branch + worktree cleanup · added YYYY-MM-DD (planner, post-merge) — do: delete this
   mission's phase + integration branches (local and remote) and prune its
   now-stale worktrees — when: the phase/integration PRs are merged AND the
   deploy that carried them concluded green per §10 — probe: `gh pr list
   --state merged` + `gh run list` _(deferred until deploy-green, via
   `/agentic-workflow:settle`)_
-- [ ] docs/record synced · added YYYY-MM-DD (planner) — do: _what changed_ —
+- [ ] docs/record synced · added YYYY-MM-DD (planner, pre-merge) — do: _what changed_ —
   when: _observable condition_ — probe: _command | manual_
-- [ ] live-verify after reinstall · added YYYY-MM-DD (planner) — do: confirm
+- [ ] live-verify after reinstall · added YYYY-MM-DD (planner, post-merge) — do: confirm
   the shipped behavior fires in a real session — when: the release is
   installed (plugin update + reload in the CLI, post-merge) — probe: manual
-- [ ] version bumped + stamped · added YYYY-MM-DD (planner) — do: bump the
+- [ ] version bumped + stamped · added YYYY-MM-DD (planner, pre-merge) — do: bump the
   version wherever this project pins it (§10's **Version pin** row if recorded,
   else the project's own manifest) and stamp this
   mission's CHANGELOG entry with it — when: this mission's CHANGELOG entry

@@ -176,6 +176,12 @@ derivation** — you **override the tune and spawn the Claude `reviewer` on Fabl
 
 ## 3. Checkpoint at each phase end (the only phase end, without `phases`)
 
+**Pre-merge Closing pass (first).** Probe every `## Closing` row marked
+`(…, pre-merge)`; tick each that passes (`[x]` + `· fired YYYY-MM-DD
+(<evidence>)`) on the phase branch and write the ledger. The reviewer
+re-verifies them. A pre-merge row whose probe fails is surfaced as a REQUEST
+CHANGES-class finding — never silently reclassified as post-merge.
+
 Spawn the **reviewer** agent (fresh context, one-shot): it re-runs all gates,
 diff-reviews `<base>..<head>`, performs deferred manual/live items, runs the
 design detector once if the diff touches UI (§0.2) and classifies its findings
@@ -220,7 +226,9 @@ inferences.
      staging state, and apply the gate policy: `human-merge` (default) — pause
      for the **human to merge** (never merge the default branch yourself;
      merging often deploys to production) — unless the project's §10 **Merge
-     policy** is `agent-may-merge`, in which case you may merge the APPROVEd PR
+     policy** is `agent-may-merge` (fully, or `records-only` — then only a PR
+     whose every file is a record path, which the hook checks from the PR's
+     file list), in which case you may merge the APPROVEd PR
      yourself (`gh pr merge`; the guardrail hook checks the policy) and log
      it. `batch` — the phase already sits on `staging`; the human merges
      staging → default once, at the batched end-of-mission confirmation.
@@ -269,6 +277,22 @@ is the retro's first number. Branch reaping usually outlives the mission: the
 phase branches' delete condition (the human's merge concluded green) post-dates
 the close, so it parks as a `## Closing` row and fires at a later
 `/agentic-workflow:settle` run — never forced at close.
+
+**One bookkeeping PR per close (L1).** After the feature PR merges, every
+post-merge record edit rides ONE branch and ONE PR:
+
+1. `git fetch origin`; if `gh pr list --head chore/<mission>-bookkeeping
+   --state open --json number` returns a PR, reuse that branch; else
+   `git switch -c chore/<mission>-bookkeeping origin/<default>`.
+2. Commit every post-merge record edit there — the settle fire-back,
+   promotions, the `Closed:` stamp, the chronicler's JOURNEY/overview update,
+   the handoff. Open ONE PR, `chore(<mission>): post-merge bookkeeping`.
+3. When the ledger is stamped (or the session ends): `node tools/ci-wait.mjs
+   <sha>` green → merge it by its NUMBER with `--squash --delete-branch
+   --match-head-commit <head sha>` (the hook re-reads the PR's file list and
+   head; a BLOCK means leave it open and report it).
+
+Never a PR per step. `Sessions used:` does not increment for the close.
 
 ## Output
 

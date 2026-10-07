@@ -163,6 +163,12 @@ green.
 - End the output with the **surface list**: every `probe: manual` row, every
   failed or ambiguous probe, and every skipped deletion with its reason.
 
+**Where the write-back lands (L1).** Post-merge (the feature PR merged, or the
+default branch checked out), every write-back goes on the mission's ONE
+`chore/<mission>-bookkeeping` branch and its ONE PR (`mission.md` §5) — never
+a settle-only PR. Merging that PR is the close step's single act, not this
+step's.
+
 ## 5. The mission-close gate
 
 When the active mission is finishing — the run that would report the mission
@@ -178,6 +184,10 @@ done (the session-close fall-through in `end.md`, the close step in
   > the verbatim copy landed in `.plans/OBLIGATIONS.md`), then write the
   > `Closed:` stamp. The checklist is the authority — "zero open PRs" is not
   > a completeness signal.
+
+  Rows marked `(…, pre-merge)` fire on the phase branch before the checkpoint
+  (`mission.md` §3); one still `[ ]` here is a planning defect — refuse as
+  usual and name it `pre-merge missed` in the surface list.
 
 - **Every row `[x]` or `[~] … → OB-<n>`** → write `Closed: YYYY-MM-DD` at the
   end of the block. The lint backstop (check 13) enforces the same rule

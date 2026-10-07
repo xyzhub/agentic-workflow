@@ -645,6 +645,11 @@ function checkNextUpAgreement() {
 // consumer). L3 (owner lock): a `when:` names an observable state, NEVER a
 // clock — a bare time word as the whole condition is a finding, because a
 // clock-shaped row can neither be probed nor honestly fired.
+// pr-economy L2: a mission-ledger Closing row may end its source parens with a
+// marker — `(<source>, pre-merge)` fires on the phase branch before the
+// checkpoint, `(<source>, post-merge)` from the one bookkeeping PR; no marker =
+// legacy, read as post-merge. A merge-shaped tag that is neither is a finding;
+// the TEMPLATE's rows must carry one. Never applied to the register.
 const OB_DATE = '(?:\\d{4}-\\d{2}-\\d{2}|YYYY-MM-DD)';
 const OB_ROW = new RegExp(
   `^- \\[([ x~])\\] ([^·]+?) · added ${OB_DATE} \\(([^)]+)\\) — do: (.+?) — when: (.+?) — probe: (.+)$`
@@ -760,6 +765,13 @@ function checkObRow(file, b, { strictLabel = false, placeholderOk = false } = {}
   const [, glyph, , , , whenSeg, probeSeg] = m;
   if (strictLabel && !/^OB-\d+$/.test(m[2].trim()))
     fail(file, b.n, `register row id "${m[2].trim()}" must be \`OB-<n>\` with <n> the next unused integer — mission-local names stay in the mission ledger; the register is the durable namespace`);
+  const src = m[3].trim();
+  const mk = src.match(/,\s*([^,]+)$/);
+  const tag = mk?.[1].trim();
+  if (!strictLabel && tag && /merge$/i.test(tag) && tag !== 'pre-merge' && tag !== 'post-merge')
+    fail(file, b.n, `Closing-row marker "${tag}" must be exactly \`pre-merge\` or \`post-merge\` (written as \`(<source>, pre-merge)\`); a row with no marker is read as post-merge`);
+  if (placeholderOk && !(tag === 'pre-merge' || tag === 'post-merge'))
+    fail(file, b.n, 'template Closing row must be classified `(<source>, pre-merge)` or `(<source>, post-merge)` — every new ledger inherits the classification');
   const fired = OB_FIRED.test(probeSeg);
   if (glyph === 'x' && !fired)
     fail(file, b.n, 'fired (`[x]`) obligation row must append `· fired YYYY-MM-DD (<evidence>)` — a tick without evidence is a claim, not a fire');

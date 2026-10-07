@@ -225,7 +225,10 @@ hook-enforced); everything else stays human.
 ## Guardrails (hooks, always on)
 
 Blocks pushes to or refspecs targeting the default branch; blocks PR merges
-unless the target repo's §10 Merge policy delegates them (fail closed); warns
+unless the target repo's §10 Merge policy delegates them — fully, or
+`records-only`, where the hook allows a merge solely when every changed path
+is `.plans/**` or one of the three record files and CI is green (fail
+closed); warns
 on tag pushes that may deploy; reminds on commit format, gates, and doc
 updates for high-impact files; nudges toward a ranged read or a delegating
 subagent when a whole-file read targets a large file — a discipline line,

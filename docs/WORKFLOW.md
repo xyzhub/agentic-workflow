@@ -1,6 +1,6 @@
 # The Workflow — one agentic protocol from idea to viable product
 
-<!-- protocol-master: v1.52.0 -->
+<!-- protocol-master: v1.53.0 -->
 
 ## Quick reference — humans start here
 
@@ -251,7 +251,7 @@ Shipped by this plugin as hooks. Advisory except where marked:
 | `git push` | **BLOCKS** any refspec targeting the default branch (`HEAD:main`, `feature:main`, `:main`) — never sanctioned, even with delegated merge authority |
 | `git push --tags` / `--follow-tags` | Warns that tag pushes may fire a release/deploy pipeline — per `/agentic-workflow:release`, the human runs them |
 | `git push` | Warns when tracked files are modified-but-uncommitted (untracked scratch dirs don't warn) |
-| `gh pr merge` | **BLOCKS** unless the §10 **Merge policy** is `agent-may-merge` (fail closed when unset/absent); when delegated, reminds: merge only on a reviewer APPROVE |
+| `gh pr merge` | **BLOCKS** unless the §10 **Merge policy** cell — read from the committed copy on `origin/<default>`, matched at the table cell, in the repo the merge runs in — delegates it. Under EVERY policy a cross-repo merge (`-R`/`--repo` anywhere, `GH_REPO=`), more than one merge per command, anything before it but one leading `cd <repo> &&`, or an unparseable merge shape → BLOCK. `agent-may-merge (delegated <date>)` → reminder, merge on a reviewer APPROVE; `agent-may-merge (records-only, delegated <date>)` → allowed ONLY for a single, numeric-ref, same-repo merge pinned with `--match-head-commit <head sha>` whose PR (`gh pr view --json state,files,statusCheckRollup,headRefOid`) is OPEN with 1–99 files, every one ADDED/MODIFIED/DELETED on a record path — `.plans/**`, `docs/product/JOURNEY.md`, `docs/product/overview.html`, `docs/product/session-handoff.md`, exact paths — and every check green; gh/jq missing, `-R`/`--repo`, a compound command, a URL or branch ref, `--auto` or any other flag beyond `--squash`/`--merge`/`--rebase`/`--delete-branch`, a missing or stale head pin, renames/copies, pending/failed checks, any other path, `gh api …/pulls/N/merge`, and a guard script that cannot run → BLOCK (fail closed). Body: `hooks/lib/merge-guard.sh` |
 | `gh pr create` | Reminder to have run the gates |
 | publish-host call (socials, article platforms, mailing-list AND email APIs, bare mailers) | **BLOCKS** under EVERY Publish policy unless the command carries an open claim token `PUBLISH_CLAIM=<token>` minted by `tools/publish-gate.mjs claim` (approved, hash-pinned, epoch-bound, due, `kind: post`) and moved to `dispatching` by `publish-gate.mjs dispatch` (which re-hashes the body); the passing call appends a `fired` event, so the token is spent and a retry under it **BLOCKS**; a token resolving to `kind: outreach` **BLOCKS** regardless of policy (§11); `PUBLISH_CONNECT=` marks a `/agentic-workflow:publish connect` round-trip (allowed, reminder); paid/ad endpoints — now including `api.elevenlabs.io` and `api.x.com` — **BLOCK** without the literal `PAID_CONFIRMED_BY_HUMAN`. Threat model: accident and double-fire, not an adversarial agent (§14) |
 | `Write`/`Edit` | Reminder to update docs when high-impact files change; on a route file (`server/api/**`) or the schema, when the project ships `tools/catalog.mjs`, it names the catalog (§6.1: regenerate + rewrite the feature row in the same PR — the reviewer gates it) |
@@ -292,6 +292,9 @@ ticking)? The close falls through to the settle close-gate first: read the
 ledger's `## Closing` block — while any `[ ]` obligation row remains, the
 mission may not be reported closed; `/agentic-workflow:settle` fires or
 promotes each row, and only then is the `Closed:` stamp written (§5).
+Post-merge record edits ride ONE `chore/<mission>-bookkeeping` branch and PR
+per mission close (`end` reuses an open one); the agent may merge it under the
+§10 `records-only` scope — so a mission needs at most two PRs.
 
 **The queue — one place work waits.** Every open item — bug, review nit,
 feature, deferral, `/agentic-workflow:operate` finding, `/agentic-workflow:retro`
@@ -465,7 +468,10 @@ AFTER the phase has landed on `staging` and verified there:
   `agent-may-merge`, the orchestrator may merge the reviewer-APPROVEd,
   staging-verified PR itself (logged in the ledger) instead of pausing — the
   delegation covers *who clicks merge*, never *skipping the review or the
-  staging verify*.
+  staging verify*. Under `agent-may-merge (records-only, delegated <date>)`
+  the delegation covers ONLY a PR whose every file is a record path — the hook
+  enforces the allowlist from the PR's file list; the feature PR stays the
+  human's.
 - `batch` — phases accumulate on `staging` (each verified as it lands) —
   **never the default branch**, so the push-block guardrail (§3) and the merge
   authority (§11 safety boundary) stay intact — and HITL merges staging → default
@@ -496,7 +502,11 @@ row in the active ledger's `## Closing` block — `- [ ] <id> · added YYYY-MM-D
 (<source>) — do: <action> — when: <observable condition> — probe: <command |
 manual>`, where a `when:` names a state a probe can check, never a clock — or,
 when it outlives its mission, promoted (`[~] … → OB-<n>`) as a verbatim copy
-into the repo register `.plans/OBLIGATIONS.md`. Rows are never deleted: a fired
+into the repo register `.plans/OBLIGATIONS.md`. Each row's source parens end
+with a marker: `(<source>, pre-merge)` rows fire on the phase branch before the
+checkpoint and ride the feature PR; `(<source>, post-merge)` rows fire from the
+mission's one bookkeeping PR; a row with no marker is legacy, read as
+post-merge. Rows are never deleted: a fired
 row ticks `[x]` and appends `· fired YYYY-MM-DD (<evidence>)`. The close gate:
 a mission may not be reported closed while any `[ ]` Closing row remains —
 `/agentic-workflow:settle` is the close step (probe every row, fire the
@@ -924,7 +934,7 @@ drive the real flow, confirm monitoring is receiving, record the result).
 | Key | Value |
 |---|---|
 | **HITL (merge/deploy authority)** | Baker |
-| **Merge policy** | human-only |
+| **Merge policy** | agent-may-merge (records-only, delegated 2026-10-07) |
 | **Publish policy** | human-only (default, fail-closed — no publishing delegation recorded; §14) |
 | **Default branch** | main |
 | **Staging** | none — markdown plugin with no deploy; a phase's "staging verify" is the tier-1 lint on the phase branch + `claude --plugin-dir` load in a consumer session; the PR to `main` opens after that (added 2026-08-19 with the §5 staging flow) |
@@ -998,7 +1008,8 @@ choice and how to reverse it. At the human gates, `/agentic-workflow:counsel` co
 explicit human confirmation each time (pre-authorization lets you *prepare*, not
 *fire*): merging the default branch (unless the §10 **Merge policy** delegates it
 — the delegation itself is a human decision, and even then only reviewer-APPROVEd
-PRs or §13 registry bookkeeping, never direct pushes), deploying to production /
+PRs, §13 registry bookkeeping, or record-only PRs under the §10 `records-only`
+scope (hook-enforced path allowlist, §3), never direct pushes), deploying to production /
 going live, spending beyond
 the flight-plan ceiling, publishing outward or messaging on the owner's behalf
 (unless the §10 **Publish policy** delegates **organic** publishing — scoped,
