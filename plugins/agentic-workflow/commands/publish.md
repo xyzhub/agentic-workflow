@@ -91,8 +91,9 @@ strictly in this order:
    next item — never retried, never worked around.
 2. `publish-gate.mjs dispatch <token>`.
 3. The connector call, with `PUBLISH_CLAIM=<token>` **literally in the same Bash
-   command** (the §3 hook sees command text only and blocks a publish-host call
-   without an open claim).
+   command** (the §3 hook sees command text only: it blocks a publish-host call
+   without a dispatched claim, and the passing call spends the token — a retry
+   under it is blocked).
 4. `publish-gate.mjs outcome <token> delivered --permalink <url>` — it appends
    the `publish-log.md` row and turns the queue row into a receipt — or, on ANY
    connector error, timeout or doubt, `publish-gate.mjs outcome <token> unknown`.
