@@ -41,5 +41,6 @@ _Written: 2026-10-07T05:45:00+03:00 · session on Opus 5.5 · branch chore/pr-ec
 
 ## Next
 
-1. `/agentic-workflow:mission "operate-triage" run`.
-2. When an Orderly session is open: run OB-22, then record the result on its register row.
+1. Consider fixing #108 first. The merge guard's last-resort check refuses harmless commands that contain "gh", "pr" and "merge" in that order, even inside other words. Until it's fixed, put such text in files (Write tool, `--body-file`).
+2. `/agentic-workflow:mission "operate-triage" replan`. The plan predates pr-economy: it targets 1.53.0, which is now taken (use 1.54.0), and its Closing rows lack the pre-merge/post-merge markers. Estimate stays 1 session. Then `run`.
+3. When an Orderly session is open: run OB-22, then record the result on its register row.
