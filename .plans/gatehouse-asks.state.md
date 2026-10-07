@@ -20,7 +20,7 @@ Standing agent authorized: (none — one-shot reviewer at the checkpoint, §12 L
 ## Checklist
 
 - [x] S1 — all six Gatehouse asks + release hygiene (branch `mission/gatehouse-asks`)
-- [~] S2 — owner follow-ups on PR #112: codex-edits-own-rules warning, `on-demand` phase + project-only agents in registry
+- [x] S2 — owner follow-ups on PR #112: codex-edits-own-rules warning, `on-demand` phase + project-only agents in registry
 - [~] Checkpoint — phase 1 **Fable** review + staging verify + PR to `main` (human merge) · Fable APPROVE 2026-10-07 06:52 · merge-pending (human)
 
 ## Open questions
@@ -49,6 +49,8 @@ decisions in `.plans/gatehouse-asks.md`)
 - S1: missing-skill deviations attach to the done + failed distillate paths only, not the two blocked (binary/auth) paths.
 
 ## Handoff log (newest first)
+
+- 2026-10-07 07:36 — S2 DONE, committed 758b01f (7 files, +123/−12). Gates: lint clean; run-codex-test 175; agents-test 24. Narrow Fable re-review spawned on d5311a2..758b01f (resumed checkpoint reviewer).
 
 - 2026-10-07 07:30 — LOCKED (owner, 2026-10-07): "in the case of codex changing its own rules, just warn. and add the on-demand value". Estimate 2 → 3 (owner-requested follow-up = the scope decision). S2 spawned: (1) run-codex warns in distillate when a run changed `.codex/` paths, and `/tune reviewer boundary-escalation off` prints a warning when the reviewer runtime is codex — no revert/block/forced tier; (2) registry `phase` allows `on-demand` (default when absent) and lists project-only agents from `.claude/agents/` with `source`. Advisories 3–6 stay backlog. Narrow Fable re-review of the S2 delta follows. Sessions used 3/3.
 
