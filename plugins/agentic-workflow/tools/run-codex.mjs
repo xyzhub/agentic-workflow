@@ -430,6 +430,14 @@ export function highImpactPatterns(cwd) {
   return pats.length ? pats : null;
 }
 
+// Warn (never revert/block) when the run edited Codex's own guardrail rules —
+// a self-modifying guardrail a human should read by hand.
+export function codexRuleDeviations(paths) {
+  return paths
+    .filter((p) => p === '.codex' || p.startsWith('.codex/'))
+    .map((p) => `warning: this run changed ${p} — Codex edited its own guardrail rules; review that change by hand`);
+}
+
 export function highImpactTouched(paths, patterns) {
   if (!patterns) return null;
   const res = patterns.map((p) => new RegExp(`(^|/)${p.split('*').map((s) => s.replace(/[.+?^${}()|[\]\\]/g, '\\$&')).join('[^/]*')}$`));
@@ -523,6 +531,7 @@ export function main(argv = process.argv.slice(2)) {
 
   const paths = changedPaths(o.cwd, before);
   const hi = highImpactTouched(paths, highImpactPatterns(o.cwd));
+  const codexRuleDevs = codexRuleDeviations(paths);
 
   if (parsed === null || errs.length) {
     try { writeFileSync(`${o.out}.raw.txt`, raw); } catch { /* best effort */ }
@@ -531,7 +540,7 @@ export function main(argv = process.argv.slice(2)) {
       : `distillate did not match the schema: ${errs.slice(0, 3).join('; ')}`);
     d.changed_paths = paths;
     d.high_impact_touched = hi;
-    d.deviations = skillDeviations;
+    d.deviations = [...skillDeviations, ...codexRuleDevs];
     d.runtime.thread_id = thread_id || o.resume || null;
     d.usage = usage;
     d.gates = [{ name: 'distillate schema', result: 'red', first_error: parsed === null ? 'distillate not valid JSON' : errs[0] }];
@@ -543,7 +552,7 @@ export function main(argv = process.argv.slice(2)) {
   const d = { ...parsed };
   d.changed_paths = paths;                       // the tree wins
   d.high_impact_touched = hi;
-  d.deviations = [...(Array.isArray(d.deviations) ? d.deviations : []), ...skillDeviations];
+  d.deviations = [...(Array.isArray(d.deviations) ? d.deviations : []), ...skillDeviations, ...codexRuleDevs];
   d.runtime = {
     name: 'codex',
     model: (d.runtime && d.runtime.model) || o.model,

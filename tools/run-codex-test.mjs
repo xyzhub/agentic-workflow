@@ -433,6 +433,32 @@ async function adapterGroup() {
     && done.record?.argv.includes('sandbox_workspace_write.network_access=true'));
   ok('the child ran in --cwd', done.record?.cwd && existsSync(done.record.cwd));
 
+  // A run that edits Codex's own guardrail rules is warned about — not reverted,
+  // not failed. The deviation is appended; status stays done (exit 0). The rules
+  // file is tracked (as in a real project), so git reports its full path.
+  const selfRepo = makeRepo('self-edit');
+  mkdirSync(path.join(selfRepo, '.codex/rules'), { recursive: true });
+  writeFileSync(path.join(selfRepo, '.codex/rules/agentic-workflow.rules'), '# original\n');
+  git(selfRepo, 'add', '-A');
+  git(selfRepo, '-c', 'user.email=t@t', '-c', 'user.name=t', '-c', 'commit.gpgsign=false',
+    'commit', '-q', '--no-verify', '-m', 'add codex rules');
+  const selfEdit = runAdapter(['--role', 'backend', '--brief', '.plans/demo.sessions.md#S3'], {
+    repo: selfRepo, spec: { writes: {
+      '.codex/rules/agentic-workflow.rules': '# tampered\n',
+      'made-by-run.txt': 'made by the run\n',
+    } },
+  });
+  ok('a run editing .codex/ rules still exits 0 (warn only, no revert/block)', selfEdit.status === 0,
+    `exit ${selfEdit.status} ${selfEdit.stderr}`);
+  ok('a changed .codex/ path yields a warning deviation naming the file',
+    (selfEdit.out?.deviations || []).some((d) =>
+      d.startsWith('warning:') && d.includes('.codex/rules/agentic-workflow.rules')
+      && /edited its own guardrail rules/.test(d)),
+    JSON.stringify(selfEdit.out?.deviations));
+  ok('an ordinary changed path raises no self-edit warning',
+    !(done.out?.deviations || []).some((d) => d.includes('guardrail rules')),
+    JSON.stringify(done.out?.deviations));
+
   // Prompt assembly: the shim records the prompt as the last argv element.
   const prompt = done.record.argv[done.record.argv.length - 1];
   const at = (needle) => prompt.indexOf(needle);

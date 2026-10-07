@@ -48,6 +48,13 @@ _(empty)_
   when none is healthy, with per-mission `<path>/.worktrees/<mission>` checkouts.
   `connect server <host> [--label …] [--name …]` appends a row and `server
   remove <name>` drops one; `doctor` probes every row.
+- **Self-edited-guardrail warning + on-demand/project agents.** `run-codex.mjs`
+  appends a `warning:` deviation (no revert, no status change) when a run changed
+  any path under `.codex/` — Codex editing its own guardrail rules, flagged for a
+  human to review by hand. The registry gains a `source` field (`plugin` |
+  `project`), lists `.claude/agents` files that shadow no plugin agent, and uses
+  an `on-demand` phase (a frontmatter `phase:` wins) where no lifecycle phase maps
+  the role; `/tune`'s no-arg table and `agents-registry.schema.json` follow.
 
 ### Fixed
 - **The codex adapter now honours the role's `skills:` frontmatter (#95).**

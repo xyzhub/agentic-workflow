@@ -147,6 +147,13 @@ async function registryGroup(schema) {
     banner: `> Tuned from agentic-workflow v${version} (base sha256:${sha12(path.join(BASE_DIR, 'reviewer.md'))}) — boundary-escalation override (off). Reset with /tune reviewer reset.`,
   }));
 
+  // Project-only agents: .claude/agents files that shadow no plugin agent.
+  // (e) carries its own phase: ; (f) has none → on-demand.
+  writeFileSync(path.join(ad, 'scout.md'),
+    '---\nname: scout\ndescription: Recon agent for the repo. Runs ad hoc.\nmodel: claude-opus-4-8\ntools: Read, Grep\nruntime: codex\neffort: high\nphase: discover\nskills: [plain-report]\n---\n\nScout body.\n');
+  writeFileSync(path.join(ad, 'tinker.md'),
+    '---\nname: tinker\ndescription: On-demand helper.\n---\n\nTinker body.\n');
+
   const reg = registry(proj);
   const byName = Object.fromEntries(reg.agents.map((a) => [a.name, a]));
 
@@ -171,6 +178,21 @@ async function registryGroup(schema) {
   ok('(d) effective reflects the tuned skills', JSON.stringify(rv.effective.skills) === JSON.stringify(['stripe-testing']));
   ok('(d) override.kind includes boundary_escalation and skills',
     rv.override.kind.includes('boundary_escalation') && rv.override.kind.includes('skills'), JSON.stringify(rv.override));
+
+  ok('every plugin agent carries source "plugin"',
+    clean.agents.every((a) => a.source === 'plugin'));
+  const sc = byName.scout;
+  ok('(e) a project-only agent is listed with source "project" and override null',
+    sc && sc.source === 'project' && sc.override === null, JSON.stringify(sc));
+  ok('(e) a project-only agent keeps its own frontmatter phase',
+    sc && sc.phase === 'discover' && sc.effective.runtime === 'codex' && sc.effective.effort === 'high',
+    JSON.stringify(sc));
+  const tk = byName.tinker;
+  ok('(f) a project-only agent with no phase falls back to on-demand',
+    tk && tk.source === 'project' && tk.phase === 'on-demand', JSON.stringify(tk));
+  ok('a plugin agent shadowed by a project file is not duplicated as project-only',
+    reg.agents.filter((a) => a.name === 'backend').length === 1
+    && byName.backend.source === 'plugin');
 
   // Every emitted agent (clean and tuned) validates against the schema.
   const allErrs = [];

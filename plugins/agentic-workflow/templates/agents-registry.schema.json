@@ -15,12 +15,13 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["name", "description", "summary", "phase", "model", "tools", "effective", "override"],
+        "required": ["name", "source", "description", "summary", "phase", "model", "tools", "effective", "override"],
         "properties": {
           "name": { "type": "string" },
+          "source": { "description": "'plugin' for a shipped agent, 'project' for a .claude/agents file that shadows no plugin agent.", "type": "string", "enum": ["plugin", "project"] },
           "description": { "description": "The plugin default description (never the TUNED-prefixed shadow one).", "type": "string" },
           "summary": { "description": "The description up to the first '. ' or ' — '.", "type": "string" },
-          "phase": { "description": "The lifecycle phase this role serves, from a fixed map.", "type": "string" },
+          "phase": { "description": "The lifecycle phase this role serves (a frontmatter phase: wins, else the fixed map, else on-demand).", "type": "string", "enum": ["discover", "define", "plan", "build", "review", "record", "launch", "operate", "on-demand"] },
           "model": { "description": "The plugin default model ('inherit' when the plugin file names none).", "type": "string" },
           "tools": { "description": "The plugin default tools list.", "type": "array", "items": { "type": "string" } },
           "effective": {

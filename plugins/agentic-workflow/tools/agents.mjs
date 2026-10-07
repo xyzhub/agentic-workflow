@@ -21,10 +21,12 @@ const USAGE = `agents.mjs — the machine-readable agent registry.
   node agents.mjs --json [--project <repo>]   default --project is the cwd
   node agents.mjs --help
 
-Prints { plugin_version, agents: [ { name, description, summary, phase, model,
-tools, effective:{model, runtime, effort, boundary_escalation, skills},
+Prints { plugin_version, agents: [ { name, source, description, summary, phase,
+model, tools, effective:{model, runtime, effort, boundary_escalation, skills},
 override: null | {path, kind[], base_version, base_sha} } ] }, validated by
-templates/agents-registry.schema.json.`;
+templates/agents-registry.schema.json. source is 'plugin' or 'project' (a
+.claude/agents file that shadows nothing); phase is on-demand when no lifecycle
+phase maps the role.`;
 
 // Lifecycle phase per role (locked 2026-10-07).
 const PHASE = {
@@ -141,15 +143,49 @@ export function registry(projectDir = process.cwd()) {
 
     return {
       name,
+      source: 'plugin',
       description: baseDescription,
       summary: summaryOf(baseDescription),
-      phase: PHASE[name] || 'unknown',
+      // A frontmatter `phase:` (base or shadow) wins; else the fixed map; else
+      // on-demand (a role no lifecycle phase spawns on a schedule).
+      phase: fmValue(src, 'phase') || PHASE[name] || 'on-demand',
       model: baseModel,
       tools: baseTools,
       effective,
       override,
     };
   });
+
+  // Project-only agents: .claude/agents/*.md files that do NOT shadow a plugin
+  // agent. Their fields come straight from their own frontmatter; no override.
+  const pluginNames = new Set(agents.map((a) => a.name));
+  const projAgentsDir = path.join(projectDir, '.claude/agents');
+  if (existsSync(projAgentsDir)) {
+    for (const file of readdirSync(projAgentsDir).filter((f) => f.endsWith('.md')).sort()) {
+      const name = file.replace(/\.md$/, '');
+      if (pluginNames.has(name)) continue;
+      const text = readFileSync(path.join(projAgentsDir, file), 'utf8');
+      const description = fmValue(text, 'description') || '';
+      agents.push({
+        name,
+        source: 'project',
+        description,
+        summary: summaryOf(description),
+        phase: fmValue(text, 'phase') || 'on-demand',
+        model: fmValue(text, 'model') || 'inherit',
+        tools: toList(fmValue(text, 'tools')),
+        effective: {
+          model: fmValue(text, 'model') || 'inherit',
+          runtime: fmValue(text, 'runtime') || 'claude',
+          effort: fmValue(text, 'effort'),
+          boundary_escalation: name === 'reviewer' ? (fmValue(text, 'boundary_escalation') || 'on') : null,
+          skills: skillsList(text),
+        },
+        override: null,
+      });
+    }
+  }
+
   return { plugin_version: version, agents };
 }
 

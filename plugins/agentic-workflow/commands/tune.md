@@ -22,10 +22,13 @@ the table and a wrapper never drift):
 node ${CLAUDE_PLUGIN_ROOT}/tools/agents.mjs --json --project .
 ```
 
-One row per agent: **agent · model · runtime · effort · skills · override kinds
-· base version** — `model`/`runtime`/`effort`/`skills` from each agent's
-`effective`, `override kinds` from `override.kind` (`—` when `override` is
-null), `base version` from `override.base_version`. Close with the one-liners:
+One row per agent: **agent · source · phase · model · runtime · effort · skills ·
+override kinds · base version** — `source` is `plugin` or `project` (a
+`.claude/agents` file shadowing no plugin agent, listed too), `phase` is the
+lifecycle phase or `on-demand` when no phase maps the role, `model`/`runtime`/
+`effort`/`skills` from each agent's `effective`, `override kinds` from
+`override.kind` (`—` when `override` is null; always `—` for a project-only
+agent), `base version` from `override.base_version`. Close with the one-liners:
 
 - `/agentic-workflow:tune <agent> <model>` — opus · sonnet · haiku · inherit · a full id
 - `/agentic-workflow:tune <agent> codex[:<model>]` — run the role on the Codex CLI
@@ -150,6 +153,13 @@ regardless of the reviewer's tune (§5 rule 7). `off` means the tuned
 model/runtime handles boundary diffs too — the orchestrator's choice stands —
 while the reviewer still files a **process finding** when it judges the tier
 miscalled. The opt-out is explicit, committed and (in autopilot) logged.
+
+When setting `off` and the reviewer's effective runtime is `codex`, the report
+prints one warning line: with escalation off, a Codex reviewer now also reviews
+changes to `.codex/rules/agentic-workflow.rules` — the guardrail file that
+constrains Codex itself — so a boundary diff that edits those rules is judged by
+the runtime they govern. The setting still applies; this is a heads-up, not a
+block.
 
 ## `/agentic-workflow:tune <agent> prompt` — edit the prompt body
 
