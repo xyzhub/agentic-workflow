@@ -10,7 +10,7 @@ Issue: #91, #92, #93, #94, #95, #96
 Branch: `mission/gatehouse-asks` (cut from main @ eaac7fe) · Version: 1.53.2 → 1.54.0
 
 Estimate: 2 sessions
-Sessions used: 1
+Sessions used: 2
 
 Gate policy: **human-merge** — after the Fable APPROVE the branch passes the §10
 staging verify (tier-1 lint + plugin load) and the human merges the PR to `main`.
@@ -19,8 +19,8 @@ Standing agent authorized: (none — one-shot reviewer at the checkpoint, §12 L
 
 ## Checklist
 
-- [~] S1 — all six Gatehouse asks + release hygiene (branch `mission/gatehouse-asks`)
-- [ ] Checkpoint — phase 1 **Fable** review + staging verify + PR to `main` (human merge)
+- [x] S1 — all six Gatehouse asks + release hygiene (branch `mission/gatehouse-asks`)
+- [~] Checkpoint — phase 1 **Fable** review + staging verify + PR to `main` (human merge) · Fable reviewer spawned 2026-10-07 06:49 on 2a6581d..55e4175
 
 ## Open questions
 
@@ -47,10 +47,12 @@ decisions in `.plans/gatehouse-asks.md`)
 
 ## Handoff log (newest first)
 
+- 2026-10-07 06:49 — S1 DONE, committed 55e4175 (16 files, +989/−90). Gates: lint clean; run-codex-test 172 cases clean; agents-test 19 cases clean; agents.mjs --json → 1.54.0, 20 agents. Builder deviations: agents.mjs parses base_sha from banner (no live hash); one assemblePrompt caller not two; skill deviations on done+failed paths only. Checkpoint: Fable reviewer spawned on 2a6581d..55e4175. Sessions used 2/2.
+
 - 2026-10-07 06:33 — plan-judge APPROVE (Fable). Estimate corrected 1 → 2 sessions (1 brief + 1 checkpoint, per the plan's own counting; locked 2026-10-07, plan-judge finding). Advisory nits (a) mission.md:138 effort list, (c) direct resolveSkills invalid-name assertion folded into S1 Do. S1 spawned (Opus 4.8 builder), Sessions used 1/2.
 
 - 2026-10-07 06:29 — plan-judge spawned (one-shot reviewer, Fable, read-only) over the trio; verdict pending.
 
 (none yet)
 
-Next up: S1
+Next up: Checkpoint — Fable review verdict on 2a6581d..55e4175
