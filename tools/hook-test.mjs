@@ -1718,13 +1718,19 @@ const CLOSING_NONE_DUE = {
     check(`merge-guard: registry (bookkeeping) row stays warn-only for \`${cmd.slice(0, 40)}\``, r.code === 0 && r.stdout.includes('reviewer APPROVE'), why(r));
   }
   // #108: the last-resort check no longer refuses a non-pr gh subcommand or a guard dry run
-  for (const cmd of ['gh issue create --title "guard false refusal" --body "any gh pr text that mentions a merge is refused"',
-    'gh issue comment 108 --body "after the gh pr lands we merge the follow-up pr"',
+  for (const cmd of ['gh issue create --title "guard false refusal" --body "any gh pr text that mentions merging is refused"',
+    'gh issue comment 108 --body "the gh pr is merged; the follow-up pr is merging"',
     `printf '{"tool_input":{"command":"gh pr merg%s 107 --squash"}}' e | bash "$HOME/.claude/plugins/cache/xyz/agentic-workflow/1.53.0/hooks/lib/merge-guard.sh"`]) {
     const r = mg(cmd, { cell: 'human-only' });
     check(`merge-guard #108: \`${cmd.slice(0, 50)}\` → silent exit 0`, r.code === 0 && !r.stderr, why(r));
   }
-  for (const cmd of ['X=merge; gh pr $X 101', 'gh issue list && gh pr `echo merge` 101']) {
+  for (const cmd of ['X=merge; gh pr $X 101', 'gh issue list && gh pr `echo merge` 101',
+    'X=merge; bash -c "gh pr $X 101"', 'X=merge; command gh pr $X 101', 'X=merge; env gh pr $X 101',
+    'X=merge; /usr/local/bin/gh pr $X 101', 'gh pr-merge 101',
+    'X=merged; gh pr ${X%d} 101', 'X=merge_; gh pr ${X%_} 101', 'X=.merge; gh pr ${X#.} 101',
+    'gh pr $(echo merged | tr -d d) 101', 'gh pr `echo merger | tr -d r` 101',
+    'gh pr view 1; echo merged | tr -d d | xargs -I{} gh pr {} 101', 'echo "gh pr merged 101" | tr -d d | bash',
+    'echo "gh pr merged 101" | tr -d d | sh -s', 'eval gh pr merged']) {
     const r = mg(cmd, { cell: FULL });
     check(`merge-guard #108: \`${cmd.slice(0, 40)}\` still → BLOCK (unrecognized merge shape)`, blocks(r, 'unrecognized merge shape') && !ghRan(r), why(r));
   }

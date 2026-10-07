@@ -8,6 +8,17 @@ has no tags — each version-stamped commit on `main` IS the release.
 
 _(empty)_
 
+## [1.53.2] — 2026-10-07
+### Security — close the wrapper gap opened in 1.53.1 (#108)
+- 1.53.1 made the last-resort check require `gh` at command position, which
+  let wrapped forms through (`X=merge; bash -c "gh pr $X 101"`, `env gh …`,
+  `command gh …`, a full path to gh). `gh … pr` is matched anywhere again;
+  the standalone-`merge`-word rule alone keeps both #108 false refusals fixed.
+- The standalone-word rule let a trimmed word through (`X=merged; gh pr
+  ${X%d}`, `$(echo merged | tr -d d)`). When the command holds `${`, `$(`, a
+  backtick, `xargs`, `eval` or a pipe into a shell's stdin, any `merge`
+  substring counts again (fail closed). Harness +14 cases.
+
 ## [1.53.1] — 2026-10-07
 ### Fixed — merge guard false refusals (#108)
 - The last-resort check in `hooks/lib/merge-guard.sh` refused any `gh` command
