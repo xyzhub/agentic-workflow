@@ -452,6 +452,24 @@ function checkCiWaitSelftest() {
   }
 }
 
+// ── 10.8 publish-gate selftest (tier-1.5) ───────────────────────────────
+// The §14 publish gate ships in the plugin and is the only mechanical publish
+// check inside a Codex run (hash pin, epoch, one-time claim token). Delegate to
+// its in-memory selftest, fail-closed on a missing runner — same shape as 10.6.
+function checkPublishGateSelftest() {
+  const runner = path.join(PLUGIN, 'tools/publish-gate.mjs');
+  if (!existsSync(runner)) {
+    fail(runner, null, 'publish-gate script missing — plugins/agentic-workflow/tools/publish-gate.mjs must exist so the gate proves the hash/epoch/claim refusals (do not silently drop the check)');
+    return;
+  }
+  const res = spawnSync('node', [runner, '--selftest'], { encoding: 'utf8' });
+  if (res.status !== 0) {
+    const detail = `${res.stdout ?? ''}${res.stderr ?? ''}`
+      .split('\n').filter((l) => /FAIL|failure|Error/.test(l)).join(' | ');
+    fail(runner, null, `publish-gate selftest failed — run \`node plugins/agentic-workflow/tools/publish-gate.mjs --selftest\`: ${detail || '(no detail)'}`);
+  }
+}
+
 // ── 10.7 run-codex adapter harness (tier-1.5) ────────────────────────────
 // The Codex adapter is where the guardrails stop being hooks: sandbox mode is
 // derived from the role's tools, and the forbidden commands live in
@@ -861,7 +879,7 @@ const isEntryPoint = () => {
 };
 
 if (isEntryPoint()) {
-  for (const check of [checkManifests, checkAgents, checkCommands, checkCrossRefs, checkTemplateRefs, checkPluginRootBraced, checkSections, checkFrontmatterYaml, checkTemplateFrontmatter, checkHooks, checkObfuscation, checkHookBehavior, checkClockGuard, checkMarkerMutation, checkContextAttrib, checkCatalogSelftest, checkCiWaitSelftest, checkRunCodexHarness, checkStandingSteers, checkNextUpAgreement, checkClosing, checkObligationsRegister]) {
+  for (const check of [checkManifests, checkAgents, checkCommands, checkCrossRefs, checkTemplateRefs, checkPluginRootBraced, checkSections, checkFrontmatterYaml, checkTemplateFrontmatter, checkHooks, checkObfuscation, checkHookBehavior, checkClockGuard, checkMarkerMutation, checkContextAttrib, checkCatalogSelftest, checkCiWaitSelftest, checkPublishGateSelftest, checkRunCodexHarness, checkStandingSteers, checkNextUpAgreement, checkClosing, checkObligationsRegister]) {
     check();
   }
 
