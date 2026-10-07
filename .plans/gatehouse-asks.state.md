@@ -11,6 +11,7 @@ Branch: `mission/gatehouse-asks` (cut from main @ eaac7fe) · Version: 1.53.2 �
 
 Estimate: 4 sessions
 Sessions used: 4
+Closed: 2026-10-07
 
 Gate policy: **human-merge** — after the Fable APPROVE the branch passes the §10
 staging verify (tier-1 lint + plugin load) and the human merges the PR to `main`.
@@ -35,12 +36,12 @@ decisions in `.plans/gatehouse-asks.md`)
 
 ## Closing
 
-- [ ] version bumped + stamped · added 2026-10-07 (planner, pre-merge) — do: `plugins/agentic-workflow/.claude-plugin/plugin.json` → `1.54.0` and the CHANGELOG entry `## [1.54.0] — 2026-10-07` names it — when: the CHANGELOG entry for this mission names a version — probe: `grep -n '"version": "1.54.0"' plugins/agentic-workflow/.claude-plugin/plugin.json && grep -n '^## \[1.54.0\]' CHANGELOG.md`
-- [ ] docs/record synced · added 2026-10-07 (planner, pre-merge) — do: README.md + `plugins/agentic-workflow/README.md` `/tune` and `connect server` text name the new tune kinds (effort, tools, skills, prompt, boundary-escalation, diff, rebase), `tools/agents.mjs` and the executor fleet — when: `grep -n 'agents.mjs' plugins/agentic-workflow/README.md` returns a line on the branch — probe: `grep -n 'agents.mjs\|rebase' README.md plugins/agentic-workflow/README.md`
-- [ ] registry harness wired into the gate · added 2026-10-07 (planner, pre-merge) — do: `tools/agents-test.mjs` exists and `tools/lint.mjs` registers `checkAgentsRegistryHarness` — when: `node tools/lint.mjs` is green on the branch with the check present — probe: `grep -n 'checkAgentsRegistryHarness' tools/lint.mjs && node tools/lint.mjs`
-- [ ] issues closed · added 2026-10-07 (planner, post-merge) — do: confirm #91–#96 closed by the feature PR's `Closes` lines (reopen-and-comment any the PR body missed) — when: the feature PR is merged — probe: `for n in 91 92 93 94 95 96; do gh issue view $n --json state -q .state; done`
-- [ ] branch + worktree cleanup · added 2026-10-07 (planner, post-merge) — do: delete `mission/gatehouse-asks` (local and remote) and prune stale worktrees — when: the feature PR is merged AND CI (`lint.yml`) is green on its merge commit — probe: `gh pr list --state merged --head mission/gatehouse-asks` + `gh run list --branch main -L 1`
-- [ ] live-verify after reinstall · added 2026-10-07 (planner, post-merge) — do: in a consumer session on v1.54.0 run `/agentic-workflow:tune` (table renders from `agents.mjs`), `/agentic-workflow:tune reviewer boundary-escalation off` then `reset`, and `/agentic-workflow:doctor` in a project with a §10 Remote executor row — when: the release is installed (`/plugin update` + `/reload-plugins`) — probe: manual
+- [x] version bumped + stamped · added 2026-10-07 (planner, pre-merge) — do: `plugins/agentic-workflow/.claude-plugin/plugin.json` → `1.54.0` and the CHANGELOG entry `## [1.54.0] — 2026-10-07` names it — when: the CHANGELOG entry for this mission names a version — probe: `grep -n '"version": "1.54.0"' plugins/agentic-workflow/.claude-plugin/plugin.json && grep -n '^## \[1.54.0\]' CHANGELOG.md` · fired 2026-10-07 (plugin.json 1.54.0 + CHANGELOG [1.54.0], re-verified by Fable checkpoint)
+- [x] docs/record synced · added 2026-10-07 (planner, pre-merge) — do: README.md + `plugins/agentic-workflow/README.md` `/tune` and `connect server` text name the new tune kinds (effort, tools, skills, prompt, boundary-escalation, diff, rebase), `tools/agents.mjs` and the executor fleet — when: `grep -n 'agents.mjs' plugins/agentic-workflow/README.md` returns a line on the branch — probe: `grep -n 'agents.mjs\|rebase' README.md plugins/agentic-workflow/README.md` · fired 2026-10-07 (agents.mjs + rebase named in both READMEs, re-verified by Fable checkpoint)
+- [x] registry harness wired into the gate · added 2026-10-07 (planner, pre-merge) — do: `tools/agents-test.mjs` exists and `tools/lint.mjs` registers `checkAgentsRegistryHarness` — when: `node tools/lint.mjs` is green on the branch with the check present — probe: `grep -n 'checkAgentsRegistryHarness' tools/lint.mjs && node tools/lint.mjs` · fired 2026-10-07 (checkAgentsRegistryHarness in lint.mjs; lint clean on main b98c934)
+- [x] issues closed · added 2026-10-07 (planner, post-merge) — do: confirm #91–#96 closed by the feature PR's `Closes` lines (reopen-and-comment any the PR body missed) — when: the feature PR is merged — probe: `for n in 91 92 93 94 95 96; do gh issue view $n --json state -q .state; done` · fired 2026-10-07 (#91 auto-closed by PR #112; #92–#96 closed by hand with a comment — the PR body put all six after one keyword and GitHub closes only the first; root cause fixed in PR #114 (v1.54.1))
+- [x] branch + worktree cleanup · added 2026-10-07 (planner, post-merge) — do: delete `mission/gatehouse-asks` (local and remote) and prune stale worktrees — when: the feature PR is merged AND CI (`lint.yml`) is green on its merge commit — probe: `gh pr list --state merged --head mission/gatehouse-asks` + `gh run list --branch main -L 1` · fired 2026-10-07 (PR #112 merged, main CI success on b98c934; remote branch auto-deleted on merge, local deleted, worktrees pruned)
+- [x] live-verify after reinstall · added 2026-10-07 (planner, post-merge) — do: in a consumer session on v1.54.0 run `/agentic-workflow:tune` (table renders from `agents.mjs`), `/agentic-workflow:tune reviewer boundary-escalation off` then `reset`, and `/agentic-workflow:doctor` in a project with a §10 Remote executor row — when: the release is installed (`/plugin update` + `/reload-plugins`) — probe: manual · fired 2026-10-07 (owner reinstalled 1.54.0; installed agents.mjs --json → 20 agents, backend/devops shadows classified; /tune reviewer boundary-escalation off wrote a stamped shadow (registry: boundary_escalation off, base_sha 33c5d42ce216), reset deleted it and registry returned to on. Not exercised: doctor fleet probe — this project has no Remote executor row)
 
 ## Deviations
 
@@ -50,9 +51,11 @@ decisions in `.plans/gatehouse-asks.md`)
 
 ## Handoff log (newest first)
 
+- 2026-10-07 09:05 — CLOSE. PR #112 merged by owner (b98c934, main CI green). Post-merge Fable review of the two unreviewed commits (d38949d, 91e51e2): both OK, no defects; its advisories became PR #114 (v1.54.1: one closing keyword per issue in /pr, /mission, /end; registry `tools: null` when unset; schema versioning rule) — awaiting owner merge. Issue #113 filed (commit guard scans the whole command, not just the message — blocked clean commits twice this mission). Correction: the 07:40 entry's fix commit is d38949d, not 42ab49f (ledger-only). Advisory left: registry `override.kind` says `boundary_escalation` while banner/tune say `boundary-escalation`. Final: Sessions used 4 vs Estimate 4 (planned 2; +2 for owner-requested follow-ups).
+
 - 2026-10-07 08:45 — LOCKED (owner, 2026-10-07): "also do items 3–6". Estimate 3 → 4. S3 (orchestrator, small): (3) agents-test tools-kind fixture — surfaced a real gap: a tools tune was not visible in the registry, so `effective.tools` added (code + schema + tune.md); (4) failed-path test for missing-skill + .codex/ warning deviations; (5) a non-plugin skill copy is labelled `, project copy` / `, personal copy` in its preloaded header (+ same-name test); (6) duplicate **Issue tracker** row removed from templates/WORKFLOW.md §10; plus advisory: tune.md documents frontmatter `phase:`. Gates: lint clean, run-codex-test 177, agents-test 26. No re-review: test-only + label/doc changes, plus an additive schema field (owner steer: conserve tokens). Sessions used 4/4.
 
-- 2026-10-07 07:40 — S2 re-review (Fable, narrow): REQUEST CHANGES, 1 blocking (unvalidated frontmatter `phase:` violated schema enum). Fixed by orchestrator exactly as prescribed (validPhase set + harness case g; agents-test 25, lint clean) — no corrective session, no further re-review (owner steer: conserve tokens). Advisory backlog: failed-path codex warning unasserted; tune.md doesn't document `phase:` as an input.
+- 2026-10-07 07:40 — S2 re-review (Fable, narrow): REQUEST CHANGES, 1 blocking (unvalidated frontmatter `phase:` violated schema enum). Fixed by orchestrator in d38949d exactly as prescribed (validPhase set + harness case g; agents-test 25, lint clean) — no corrective session, no further re-review (owner steer: conserve tokens). Advisory backlog: failed-path codex warning unasserted; tune.md doesn't document `phase:` as an input.
 
 - 2026-10-07 07:36 — S2 DONE, committed 758b01f (7 files, +123/−12). Gates: lint clean; run-codex-test 175; agents-test 24. Narrow Fable re-review spawned on d5311a2..758b01f (resumed checkpoint reviewer).
 
@@ -70,4 +73,4 @@ decisions in `.plans/gatehouse-asks.md`)
 
 (none yet)
 
-Next up: human merges PR #112 → post-merge bookkeeping PR (settle Closing rows, reinstall live-verify)
+Next up: (none — mission closed; PR #114 is a separate fix awaiting owner merge)
