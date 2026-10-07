@@ -12,7 +12,7 @@ fresh agent resumes the mission from this file alone. Write-ahead — update it
 orchestrator has no session boundary to force a write; a compaction erases
 everything since the last one — §12 LA-6)._
 
-Status: active
+Status: closed
 
 Estimate: 1 session
 Sessions used: 1
@@ -82,7 +82,9 @@ never deleted: a fired row keeps its line and appends `· fired YYYY-MM-DD
 - [x] live-verify after reinstall · added 2026-10-06 (planner) — do: in a real session after `/plugin update` + `/reload-plugins`, run `/agentic-workflow:publish status` on this repo's queue and a tokenless `curl https://api.linkedin.com/v2/me` in Bash: the hook must BLOCK (exit 2) with the claim-token text; then `PUBLISH_CONNECT=1 curl …` must pass with the connect reminder — when: the 1.52.0 PR to `main` is merged and the plugin is reinstalled — probe: manual · fired 2026-10-07 (owner ran /plugin update + /reload-plugins; cache 1.52.0. `publish-gate.mjs status` exit 0, policy human-only, 1 draft. Tokenless `curl https://api.linkedin.com/v2/me` → PreToolUse BLOCKED by publish-guard.sh with the claim-token text. `PUBLISH_CONNECT=1 curl …` → passed, HTTP 401 from LinkedIn (no credentials). The connect reminder is printed on hook stdout per publish-guard.sh:55; not visible in the tool result, so present in code, not observed.)
 - [x] version bumped + stamped · added 2026-10-06 (planner) — do: `plugins/agentic-workflow/.claude-plugin/plugin.json` → 1.52.0 (the §10 Version pin), `docs/WORKFLOW.md` line 3 → `v1.52.0`, CHANGELOG entry stamped `[1.52.0]` — when: this mission's CHANGELOG entry names a version — probe: `grep -c 1.52.0 plugins/agentic-workflow/.claude-plugin/plugin.json CHANGELOG.md docs/WORKFLOW.md` · fired 2026-10-07 (grep -c 1.52.0 = 1 in each of plugin.json, CHANGELOG.md, docs/WORKFLOW.md)
 - [x] Codex publish parity gap re-bounded · added 2026-10-06 (planner) — do: append to OB-17 in `.plans/OBLIGATIONS.md` (orchestrator edits, not the builder) that since 1.52.0 the gate tool's refusal is the only mechanical publish check inside a Codex run and the hook-side rules (tokenless block, outreach block, email hosts) are the parity target for #81 — when: the 1.52.0 PR to `main` is merged — probe: `grep -n 'OB-17' .plans/OBLIGATIONS.md` shows the 1.52.0 note · fired 2026-10-07 (PR #101 merged e92cd7c; 1.52.0 note appended to OB-17 in .plans/OBLIGATIONS.md)
-- [ ] n=1 on Orderly queue (mission 2 precondition) · added 2026-10-06 (planner) — do: run `publish-gate.mjs stamp` on Orderly's `docs/product/launch/publish-queue.md` after the plugin reinstall (old 7-column rows migrate: `kind: post`, `epoch: 1`, state unchanged) and tamper one approved draft on purpose: `/publish run` must refuse it with the REFUSED line — when: 1.52.0 is installed in the Orderly session — probe: manual (owner or verifier), result recorded here
+- [~] n=1 on Orderly queue (mission 2 precondition) · added 2026-10-06 (planner) — do: run `publish-gate.mjs stamp` on Orderly's `docs/product/launch/publish-queue.md` after the plugin reinstall (old 7-column rows migrate: `kind: post`, `epoch: 1`, state unchanged) and tamper one approved draft on purpose: `/publish run` must refuse it with the REFUSED line — when: 1.52.0 is installed in the Orderly session — probe: manual (owner or verifier), result recorded here → OB-22 (promoted 2026-10-07, owner: "close today and test later")
+
+Closed: 2026-10-07
 
 ## Deviations
 
@@ -101,6 +103,7 @@ Deviating is allowed; deviating silently is not (§4)._
 _≤10 lines per entry: what this session did, the verify signal, the branch, and
 what the next session needs. Newest on top; crash-safe by write-ahead._
 
+- 2026-10-07 orchestrator (CLOSE): owner chose "close today and test later" for the Orderly n=1 row → promoted verbatim to OB-22 in .plans/OBLIGATIONS.md. Every Closing row now `[x]` or `[~] → OB-22`; `Closed: 2026-10-07` stamped. Final budget: Sessions used 1 / Estimate 1 (ratio 1.0). Next mission: operate-triage.
 - 2026-10-07 orchestrator: live-verify after reinstall FIRED (hook blocked a tokenless publish-host call; connect bypass passed). Remaining open Closing row: n=1 on Orderly queue — no Orderly checkout on this machine, needs an Orderly session.
 - 2026-10-07 settle: PR #101 merged by owner (e92cd7c), main CI green. Fired: branch cleanup, OB-17 re-bound. Close gate REFUSED — 2 manual rows open: live-verify after reinstall, n=1 on Orderly queue. Final budget Sessions used 1 / Estimate 1.
 - 2026-10-07 orchestrator: pushed mission/publish-approval at 851eb9e; `node tools/ci-wait.mjs 851eb9e` GREEN (lint run 37552368156). §10 Staging = none, so verify = lint green on branch + plugin load (passed at ckpt-p1). PR #101 opened to main: https://github.com/xyzhub/agentic-workflow/pull/101. Gate policy human-merge: owner merges. Final budget: Sessions used 1 / Estimate 1.
@@ -110,4 +113,4 @@ what the next session needs. Newest on top; crash-safe by write-ahead._
 - 2026-10-07 orchestrator: mission started (gate policy human-merge). Branch `mission/publish-approval` cut from main 9b8c241. Sessions used 1/1. S1 spawned to `security` builder.
 - 2026-10-06 planner: trio authored on `feat/launch-media-plan`, then one revision pass on the plan-judge's REVISE (anchors re-verified, the four OQs locked as planner decisions, 19-file count, cut list + order rule, tool/hook path contract aligned, `PUBLISH_CONNECT=` bypass named). Nothing built. Baseline `node tools/hook-test.mjs` = 123 ok, clean. Awaiting the plan-judge only; no owner question blocks S1.
 
-Next up: n=1 on Orderly queue (in an Orderly session), or promote it to the register; then stamp Closed
+Next up: none — mission closed 2026-10-07. Next mission: `/agentic-workflow:mission "operate-triage" run`
