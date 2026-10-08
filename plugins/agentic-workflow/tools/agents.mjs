@@ -6,7 +6,7 @@
 //   node agents.mjs --json [--project <repo>]   # default --project is cwd
 //   node agents.mjs --help
 //
-// A wrapper (e.g. Gatehouse) reads this instead of parsing agent-file
+// A wrapper (e.g. the Missions app) reads this instead of parsing agent-file
 // frontmatter and banner wording. /tune's no-arg table renders FROM this, so
 // the two never drift. The JSON shape is a public interface.
 
