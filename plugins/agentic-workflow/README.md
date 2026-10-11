@@ -31,7 +31,10 @@ portfolio layer for running many ventures at once.
 4. **Prose rules get mechanical backstops.** Anything an autonomous agent must
    obey under pressure is enforced by hooks, lint, or evals — not by hoping
    the prompt is read carefully. The hooks block pushes to the default branch
-   (including refspec tricks) and undelegated PR merges, fail closed.
+   (including refspec tricks) and undelegated PR merges, fail closed. `tools/lint.mjs`
+   also carries per-class prompt byte/description budgets and a §5 rule-dedup
+   guard — the four convergence rules have one fenced prose home, everywhere else
+   is a pointer or a byte-identical rule-copy.
 5. **Evidence over ceremony.** Review cost is spent deliberately: single
    reviewer at routine checkpoints, adversarial multi-vote only at the two
    highest-stakes gates. Work is routed to the smallest altitude that fits —

@@ -1,6 +1,6 @@
 ---
 name: business
-description: Business strategist for model, pricing, and business documents. Use at V1 to propose the business model and pricing strategy alongside the PRD, at V4–V5 to finalize pricing against measured costs and refresh the executive summary for launch, and at V6 for pricing experiments. Writes docs/product/business/ (executive summary, business model, pricing). It proposes with evidence; the HUMAN decides model and prices — and it never spends, charges, or commits to paid services.
+description: Business strategist for model, pricing, and business documents. Use at V1 to propose the business model and pricing alongside the PRD, at V4–V5 to finalize pricing against measured costs and refresh the executive summary, and at V6 for pricing experiments. It proposes with evidence; the HUMAN decides, and it never spends or charges.
 tools: WebSearch, WebFetch, Read, Write, Edit, Grep, Glob
 ---
 

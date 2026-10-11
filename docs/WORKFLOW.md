@@ -367,9 +367,11 @@ dedicated planning session:
 
 Rules: briefs pre-resolve targets so execution sessions never explore; one branch
 per phase, merged at checkpoint per the **gate policy** below; migrations and
-CI/deploy-touching changes get extra checkpoint scrutiny; **one-corrective-retry**
-— a failing session/agent is retried once with a corrective note, then escalated
-to the human.
+CI/deploy-touching changes get extra checkpoint scrutiny.
+<!-- rule: one-corrective-retry -->
+**one-corrective-retry** — a failing session or agent is re-spawned once with
+a corrective note, then escalated to the human.
+<!-- /rule -->
 
 **Plan-judge — the trio is reviewed before any brief spends a session.** As soon
 as the planner returns the trio (automatically in `/agentic-workflow:mission` §1
@@ -392,12 +394,15 @@ mechanical half):
   (planner; counts **briefs + checkpoints only** — a corrective is counted when
   it fires, never pre-booked, #79)
   and `Sessions used: k` (orchestrator — incremented **write-ahead** at every
-  brief, corrective, `continue` and loop tick). At **k ≥ 1.5 × N** the hook
-  prints 🛑 OVERRUN on every prompt and the orchestrator MUST NOT start another
-  brief: it gives the owner the scope decision — ship a defined subset now /
-  continue at a revised estimate / abort — with the remaining phases and what
-  each buys, records the answer as a dated locked decision, and only then
-  revises `Estimate:`. *Incident:* multi-venue-manager, planned 18 sessions,
+  brief, corrective, `continue` and loop tick).
+  <!-- rule: overrun-1.5x -->
+  At **k ≥ 1.5 × N** the hook prints 🛑 OVERRUN on every prompt and the
+  orchestrator MUST NOT start another brief: it gives the owner the scope
+  decision — ship a defined subset now / continue at a revised estimate / abort —
+  with the remaining phases and what each buys, records the answer as a dated
+  locked decision, and only then revises `Estimate:`.
+  <!-- /rule -->
+  *Incident:* multi-venue-manager, planned 18 sessions,
   ran ~44 over ~28 hours; every phase justified, no choice ever offered.
 - **No standing agents (LA-5).** Reviews, counsel and audits are one-shot
   spawns at decision points (checkpoint, merge, gate verdict, scope change). A
@@ -407,16 +412,19 @@ mechanical half):
   <date> — "<words>"`), beaten on decisions only, cost re-quoted every ~3
   beats, killed when its remit ends. The reviewer flags any without the line.
   Model tiering is unchanged in principle (opus builders) but the **reviewer
-  tier keys on the change's RISK CLASS, not its diff size**: Fable is required
-  for any review whose diff touches auth, a session/entry credential,
-  authorization/tenancy, money, schema/migrations, or a security boundary —
-  a two-line auth diff included. The saving is in shape (one-shot, at decision
+  tier keys on the change's RISK CLASS, not its diff size**:
+  <!-- rule: fable-boundary -->
+  Fable is required for any review whose diff touches auth, a session/entry
+  credential, authorization/tenancy, money, schema/migrations, or a security
+  boundary — a two-line auth diff included.
+  <!-- /rule -->
+  The saving is in shape (one-shot, at decision
   points), not tier. And a security/auth/money review must **close the threat,
   not just verify the diff** — step outside the changed lines for a second
   path to the same asset (orderly #605→#730). A miscalled tier is a process
   finding.
-  *Incident:* six supervisor beats ≈ 1.08M tokens, 94% of a session's Fable
-  spend, against 70k for the one-shot review that found the real defects.
+  *Incident:* six supervisor beats ≈ 1.08M tokens, 94% of a session's top-tier
+  review spend, against 70k for the one-shot review that found the real defects.
 - **Write-ahead at every merge, gate result, and gate SPAWN (LA-6).** Builders
   have a session boundary that forces a write; the orchestrator does not. The
   ledger is written at every merge to staging, every verify result, every
@@ -424,9 +432,12 @@ mechanical half):
   (what, on which range, when), because an unrecorded in-flight review is
   indistinguishable from a stall to any watcher — not at session end. *Incident:* a checkpoint
   review, three merges and a verify went unrecorded; a compaction erased them.
-- **Exactly one `Next up:` (LA-7).** Supersede by renaming the old line
+- **Exactly one `Next up:` (LA-7).**
+  <!-- rule: one-next-up -->
+  Keep exactly one `Next up:` line. Supersede by renaming the old line
   (`SUPERSEDED next-up (historical):`); the hook reads the first and warns on
   duplicates; the lint backstop fails on disagreement.
+  <!-- /rule -->
 - **Hotfix path (Lane A): when the defect is live on the default branch and
   staging has diverged, do NOT land the fix on staging.** A fix branched from
   the default branch and merged into a staging branch that is far ahead

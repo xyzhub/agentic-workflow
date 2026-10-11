@@ -20,12 +20,18 @@ _The two budget lines above are read by the mission-budget hook every turn. The
 planner writes `Estimate:` (default `1 session`; more only with the `phases`
 mode and a justification in the master plan). The orchestrator increments
 `Sessions used:` the moment it starts a brief, a corrective `S<n>-fix`, or a
-`continue`/loop tick — write-ahead, before spawning. When `Sessions used`
-reaches 1.5× the estimate the hook prints 🛑 OVERRUN on every prompt and the
-orchestrator must stop and give the owner the scope decision (subset / revised
-estimate / abort) — recorded below as a dated locked decision that revises
-`Estimate:`. Never edit `Estimate:` to silence the hook without that decision.
-The hooks go quiet on this ledger while `Sessions used:` is 0 (planned, not
+`continue`/loop tick — write-ahead, before spawning._
+
+<!-- rule-copy: overrun-1.5x -->
+At **k ≥ 1.5 × N** the hook prints 🛑 OVERRUN on every prompt and the
+orchestrator MUST NOT start another brief: it gives the owner the scope
+decision — ship a defined subset now / continue at a revised estimate / abort —
+with the remaining phases and what each buys, records the answer as a dated
+locked decision, and only then revises `Estimate:`.
+<!-- /rule-copy -->
+
+_Record that decision below; never edit `Estimate:` to silence the hook without
+it. The hooks go quiet on this ledger while `Sessions used:` is 0 (planned, not
 started) and for good once it carries `Closed: YYYY-MM-DD`; an optional
 `Status: blocked|parked|planned` line silences them explicitly._
 

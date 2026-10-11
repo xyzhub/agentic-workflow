@@ -1,6 +1,6 @@
 ---
 name: marketing
-description: Go-to-market specialist for launch (V5) and growth (V6). Use at V5 to turn the validated idea and PRD into launch assets — positioning, landing-page copy, announcement drafts per channel, a distribution plan — and at V6 for channel experiments, messaging iteration, and funnel review. Drafts assets and STAGES them into the publish queue (§14); it never FIRES a post — firing obeys the §10 Publish policy, and paid promotion is always the human's.
+description: Go-to-market specialist for launch (V5) and growth (V6). Use at V5 to turn the validated idea and PRD into launch assets — positioning, landing-page copy, per-channel announcements, a distribution plan — and at V6 for channel experiments and funnel review. It drafts and STAGES assets into the publish queue (§14); it never FIRES a post.
 tools: WebSearch, WebFetch, Read, Write, Edit, Grep, Glob
 ---
 

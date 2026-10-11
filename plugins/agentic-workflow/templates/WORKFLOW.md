@@ -265,7 +265,7 @@ Shipped by this plugin as hooks. Advisory except where marked:
 | `Write`/`Edit` | Reminder to update docs when high-impact files change; on a route file (`server/api/**`) or the schema, when the project ships `tools/catalog.mjs`, it names the catalog (§6.1: regenerate + rewrite the feature row in the same PR — the reviewer gates it) |
 | `Read` (whole file, no `limit`) | **Read advisory** (context discipline) — nudges toward a ranged read or a delegating subagent (§6.2 Delegated reads) when a whole-file read targets a file over `READ_ADVISORY_LINES` (800 lines); a discipline line, not a measured optimum — this repo has no corpus to confirm an effect size, so none is claimed; never blocks |
 | Prompt submit | **Router** (governance) — an un-prefixed work request gets a soft "route it through the protocol — hand to `intake`" nudge; silent on plain chat, never blocks |
-| Prompt submit | **Mission-budget** (governance; supersedes the thread-keeper) — injects the active ledger's status line `Mission <name> — session k/N (est.)` + its **first** `Next up:` line each turn (§12 LA-7: the old `tail -1` fed the owner the stalest state for a day; duplicates now draw a loud warning). Reads `Estimate: N sessions` and `Sessions used: k` from the ledger header and, once **k ≥ 1.5 × N**, prints 🛑 OVERRUN on every prompt until the estimate is revised — a protocol STOP for the orchestrator (no further brief until the owner chooses subset / revised estimate / abort), never a hook block; a missing `Estimate:` draws a one-line reminder. Silent when no active ledger — *active* is one shared predicate (`hooks/lib/active-ledger.sh`, also used by handoff-budget, compact-resume and the beat-enforcers): the newest-touched ledger, skipped while never started (`Sessions used: 0` or `Status: planned`), and NOT active once it carries a `Closed:` stamp, a `Status:` other than `active`, a first `Next up:` saying the mission is closed/complete, or no open beat (a `[~] … → OB-<n>` row promoted to the register is not a beat) — an older never-closed ledger is never fallen back to; every hook in this table now carries a `timeout` (5 s; 30 s for compact-resume) so a slow hook can never stall a turn; never blocks |
+| Prompt submit | **Mission-budget** (governance; supersedes the thread-keeper) — injects the active ledger's status line `Mission <name> — session k/N (est.)` + its **first** `Next up:` line each turn (§12 LA-7: the old `tail -1` fed the owner the stalest state for a day; duplicates now draw a loud warning). Reads `Estimate: N sessions` and `Sessions used: k` from the ledger header and, once **k ≥ 1.5 × N**, prints 🛑 OVERRUN on every prompt until the estimate is revised — the §5 LA-1 overrun stop for the orchestrator, never a hook block; a missing `Estimate:` draws a one-line reminder. Silent when no active ledger — *active* is one shared predicate (`hooks/lib/active-ledger.sh`, also used by handoff-budget, compact-resume and the beat-enforcers): the newest-touched ledger, skipped while never started (`Sessions used: 0` or `Status: planned`), and NOT active once it carries a `Closed:` stamp, a `Status:` other than `active`, a first `Next up:` saying the mission is closed/complete, or no open beat (a `[~] … → OB-<n>` row promoted to the register is not a beat) — an older never-closed ledger is never fallen back to; every hook in this table now carries a `timeout` (5 s; 30 s for compact-resume) so a slow hook can never stall a turn; never blocks |
 | Prompt submit | **Handoff-budget** (governance) — nudges (≤3 lines) to write/refresh `docs/product/session-handoff.md` before compaction takes the window, once cumulative transcript **bytes** — a loose proxy, including tool results the window has already evicted, never a token measurement — cross an advisory (3,700,000 B) or urgent (5,380,000 B) band, boundary-inclusive; silent below the advisory band, once already fired for that band this session, while an active mission ledger exists, or once the handoff is already newer than the crossing; never blocks |
 | turn end | **Beat-enforcer backstop** (governance, `Stop`) — nudges a not-started ledger beat (`chronicler` at close, `reviewer` at a checkpoint) at the overdue moment; it scans the open beats top-down and nudges the **first due** one — a beat whose own row is held is stepped over, not treated as a wall — and stays silent when nothing is due, i.e. when unfinished work, an unreleased ⛔/HARD PAUSE row, or an unreleased `[~]` **HELD** row sits above every candidate (a `[ ]` HELD row is parked, not a barrier: the scan steps over it); advisory, never blocks |
 | `git commit` / `gh pr create` / `gh pr merge` | **Beat-enforcer** (governance, `PreToolUse`) — the same nudge at the closing action, but with **no due-ness scan yet**: it reports the **first** not-started beat outright, so it can name one that is held or behind unfinished work (the due-ness port is pending); advisory, never blocks |
@@ -335,7 +335,7 @@ end a session). For a long *interactive* session with no natural session end,
 **Reflex backstops** — four §3 governance hooks keep a *running* session
 on-protocol without being read: the *mission-budget* hook surfaces the active
 ledger's `session k/N` + first `Next up:` every turn and turns into the
-overrun STOP at 1.5× the estimate; the *beat-enforcer* nudges a
+overrun STOP at 1.5× the estimate (§5 LA-1); the *beat-enforcer* nudges a
 not-started beat (`chronicler` at close, `reviewer` at a checkpoint) at the moment
 you try to close or advance; *compact-resume* fires the moment the context
 window is compacted and is never silent (OQ6): with an active ledger it directs
@@ -375,9 +375,11 @@ dedicated planning session:
 
 Rules: briefs pre-resolve targets so execution sessions never explore; one branch
 per phase, merged at checkpoint per the **gate policy** below; migrations and
-CI/deploy-touching changes get extra checkpoint scrutiny; **one-corrective-retry**
-— a failing session/agent is retried once with a corrective note, then escalated
-to the human.
+CI/deploy-touching changes get extra checkpoint scrutiny.
+<!-- rule: one-corrective-retry -->
+**one-corrective-retry** — a failing session or agent is re-spawned once with
+a corrective note, then escalated to the human.
+<!-- /rule -->
 
 **Plan-judge — the trio is reviewed before any brief spends a session.** As soon
 as the planner returns the trio (automatically in `/agentic-workflow:mission` §1
@@ -400,12 +402,15 @@ mechanical half):
   (planner; counts **briefs + checkpoints only** — a corrective is counted when
   it fires, never pre-booked, #79)
   and `Sessions used: k` (orchestrator — incremented **write-ahead** at every
-  brief, corrective, `continue` and loop tick). At **k ≥ 1.5 × N** the hook
-  prints 🛑 OVERRUN on every prompt and the orchestrator MUST NOT start another
-  brief: it gives the owner the scope decision — ship a defined subset now /
-  continue at a revised estimate / abort — with the remaining phases and what
-  each buys, records the answer as a dated locked decision, and only then
-  revises `Estimate:`. *Incident:* multi-venue-manager, planned 18 sessions,
+  brief, corrective, `continue` and loop tick).
+  <!-- rule: overrun-1.5x -->
+  At **k ≥ 1.5 × N** the hook prints 🛑 OVERRUN on every prompt and the
+  orchestrator MUST NOT start another brief: it gives the owner the scope
+  decision — ship a defined subset now / continue at a revised estimate / abort —
+  with the remaining phases and what each buys, records the answer as a dated
+  locked decision, and only then revises `Estimate:`.
+  <!-- /rule -->
+  *Incident:* multi-venue-manager, planned 18 sessions,
   ran ~44 over ~28 hours; every phase justified, no choice ever offered.
 - **No standing agents (LA-5).** Reviews, counsel and audits are one-shot
   spawns at decision points (checkpoint, merge, gate verdict, scope change). A
@@ -415,10 +420,13 @@ mechanical half):
   <date> — "<words>"`), beaten on decisions only, cost re-quoted every ~3
   beats, killed when its remit ends. The reviewer flags any without the line.
   Model tiering is unchanged in principle (opus builders) but the **reviewer
-  tier keys on the change's RISK CLASS, not its diff size**: Fable is required
-  for any review whose diff touches auth, a session/entry credential,
-  authorization/tenancy, money, schema/migrations, or a security boundary —
-  a two-line auth diff included. The saving is in shape (one-shot, at decision
+  tier keys on the change's RISK CLASS, not its diff size**:
+  <!-- rule: fable-boundary -->
+  Fable is required for any review whose diff touches auth, a session/entry
+  credential, authorization/tenancy, money, schema/migrations, or a security
+  boundary — a two-line auth diff included.
+  <!-- /rule -->
+  The saving is in shape (one-shot, at decision
   points), not tier. And a security/auth/money review must **close the threat,
   not just verify the diff** — step outside the changed lines for a second
   path to the same asset (orderly #605→#730). A miscalled tier is a process
@@ -426,8 +434,8 @@ mechanical half):
   reviewer's `boundary_escalation: off` (#91) — the tuned tier then stands for
   boundary diffs, and the reviewer records a process finding when the tier reads
   as miscalled.
-  *Incident:* six supervisor beats ≈ 1.08M tokens, 94% of a session's Fable
-  spend, against 70k for the one-shot review that found the real defects.
+  *Incident:* six supervisor beats ≈ 1.08M tokens, 94% of a session's top-tier
+  review spend, against 70k for the one-shot review that found the real defects.
 - **Write-ahead at every merge, gate result, and gate SPAWN (LA-6).** Builders
   have a session boundary that forces a write; the orchestrator does not. The
   ledger is written at every merge to staging, every verify result, every
@@ -435,9 +443,19 @@ mechanical half):
   (what, on which range, when), because an unrecorded in-flight review is
   indistinguishable from a stall to any watcher — not at session end. *Incident:* a checkpoint
   review, three merges and a verify went unrecorded; a compaction erased them.
-- **Exactly one `Next up:` (LA-7).** Supersede by renaming the old line
+- **Exactly one `Next up:` (LA-7).**
+  <!-- rule: one-next-up -->
+  Keep exactly one `Next up:` line. Supersede by renaming the old line
   (`SUPERSEDED next-up (historical):`); the hook reads the first and warns on
   duplicates; the lint backstop fails on disagreement.
+  <!-- /rule -->
+
+  These four rules have ONE prose home — this §5, each fenced
+  `<!-- rule: <id> -->`; everywhere else in the plugin is a one-line pointer
+  (`(§5 LA-n)`) or a byte-identical `<!-- rule-copy: <id> -->` block, and
+  `tools/lint.mjs` (`checkRuleDedup`) fails a second prose statement outside the
+  fences. The guard covers the **plugin tree only** — never a venture's own
+  `docs/WORKFLOW.md` copy, which this repo's lint never reads.
 - **Hotfix path (Lane A): when the defect is live on the default branch and
   staging has diverged, do NOT land the fix on staging.** A fix branched from
   the default branch and merged into a staging branch that is far ahead
@@ -1030,10 +1048,8 @@ carries an `Estimate:` for the whole flight (sessions per stage, written by the
 planner at V3 and by autopilot itself for the other stages) and autopilot
 increments `Sessions used:` in the active mission ledger at every stage step,
 brief and `continue` tick, so the mission-budget hook (§3) reads it and the
-🛑 OVERRUN stop applies to the flight exactly as to a mission: at 1.5× the
-estimate autopilot stops and gives the owner the scope decision (ship the
-subset that exists / continue at a revised estimate / abort) through the owner
-channel or the next interactive turn — it never keeps building silently. No
+🛑 OVERRUN stop applies to the flight exactly as to a mission (§5 LA-1) — it
+never keeps building silently. No
 standing/resident agents (LA-5): counsel, review and audit are one-shot spawns
 at gates. Every stage's merges and gate verdicts are written to the ledger and
 decision log as they happen (LA-6). Design-quality tooling runs at the

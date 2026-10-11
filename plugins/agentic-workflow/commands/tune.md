@@ -101,14 +101,12 @@ Banner kind `runtime` (compose with `effort` when both are set).
 
 When the agent is `reviewer` and the target is a codex runtime, PRINT this
 locked constraint alongside the report: a codex reviewer covers **routine
-checkpoints only**. A checkpoint whose diff touches a security boundary — auth,
-session credential, authorization, tenancy, money, schema, migrations, and
+checkpoints only**. A boundary-class checkpoint (§5 LA-5) — including
 specifically the `.codex/rules/agentic-workflow.rules` guardrail file and the
-sandbox-flag derivation — **stays on Fable** per WORKFLOW.md §5 convergence
-rule 7, where the orchestrator overrides this tune for that one review — unless
-the project's `.claude/agents/reviewer.md` carries `boundary_escalation: off`
-(#91). The tune records the routine default; it never lowers the boundary review
-unless that opt-out is set.
+sandbox-flag derivation — **stays on Fable**, where the orchestrator overrides
+this tune for that one review, unless the project's `.claude/agents/reviewer.md`
+carries `boundary_escalation: off` (#91). The tune records the routine default;
+it never lowers the boundary review unless that opt-out is set.
 
 ## `/agentic-workflow:tune <agent> effort <level>` — standalone effort
 

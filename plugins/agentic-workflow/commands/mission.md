@@ -35,14 +35,17 @@ defects; three merges and a gate went unrecorded and a compaction erased them.
    `Sessions used: k` (you). **Increment `Sessions used:` the moment you start
    a brief, a corrective `S<n>-fix`, or a `continue` tick** — before spawning,
    write-ahead. The mission-budget hook (§3) prints `session k/N` every turn.
-3. **The overrun STOP (LA-1).** When `Sessions used` reaches **1.5× the
-   estimate** the hook prints 🛑 OVERRUN on every prompt. You MUST NOT start
-   another brief. Give the owner the scope decision — (a) ship a defined subset
-   now, (b) continue at a revised estimate, (c) abort — with the remaining
-   phases and what each one buys; ask via AskUserQuestion / the owner channel
-   (§12). Record the answer as a dated locked decision in the master plan and
-   update `Estimate:`. Continuing silently is not a neutral default; it spends
-   the owner's money on a plan they approved under different numbers.
+3. **The overrun STOP (LA-1).**
+   <!-- rule-copy: overrun-1.5x -->
+   At **k ≥ 1.5 × N** the hook prints 🛑 OVERRUN on every prompt and the
+   orchestrator MUST NOT start another brief: it gives the owner the scope
+   decision — ship a defined subset now / continue at a revised estimate / abort —
+   with the remaining phases and what each buys, records the answer as a dated
+   locked decision, and only then revises `Estimate:`.
+   <!-- /rule-copy -->
+   Ask via AskUserQuestion / the owner channel (§12). Continuing silently is not
+   a neutral default; it spends the owner's money on a plan they approved under
+   different numbers.
 4. **No standing agents (LA-5).** Every review, counsel, or supervision is a
    **one-shot spawn at a decision point** — a checkpoint, a merge, a gate
    verdict, a scope change. A resident/supervisor agent that is resumed over
@@ -68,19 +71,15 @@ defects; three merges and a gate went unrecorded and a compaction erased them.
    done-or-not (orderly #605). Commits reference an issue with `(#N)`; the close
    is a reviewed decision at the PR to the default branch. The guardrail hook
    blocks a closing keyword in a commit message.
-6. **Exactly one `Next up:` line (LA-7).** Superseding it means **renaming the
-   old line** (`SUPERSEDED next-up (historical, do NOT read as state):`) —
-   never leaving a second `Next up:` that still parses; the hook reads the
-   first and warns on duplicates.
-7. **Model tiering stays, and the reviewer tier keys on RISK CLASS not diff
-   size** (opus builders; **Fable required** for any review whose diff touches
-   auth / a session credential / authorization / tenancy / money / schema /
-   migrations / a security boundary — regardless of how few lines it is). The
-   saving is in *shape* (one-shot, at decision points), not in the tier; a
-   two-line auth diff still gets Fable (orderly #605→#730) — unless the
-   project's `.claude/agents/reviewer.md` carries `boundary_escalation: off`
-   (#91), in which case the tuned reviewer takes boundary diffs and flags a
-   miscalled tier as a process finding.
+6. **Exactly one `Next up:` line (LA-7)** — keep one, never a second that still
+   parses (§5 LA-7).
+7. **Model tiering stays; the reviewer tier keys on RISK CLASS, not diff size**
+   (opus builders; Fable for boundary-class reviews — §5 LA-5). The saving is in
+   *shape* (one-shot, at decision points), not the tier; a two-line boundary
+   diff still gets Fable (orderly #605→#730) — unless the project's
+   `.claude/agents/reviewer.md` carries `boundary_escalation: off` (#91), in
+   which case the tuned reviewer takes boundary diffs and flags a miscalled tier
+   as a process finding.
 
 ## 1. Plan (if no trio exists)
 
@@ -155,9 +154,8 @@ Read `.plans/<mission>.state.md` → `Next up:`. For each pending brief:
 3. On its return: confirm gates are green and the ledger was updated (the row
    marked `[x]` when verified — or `[~]` if it is parked/awaiting you, never left
    `[ ]` once picked up — handoff entry, `Next up:` advanced). Apply the
-   **one-corrective-retry rule** — on failure, re-spawn once with a corrective
-   note (that is a session: increment); if it fails again, stop and surface to
-   the human.
+   **one-corrective-retry rule** (§5): on failure, retry once (that is a session —
+   increment `Sessions used:`); a second failure stops and surfaces to the owner.
 4. **Merge rule**: if a brief finished well under budget and the next brief is
    in the same phase, the same agent may take it; checkpoints always end a
    session.
@@ -175,14 +173,12 @@ retry → surface). Treat `changed_paths` **empty on a `done` status as
 suspicious**: mark the row `[~]` and get reviewer confirmation before `[x]`.
 
 **Reviewer tier survives the runtime switch.** A `codex` `reviewer` tune covers
-**ROUTINE checkpoints only**. When the diff's risk class demands Fable — auth, a
-session/entry credential, authorization, tenancy, money, schema, migrations, or
-any security boundary, **including the rules file
-`.codex/rules/agentic-workflow.rules` and the adapter's sandbox-flag
-derivation** — you **override the tune and spawn the Claude `reviewer` on Fable**
-(§5 rule 7) — unless the project's `.claude/agents/reviewer.md` carries
-`boundary_escalation: off` (#91), in which case the tuned reviewer takes the
-boundary diff and the orchestrator's choice stands. A miscalled tier is a
+**ROUTINE checkpoints only**; when the diff is boundary-class (§5 LA-5),
+**including the rules file `.codex/rules/agentic-workflow.rules` and the
+adapter's sandbox-flag derivation**, you **override the tune and spawn the
+Claude `reviewer` on Fable** — unless the project's `.claude/agents/reviewer.md`
+carries `boundary_escalation: off` (#91), in which case the tuned reviewer takes
+the boundary diff and the orchestrator's choice stands. A miscalled tier is a
 reviewer process finding either way.
 
 ## 3. Checkpoint at each phase end (the only phase end, without `phases`)

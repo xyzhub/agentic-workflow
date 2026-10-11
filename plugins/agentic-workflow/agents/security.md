@@ -1,6 +1,6 @@
 ---
 name: security
-description: Specialist implementer for security-hardening work — building fail-closed config guards, auth/authorization, rate limiting, secret handling, signature/token verification, dependency & CI pinning, and fixing findings from a security review. Use during V4 hardening, when implementing auth/payment/webhook surfaces, or to remediate reviewer findings. Builds the hardening; the independent reviewer still verifies it (do not conflate the two).
+description: Specialist implementer for security-hardening work — fail-closed config guards, auth/authorization, rate limiting, secret handling, signature/token verification, dependency & CI pinning, and fixing security-review findings. Use during V4 hardening, for auth/payment/webhook surfaces, or to remediate findings. The independent reviewer still verifies it.
 tools: Read, Write, Edit, Bash, Grep, Glob
 ---
 

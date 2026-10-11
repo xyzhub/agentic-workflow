@@ -890,10 +890,204 @@ function checkObligationsRegister() {
   }
 }
 
-// `clockLeak` is exported so `tools/lint-test.mjs` can decide it directly. The
-// run below is guarded on being the entry point: importing this file for the
-// harness must not execute the whole gate (and must not `process.exit`).
-export { clockLeak };
+// ── Budgets (AC-14, D3 2026-10-11) ───────────────────────────────────────
+// CEILINGS ONLY RATCHET DOWN; raising one is a dated locked decision in the PR
+// body. Warn at 90% on stderr (a `warn:` line that never changes the exit
+// code); fail over 100%, naming file, size and ceiling.
+const BUDGETS = {
+  agent: 16000, // plugins/agentic-workflow/agents/*.md (bytes)
+  command: 24000, // plugins/agentic-workflow/commands/*.md (bytes)
+  skill: 6000, // plugins/agentic-workflow/skills/*/SKILL.md (bytes)
+  workflow: 120000, // plugins/agentic-workflow/templates/WORKFLOW.md (bytes, whole file)
+  description: 400, // agent frontmatter `description:` value (chars)
+};
+const WARN_RATIO = 0.9;
+
+// 'fail' over the ceiling · 'warn' at or above 90% · else 'ok'. Pure.
+function budgetVerdict(size, ceiling) {
+  if (size > ceiling) return 'fail';
+  if (size >= ceiling * WARN_RATIO) return 'warn';
+  return 'ok';
+}
+// An agent `description:` is over budget when its char length exceeds the cap.
+function descriptionOver(text, cap = BUDGETS.description) {
+  return (text ?? '').length > cap;
+}
+
+function skillFiles() {
+  const dir = path.join(PLUGIN, 'skills');
+  return readdirSync(dir).map((d) => path.join(dir, d, 'SKILL.md')).filter(existsSync);
+}
+
+const pct = (size, ceiling) => Math.round((size / ceiling) * 100);
+
+// Per-`##` byte table, printed to stderr on a WORKFLOW warn so the author sees
+// which section to trim (D3 Option B — a §-level view is informational).
+function printSectionBytes(file) {
+  const text = read(file);
+  const marks = [...text.matchAll(/^## .*$/gm)];
+  for (let i = 0; i < marks.length; i++) {
+    const start = marks[i].index;
+    const end = i + 1 < marks.length ? marks[i + 1].index : text.length;
+    console.error(`  §${marks[i][0].replace(/^##\s*/, '')} — ${Buffer.byteLength(text.slice(start, end), 'utf8')} B`);
+  }
+}
+
+function checkBudgets() {
+  const sizeCheck = (file, ceiling, printSections = false) => {
+    const size = Buffer.byteLength(read(file), 'utf8');
+    const v = budgetVerdict(size, ceiling);
+    if (v === 'fail')
+      fail(file, null, `over byte budget — ${size}/${ceiling} B (${pct(size, ceiling)}%); ceilings only ratchet down (raising one is a dated locked decision in the PR body)`);
+    else if (v === 'warn') {
+      console.error(`warn: ${rel(file)} — ${size}/${ceiling} B (${pct(size, ceiling)}%)`);
+      if (printSections) printSectionBytes(file);
+    }
+  };
+  for (const file of mdFiles(path.join(PLUGIN, 'agents'))) {
+    sizeCheck(file, BUDGETS.agent);
+    const desc = frontmatter(file)?.description ?? '';
+    if (descriptionOver(desc, BUDGETS.description))
+      fail(file, 1, `description ${desc.length} chars over the ${BUDGETS.description}-char cap`);
+    else if (budgetVerdict(desc.length, BUDGETS.description) === 'warn')
+      console.error(`warn: ${rel(file)} — description ${desc.length}/${BUDGETS.description} chars (${pct(desc.length, BUDGETS.description)}%)`);
+  }
+  for (const file of mdFiles(path.join(PLUGIN, 'commands'))) sizeCheck(file, BUDGETS.command);
+  for (const file of skillFiles()) sizeCheck(file, BUDGETS.skill);
+  sizeCheck(WORKFLOW, BUDGETS.workflow, true);
+}
+
+// ── Rule dedup (AC-12/AC-13, D1 2026-10-11) ──────────────────────────────
+// WORKFLOW §5 is the single prose home of the four convergence rules. Each is
+// fenced `<!-- rule: <id> -->…<!-- /rule -->` there (exactly one block per id).
+// Everywhere else a rule appears as a one-line POINTER (name + `(§5 LA-n)`) or —
+// at three actor sites — as a `<!-- rule-copy: <id> -->…<!-- /rule-copy -->`
+// block byte-identical to §5 after a per-line leading-whitespace strip. A
+// paragraph outside the fences that matches a rule's NAME key AND ≥2 of its
+// word-bounded MECHANICS keys is a restatement and a finding — §5 prose OUTSIDE
+// the fences is scanned too, so WORKFLOW's own out-of-§5 restatements are caught.
+// This guard covers the PLUGIN TREE ONLY — never a venture's own
+// `docs/WORKFLOW.md` copy (AC-13).
+const RULES = {
+  'overrun-1.5x': {
+    la: 'LA-1',
+    name: /1\.5\s*[×x]/,
+    mechanics: [/\bscope decision\b/i, /\bsubset\b/i, /\brevised estimate\b/i, /MUST NOT start/],
+  },
+  'one-corrective-retry': {
+    la: 'rule 3',
+    name: /one[- ]corrective|re-?spawn(?:ed)? once|retr(?:y|ied) once/i,
+    mechanics: [/re-?spawn/i, /corrective note/i, /escalat/i, /then (surface|escalat)/i, /\bhuman decides\b/i, /\bfix attempt\b/i],
+  },
+  'fable-boundary': {
+    la: 'LA-5',
+    name: /Fable/,
+    mechanics: [/\bauth\b/i, /\bcredential/i, /\btenancy\b/i, /\bmoney\b/i, /\bschema\b/i, /\bmigration/i, /security boundary/i],
+  },
+  'one-next-up': {
+    la: 'LA-7',
+    name: /Next up:/,
+    mechanics: [/reads the first/i, /warns on duplicates/i, /supersed/i, /renaming the old/i],
+  },
+};
+
+const stripInline = (text) => text.replace(/<!--[\s\S]*?-->/g, ' ').replace(/`[^`]*`/g, ' ');
+
+// True when `paragraph` restates `rule`: its NAME key matches on the RAW
+// paragraph (a rule's name is backticked in every real mention — `Next up:`,
+// `Fable` — and vanishes from a stripped §5 block, which would make the canonical
+// undetectable), AND ≥2 of its word-bounded MECHANICS keys match after stripping
+// HTML comments and backticked spans (so prose *about* a mechanic is not a hit).
+// Pure.
+function ruleRestatement(paragraph, rule) {
+  if (!rule.name.test(paragraph)) return false;
+  const t = stripInline(paragraph);
+  let hits = 0;
+  for (const m of rule.mechanics) if (m.test(t)) hits++;
+  return hits >= 2;
+}
+
+function section5(text) {
+  const h = text.match(/^## 5\. /m);
+  if (!h) return '';
+  const after = text.slice(h.index);
+  const next = after.slice(3).match(/^## \d+\. /m);
+  return next ? after.slice(0, next.index + 3) : after;
+}
+
+const RULE_BLOCK = /<!-- rule: (\S+) -->([\s\S]*?)<!-- \/rule -->/g;
+const RULE_COPY = /<!-- rule-copy: (\S+) -->([\s\S]*?)<!-- \/rule-copy -->/g;
+const normBlock = (s) => s.split('\n').map((l) => l.replace(/^\s+/, '')).join('\n').trim();
+
+function checkRuleDedup() {
+  const wf = read(WORKFLOW);
+  const s5 = section5(wf);
+  // 1. canonical blocks: exactly one per id, all inside §5, no stray ids.
+  const canonical = {};
+  for (const m of s5.matchAll(RULE_BLOCK)) {
+    if (!RULES[m[1]]) { fail(WORKFLOW, lineOf(wf, wf.indexOf(m[0])), `§5 rule block has unknown id "${m[1]}"`); continue; }
+    if (canonical[m[1]] !== undefined)
+      fail(WORKFLOW, lineOf(wf, wf.indexOf(m[0])), `§5 has a second rule block for "${m[1]}" (exactly one per id)`);
+    canonical[m[1]] = normBlock(m[2]);
+  }
+  for (const id of Object.keys(RULES))
+    if (canonical[id] === undefined)
+      fail(WORKFLOW, 1, `§5 is missing the canonical block for rule "${id}" (<!-- rule: ${id} --> … <!-- /rule -->)`);
+  for (const m of wf.matchAll(RULE_BLOCK))
+    if (!s5.includes(m[0]))
+      fail(WORKFLOW, lineOf(wf, m.index), `rule block "${m[1]}" is outside §5 — §5 is the only canonical home`);
+
+  // 2. restatement scan + 3. rule-copy agreement, over the prompt tree (hooks/
+  // excluded: they are shell scripts, not markdown, and never scanned here).
+  const files = [
+    ...mdFiles(path.join(PLUGIN, 'agents')),
+    ...mdFiles(path.join(PLUGIN, 'commands')),
+    ...skillFiles(),
+    ...mdFiles(path.join(PLUGIN, 'templates')),
+  ];
+  for (const file of files) {
+    const text = read(file);
+    const lines = text.split('\n');
+    const excluded = new Array(lines.length).fill(false);
+    for (const re of [RULE_BLOCK, RULE_COPY])
+      for (const m of text.matchAll(re)) {
+        const a = lineOf(text, m.index) - 1;
+        const b = lineOf(text, m.index + m[0].length - 1) - 1;
+        for (let i = a; i <= b; i++) excluded[i] = true;
+      }
+    let cur = [], startLine = 0;
+    const flush = () => {
+      if (cur.join('').trim()) {
+        const para = cur.join('\n');
+        for (const [id, rule] of Object.entries(RULES))
+          if (ruleRestatement(para, rule))
+            fail(file, startLine, `restates the §5 "${id}" rule in prose (§5 ${rule.la}); use a one-line pointer "(§5 ${rule.la})" or a <!-- rule-copy: ${id} --> block`);
+      }
+      cur = [];
+    };
+    lines.forEach((line, i) => {
+      if (excluded[i] || !line.trim()) { flush(); return; }
+      if (/^\s*(?:[-*+]|\d+[.)]|\|)/.test(line)) flush();
+      if (!cur.length) startLine = i + 1;
+      cur.push(line);
+    });
+    flush();
+
+    for (const m of text.matchAll(RULE_COPY)) {
+      const id = m[1];
+      if (!RULES[id]) { fail(file, lineOf(text, m.index), `rule-copy has unknown id "${id}"`); continue; }
+      if (canonical[id] === undefined) continue;
+      if (normBlock(m[2]) !== canonical[id])
+        fail(file, lineOf(text, m.index), `rule-copy "${id}" differs from the §5 canonical block (compared after per-line leading-whitespace strip) — re-sync it to §5`);
+    }
+  }
+}
+
+// `clockLeak` and the budget/dedup pure functions are exported so
+// `tools/lint-test.mjs` can decide them directly. The run below is guarded on
+// being the entry point: importing this file for the harness must not execute
+// the whole gate (and must not `process.exit`).
+export { clockLeak, budgetVerdict, descriptionOver, ruleRestatement, RULES };
 
 // realpath BOTH sides: `import.meta.url` is already symlink-resolved, so a
 // plain `path.resolve(argv[1])` comparison fails when this file is invoked
@@ -912,7 +1106,7 @@ const isEntryPoint = () => {
 };
 
 if (isEntryPoint()) {
-  for (const check of [checkManifests, checkAgents, checkCommands, checkCrossRefs, checkTemplateRefs, checkPluginRootBraced, checkSections, checkFrontmatterYaml, checkTemplateFrontmatter, checkHooks, checkObfuscation, checkHookBehavior, checkClockGuard, checkMarkerMutation, checkContextAttrib, checkCatalogSelftest, checkCiWaitSelftest, checkPublishGateSelftest, checkRunCodexHarness, checkAgentsRegistryHarness, checkStandingSteers, checkNextUpAgreement, checkClosing, checkObligationsRegister]) {
+  for (const check of [checkManifests, checkAgents, checkCommands, checkCrossRefs, checkTemplateRefs, checkPluginRootBraced, checkSections, checkFrontmatterYaml, checkTemplateFrontmatter, checkHooks, checkObfuscation, checkHookBehavior, checkClockGuard, checkMarkerMutation, checkContextAttrib, checkCatalogSelftest, checkCiWaitSelftest, checkPublishGateSelftest, checkRunCodexHarness, checkAgentsRegistryHarness, checkStandingSteers, checkNextUpAgreement, checkClosing, checkObligationsRegister, checkBudgets, checkRuleDedup]) {
     check();
   }
 
