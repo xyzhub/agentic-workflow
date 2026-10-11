@@ -957,6 +957,62 @@ function checkBudgets() {
   sizeCheck(WORKFLOW, BUDGETS.workflow, true);
 }
 
+// ── Tune presets (AC-12, tune-presets 2026-10-11) ────────────────────────
+// templates/tune-presets.json drives `/tune preset`. A bad id, a missing agent
+// or a Haiku row without its 100K window would ship silently (it is data), so
+// the shape is decided here. Pure function + gate wrapper, like the budgets.
+const PRESET_NAMES = ['lean', 'balanced', 'rigorous', 'unattended'];
+const PRESET_MODELS = new Set(['claude-fable-5-1', 'claude-opus-5-5', 'claude-sonnet-5-5', 'claude-haiku-5-5']);
+const PRESET_HAIKU = 'claude-haiku-5-5';
+const PRESET_EFFORTS = new Set(['low', 'medium', 'high']);
+const posInt = (v) => Number.isInteger(v) && v > 0;
+
+function tunePresetFindings(json, agentNames) {
+  const out = [];
+  if (!json || typeof json !== 'object') return ['not a JSON object'];
+  if (!posInt(json.schema_version)) out.push('schema_version must be a positive integer');
+  const classOf = {};
+  for (const [cls, list] of Object.entries(json.classes ?? {}))
+    for (const a of list ?? []) classOf[a] = cls;
+  for (const a of agentNames) if (!classOf[a]) out.push(`classes: agent "${a}" has no class`);
+  const names = Object.keys(json.presets ?? {});
+  if (names.join(',') !== PRESET_NAMES.join(','))
+    out.push(`presets must be exactly ${PRESET_NAMES.join(', ')} (got ${names.join(', ') || 'none'})`);
+  for (const p of names) {
+    const agents = json.presets[p]?.agents ?? {};
+    for (const a of agentNames) if (!agents[a]) out.push(`${p}: agent "${a}" missing`);
+    for (const [a, row] of Object.entries(agents)) {
+      const at = `${p}.${a}`;
+      if (!agentNames.includes(a)) out.push(`${at}: not a plugin agent`);
+      if (row.class !== classOf[a]) out.push(`${at}: class "${row.class}" ≠ classes entry "${classOf[a]}"`);
+      if (!PRESET_MODELS.has(row.model)) out.push(`${at}: unknown model id "${row.model}"`);
+      if (/haiku/.test(row.model ?? '') && row.model !== PRESET_HAIKU) out.push(`${at}: Haiku below 5.5 ("${row.model}")`);
+      if (!PRESET_EFFORTS.has(row.effort)) out.push(`${at}: effort "${row.effort}" not low|medium|high`);
+      if (row.model !== PRESET_HAIKU) continue;
+      if (row.runtime !== 'claude-p') out.push(`${at}: Haiku row needs runtime "claude-p"`);
+      if (row.compact_window !== 100000) out.push(`${at}: Haiku row needs compact_window 100000`);
+      if (!posInt(row.maxTurns)) out.push(`${at}: Haiku row needs an integer maxTurns`);
+      if (!posInt(row.read_budget)) out.push(`${at}: Haiku row needs an integer read_budget`);
+      if (!Array.isArray(row.allowed_tools) || !row.allowed_tools.length) out.push(`${at}: Haiku row needs an allowed_tools list`);
+      else if (row.allowed_tools.includes('Bash')) out.push(`${at}: Haiku allowed_tools carries bare Bash — scope it (Bash(<cmd>:*))`);
+      const fb = row.fallback;
+      if (!fb || !PRESET_MODELS.has(fb.model) || fb.model === PRESET_HAIKU || !PRESET_EFFORTS.has(fb.effort))
+        out.push(`${at}: Haiku row needs a non-Haiku fallback {model, effort, runtime}`);
+    }
+  }
+  if (!posInt(json.presets?.unattended?.tick_budget)) out.push('unattended.tick_budget must be a positive integer');
+  return out;
+}
+
+function checkTunePresets() {
+  const file = path.join(PLUGIN, 'templates/tune-presets.json');
+  if (!existsSync(file)) { fail(file, null, 'tune presets file missing — /tune preset reads it'); return; }
+  let json;
+  try { json = JSON.parse(read(file)); } catch (e) { fail(file, null, `invalid JSON — ${e.message}`); return; }
+  const agentNames = mdFiles(path.join(PLUGIN, 'agents')).map((f) => path.basename(f, '.md')).sort();
+  for (const msg of tunePresetFindings(json, agentNames)) fail(file, null, msg);
+}
+
 // ── Rule dedup (AC-12/AC-13, D1 2026-10-11) ──────────────────────────────
 // WORKFLOW §5 is the single prose home of the four convergence rules. Each is
 // fenced `<!-- rule: <id> -->…<!-- /rule -->` there (exactly one block per id).
@@ -1087,7 +1143,7 @@ function checkRuleDedup() {
 // `tools/lint-test.mjs` can decide them directly. The run below is guarded on
 // being the entry point: importing this file for the harness must not execute
 // the whole gate (and must not `process.exit`).
-export { clockLeak, budgetVerdict, descriptionOver, ruleRestatement, RULES };
+export { clockLeak, budgetVerdict, descriptionOver, ruleRestatement, RULES, tunePresetFindings };
 
 // realpath BOTH sides: `import.meta.url` is already symlink-resolved, so a
 // plain `path.resolve(argv[1])` comparison fails when this file is invoked
@@ -1106,7 +1162,7 @@ const isEntryPoint = () => {
 };
 
 if (isEntryPoint()) {
-  for (const check of [checkManifests, checkAgents, checkCommands, checkCrossRefs, checkTemplateRefs, checkPluginRootBraced, checkSections, checkFrontmatterYaml, checkTemplateFrontmatter, checkHooks, checkObfuscation, checkHookBehavior, checkClockGuard, checkMarkerMutation, checkContextAttrib, checkCatalogSelftest, checkCiWaitSelftest, checkPublishGateSelftest, checkRunCodexHarness, checkAgentsRegistryHarness, checkStandingSteers, checkNextUpAgreement, checkClosing, checkObligationsRegister, checkBudgets, checkRuleDedup]) {
+  for (const check of [checkManifests, checkAgents, checkCommands, checkCrossRefs, checkTemplateRefs, checkPluginRootBraced, checkSections, checkFrontmatterYaml, checkTemplateFrontmatter, checkHooks, checkObfuscation, checkHookBehavior, checkClockGuard, checkMarkerMutation, checkContextAttrib, checkCatalogSelftest, checkCiWaitSelftest, checkPublishGateSelftest, checkRunCodexHarness, checkAgentsRegistryHarness, checkStandingSteers, checkNextUpAgreement, checkClosing, checkObligationsRegister, checkBudgets, checkRuleDedup, checkTunePresets]) {
     check();
   }
 

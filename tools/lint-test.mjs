@@ -17,9 +17,9 @@
 // ones least likely to catch the next mistake. The `source` column is the
 // provenance claim — keep it honest when adding cases.
 import path from 'node:path';
-import { readFileSync, realpathSync } from 'node:fs';
+import { readFileSync, readdirSync, realpathSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { clockLeak, budgetVerdict, descriptionOver, ruleRestatement, RULES } from './lint.mjs';
+import { clockLeak, budgetVerdict, descriptionOver, ruleRestatement, RULES, tunePresetFindings } from './lint.mjs';
 
 // must: 'block' — a clock in some costume; the L3 rule rejects it.
 //       'pass'  — an observable state a probe can check.
@@ -185,6 +185,27 @@ export const RULE_CASES = [
   ['one-corrective paraphrase → restatement', ruleRestatement('A failed session is re-spawned once with a corrective note; a second failure escalates to the human.', RULES['one-corrective-retry']), true],
 ];
 
+// ── Tune presets (AC-12) — tunePresetFindings decided directly on the real
+// file and on mutated copies (planner "Lint fixture mechanics": no tree copy).
+// Each row is [label, got, want]; `got` is true when the findings match.
+const PLUGIN_DIR = path.join(path.dirname(WORKFLOW), '..');
+const PRESETS = JSON.parse(readFileSync(path.join(PLUGIN_DIR, 'templates/tune-presets.json'), 'utf8'));
+const AGENT_NAMES = readdirSync(path.join(PLUGIN_DIR, 'agents'))
+  .filter((f) => f.endsWith('.md')).map((f) => f.replace(/\.md$/, '')).sort();
+const mutate = (fn) => { const j = structuredClone(PRESETS); fn(j); return tunePresetFindings(j, AGENT_NAMES); };
+const names = (found, needle) => found.some((m) => m.includes(needle));
+export const PRESET_CASES = [
+  ['P0 real tune-presets.json → 0 findings [planner]', tunePresetFindings(PRESETS, AGENT_NAMES).length, 0],
+  ['P1 bad model id → finding naming the id [brief AC-12]',
+    names(mutate((j) => { j.presets.rigorous.agents.backend.model = 'claude-opus-9-9'; }), 'claude-opus-9-9'), true],
+  ['P2 agent missing from one preset → finding naming the agent [brief AC-12]',
+    names(mutate((j) => { delete j.presets.balanced.agents.compass; }), '"compass" missing'), true],
+  ['P3 Haiku row without compact_window → finding [brief AC-12]',
+    names(mutate((j) => { delete j.presets.lean.agents.chronicler.compact_window; }), 'lean.chronicler: Haiku row needs compact_window'), true],
+  ['P4 Haiku row with bare Bash → finding [planner]',
+    names(mutate((j) => { j.presets.unattended.agents.intake.allowed_tools.push('Bash'); }), 'bare Bash'), true],
+];
+
 // Guarded on being the entry point, so importing CASES (to score an older
 // implementation against the same corpus, say) does not run the suite.
 // realpath both sides — see the same guard in lint.mjs: a plain resolve()
@@ -207,13 +228,13 @@ for (const [must, when, source] of CASES) {
     console.error(`  FAIL  want=${must} got=${got}${hit ? ` (matched "${hit.clause}" as ${hit.kind})` : ''}  [${source}]\n        when: ${when}`);
   }
 }
-for (const [label, got, want] of [...BUDGET_CASES, ...CANON_CASES, ...RULE_CASES]) {
+for (const [label, got, want] of [...BUDGET_CASES, ...CANON_CASES, ...RULE_CASES, ...PRESET_CASES]) {
   if (got !== want) {
     bad++;
     console.error(`  FAIL  want=${JSON.stringify(want)} got=${JSON.stringify(got)}  [${label}]`);
   }
 }
-const total = CASES.length + BUDGET_CASES.length + CANON_CASES.length + RULE_CASES.length;
+const total = CASES.length + BUDGET_CASES.length + CANON_CASES.length + RULE_CASES.length + PRESET_CASES.length;
 if (bad) {
   console.error(`\nlint-test: ${bad} of ${total} wrong`);
   process.exit(1);
