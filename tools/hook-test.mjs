@@ -1765,6 +1765,27 @@ const CLOSING_NONE_DUE = {
     check('merge-guard: files is not an array → BLOCK', blocks(r, 'could not read PR #101'), why(r)); }
 }
 
+// ── Tick + mission token budgets (tune-presets D3, AC-10): print only, exit 0.
+{
+  const MB = 'mission-budget (D3';
+  const led = (...extra) => ({ 'pay.state.md': ['Estimate: 4 sessions', 'Sessions used: 2', ...extra, '- [x] S1 — build', '- [ ] S2 — build', 'Next up: S2', ''].join('\n') });
+  const run = (...extra) => runHook({ event: 'UserPromptSubmit', desc: MB, input: {}, ledgers: led(...extra) });
+  const absent = run();
+  check('tick budget: fields absent → output byte-identical to the pre-D3 shape (no tick text, no stop)',
+    absent.code === 0 && absent.stdout === '🧵 Mission pay — session 2/4 (est.) — .plans/pay.state.md\n  Next up: S2\n', JSON.stringify(absent.stdout));
+  const under = run('Tick budget: 750000', 'Tick tokens: 212000', 'Mission budget: 400000');
+  check('tick budget: under → status line carries "· tick 212000/750000 tokens", no 🛑',
+    under.code === 0 && /session 2\/4 \(est\.\) · tick 212000\/750000 tokens — /.test(under.stdout) && !/🛑/.test(under.stdout), JSON.stringify(under.stdout));
+  const tick = run('Tick budget: 750000', 'Tick tokens: 750000');
+  check('tick budget: k ≥ N → 🛑 TICK BUDGET (no new brief, ledger, owner channel), exit 0',
+    tick.code === 0 && /🛑 TICK BUDGET — 750000 of 750000/.test(tick.stdout) && /owner channel/.test(tick.stdout) && !/MISSION BUDGET/.test(tick.stdout), JSON.stringify(tick.stdout));
+  const mission = run('Tick budget: 750000', 'Tick tokens: 10', 'Mission budget: 1500000');
+  const below = run('Tick budget: 750000', 'Tick tokens: 10', 'Mission budget: 1499999');
+  check('mission budget: Σ ≥ Tick budget × ceil(Estimate/2) → 🛑 MISSION BUDGET; one token under → silent',
+    mission.code === 0 && /🛑 MISSION BUDGET — 1500000 tokens spent ≥ 750000 × ceil\(4\/2\)/.test(mission.stdout) && !/TICK BUDGET/.test(mission.stdout)
+      && below.code === 0 && !/🛑/.test(below.stdout), JSON.stringify(mission.stdout));
+}
+
 // ── Child silencer (tune-presets D4): inside a claude-p child spawned by
 // tools/run-claude.mjs (AGENTIC_WORKFLOW_CHILD=1) the four UserPromptSubmit
 // hooks and both beat-enforcers exit 0 silently. Each case first proves the
