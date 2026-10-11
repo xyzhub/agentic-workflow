@@ -16,6 +16,18 @@ grades the protocol's own behavior the way a QA team would.
 
 ---
 
+## 2026-10-11 — builder-done-rules: closed, both halves live
+
+The owner merged both pull requests today: #120 (version 1.55.0) and #121 (version 1.56.0, merge 573297b). Checks passed on both, and version 1.56.0 is now the live version on the main branch. The mission is closed.
+
+The close step removed the finished branches and left two follow-up checks on the register. OB-23: after the plugin is reinstalled, confirm in a real session that the shortened agent descriptions show and the health check is clean. OB-24: on the next mission, give the plan reviewer a deliberately flawed plan and confirm it catches it, so we know the new check works and does not just pass everything.
+
+Final ratio: 5 sessions against an estimate of 4, which is 1.25 times. Two of them were corrective rounds after review. One further attempt on the Codex runtime failed before it did any work, so it is not counted; it is filed as issue #122.
+
+Next: reinstall the plugin and run the OB-23 check; then operate-triage, which is planned but not started.
+
+---
+
 ## 2026-10-11 — builder-done-rules: the second half is built and approved
 
 Phase 2 of builder-done-rules is done and sits in PR #121 as version 1.56.0, stacked on the Phase 1 pull request, #120. Both wait for the owner to merge, #120 first.
