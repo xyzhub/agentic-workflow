@@ -8,6 +8,41 @@ has no tags — each version-stamped commit on `main` IS the release.
 
 _(empty)_
 
+## [1.57.0] — 2026-10-11
+### Added — tune presets (phase 1 of tune-presets: configuration)
+- **`templates/tune-presets.json` (AC-1).** Four presets — `lean` · `balanced` ·
+  `rigorous` · `unattended` — × all 20 agents, rows per agent (`class`, `model`
+  pinned to `claude-fable-5-1` / `claude-opus-5-5` / `claude-sonnet-5-5` /
+  `claude-haiku-5-5`, `effort`); Haiku record rows (Lean, Unattended) carry
+  `runtime: claude-p`, `compact_window: 100000`, `maxTurns: 24`,
+  `read_budget: 500`, scoped `allowed_tools` and a Sonnet `fallback`;
+  `unattended.tick_budget: 750000`; Lean carries the unmeasured-saving `note`.
+- **Lint (AC-12).** `tools/lint.mjs` `checkTunePresets` over the exported pure
+  `tunePresetFindings`: preset names, every live agent in every preset, pinned
+  ids, effort enum, Haiku invariants (window, integer caps, no bare `Bash`,
+  non-Haiku fallback), no Haiku below 5.5, positive `tick_budget`.
+  `tools/lint-test.mjs` `PRESET_CASES`: the real file clean + bad id, missing
+  agent, Haiku row without the window, bare-`Bash` Haiku row all red.
+- **`/agentic-workflow:tune preset <name> | show | reset` (AC-2, AC-3).** Apply
+  writes a stamped `preset:<name>` shadow only where a cell differs from the
+  base (`balanced` writes none), skips-and-reports hand tunes, rewrites the §10
+  row, warns on an open mission ledger, re-runs idempotently; `show` marks `*`
+  where `effective` departs from the row; `reset` deletes preset-authored
+  shadows only. A later per-agent tune appends its kind (`preset:lean, model`)
+  and wins; `diff` prints the preset row beside `effective`.
+- **Registry `override.preset` (minor bump).** `tools/agents.mjs` parses the
+  banner's `preset:<name>` token; `templates/agents-registry.schema.json` adds
+  the required `string|null` field.
+- **Bootstrap / adopt preset question (AC-4).** ONE question (`balanced`
+  recommended; `rigorous` when payments/auth/PII are named); §10 **Tune preset**
+  row `<name> (applied YYYY-MM-DD)`, unanswered `balanced (default, applied …)`.
+- **`/doctor` preset checks (AC-5).** §2 **Preset drift** (🟡) and **Preset
+  switch while open** (🔴); clean state silent.
+- **Record (AC-11).** `templates/WORKFLOW.md` §5 preset pointer, §9 clause,
+  §10 **Tune preset** row; this repo's row = `balanced`; `commands/mission.md`
+  rule 7 — the plan-judge runs on Fable under every preset, and boundary
+  escalation covers any non-Fable reviewer tune.
+
 ## [1.56.0] — 2026-10-11
 ### Added — builder done-rules, AC ids + value sourcing, Assumed status, Test policy, /fix loop (phase 2 of builder-done-rules)
 - **Builder done-rules (AC-1..AC-4).** `agents/backend.md` and `agents/frontend.md`
