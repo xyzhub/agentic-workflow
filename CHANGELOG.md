@@ -8,6 +8,25 @@ has no tags — each version-stamped commit on `main` IS the release.
 
 _(empty)_
 
+## [1.55.0] — 2026-10-11
+### Added — prompt budgets + a §5 rule-dedup guard (phase 1 of builder-done-rules)
+- **Byte/description budgets in `tools/lint.mjs` (AC-14/AC-15).** One `BUDGETS`
+  object (agents 16,000 B · commands 24,000 B · `skills/*/SKILL.md` 6,000 B ·
+  agent `description:` 400 chars · `templates/WORKFLOW.md` 120,000 B) with a
+  ratchet-down comment; `checkBudgets()` warns at 90% on stderr (a `warn:` line
+  that never changes the exit code, per-§ byte table on a WORKFLOW warn) and
+  fails over 100%.
+- **§5 rule-dedup guard (AC-12/AC-13).** The four convergence rules (overrun-1.5x,
+  one-corrective-retry, fable-boundary, one-next-up) have ONE fenced prose home
+  in `templates/WORKFLOW.md` §5 (`<!-- rule: <id> -->`); every other prose
+  statement is a lint finding, and three `<!-- rule-copy: <id> -->` actor-site
+  blocks are diffed against §5. The guard covers the plugin tree only, never a
+  venture's own `docs/WORKFLOW.md`. `tools/lint-test.mjs` grew from 69 to 86
+  cases (budget verdicts, per-id canonical self-detect, restatement fixtures).
+- **20 agent `description:` trims (AC-15a).** Total 9,687 → 6,898 B; 0 files over
+  the 400-char cap (was 17); `commands/mission.md` 21,336 → 20,969 B,
+  `agents/reviewer.md` 14,308 → 13,438 B.
+
 ## [1.54.0] — 2026-10-07
 ### Added — the Gatehouse asks: every agent setting is a first-class, tunable, machine-readable shadow
 - **Reviewer boundary-escalation is a per-project tune (#91).** `tune reviewer
