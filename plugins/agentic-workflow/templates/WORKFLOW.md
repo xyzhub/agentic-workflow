@@ -778,7 +778,8 @@ Three artifacts kept current so the project's story survives any single session:
   contained HTML published as a Claude Artifact to a stable URL (recorded in the
   file's `artifact-url` comment) the owner keeps bookmarked.
 
-**When**: at session close, at every checkpoint, and at stage transitions. The
+**When**: at session close, at stage transitions, and once at mission close
+(never between phases, #133). The
 implementer spawns the chronicler with a summary (PRs, deviations, incidents, any
 stage change); the chronicler edits the three files, then the **main session
 republishes** `overview.html` via the Artifact tool to its recorded URL

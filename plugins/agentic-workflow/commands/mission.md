@@ -64,7 +64,9 @@ defects; three merges and a gate went unrecorded and a compaction erased them.
    what range, when — then the verdict when it returns. You have no session boundary to force a write-ahead; a
    compaction can erase everything since the last write. After each merge to
    staging, each verify result, each review verdict, each PR opened: write the
-   handoff entry, flip the glyph, advance `Next up:`, then continue.
+   handoff entry, flip the glyph, advance `Next up:`, then continue — one line
+   per beat: `node ${CLAUDE_PLUGIN_ROOT}/tools/ledger.mjs <mission>
+   mark|fire|promote|handoff|next-up|sessions|close … [--commit]` (#132).
 6b. **Closing keywords live in the PR-to-`main` body, never in a commit message
    or a staging-PR body** — a commit's `Closes #N` fires whenever the commit
    reaches the default branch (the promote carries it), closing the issue
@@ -84,9 +86,8 @@ defects; three merges and a gate went unrecorded and a compaction erased them.
 ## 1. Plan (if no trio exists)
 
 If `.plans/<mission>.{md,sessions.md,state.md}` don't exist, spawn the **planner**
-agent with the goal and the mode (`phases` or not). (For a feature that still
-needs DEFINING — scope, journeys, shape decisions — `/agentic-workflow:plan` is
-the interview-driven front door that ends here with everything locked.) It
+agent with the goal and the mode (`phases` or not). (A feature that still needs
+defining enters via `/agentic-workflow:plan`, which ends here.) It
 explores once and writes the trio, including `Estimate:` and `Sessions used: 0`
 in the ledger header — and `Issue: #N` when the goal names a queue item (§4);
 the PR body then carries one `Closes #N` line per issue (GitHub closes only
@@ -95,16 +96,15 @@ reads the issue as the acceptance criteria.
 
 **Plan-judge (automatic, before any brief spends a session).** As soon as the
 planner returns the trio — in `plan` mode and on every `replan` — spawn a
-**fresh, read-only, one-shot `reviewer` in plan-judge mode** (§5) over the trio
-(the master plan's §1 tasks, the briefs, the ledger). It returns **APPROVE** or
+**fresh, read-only, one-shot `reviewer` in plan-judge mode** (§5) over the trio.
+It returns **APPROVE** or
 **REVISE** with per-brief findings (≤ one page). APPROVE → carry on and surface
 the open questions as below. REVISE → hand the findings to the planner, which
 revises **once**; a **second REVISE surfaces to the owner** (the plan is wrong
-about something only they can settle). The judge is a `reviewer` *mode*, not a
-new agent, and it never writes.
+about something only they can settle).
 
 **Converting an existing plan**: if the goal names a plan
-document (a PLAN.md, migration doc, ticket export), pass it to the planner as
+document (a PLAN.md, a ticket export), pass it to the planner as
 source material — its decisions become locked decisions, not things to
 re-litigate. Then surface the master plan's **open questions** to the human and
 get decisions before executing — route the technical ones through the
@@ -133,8 +133,7 @@ Read `.plans/<mission>.state.md` → `Next up:`. For each pending brief:
    (`runtime: codex[:<model>]` or `claude-p`, `effort:`) → the default `claude`. Route to the
    right agent from the brief (`backend`/`frontend`/`security`/`devops`, or the
    main session for cross-cutting work) and spawn it on the resolved runtime:
-   - **`claude`** (the default — every run today is exactly this, unchanged): the
-     **Agent tool**, as now. When the resolved tune carries `effort:` (#94),
+   - **`claude`** (the default): the **Agent tool**, as now. When the resolved tune carries `effort:` (#94),
      pass the Agent tool's effort parameter where the harness exposes one; where
      it does not, prepend `Effort: <level>.` as the first line of the spawn
      prompt. The tune's report says which applied.
@@ -216,10 +215,9 @@ Include the scorecard in the ledger handoff entry. Only **blocking** findings
 may cause REQUEST CHANGES; advisory findings ride into the ledger as a backlog
 line.
 
-Mark the checkpoint row `[~]` when you spawn the reviewer (in-flight), and flip
-it to `[x]` on APPROVE — or leave `[~]` if it is APPROVE-but-merge-pending. The
-beat-enforcer keys on the glyph (`[ ]` not started → it may nudge; `[~]`/`[x]`
-→ silent), so keeping marks current stops it nudging about work already in hand.
+Mark the checkpoint row `[~]` when you spawn the reviewer, `[x]` on APPROVE —
+or leave `[~]` if APPROVE-but-merge-pending; the beat-enforcer nudges `[ ]`
+rows only (and not one whose `when:` gate is unmet, #131).
 
 **Capture standing steers here.** If the human says anything at the checkpoint
 about *how* the work should be done — taste, tone, what to stop doing — append
@@ -267,9 +265,11 @@ inferences.
 ## 4. Record & resume
 
 After each brief/checkpoint — and, per rule 5, at every merge and gate result in
-between — the ledger is written first; then spawn the **chronicler** to update
-the record and republish the status page via the Artifact tool (subagents
-cannot publish). The ledger is ground truth — and the ledger **at origin** is the state when
+between — the ledger is written first. **No between-phase record pass**: the
+chronicler runs ONCE at mission close and the main session republishes the
+status page then (subagents cannot publish); the ledger, PR body and owner
+report carry the state in between (#133). Republish earlier only with no owner
+channel (§12) AND a mission spanning more than a day. The ledger is ground truth — and the ledger **at origin** is the state when
 more than one machine can drive (§5 hand-off): `continue` mode pulls first,
 then re-reads
 `Next up:` **and the `## Standing steers` block** (steers bind every session
@@ -296,7 +296,8 @@ Read the ledger's `## Closing` block and run `/agentic-workflow:settle` as the
 close step: it probes each row's condition, fires the safe class, and refuses
 the close while any `[ ]` row remains. Fire (`[x]` + dated evidence) or promote
 (`[~] … → OB-<n>`, with the verbatim copy landed in `.plans/OBLIGATIONS.md`)
-every row, then — and only then — write the `Closed: YYYY-MM-DD` stamp (the
+every row, then — and only then — write the `Closed: YYYY-MM-DD` stamp
+(`ledger.mjs <mission> close` refuses it over an open row; the
 lint backstop vetoes a stamp over an open row). Record the final
 `Sessions used:` against `Estimate:` in the closing handoff entry — that ratio
 is the retro's first number. Branch reaping usually outlives the mission: the
