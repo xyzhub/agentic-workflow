@@ -7,6 +7,7 @@ import { readFileSync, readdirSync, existsSync, realpathSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { isBareBash } from '../plugins/agentic-workflow/tools/run-claude.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const PLUGIN = path.join(ROOT, 'plugins/agentic-workflow');
@@ -1012,7 +1013,8 @@ function tunePresetFindings(json, agentNames) {
       if (!posInt(row.maxTurns)) out.push(`${at}: Haiku row needs an integer maxTurns`);
       if (!posInt(row.read_budget)) out.push(`${at}: Haiku row needs an integer read_budget`);
       if (!Array.isArray(row.allowed_tools) || !row.allowed_tools.length) out.push(`${at}: Haiku row needs an allowed_tools list`);
-      else if (row.allowed_tools.includes('Bash')) out.push(`${at}: Haiku allowed_tools carries bare Bash — scope it (Bash(<cmd>:*))`);
+      // Same semantic rule the adapter enforces: Bash(*), Bash(:*), Bash(* *) are bare too.
+      else if (row.allowed_tools.some((t) => isBareBash(String(t)))) out.push(`${at}: Haiku allowed_tools carries bare Bash — scope it (Bash(<cmd>:*))`);
       const fb = row.fallback;
       if (!fb || !PRESET_MODELS.has(fb.model) || fb.model === PRESET_HAIKU || !PRESET_EFFORTS.has(fb.effort))
         out.push(`${at}: Haiku row needs a non-Haiku fallback {model, effort, runtime}`);
