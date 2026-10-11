@@ -42,7 +42,7 @@
             "description": "null when no .claude/agents shadow exists, else the shadow and what it changes.",
             "type": ["object", "null"],
             "additionalProperties": false,
-            "required": ["path", "kind", "base_version", "base_sha"],
+            "required": ["path", "kind", "base_version", "base_sha", "preset"],
             "properties": {
               "path": { "type": "string" },
               "kind": {
@@ -51,7 +51,8 @@
                 "items": { "type": "string" }
               },
               "base_version": { "description": "The plugin version stamped in the shadow's banner, or null.", "type": ["string", "null"] },
-              "base_sha": { "description": "The first 12 hex of the base sha256 stamped in the banner, or null (pre-1.54 shadows).", "type": ["string", "null"] }
+              "base_sha": { "description": "The first 12 hex of the base sha256 stamped in the banner, or null (pre-1.54 shadows).", "type": ["string", "null"] },
+              "preset": { "description": "The preset named by a `preset:<name>` token in the banner's kind list (written by /tune preset, v1.57.0), or null for a hand tune.", "type": ["string", "null"] }
             }
           }
         }
