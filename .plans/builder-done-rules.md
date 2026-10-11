@@ -107,6 +107,8 @@ trio dogfoods them). Full wording: the brief, §"Acceptance criteria" and
    `templates/decision-log.md` gains a Status column (`decided` · `Assumed —
    owes <decision>; built on <assumption>; authorized by <who> <date>` ·
    `ratified <date>`); the same shape is allowed as a `## Locked decisions`
+
+- 2026-10-11 — **Release per phase (owner, at checkpoint p1)**: Phase 1 ships as v1.55.0 (own CHANGELOG entry, docs/WORKFLOW.md §5 mirror in the same diff, PR mergeable alone); Phase 2 ships as v1.56.0. Supersedes the planner refinement "1.55.0 covering both phases". Reason: merging to `main` IS the release (§10); a P1 merge at 1.54.0 would be an unversioned release.
    bullet (`Assumed <date> —`); `P/commands/settle.md` step 2b greps both homes
    for `Assumed` without a later `ratified` → surface list, never a blocker;
    the ledger `## Open questions` carries a one-line pointer. AC-10: §10 gains

@@ -12,7 +12,7 @@ fresh agent resumes the mission from this file alone. Write-ahead — update it
 (§12 LA-6). Deploys to `.plans/builder-done-rules.state.md`._
 
 Estimate: 4 sessions
-Sessions used: 1
+Sessions used: 2
 
 _Budget lines read by the mission-budget hook every turn; the overrun STOP and
 its scope decision are §5 LA-1. `Estimate:` rises only as a dated locked
@@ -30,6 +30,7 @@ decision point, §12 LA-5.)
 
 - [x] S1 — budgets + dedup detector + description trims + pointer swaps (branch `mission/builder-done-rules-p1`, `devops`; AC-12, AC-13, AC-14, AC-15a)
 - [~] Checkpoint p1 — Fable reviewer: harnesses + diff `main..p1` + per-AC verdict AC-12..AC-15a → PR to `main`
+- [~] S1-fix — corrective (same `devops`, branch `mission/builder-done-rules-p1`): detector name-key on raw text, one-corrective mechanics recall, canonical self-detect harness cases, two residual pointer swaps, dead export, v1.55.0 + CHANGELOG + docs/WORKFLOW.md §5 mirror
 - [ ] S2 — done-rules + trio templates + judge + Assumed/settle + Test policy + /fix (branch `mission/builder-done-rules-p2`, `backend`; AC-1..AC-11, AC-15b/c/d)
 - [ ] Checkpoint p2 — Fable reviewer: harnesses + diff `p1..p2` + per-AC verdict AC-1..AC-15 + PR-body numbers → PR to `main`
 
@@ -52,7 +53,7 @@ phase branch before its checkpoint, rides the feature PR) or post-merge (fires
 at a later `/agentic-workflow:settle` from `chore/builder-done-rules-bookkeeping`,
 the mission's ONE bookkeeping PR). Rows are never deleted._
 
-- [ ] version bumped + stamped · added 2026-10-11 (planner, pre-merge) — do: `plugins/agentic-workflow/.claude-plugin/plugin.json` `version` → `1.55.0` and the CHANGELOG entry `## [1.55.0] — <date>` names it, covering both phases — when: the S2 diff on `mission/builder-done-rules-p2` carries both edits and `node tools/lint.mjs` is green on that commit — probe: `grep -c '"version": "1.55.0"' plugins/agentic-workflow/.claude-plugin/plugin.json && grep -c '^## \[1.55.0\]' CHANGELOG.md`
+- [ ] version bumped + stamped · added 2026-10-11 (planner, pre-merge) — do: **re-keyed 2026-10-11 (owner): P1 ships v1.55.0 on `mission/builder-done-rules-p1` with its own CHANGELOG entry and the docs/WORKFLOW.md §5 mirror; P2 ships v1.56.0 — the probe below applies per phase with its version.** Original: `plugins/agentic-workflow/.claude-plugin/plugin.json` `version` → `1.55.0` and the CHANGELOG entry `## [1.55.0] — <date>` names it, covering both phases — when: the S2 diff on `mission/builder-done-rules-p2` carries both edits and `node tools/lint.mjs` is green on that commit — probe: `grep -c '"version": "1.55.0"' plugins/agentic-workflow/.claude-plugin/plugin.json && grep -c '^## \[1.55.0\]' CHANGELOG.md`
 - [ ] docs/record synced · added 2026-10-11 (planner, pre-merge) — do: this repo's `docs/WORKFLOW.md` mirrors the template's §5 `<!-- rule: -->` markers, the §6 done-means line and the §10 **Test policy** row (`configured`), and `plugins/agentic-workflow/README.md` names the lint budgets + dedup guard — when: the p2 branch carries the mirrored sections and `grep -c 'rule: ' docs/WORKFLOW.md` returns 4 — probe: `grep -c '<!-- rule: ' docs/WORKFLOW.md; grep -c 'Test policy' docs/WORKFLOW.md plugins/agentic-workflow/README.md`
 - [ ] before/after numbers recorded · added 2026-10-11 (planner, pre-merge) — do: write the four measured rows (description total chars, files > 400, `mission.md` bytes, `reviewer.md` bytes; baselines 9,687 · 16 · 21,336 · 14,308) into the S2 handoff; the Staging step copies them into the p2 PR body (AC-15d) — when: the S2 handoff entry in this ledger carries the four numbers — probe: `grep -c 'reviewer.md' .plans/builder-done-rules.state.md`
 - [ ] branch + worktree cleanup · added 2026-10-11 (planner, post-merge) — do: delete `mission/builder-done-rules-p1`, `mission/builder-done-rules-p2` and `mission/builder-done-rules` (local and remote) and prune stale worktrees — when: both phase PRs are merged AND the `lint` workflow is green on the merge commits — probe: `gh pr list --state merged --search builder-done-rules` + `gh run list --workflow lint --limit 3`
@@ -60,6 +61,7 @@ the mission's ONE bookkeeping PR). Rows are never deleted._
 - [ ] negative control — plan-judge REVISEs on a seeded miss · added 2026-10-11 (planner, post-merge) — do: on the first real mission planned after this one, before its S1, copy its trio to a scratch dir, delete one brief's `ACs:` citation and one `## Value sourcing` row, run a Fable plan-judge over the copy and record that it returns REVISE naming the uncovered id and the unsourced value (AC-8); a pass is n=1 evidence, record planner + judge model and date — when: a newer `.plans/<m>.md` with a `## Value sourcing` table exists and its first plan-judge verdict is on record — probe: manual
 
 ## Deviations
+- 2026-10-11 S1 (builder design calls, recorded at checkpoint p1): detector requires the rule NAME key AND ≥2 word-bounded mechanics keys (lock said "two mechanics tokens"; ≥1 would flag the ledger template's own pointer) · §5 LA-5 incident wording "Fable spend" → "top-tier review spend" so the unfenced LA-5 tail is not itself a restatement · dropped boundary sentences from descriptions were NOT moved to bodies because each already exists there (chronicler:103/127, designer:131-132, advisor:35, curator:68, brainstormer:60, analyst:27-28).
 
 _Any departure from a brief — logged the moment it happens, with why (§4)._
 
@@ -70,6 +72,7 @@ _Any departure from a brief — logged the moment it happens, with why (§4)._
 _≤10 lines per entry: what shipped, the verify signal, the branch, what the next
 session needs._
 
+- 2026-10-11 Checkpoint p1 verdict: REQUEST CHANGES (Fable). Scorecard QA 1 · DX 2 · Efficiency 3 · Architecture 2. Per-AC: AC-12 PASS (residue mission.md:74-75, planner.md:99-101 once AC-13 fixed) · AC-13 FAIL (`one-next-up` undetectable: name key tested after backtick strip; `one-corrective-retry` weak recall) · AC-14 PASS · AC-15a PASS (numbers reproduced exactly). Release policy surfaced; owner decided P1 = v1.55.0, P2 = v1.56.0. S1-fix spawned (session 2/4).
 - 2026-10-11 S1 done (devops, 4 commits 3c8dcdf..a7e36b6 on `mission/builder-done-rules-p1`): BUDGETS + checkBudgets, RULES + checkRuleDedup (pure exports, lint-test 69→80 cases), four §5 rule fences + AC-13 scope note, three rule-copy blocks, pointer swaps (incl. flight-plan, tune.md ~102 found by the detector), 20 description trims. Numbers: descriptions 9,687→6,898 chars, files>400 17→0, mission.md 21,336→20,969 B, reviewer.md 14,308→13,438 B. Gates: lint exit 0 zero warn, lint-test 80 ok, agents-test 26 ok. Builder flags for review: detector = name key AND ≥2 mechanics keys; §5 LA-5 wording "Fable spend"→"top-tier review spend". Pre-merge Closing rows all keyed to S2 (version 1.55.0, docs mirror, numbers) — none fire at p1. Checkpoint p1 reviewer (Fable) spawned on `main..mission/builder-done-rules-p1`.
 - 2026-10-11 S1 spawned: `devops` on branch `mission/builder-done-rules-p1` (cut from `mission/builder-done-rules` at f29a722), S1 brief in `.plans/builder-done-rules.sessions.md#s1`; Sessions used 1/4.
 - 2026-10-11 plan: trio authored by the planner from the four decision docs; Estimate 4 (2 briefs + 2 Fable checkpoints, owner-decided); plan-judge APPROVED with six named fixes (applied same day); OQ-1 answered by the owner (codex `deviation:` prefix, enum unchanged). Ready for S1.
