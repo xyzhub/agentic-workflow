@@ -493,6 +493,24 @@ function checkRunCodexHarness() {
   }
 }
 
+// ── 10.7b run-claude adapter harness (tier-1.5) ──────────────────────────
+// The claude-p adapter spawns a child `claude -p` with permission flags; the
+// harness proves it never passes --bare/bypassPermissions, keeps the window
+// var on the child env only, strips CLAUDECODE, and refuses a bare `Bash`.
+function checkRunClaudeHarness() {
+  const runner = path.join(ROOT, 'tools/run-claude-test.mjs');
+  if (!existsSync(runner)) {
+    fail(runner, null, 'run-claude harness missing — tools/run-claude-test.mjs must exist so the gate proves the claude-p child flags, env isolation and the bare-Bash refusal (do not silently drop the check)');
+    return;
+  }
+  const res = spawnSync('node', [runner], { encoding: 'utf8' });
+  if (res.status !== 0) {
+    const detail = `${res.stdout ?? ''}${res.stderr ?? ''}`
+      .split('\n').filter((l) => /FAIL|failure|Error/.test(l)).join(' | ');
+    fail(runner, null, `run-claude harness failed — run \`node tools/run-claude-test.mjs\`: ${detail || '(no detail)'}`);
+  }
+}
+
 // ── 10.9 agents registry harness (tier-1.5) ─────────────────────────────
 // The agent registry (tools/agents.mjs) is a public interface a wrapper reads
 // instead of parsing frontmatter and banner wording, and /tune's no-arg table
@@ -1162,7 +1180,7 @@ const isEntryPoint = () => {
 };
 
 if (isEntryPoint()) {
-  for (const check of [checkManifests, checkAgents, checkCommands, checkCrossRefs, checkTemplateRefs, checkPluginRootBraced, checkSections, checkFrontmatterYaml, checkTemplateFrontmatter, checkHooks, checkObfuscation, checkHookBehavior, checkClockGuard, checkMarkerMutation, checkContextAttrib, checkCatalogSelftest, checkCiWaitSelftest, checkPublishGateSelftest, checkRunCodexHarness, checkAgentsRegistryHarness, checkStandingSteers, checkNextUpAgreement, checkClosing, checkObligationsRegister, checkBudgets, checkRuleDedup, checkTunePresets]) {
+  for (const check of [checkManifests, checkAgents, checkCommands, checkCrossRefs, checkTemplateRefs, checkPluginRootBraced, checkSections, checkFrontmatterYaml, checkTemplateFrontmatter, checkHooks, checkObfuscation, checkHookBehavior, checkClockGuard, checkMarkerMutation, checkContextAttrib, checkCatalogSelftest, checkCiWaitSelftest, checkPublishGateSelftest, checkRunCodexHarness, checkRunClaudeHarness, checkAgentsRegistryHarness, checkStandingSteers, checkNextUpAgreement, checkClosing, checkObligationsRegister, checkBudgets, checkRuleDedup, checkTunePresets]) {
     check();
   }
 
