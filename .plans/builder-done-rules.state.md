@@ -29,7 +29,7 @@ decision point, §12 LA-5.)
 ## Checklist
 
 - [x] S1 — budgets + dedup detector + description trims + pointer swaps (branch `mission/builder-done-rules-p1`, `devops`; AC-12, AC-13, AC-14, AC-15a)
-- [~] Checkpoint p1 — Fable reviewer: harnesses + diff `main..p1` + per-AC verdict AC-12..AC-15a → PR to `main`
+- [x] Checkpoint p1 — Fable reviewer: harnesses + diff `main..p1` + per-AC verdict AC-12..AC-15a → PR to `main`
 - [x] S1-fix — corrective (same `devops`, branch `mission/builder-done-rules-p1`): detector name-key on raw text, one-corrective mechanics recall, canonical self-detect harness cases, two residual pointer swaps, dead export, v1.55.0 + CHANGELOG + docs/WORKFLOW.md §5 mirror
 - [x] S2 — done-rules + trio templates + judge + Assumed/settle + Test policy + /fix (branch `mission/builder-done-rules-p2`, `backend`; AC-1..AC-11, AC-15b/c/d)
 - [~] Checkpoint p2 — Fable reviewer: harnesses + diff `p1..p2` + per-AC verdict AC-1..AC-15 + PR-body numbers → PR to `main`
@@ -74,6 +74,7 @@ _Any departure from a brief — logged the moment it happens, with why (§4)._
 _≤10 lines per entry: what shipped, the verify signal, the branch, what the next
 session needs._
 
+- 2026-10-11 PR #120 MERGED by Baker (merge 8201658, CI green on main) — **v1.55.0 is live on `main`**. Checkpoint p1 row → [x]. PR #121 (v1.56.0) remains; GitHub recomputing its merge state after the base moved.
 - 2026-10-11 Conflict resolution: `main` had moved (PR #114 → v1.54.1, PR #119); PR #120 conflicted on plugin.json (version) and CHANGELOG only. Merged origin/main into p1 keeping 1.55.0 and stacking [1.55.0] above [1.54.1]; merged p1 into p2 (clean, 1.56.0 above 1.55.0). Lint + lint-test green on both heads; CI re-run on the new heads.
 - 2026-10-11 Phase 2 landed: pushed ffccb7a, CI green (ci-wait exit 0), staging step passed (lint clean zero warn, `claude --plugin-dir` load OK), PR #121 to `main` opened (v1.56.0, stacked on #120) — awaiting Baker's merge. Both checkpoint rows stay [~] until merged. **Sessions used 5 / Estimate 4 (1.25×)** — two correctives (p1: detector name-key; p2: settle probe + label rename), zero-work codex adapter failure not counted. Follow-up filed: codex model `gpt-6-astra` rejected on codex-cli 0.160.1 — re-verify via `/agentic-workflow:connect codex`.
 - 2026-10-11 Checkpoint p2 re-review: APPROVE (Fable, narrow, on 2ae41fb+759040f). Scorecard DX 3 · QA 3 · Architecture 3 · Efficiency 3 · UX 3. AC-1..AC-15 all PASS (AC-15d PR body pending). F4 row text corrected (5 hits). Proceeding: staging step (lint + plugin load) → push → CI → PR to main (v1.56.0).
