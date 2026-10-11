@@ -116,6 +116,9 @@ console.log('fire');
   ok('fire looks inside `## Closing` only (a checklist row is refused)', outside.code === 2 && /no row starts with "S2 — build" in that section/.test(outside.out), outside.out);
   const noEv = run(d, 'fire', 'live-verify');
   ok('fire without evidence is a usage error (exit 1)', noEv.code === 1 && /evidence/.test(noEv.out), noEv.out);
+  run(d, 'promote', 'live-verify');
+  const promoted = run(d, 'fire', 'live-verify', 'x');
+  ok('fire refuses a promoted `[~] … → OB-<n>` row (it fires in the register) — found live on the real ledger', promoted.code === 2 && /promoted/.test(promoted.out) && /OBLIGATIONS\.md/.test(promoted.out), promoted.out);
   rmSync(d, { recursive: true, force: true });
 }
 

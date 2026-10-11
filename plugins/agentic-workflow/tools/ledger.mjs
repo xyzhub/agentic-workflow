@@ -96,6 +96,7 @@ export function fire(lines, prefix, evidence, date) {
   if (!evidence) throw new Usage('fire needs "<evidence>" — a tick without evidence is a claim, not a fire');
   const r = findRow(lines, prefix, closing(lines));
   if (new RegExp(`· fired ${OB_DATE}`).test(r.text)) throw new Refusal(`row already fired: ${r.text.slice(0, 100)}`);
+  if (/→ OB-\d+/.test(r.text)) throw new Refusal(`row was promoted — the obligation now lives in .plans/OBLIGATIONS.md; fire it there: ${r.text.slice(0, 100)}`);
   const text = `${r.text.replace(/^- \[[ x~]\]/, '- [x]')} · fired ${date} (${evidence})`;
   replaceRow(lines, r, text);
   return `[x] ${r.text.slice(6, 60)} · fired ${date}`;
