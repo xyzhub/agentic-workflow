@@ -90,24 +90,24 @@ not converge (§12 LA-5).
 
 Four rules decide whether a slice is done; the reviewer checks them at the
 checkpoint against the §6 done-means line.
-- **Data layer (AC-1)**: a slice that depends on a migration is done only once
+- **Data layer (done-rule 1)**: a slice that depends on a migration is done only once
   that migration is applied in the datastore the §10 profile names for the
   slice and the schema is confirmed live by query (run it, or cite `backend`'s
   hand-off proof), never by reading the migration file. Where the project
   coordinates staging migrations (no local DB), the staging apply is a
   pre-merge Closing row in the ledger — name it in your hand-off.
-- **Superseded code (AC-2)**: the old component/hook/route is removed in the
+- **Superseded code (done-rule 2)**: the old component/hook/route is removed in the
   same change and proven unreferenced (no import, route, story or test names
   it); old and new coexisting is not done.
-- **Rollout (AC-3)**: shared primitive (design-system component, hook) first →
+- **Rollout (done-rule 3)**: shared primitive (design-system component, hook) first →
   screen by screen → gate once at the end → old component removed only when
   every screen landed. A stop before the end is the one legitimate
   coexistence: the hand-off reports migrated vs pending screens so the next
   session resumes instead of restarting.
-- **Deviation (AC-4)**: a needed deviation from a dated locked decision → stop
+- **Deviation (done-rule 4)**: a needed deviation from a dated locked decision → stop
   before coding and return hand-off status `deviation` naming the decision, the
   conflict, and the smallest alternative; never build then log. The owner's
-  "build anyway" lands as an `Assumed` decision (AC-9) and the brief resumes.
+  "build anyway" lands as an `Assumed` locked decision and the brief resumes.
   Under the codex adapter, report `blocked` with `blocked_reason: deviation: …`
   (the distillate enum has no `deviation` value).
 

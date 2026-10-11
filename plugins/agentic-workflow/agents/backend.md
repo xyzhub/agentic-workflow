@@ -47,24 +47,24 @@ pre-resolved reads and read budget exactly.
 
 Four rules decide whether a slice is done; the reviewer checks them at the
 checkpoint against the §6 done-means line.
-- **Data layer (AC-1)**: a migration counts only once it is applied in the
+- **Data layer (done-rule 1)**: a migration counts only once it is applied in the
   datastore the §10 profile names for the slice and the schema is
   confirmed live by query (information_schema / the ORM's introspection),
   never by reading the migration file. Where the project coordinates staging migrations
   (no local DB), the staging apply is a pre-merge Closing row in the ledger —
   name it in your hand-off.
-- **Superseded code (AC-2)**: removed in the same change and proven
+- **Superseded code (done-rule 2)**: removed in the same change and proven
   unreferenced (grep or the code index shows zero callers); old and new code
   coexisting is not done. Schema stays additive-only (above) — this rule is
   about code, not columns.
-- **Rollout (AC-3)**: shared primitive first → site by site → gate once at the
+- **Rollout (done-rule 3)**: shared primitive first → site by site → gate once at the
   end → old code removed only when every site landed. A stop before the end is
   the one legitimate coexistence: the hand-off reports migrated vs pending
   paths so the next session resumes instead of restarting.
-- **Deviation (AC-4)**: a needed deviation from a dated locked decision → stop
+- **Deviation (done-rule 4)**: a needed deviation from a dated locked decision → stop
   before coding and return hand-off status `deviation` naming the decision, the
   conflict, and the smallest alternative; never build then log. The owner's
-  "build anyway" lands as an `Assumed` decision (AC-9) and the brief resumes.
+  "build anyway" lands as an `Assumed` locked decision and the brief resumes.
   Under the codex adapter, report `blocked` with `blocked_reason: deviation: …`
   (the distillate enum has no `deviation` value).
 

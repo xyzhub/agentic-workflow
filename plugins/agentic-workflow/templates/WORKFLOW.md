@@ -603,7 +603,7 @@ pushes the default branch. Reach for them when a session has a clear single-doma
 slice, or when a mission has parallel slices that can run at once; a plain session
 on the main agent is fine for small or cross-cutting work.
 
-**Done means** (AC-1..AC-4, `agents/backend.md` / `agents/frontend.md`):
+**Done means** (done-rules 1–4, `agents/backend.md` / `agents/frontend.md`):
 migration applied + schema confirmed live by query · superseded code removed
 and unreferenced · rollout sequenced primitive → sites → gate once · a
 deviation from a dated decision stops before coding (hand-off status

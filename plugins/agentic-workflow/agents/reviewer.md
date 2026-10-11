@@ -154,7 +154,7 @@ state changes, additive-only migrations unless explicitly approved, and any
   - Scorecards feed the status page's pillar-health panel via the `chronicler`.
 - **Per-AC verdict**: one line per AC id the briefs cite, `AC-n: pass|fail —
   evidence`, plus `uncovered: none | AC-k …` for ids no brief or diff covers
-  (specced but never built is a finding, not silence). Done-rules AC-1..AC-4
+  (specced but never built is a finding, not silence). Done-rules 1–4
   (§6 done-means) are checked here when the diff touches data/rollout.
 - Findings ranked by severity, each with file:line and a concrete failure
   scenario (style nits only if they violate documented conventions)
