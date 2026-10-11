@@ -79,11 +79,18 @@ _Any departure from a brief — logged here the moment it happens, with why.
 Deviating is allowed; deviating silently is not (§4)._
 
 - 2026-10-11 S1 spawn: the project tune `.claude/agents/devops.md` still pins `claude-opus-4-8` (owner rule 2026-09-17, superseded by the 2026-10-11 rule "builders on Opus 5.5"; the tune fix is PR #124, unmerged). S1 ran the base `agentic-workflow:devops` role on Opus 5.5 instead of the stale tune — model-only override, same prompt.
+- 2026-10-11 S1 devops: `tune preset` writes Haiku rows' `runtime: claude-p` + `maxTurns` into the shadow in P1 (the D1 banner shape) although the orchestrator's `claude-p` route is P2 (Task 10/11); tune.md:247-249 says so and has the orchestrator spawn the row's `fallback` until v1.58.0, so Haiku never runs in the shared session in between. Why: keeps the shadow shape stable across the phases.
+- 2026-10-11 S1 devops: CHANGELOG keeps the empty `## [Unreleased]` header above the new `## [1.57.0] — 2026-10-11` (house practice since 1.56.0) rather than renaming it. mission.md rule 7 never carried the literal "codex reviewer tune"; the widening lands in rule 7 (:78-82) and the "Reviewer tier survives…" paragraph (:180-181).
 
 ## Handoff log (newest first)
 
 _≤10 lines per entry: what this session did, the verify signal, the branch, and
 what the next session needs. Newest on top; crash-safe by write-ahead._
+
+- 2026-10-11 S1 devops: Tasks 1-7 landed on `mission/tune-presets-p1` (7 commits, `eca468b`..`cb41182`, v1.57.0). Gates: `lint: clean`, zero `warn:`; `lint-test: clean (91 cases)` (86 + 5 PRESET_CASES); agents-test 30 cases (27 + 3); `claude plugin validate` passed, `--plugin-dir` loads (hooks fire).
+  `wc -c`: mission.md 21,457 (< 21,600) · templates/WORKFLOW.md 107,485 (< 108,000) · tune.md 15,961 (≤ 17,000) · doctor 8,395 · bootstrap 11,329 · adopt 8,314.
+  Metrics test (a), scratch worktree (removed): preset shadows lean 16 · balanced 0 · rigorous 15 · unattended 11 (clean project: 18 · 0 · 17 · 11 — the scratch's hand-authored backend/devops are skipped-and-reported); banners carry preset + v1.57.0 + 12-hex sha; diff departures empty; re-apply idempotent; reset → 0 preset shadows, backend/devops untouched; lint + agents-test green at every step. AC-3: `tune chronicler model sonnet` after lean → banner `preset:lean, model`, diff departs on model, reset keeps + reports it, re-apply skips it.
+  self-check: 7/7 pass (AC-1, 2, 3, 4, 5, 11, 12). Live `.claude/agents/` untouched. Next: Checkpoint p1.
 
 - 2026-10-11 orchestrator (write-ahead): S1 spawned — `devops` (Opus 5.5) on `mission/tune-presets-p1` cut from `1a28ab9`; `Sessions used: 1/4`. Gate policy human-merge recorded. Pending: builder self-check + hand-off, then Checkpoint p1 (Sonnet 5.5, effort medium).
 
