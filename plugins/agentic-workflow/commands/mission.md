@@ -130,7 +130,7 @@ Read `.plans/<mission>.state.md` → `Next up:`. For each pending brief:
 1. **Write-ahead**: increment `Sessions used:` and mark the row `[~]`.
 2. **Resolve the runtime, then spawn.** Precedence (locked): the brief's
    `runtime:` header field → a `.claude/agents/<role>.md` tune override
-   (`runtime: codex[:<model>]`, `effort:`) → the default `claude`. Route to the
+   (`runtime: codex[:<model>]` or `claude-p`, `effort:`) → the default `claude`. Route to the
    right agent from the brief (`backend`/`frontend`/`security`/`devops`, or the
    main session for cross-cutting work) and spawn it on the resolved runtime:
    - **`claude`** (the default — every run today is exactly this, unchanged): the
@@ -138,13 +138,13 @@ Read `.plans/<mission>.state.md` → `Next up:`. For each pending brief:
      pass the Agent tool's effort parameter where the harness exposes one; where
      it does not, prepend `Effort: <level>.` as the first line of the spawn
      prompt. The tune's report says which applied.
-   - **`codex`**: `node ${CLAUDE_PLUGIN_ROOT}/tools/run-codex.mjs --role <role>
-     --brief <file>#<anchor> --cwd <repo> --out <distillate.json>
-     [--model <m>] [--effort <low|medium|high|xhigh|max>]` via the **Bash tool with
-     `run_in_background: true`**; on return read the distillate **FILE** named by
-     `--out` — **never stdout** (the adapter's stdout is a raw JSONL event
-     stream). The role prompt, the sandbox mode, and guardrail parity are the
-     adapter's job (§9); never pass `--ignore-rules`.
+   - **`codex`** / **`claude-p`** (a preset's Haiku row): `node
+     ${CLAUDE_PLUGIN_ROOT}/tools/run-codex.mjs` / `run-claude.mjs` `--role <role>
+     --brief <file>#<anchor> --cwd <repo> --out <distillate.json> [--model <m>]
+     [--effort <level>]` (`claude-p` adds `--preset <name>`) via the **Bash tool
+     with `run_in_background: true`**; read the distillate **FILE** named by
+     `--out` — **never stdout** (a raw event stream). Prompt, permissions and
+     guardrail parity are the adapter's job (§9); never `--ignore-rules`.
    A brief may also carry an optional `executor: <name>` header field that pins
    its remote gates to one §10.1 executor (resolution in step 3, Remote gates).
    Either way it follows the pre-resolved reads and read budget, builds, and
@@ -156,6 +156,9 @@ Read `.plans/<mission>.state.md` → `Next up:`. For each pending brief:
    `[ ]` once picked up — handoff entry, `Next up:` advanced). Apply the
    **one-corrective-retry rule** (§5): on failure, retry once (that is a session —
    increment `Sessions used:`); a second failure stops and surfaces to the owner.
+   A `claude-p` `blocked` whose `blocked_reason` starts `budget:` is re-spawned
+   **once** on its preset row's `fallback` via the Agent tool — that IS the
+   corrective retry; a second block surfaces.
    Status `deviation` (a dated locked decision blocks the brief) → the owner
    directly (AskUserQuestion / §12), no corrective retry, no `Sessions used:`
    increment; "build anyway" lands as an `Assumed` locked decision and
@@ -166,16 +169,14 @@ Read `.plans/<mission>.state.md` → `Next up:`. For each pending brief:
 5. Parallel-safe phases may run their briefs concurrently (isolated worktrees) —
    only with explicit human okay.
 
-**Codex runs — you own the ledger and git.** A `codex` run touches **neither
-`.plans/` nor git history**. On its return: mark the ledger row from the
-distillate's `status` (adapter exit codes brief you first — `0` done · `3`
-blocked · `1` failed), and **commit the distillate's `changed_paths` yourself**
-(`type(scope): …`). The one-corrective-retry rule (step 3 above) re-spawns the
-adapter with `--resume <thread_id> --note "<corrective>"` — **one** retry, then
-stop and surface; there is **no automatic vendor fallback** (`blocked` → one
-retry → surface). A `blocked` whose `blocked_reason` starts `deviation:` takes
-step 3's `deviation` route (owner directly, no retry). Treat
-`changed_paths` **empty on a `done` status as suspicious**: mark the row `[~]` and get reviewer confirmation before `[x]`.
+**Foreign runtimes (`codex`, `claude-p`) — you own the ledger and git.** The
+run touches **neither `.plans/` nor git history**. On return: mark the row from
+the distillate's `status` (exit `0` done · `3` blocked · `1` failed) and
+**commit its `changed_paths` yourself** (`type(scope): …`). The corrective
+retry re-spawns the adapter with `--resume <thread_id> --note "<corrective>"`,
+then stop and surface; no other vendor fallback. A `blocked_reason` starting
+`deviation:` takes step 3's `deviation` route. `changed_paths` **empty on
+`done` is suspicious**: mark `[~]`, get reviewer confirmation before `[x]`.
 
 **Reviewer tier survives the runtime switch and the preset.** Any non-Fable
 `reviewer` tune (a `codex` runtime, a preset's Opus gate) covers
@@ -284,7 +285,8 @@ budget (increment). A `/loop` tick does NOT reset the context window —
 fresh context requires `/clear`, a new session, or a scripted `claude -p`.
 What makes loop mode safe is that **state lives in files**: any tick can be
 run from a fresh context without losing anything, and a crashed tick loses
-nothing. The overrun STOP applies to loop ticks exactly as to interactive runs.
+nothing. The overrun STOP applies to loop ticks exactly as to interactive runs;
+🛑 TICK BUDGET ends the tick with no new brief (§5 Loop mode).
 
 ## 5. Close the mission
 

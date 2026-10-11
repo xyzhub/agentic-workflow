@@ -245,8 +245,9 @@ the agent's **balanced** cell. So `balanced` writes zero files in any project.
    files, fresh bodies — after a plugin upgrade it doubles as a bulk refresh).
 
 A Haiku row's `runtime: claude-p` is a child `claude -p` process carrying the
-row's 100K window — Haiku never runs in the shared session; until the
-orchestrator's `claude-p` route ships (v1.58.0) it spawns the row's `fallback`.
+row's 100K window — Haiku never runs in the shared session; the orchestrator
+runs it through `tools/run-claude.mjs --preset <name>` (mission.md step 2) and
+re-routes a `budget:` block once to the row's `fallback`.
 
 **Show — `tune preset show`.** From `agents.mjs --json` + the JSON (never
 re-parsed by hand): a header with the §10 preset (`balanced` when the row is

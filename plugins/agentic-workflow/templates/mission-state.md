@@ -20,7 +20,11 @@ _The two budget lines above are read by the mission-budget hook every turn. The
 planner writes `Estimate:` (default `1 session`; more only with the `phases`
 mode and a justification in the master plan). The orchestrator increments
 `Sessions used:` the moment it starts a brief, a corrective `S<n>-fix`, or a
-`continue`/loop tick — write-ahead, before spawning._
+`continue`/loop tick — write-ahead, before spawning. Three optional loop
+lines, same `Key: <int>` grammar: `Tick budget:` (planner, from the preset's
+`unattended.tick_budget`), `Tick tokens:` (orchestrator: reset at tick start,
+written after every brief), `Mission budget:` (orchestrator: Σ tick tokens) —
+the hook prints 🛑 TICK BUDGET / 🛑 MISSION BUDGET (WORKFLOW.md §5 Loop mode)._
 
 <!-- rule-copy: overrun-1.5x -->
 At **k ≥ 1.5 × N** the hook prints 🛑 OVERRUN on every prompt and the
