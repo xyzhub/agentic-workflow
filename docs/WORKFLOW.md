@@ -974,6 +974,7 @@ drive the real flow, confirm monitoring is receiving, record the result).
 | **Test gate** | `node tools/lint.mjs` (tier 1 — deterministic; CI runs it on every push/PR) |
 | **Typecheck/lint gate** | covered by the test gate — `tools/lint.mjs` IS the lint |
 | **Test policy** | configured — `tools/lint.mjs` + `tools/lint-test.mjs` (added 2026-10-11) |
+| **Background commit review** (Claude Code built-in) | enabled. Its `claude -p` child must inherit the claude.ai login: `ANTHROPIC_API_KEY` is NOT set in any shell or app environment that launches Claude Code (decided 2026-10-11, #134 — a set key overrides the login, disables the connectors and strips the review's findings to bare titles). Probe: `claude auth status` → `"authMethod": "claude.ai"` and `env | grep -c '^ANTHROPIC_API_KEY='` → `0`, run from the launching shell |
 | **Build** | none (markdown plugin — nothing compiles) |
 | **Datastore seed/reset** | none |
 | **Test users / auth access** | none — markdown plugin, nothing to authenticate to (sync 2026-09-17) |
