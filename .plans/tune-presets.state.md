@@ -12,7 +12,7 @@ fresh agent resumes the mission from this file alone. Write-ahead — update it
 (§12 LA-6). Deploys to `.plans/tune-presets.state.md`._
 
 Estimate: 4 sessions
-Sessions used: 1
+Sessions used: 2
 
 _Budget lines read by the mission-budget hook every turn; the overrun STOP and
 its scope decision are §5 LA-1. `Estimate:` rises only as a dated locked
@@ -44,8 +44,8 @@ decision point, §12 LA-5.)
 ## Checklist
 
 - [x] S1 — presets JSON + lint/fixtures + registry bump + `tune preset` verbs + bootstrap/adopt question + `/doctor` checks + docs, v1.57.0 (branch `mission/tune-presets-p1`, `devops`; AC-1, AC-2, AC-3, AC-4, AC-5, AC-11, AC-12)
-- [~] Checkpoint p1 — Sonnet 5.5 (effort medium) reviewer: lint (zero `warn:`) + lint-test + agents-test + diff `main..p1` + per-AC verdict AC-1, 2, 3, 4, 5, 11, 12 → PR to `main` (v1.57.0)
-- [ ] S2 — `run-claude.mjs` + harness + hook silencer + Haiku shadows/re-route + `claude-p` in mission.md + AC-9 runs + tick/mission budgets, v1.58.0 (branch `mission/tune-presets-p2`, cut from the P1 head, `backend`; AC-6, AC-7, AC-8, AC-9, AC-10)
+- [x] Checkpoint p1 — Sonnet 5.5 (effort medium) reviewer: lint (zero `warn:`) + lint-test + agents-test + diff `main..p1` + per-AC verdict AC-1, 2, 3, 4, 5, 11, 12 → PR to `main` (v1.57.0)
+- [~] S2 — `run-claude.mjs` + harness + hook silencer + Haiku shadows/re-route + `claude-p` in mission.md + AC-9 runs + tick/mission budgets, v1.58.0 (branch `mission/tune-presets-p2`, cut from the P1 head, `backend`; AC-6, AC-7, AC-8, AC-9, AC-10)
 - [ ] Checkpoint p2 — Fable (effort high) reviewer: all harnesses + diff `p1..p2` + per-AC verdict AC-6..AC-10 with the AC-9 artifacts read + Security lens on the child flags and on P1's boundary-class content (Haiku `allowed_tools` rows, lint bare-`Bash` rule, mission.md rule-7 text) → PR to `main` (v1.58.0); then the mission close (chronicler once)
 
 ## Open questions
@@ -78,6 +78,7 @@ _OB grammar: `- [ ] OB-<n> · added YYYY-MM-DD (<source>, pre-merge|post-merge) 
 _Any departure from a brief — logged here the moment it happens, with why.
 Deviating is allowed; deviating silently is not (§4)._
 
+- 2026-10-11 S2 spawn: the project tune `.claude/agents/backend.md` resolves to `runtime: codex:gpt-6-astra` (effort medium), but the Codex runtime is unavailable (owner ChatGPT plan lapsed, #122 — "do not spawn the adapter until re-subscribed"); the brief itself carries no `runtime:` and states both briefs run on `claude`. S2 ran the base `agentic-workflow:backend` role on Claude Opus 5.5, effort medium (the tune's effort kept). No vendor fallback is automatic — this is a logged deviation, not a silent switch.
 - 2026-10-11 S1 spawn: the project tune `.claude/agents/devops.md` still pins `claude-opus-4-8` (owner rule 2026-09-17, superseded by the 2026-10-11 rule "builders on Opus 5.5"; the tune fix is PR #124, unmerged). S1 ran the base `agentic-workflow:devops` role on Opus 5.5 instead of the stale tune — model-only override, same prompt.
 - 2026-10-11 S1 devops: `tune preset` writes Haiku rows' `runtime: claude-p` + `maxTurns` into the shadow in P1 (the D1 banner shape) although the orchestrator's `claude-p` route is P2 (Task 10/11); tune.md:247-249 says so and has the orchestrator spawn the row's `fallback` until v1.58.0, so Haiku never runs in the shared session in between. Why: keeps the shadow shape stable across the phases.
 - 2026-10-11 S1 devops: CHANGELOG keeps the empty `## [Unreleased]` header above the new `## [1.57.0] — 2026-10-11` (house practice since 1.56.0) rather than renaming it. mission.md rule 7 never carried the literal "codex reviewer tune"; the widening lands in rule 7 (:78-82) and the "Reviewer tier survives…" paragraph (:180-181).
@@ -86,6 +87,8 @@ Deviating is allowed; deviating silently is not (§4)._
 
 _≤10 lines per entry: what this session did, the verify signal, the branch, and
 what the next session needs. Newest on top; crash-safe by write-ahead._
+
+- 2026-10-11 orchestrator (write-ahead): Baker merged PR #124 (`a4056ba`, builder tunes → Opus 5.5), PR #126 (`1951ca0`, **v1.57.0 on `main`** — Checkpoint p1 `[x]`), PR #125 (`1a28ab9`, records). `mission/tune-presets-p2` cut from `main` at `1951ca0`. **S2 spawned** — `backend` on Claude Opus 5.5 effort medium (codex tune unavailable, see Deviations); `Sessions used: 2/4`. Pending: builder self-check + hand-off, then Checkpoint p2 (Fable, effort high).
 
 - 2026-10-11 orchestrator: **Checkpoint p1 APPROVE** (Sonnet 5.5, medium; ~49k tokens, 1 min). AC-1/2/3/4/5/11/12 all PASS; scorecard DX 3 · Efficiency 3; no blocking findings. Tier confirmed right for the diff. Builder flags ruled: fallback wording acceptable; rule-7 wording correct; composed-kind quirk advisory. Staging step (§10: tier-1 lint + plugin validate on the phase branch) green at `5553229`. **PR #126** opened to `main` (v1.57.0) — https://github.com/xyzhub/agentic-workflow/pull/126 — awaiting Baker's merge (human-merge policy). Checkpoint row stays `[~]` until merged. Backlog (advisory): lint bare-`Bash` rule matches only the exact string `Bash` — tighten at the Fable p2 pass; `mission.md` 143 B headroom; `tune.md` apply/reset prose-only. `Sessions used: 1/4`. Next: after #126 merges, cut `mission/tune-presets-p2` from `main` and run S2 (`backend`, Opus 5.5).
 
@@ -100,4 +103,4 @@ what the next session needs. Newest on top; crash-safe by write-ahead._
 
 - 2026-10-11 planner: trio authored at `11e04fb` on `mission/tune-presets`; shape amended by the owner to 2 phases / Estimate 4 before any brief ran; no open questions; S1 is ready for `devops` on `mission/tune-presets-p1`.
 
-Next up: S2 (blocked on the human merge of PR #126; cut `mission/tune-presets-p2` from the merged `main`)
+Next up: S2 (in flight on `mission/tune-presets-p2`)
