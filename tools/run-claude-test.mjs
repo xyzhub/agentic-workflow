@@ -284,6 +284,7 @@ for (const [label, args] of [
   ['--allowed-tools Bash(env:*) (wrapper)', ['--role', 'chronicler', '--brief', 'x', '--model', 'claude-haiku-5-5', '--allowed-tools', 'Read,Bash(env:*)']],
   ['--allowed-tools Bash(find . -exec:*)', ['--role', 'chronicler', '--brief', 'x', '--model', 'claude-haiku-5-5', '--allowed-tools', 'Read,Bash(find . -exec:*)']],
   ['--allowed-tools Bash(/bin/sh:*) (path to a shell)', ['--role', 'chronicler', '--brief', 'x', '--model', 'claude-haiku-5-5', '--allowed-tools', 'Bash(/bin/sh:*)']],
+  ['--allowed-tools Bash("sh" -c:*) (quoted disguise, #129)', ['--role', 'chronicler', '--brief', 'x', '--model', 'claude-haiku-5-5', '--allowed-tools', 'Read,Bash("sh" -c:*)']],
   ['--allowed-tools bash (lowercase)', ['--role', 'chronicler', '--brief', 'x', '--model', 'claude-haiku-5-5', '--allowed-tools', 'Read,bash']],
   ['role tools: with bare Bash and no allowlist', ['--role', 'chronicler', '--brief', 'x', '--model', 'claude-haiku-5-5']],
 ]) {
@@ -297,6 +298,12 @@ ok('isBareBash refuses every wrapper shell / interpreter / find -exec rule (the 
   ['Bash(sh:*)', 'Bash(sh -c:*)', 'Bash(bash -c:*)', 'Bash(zsh:*)', 'Bash(/bin/sh:*)', 'Bash(env:*)', 'Bash(eval:*)', 'Bash(exec:*)',
     'Bash(xargs:*)', 'Bash(sudo:*)', 'Bash(nohup:*)', 'Bash(timeout 5:*)', 'Bash(node -e:*)', 'Bash(python3 -c:*)', 'Bash(source:*)',
     'Bash(.:*)', 'Bash(find . -exec:*)', 'Bash(find . -name x -execdir rm:*)', 'Bash(command:*)', 'Bash( SH -c:*)'].every(mod.isBareBash));
+ok('isBareBash strips quoting/escaping disguises and refuses a metacharacter first token (#129, ckpt-p2 residual)',
+  ['Bash("sh" -c:*)', "Bash('sh' -c:*)", 'Bash(s\\h:*)', 'Bash(`sh`:*)', 'Bash("/bin/sh":*)', 'Bash(git;sh:*)', 'Bash(git|sh:*)',
+    'Bash($(sh):*)', 'Bash(FOO=bar git push:*)', 'Bash(git&&sh:*)', 'Bash(x>y:*)'].every(mod.isBareBash)
+  && !['Bash(git log --format="%h":*)', 'Bash(gh pr list --search "is:open":*)'].some(mod.isBareBash));
+ok('the shared denylist is the one the adapter uses (shell-wrappers.mjs)',
+  (await import(path.join(PLUGIN, 'tools/shell-wrappers.mjs'))).isBareBash === mod.isBareBash);
 {
   const j = JSON.parse(readFileSync(path.join(PLUGIN, 'templates/tune-presets.json'), 'utf8'));
   const haiku = Object.values(j.presets).flatMap((p) => Object.values(p.agents)).filter((r) => r.runtime === 'claude-p');

@@ -7,7 +7,7 @@ import { readFileSync, readdirSync, existsSync, realpathSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { isBareBash } from '../plugins/agentic-workflow/tools/run-claude.mjs';
+import { isBareBash } from '../plugins/agentic-workflow/tools/shell-wrappers.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const PLUGIN = path.join(ROOT, 'plugins/agentic-workflow');

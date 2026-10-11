@@ -208,6 +208,10 @@ export const PRESET_CASES = [
     names(mutate((j) => { j.presets.lean.agents.writer.allowed_tools.push('Bash(sh -c:*)'); }), 'bare Bash'), true],
   ['P4b Haiku row with glob-first Bash(*) → finding (same semantic rule as run-claude.mjs)',
     names(mutate((j) => { j.presets.lean.agents.curator.allowed_tools.push('Bash(*)'); }), 'bare Bash'), true],
+  ['P4d Haiku row with a quoted wrapper Bash("sh" -c:*) → finding (shared denylist, #129)',
+    names(mutate((j) => { j.presets.lean.agents.writer.allowed_tools.push('Bash("sh" -c:*)'); }), 'bare Bash'), true],
+  ['P4e Haiku row with a metacharacter first token Bash(git;sh:*) → finding (shared denylist, #129)',
+    names(mutate((j) => { j.presets.lean.agents.writer.allowed_tools.push('Bash(git;sh:*)'); }), 'bare Bash'), true],
 ];
 
 // Guarded on being the entry point, so importing CASES (to score an older

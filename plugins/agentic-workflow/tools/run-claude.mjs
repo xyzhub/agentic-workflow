@@ -143,21 +143,13 @@ export function splitTools(list) {
 // every command and is as bare as `Bash`. A scoped rule names its command
 // literally first: `Bash(git log:*)`. Case-insensitive on the tool name.
 // A rule whose command is a shell, wrapper or interpreter (`Bash(sh -c:*)`,
-// `Bash(env:*)`, `Bash(node -e:*)`, `Bash(/bin/sh:*)`) — the class
-// templates/codex.rules forbids — or a `find … -exec` runs anything too.
-export const WRAPPERS = new Set(['sh', 'bash', 'zsh', 'dash', 'ksh', 'fish', 'env', 'eval', 'exec',
-  'command', 'source', '.', 'xargs', 'nohup', 'timeout', 'sudo', 'node', 'python', 'python3', 'perl', 'ruby']);
-export function isBareBash(t) {
-  const m = String(t).trim().match(/^bash\s*(?:\(([\s\S]*)\))?$/i);
-  if (!m) return false;
-  const cmd = (m[1] ?? '').trim();
-  if (!cmd) return true;
-  const tokens = cmd.toLowerCase().split(/[\s:]+/);
-  const first = tokens[0];
-  if (first === '' || /[*?[\]{}]/.test(first)) return true;
-  if (WRAPPERS.has(path.basename(first)) || WRAPPERS.has(first)) return true;
-  return tokens.includes('-exec') || tokens.includes('-execdir');
-}
+// `Bash(env:*)`, `Bash(node -e:*)`, `Bash(/bin/sh:*)`), a quoted/escaped
+// disguise of one (`Bash("sh" -c:*)`, `Bash(s\h:*)`), a first token carrying a
+// shell metacharacter, or a `find … -exec` runs anything too. The list and the
+// predicate live in ONE place — tools/shell-wrappers.mjs — shared with lint and
+// the codex.rules cross-check (#129); this file only re-exports them.
+import { isBareBash } from './shell-wrappers.mjs';
+export { WRAPPERS, isBareBash, unscopedReason } from './shell-wrappers.mjs';
 
 // ── resolution: flags > preset row > role file > defaults ─────────────────
 export function presetRow(name, role, presetsPath = PRESETS_PATH) {
