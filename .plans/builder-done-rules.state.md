@@ -74,6 +74,7 @@ _Any departure from a brief — logged the moment it happens, with why (§4)._
 _≤10 lines per entry: what shipped, the verify signal, the branch, what the next
 session needs._
 
+- 2026-10-11 Phase 2 landed: pushed ffccb7a, CI green (ci-wait exit 0), staging step passed (lint clean zero warn, `claude --plugin-dir` load OK), PR #121 to `main` opened (v1.56.0, stacked on #120) — awaiting Baker's merge. Both checkpoint rows stay [~] until merged. **Sessions used 5 / Estimate 4 (1.25×)** — two correctives (p1: detector name-key; p2: settle probe + label rename), zero-work codex adapter failure not counted. Follow-up filed: codex model `gpt-6-astra` rejected on codex-cli 0.160.1 — re-verify via `/agentic-workflow:connect codex`.
 - 2026-10-11 Checkpoint p2 re-review: APPROVE (Fable, narrow, on 2ae41fb+759040f). Scorecard DX 3 · QA 3 · Architecture 3 · Efficiency 3 · UX 3. AC-1..AC-15 all PASS (AC-15d PR body pending). F4 row text corrected (5 hits). Proceeding: staging step (lint + plugin load) → push → CI → PR to main (v1.56.0).
 - 2026-10-11 S2-fix done (backend on Fable, 2ae41fb + 759040f): settle 2b probe anchored (0 hits on this tree), in-place ratification semantics in settle/mission-plan/decision-log; done-rule 1–4 labels in backend/frontend/reviewer/WORKFLOW §6 + mirror, (AC-9) → plain words, provenance cite dropped. Gates: lint exit 0 zero warn, lint-test 86, agents-test 26. **Four numbers (metrics awk method)**: descriptions 9,687 → 6,898 chars · files > 400: 16 → 0 · mission.md 21,336 → 21,281 B · reviewer.md 14,308 → 13,029 B · WORKFLOW.md 89.1 %. Checkpoint p2 re-review (Fable, narrow, resumed reviewer) spawned on 962c1d4..HEAD.
 - 2026-10-11 Checkpoint p2 verdict: REQUEST CHANGES (Fable). Scorecard DX 2 · QA 2 · Architecture 2 · Efficiency 3 · UX 2. Per-AC: AC-1..AC-8, AC-10..AC-14, AC-15a/b/c PASS · AC-9 FAIL (settle 2b probe over-matches: 15 prose hits, 0 real entries) · AC-15d partial (PR body not yet). F2 label collision surfaced; owner: rename to done-rule 1–4. F4 (orchestrator): docs rule-marker count is 5 (legitimate backticked mention at docs/WORKFLOW.md:443) — Closing row evidence corrected. S2-fix spawned: session 5/4 (1.25×, under the 1.5× stop; recorded, no scope decision required).
@@ -91,4 +92,5 @@ session needs._
 SUPERSEDED next-up (historical, do NOT read as state): S1
 SUPERSEDED next-up (historical, do NOT read as state): Checkpoint p1
 SUPERSEDED next-up (historical, do NOT read as state): S2
-Next up: Checkpoint p2
+SUPERSEDED next-up (historical, do NOT read as state): Checkpoint p2
+Next up: Close gate — after Baker merges PR #120 (v1.55.0) and PR #121 (v1.56.0): `/agentic-workflow:settle` fires or promotes the three post-merge Closing rows, then the `Closed:` stamp rides the ONE bookkeeping PR
