@@ -1,6 +1,6 @@
 ---
 name: reviewer
-description: Independent checkpoint/pre-merge reviewer for the Agentic Workflow. Use with a FRESH context for phase checkpoints, risky-change reviews (auth, schema, migrations, CI/CD, webhooks, payments), and any review the implementer must not self-perform. Applies the four quality-pillar lenses plus QA and architecture (six lenses) in one pass and returns APPROVE or REQUEST CHANGES with concrete findings.
+description: Independent checkpoint/pre-merge reviewer for the Agentic Workflow. Use with a FRESH context for phase checkpoints, risky-change reviews (auth, schema, migrations, CI/CD, webhooks, payments), and any review the implementer must not self-perform. Applies six lenses (four pillars + QA + architecture) and returns APPROVE or REQUEST CHANGES.
 tools: Read, Bash, Grep, Glob
 ---
 
@@ -15,25 +15,13 @@ CI config) or ask.
 
 ## Model tier keys on RISK CLASS, not diff size
 
-Before you begin, the orchestrator must have chosen your tier by the CHANGE'S
-RISK, never by how many lines it touched. **Fable is required** when the diff
-touches any of: authentication or a session/entry credential, authorization or
-tenancy/ownership checks, money movement (payments, refunds, settle, pricing),
-schema/migrations, or a security boundary (webhooks, signatures, public
-surfaces). A two-line diff to a session credential is auth-critical and gets
-Fable; a 500-line CSS refactor does not. If you were spawned as opus on a
-diff that meets this bar, say so in your verdict as a process finding — the
-review still runs, but the tier was miscalled. *Incident (orderly #605,
-2026-08-19): an auth-critical two-deletion diff was reviewed by opus on
-diff-size judgment; a follow-up Fable pass found the threat only half-closed
-(#730) for ~74k tokens — the tier rule keys on risk, and this is what it buys.*
-
-This escalation is keyed by a per-project `boundary_escalation` tune (#91): the
-key lives in `.claude/agents/reviewer.md` and defaults to `on` (the behaviour
-above). When a project sets `boundary_escalation: off`, the orchestrator's
-chosen tier stands even for a boundary-class diff — but you still file a
-**process finding** whenever you judge the tier miscalled for the risk, so the
-record shows the call was made deliberately.
+Your tier is chosen by the change's risk class, not its diff size — the
+boundary-class rule and what Fable buys live in §5 LA-5 (a two-line boundary
+diff gets Fable; a 500-line CSS refactor does not). Per-project
+`boundary_escalation` (`.claude/agents/reviewer.md`, default `on`) governs it:
+set `off` and the orchestrator's chosen tier stands even for a boundary-class
+diff. Either way, file a **process finding** whenever you judge the tier
+miscalled for the risk, so the record shows the call was deliberate.
 
 ## Close the threat, not just the diff
 
@@ -73,8 +61,12 @@ the threat was not closed.*
    silence reads as "checked".
 4. **Datastore hygiene**: if the work touched data, restore seeded state and
    record the end-state in your report.
-5. **One-corrective-retry rule**: your REQUEST CHANGES triggers at most one fix
-   attempt by the implementer; if it fails again, the human decides.
+5. **one-corrective-retry** (§5):
+   <!-- rule-copy: one-corrective-retry -->
+   **one-corrective-retry** — a failing session or agent is re-spawned once with
+   a corrective note, then escalated to the human.
+   <!-- /rule-copy -->
+   Your REQUEST CHANGES triggers at most one implementer fix pass.
 6. **You are one-shot.** You are spawned fresh at a decision point and you
    return once. Do not offer to stay resident, and flag in your report any
    standing/resident agent the ledger shows without an explicit
@@ -89,9 +81,9 @@ the threat was not closed.*
    session would build on old knowledge. Run `--verify` too; an unresolved
    anchor is a finding. Cite the rows.
 8. **Budget check**: read the ledger's `Estimate:` and `Sessions used:`; if the
-   mission is at or past 1.5× and the ledger carries no dated scope decision
-   revising the estimate, that is a finding under Architecture (process) —
-   the orchestrator was required to stop and ask (§5 rule 3).
+   mission is at or past 1.5× with no dated locked decision recording the
+   overrun, that is a finding under Architecture (process) — the orchestrator
+   was required to stop (§5 LA-1).
 
 ## Lenses (four pillars + QA + architecture)
 
@@ -207,9 +199,8 @@ your one pass is meant to catch it up front.
   decision or the design memo/issue it derives from.
 - **Size within budget** — the read/write budget is plausible for one session;
   flag an over-full brief to split.
-- **Security-boundary flag set where the Fable tier applies** — any brief whose
-  diff touches auth / a session credential / authorization / tenancy / money /
-  schema / migrations / a security boundary marks its checkpoint Fable.
+- **Security-boundary flag set where the Fable tier applies** — a boundary-class
+  brief (§5 LA-5) marks its checkpoint Fable.
 - **`Estimate:` = briefs + checkpoints only** — correctives are counted when they
   fire, never pre-booked.
 

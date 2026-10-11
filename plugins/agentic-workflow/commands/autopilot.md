@@ -58,12 +58,11 @@ Before starting, collect the **bare minimum** from the human — ask all at once
 **The convergence rules bind autopilot exactly as they bind a mission (§5,
 orderly §12 LA-1/5/6/7).** Increment `Sessions used:` in the active ledger
 **write-ahead** at every stage step, brief, corrective and `continue` tick.
-When the mission-budget hook prints 🛑 OVERRUN (`Sessions used` ≥ 1.5×
-`Estimate`) you MUST NOT start another stage or brief: send the scope decision
-to the owner (ship what exists as a defined subset / continue at a revised
-estimate / abort) via the owner channel (§12) or the next interactive turn,
-record the answer as a dated locked decision in `decision-log.md`, revise
-`Estimate:`, and only then continue. Never keep a standing/resident agent
+When the mission-budget hook prints 🛑 OVERRUN the overrun STOP binds the flight
+exactly as it binds a mission (§5 LA-1): surface the decision to the owner via
+the owner channel (§12) or the next interactive turn, record it as a dated
+locked decision in `decision-log.md`, revise `Estimate:`, and only then
+continue. Never keep a standing/resident agent
 (supervisor, advisor, reviewer) alive across beats — counsel, review and audit
 are one-shot spawns at gates; a resident agent needs an explicit owner line in
 the ledger and is beaten on decisions only, with its running cost re-quoted
