@@ -606,6 +606,10 @@ return distillate either way. What differs is only mechanical: inside Codex the
 guardrails are the execpolicy rules file plus the sandbox mode (§3), and the
 **orchestrator**, not the run, writes the ledger and the commits.
 
+**Presets** set every role's tier at once: `/agentic-workflow:tune preset
+<name>` from `templates/tune-presets.json`, recorded in the §10 **Tune preset**
+row; a per-agent tune still wins for its agent.
+
 **Intake** (`intake`) is the front-door classifier for an un-invoked request:
 when a plain-language work request arrives mid-chat with no command (the router
 hook nudges it), the orchestrator spawns `intake` to classify its altitude
@@ -897,7 +901,7 @@ drive the real flow, confirm monitoring is receiving, record the result).
   upgrade an underperformer, `/agentic-workflow:tune <agent> reset` to restore the default.
   When a `TUNED`-prefixed variant of an agent exists, orchestrators spawn
   THAT one. Tunes are files: committed and reviewed like any harness change
-  (§8).
+  (§8); `tune preset <name>` sets every agent at once.
 - Guardrail hooks (§3) install automatically.
 - Commands: `/agentic-workflow:welcome` (the guided front door — orient, then
   guide or auto-drive, filling the project docs), `/agentic-workflow:brainstorm` (shape a raw idea into a chosen framing via the
@@ -973,6 +977,7 @@ drive the real flow, confirm monitoring is receiving, record the result).
 | **High-impact files** (docs-reminder targets) | `plugins/agentic-workflow/templates/WORKFLOW.md`, `hooks/hooks.json`, `tools/lint.mjs`, `agents/*`, `commands/*` |
 | **Code index** | none — markdown-only repo; `rg` + the tier-1 lint's cross-reference checks suffice |
 | **Runtimes** | `claude` (default) · codex: `gpt-6-astra` (connected 2026-09-17 on codex 0.154.0; `gpt-5.6-sol` also proven) · rules: `.codex/rules/agentic-workflow.rules` · trust: user-layer entry present (`~/.codex/config.toml`, 2026-09-17) · shell wrapper: `/bin/zsh -lc '<cmd>'` (execpolicy matches THROUGH the wrapper; a rejection is NOT a `--json` event — it appears on **stderr** as `codex_core::tools::router … Rejected(…)` plus the absence of a command item) · spawn note: close stdin (`</dev/null`) or `codex exec` waits on the pipe |
+| **Tune preset** | balanced (default, applied 2026-10-11) |
 | **Memory/recall store** (optional) | none |
 | **Version pin** | `plugins/agentic-workflow/.claude-plugin/plugin.json` → `version` (bumped on release; merging to `main` IS the release, so there is no tag to read) |
 | **Owner channel** (§12) | Slack, **shared DM** (reused app `agentic_operating_pro`, workspace XYZ — connected & round-trip-verified 2026-07-08). Send: `chat.postMessage` with `$SLACK_BOT_TOKEN` → `$SLACK_OWNER_DM`, every message prefixed `[venture-workflow-plugin]`. Inbound: emoji-reaction decisions (✅/❌/✋ via `reactions.get` polling, verified against `$SLACK_OWNER_ID`) + typed `approve <id>` fallback. Env names in `.env.example`; values in the uncommitted `.env` |

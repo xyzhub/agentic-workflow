@@ -19,6 +19,7 @@ Labels: **measured** (command cited) / **estimated** (arithmetic shown) / **unme
 | B9 | Per-role token spend, ledgers | **unmeasured** for chronicler/intake/writer/curator. Greps of `.plans/*.state.md` and `docs/product/JOURNEY.md` found only role-name mentions (routing notes), no token or session-cost figures | measured absence | grep 2026-10-11 |
 | B10 | Chronicler run size | ≈30–33k subagent tokens per run, n=3 (this session, 2026-10-11). Observed by the orchestrator, not in a ledger; n=3 is too small for a distribution | observed, n=3 |
 | B11 | intake / writer / curator run size | unmeasured | unmeasured | — |
+| B12 | `wc -c` command/template bytes (zero `warn:` must hold; warn bands 21,600 / 108,000) | tune.md 12,213 · mission.md 21,384 · doctor.md 7,699 · bootstrap.md 10,718 · adopt.md 8,025 · templates/WORKFLOW.md 106,973 | measured | `wc -c` at `11e04fb`, 2026-10-11 (lock "Metrics") |
 
 Implication of B10 (inference): a chronicler run is ~30% of the 100K cap, so the "under 100K by construction" premise is plausible for chronicler but unproven for the other Record roles (B11).
 
@@ -77,4 +78,3 @@ Extra: a per-agent `/tune <agent>` after a preset wins and appears in `tune diff
 - Per-run tokens for intake, writer, curator (B11) and a ledger-grade chronicler figure (B10 is n=3, session-observed).
 - Haiku rate card not re-verified since 2026-10-06 cache.
 - Real parent-env value of `CLAUDE_CODE_AUTO_COMPACT_WINDOW`: read at (b) time.
-- AC-7 `maxTurns`/read-budget numbers and AC-10 `tick_budget` default are open (brief, architect memo D2/D3); no threshold set here.
