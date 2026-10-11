@@ -280,13 +280,13 @@ and proceeds, losing nothing across interruptions.
 `/loop /mission "<name>" continue`, or a scheduled agent. When invoked as a
 loop tick, execute exactly ONE brief or checkpoint, update the ledger, and
 end; don't try to finish the mission in a tick. Each tick is a session for the
-budget (increment). A `/loop` tick does NOT reset the context window —
-`/loop` is session-scoped, and ticks accrete in the same transcript; genuine
-fresh context requires `/clear`, a new session, or a scripted `claude -p`.
-What makes loop mode safe is that **state lives in files**: any tick can be
-run from a fresh context without losing anything, and a crashed tick loses
-nothing. The overrun STOP applies to loop ticks exactly as to interactive runs;
-🛑 TICK BUDGET ends the tick with no new brief (§5 Loop mode).
+budget (increment). A `/loop` tick does NOT reset context (ticks accrete in
+one transcript); fresh context needs `/clear`, a new session, or a scripted
+`claude -p`. **State lives in files**: any tick runs from fresh context and a
+crashed tick loses nothing. The overrun STOP applies to loop ticks exactly as to
+interactive runs; 🛑 TICK BUDGET ends the tick with no new brief (§5 Loop mode).
+YOU write `Tick tokens:`/`Mission budget:` after each brief from the Agent
+result's usage, or a `codex`/`claude-p` distillate's `usage` input + output.
 
 ## 5. Close the mission
 

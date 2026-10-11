@@ -1801,6 +1801,7 @@ const CLOSING_NONE_DUE = {
     ['handoff-budget', { event: 'UserPromptSubmit', desc: BUDGET, transcript: { bytes: ADVISORY } }],
     ['beat-enforcer PreToolUse', { event: 'PreToolUse', desc: PRE, input: { tool_input: { command: 'git commit -m x' } }, ledgers: NOT_STARTED }],
     ['beat-enforcer Stop', { event: 'Stop', desc: STOP, input: { stop_hook_active: false }, ledgers: NOT_STARTED }],
+    ['compact-resume', { event: 'SessionStart', desc: 'compact-resume directive', input: { source: 'compact' }, ledgers: NOT_STARTED }],
   ];
   for (const [name, spec] of cases) {
     const fresh = (tag) => (spec.transcript ? { ...spec, input: { session_id: sid(tag) } } : spec);

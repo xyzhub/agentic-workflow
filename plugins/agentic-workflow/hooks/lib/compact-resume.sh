@@ -57,6 +57,8 @@
 # stdin: the hook event JSON. cwd: the project dir (reads .plans/ and
 # docs/product/session-handoff.md relatively).
 
+[ "${AGENTIC_WORKFLOW_CHILD:-0}" = 1 ] && exit 0 # a claude-p child (run-claude.mjs): silent
+
 INPUT=$(cat)
 
 # Only after a compaction. An absent `.source` is treated as compact because the
