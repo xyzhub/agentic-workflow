@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "agentic-workflow agent registry",
-  "description": "The machine-readable agent registry printed by tools/agents.mjs --json. A public interface (same status as the ledger and pending-gates formats): a wrapper reads this instead of parsing agent-file frontmatter and banner wording.",
+  "description": "The machine-readable agent registry printed by tools/agents.mjs --json. A public interface (same status as the ledger and pending-gates formats): a wrapper reads this instead of parsing agent-file frontmatter and banner wording. Versioning rule: the shape is strict, so any added, removed or retyped field ships as a minor plugin version bump with a CHANGELOG line naming the change.",
   "type": "object",
   "additionalProperties": false,
   "required": ["plugin_version", "agents"],
@@ -23,7 +23,7 @@
           "summary": { "description": "The description up to the first '. ' or ' — '.", "type": "string" },
           "phase": { "description": "The lifecycle phase this role serves (a frontmatter phase: wins, else the fixed map, else on-demand).", "type": "string", "enum": ["discover", "define", "plan", "build", "review", "record", "launch", "operate", "on-demand"] },
           "model": { "description": "The plugin default model ('inherit' when the plugin file names none).", "type": "string" },
-          "tools": { "description": "The plugin default tools list.", "type": "array", "items": { "type": "string" } },
+          "tools": { "description": "The plugin default tools list (a project-only agent: its own tools: line, or null when it has none).", "type": ["array", "null"], "items": { "type": "string" } },
           "effective": {
             "description": "The settings a project override resolves to; equals the defaults when there is no override.",
             "type": "object",
@@ -35,7 +35,7 @@
               "effort": { "description": "The resolved effort, or null when unset.", "type": ["string", "null"] },
               "boundary_escalation": { "description": "'on' for reviewer by default, null for every other agent.", "type": ["string", "null"] },
               "skills": { "type": "array", "items": { "type": "string" } },
-              "tools": { "description": "The tools list the agent actually runs with (the override's tools: when set, else the plugin default). On codex it also sets the sandbox: Write/Edit → workspace-write.", "type": "array", "items": { "type": "string" } }
+              "tools": { "description": "The tools list the agent actually runs with (the override's tools: when set, else the plugin default). null = the file has no tools: line (unset: all tools on claude, read-only sandbox on codex). On codex it also sets the sandbox: Write/Edit → workspace-write.", "type": ["array", "null"], "items": { "type": "string" } }
             }
           },
           "override": {
