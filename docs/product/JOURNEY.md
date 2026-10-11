@@ -16,6 +16,24 @@ grades the protocol's own behavior the way a QA team would.
 
 ---
 
+## 2026-10-11 — builder-done-rules: the second half is built and approved
+
+Phase 2 of builder-done-rules is done and sits in PR #121 as version 1.56.0, stacked on the Phase 1 pull request, #120. Both wait for the owner to merge, #120 first.
+
+What it adds. The builder agents now have written rules for when work counts as done: a database change is confirmed live by querying it, old code that was replaced is removed and nothing still points at it, and a change that touches many sites can be resumed part-way. If a builder finds it must break a decision the owner locked, it stops before writing code and goes straight to the owner, with no retry. Plans now carry numbered acceptance criteria and a table showing where each value comes from; the plan reviewer checks that table and the code reviewer gives a verdict on each criterion. Decisions can be marked "Assumed", and the settle command lists them until the owner ratifies them. The project profile gains a Test policy row the reviewer reads. The fix command gains a loop that hunts the root cause.
+
+The reviewer's first pass asked for changes. The settle check for Assumed decisions matched too much and raised 15 false alarms. The labels AC-1 to AC-4 clashed with the criterion ids that real projects already use, so the owner renamed them done-rule 1 to 4. One corrective round fixed both, and the second pass approved with every lens scoring 3 of 3.
+
+What went wrong: the specially tuned Codex runtime failed before it took a single turn. The Codex command-line tool, version 0.160.1, rejected the model name gpt-6-astra on a ChatGPT account. Phase 2 therefore ran on Claude Fable instead.
+
+Final numbers: agent descriptions went from 9,687 to 6,898 characters, and the number over the cap went from 16 to 0. The mission instructions file went from 21,336 to 21,281 bytes and the reviewer's from 14,308 to 13,029. Five sessions were used against an estimate of four (1.25 times, under the 1.5 times point where we stop and ask).
+
+Next: the owner merges #120 then #121 and reinstalls the plugin; then the settle command closes the mission, and operate-triage follows.
+
+Lesson: a label that is handy inside the plugin can collide with names already in use in the projects that receive it. Choose names with the receiving side in mind.
+
+---
+
 ## 2026-10-11 — builder-done-rules: the first half is built and approved
 
 A new mission, builder-done-rules, was planned today after looking at a public skills repository (jsmastery-pro/skills, MIT licence). We took patterns only and copied no text. The mission has two phases and an estimate of four working sessions. Two are used.
