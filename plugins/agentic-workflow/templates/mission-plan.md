@@ -26,19 +26,41 @@ is a dated locked decision, never a silent edit._
 ## Tasks
 
 _Numbered, each with concrete acceptance criteria a reviewer can check against
-the diff. Keep them outcome-shaped, not step-shaped._
+the diff. Keep them outcome-shaped, not step-shaped. Number every criterion
+`AC-N` — ids are stable for the mission's life; briefs and verdicts cite them._
 
-1. **_Task name_** — _what it does._ Acceptance: _the observable condition that
-   proves it's done (a test asserts X; endpoint returns Y; existing tests stay
-   green)._
+1. **_Task name_** — _what it does._
+   - AC-1 _the observable condition that proves it's done (a test asserts X;
+     endpoint returns Y; existing tests stay green)._
+   - AC-2 _…_
+
+## Value sourcing
+
+_Every value the feature produces or displays (a total, a date, a tenant, a
+currency rule, a constant) → where it comes from, so no builder invents one
+mid-build. Source kinds: `input` (a field/form) · `column` (`table.column`) ·
+`derivation` (a formula with operands — must cite file:line or an issue
+comment, else it is an `open question`) · `locked decision` (`YYYY-MM-DD` +
+memo path, lifted from the memo's "Values this decision settles") · `open
+question` (routed to Open questions below, never a REVISE). A literal
+`none — no values produced` row is valid when the table is otherwise empty._
+
+| AC | Value | Source kind | Where |
+|---|---|---|---|
+| _AC-1_ | _order total_ | _derivation_ | _`sum(line.qty × line.unit_price)` — `server/orders.ts:42`_ |
 
 ## Locked decisions
 
 _Dated entries the execution sessions must honor — never re-litigated mid-flight.
 A decision that new evidence invalidates becomes an open question below, not a
-silent change (unlocking is the human's call)._
+silent change (unlocking is the human's call). An owner's "build anyway" over a
+builder's `deviation` stop lands here as `Assumed <date> — owes <decision>;
+built on <assumption>; authorized by <who>`, mirrored as one line in the
+ledger's Open questions, and stays until a dated `ratified` entry replaces it
+(`/agentic-workflow:settle` surfaces it; it never blocks a merge)._
 
 - _YYYY-MM-DD — the decision, stated so a fresh agent needs no more context._
+- _Assumed YYYY-MM-DD — owes <decision>; built on <assumption>; authorized by <who>._
 
 ## Risks
 

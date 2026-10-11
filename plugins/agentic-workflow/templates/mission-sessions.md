@@ -30,6 +30,8 @@ at once._
 
 ### S1 — _session name_
 
+- **ACs**: _AC-n, AC-m — the master-plan criteria this brief satisfies; the
+  plan-judge REVISEs an id no brief cites, the reviewer verdicts per id._
 - **Reads**: _file (NN lines, whole | anchor `<symbol>` ±30–50), …_ — the exact
   targets, so execution follows without discovery.
 - **Catalog**: _`features.md` rows + `api.md` / `data-model.md` sections whose

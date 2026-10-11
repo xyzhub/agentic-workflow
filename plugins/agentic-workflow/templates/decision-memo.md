@@ -45,6 +45,11 @@ against it, stated here rather than left for the reader to guess. Prefer designs
 where misuse is unrepresentable (constraints, types, additive migrations) over
 designs guarded by discipline._
 
+**Values this decision settles:** _one bullet per produced/displayed value this
+choice fixes (a constant, a rule, a format) — the planner lifts each into the
+master plan's `## Value sourcing` as `locked decision · <date> + this memo's
+path`. `none` is a valid answer._
+
 ## What would change the answer
 _The evidence or scale threshold at which a different option wins — the
 measurement that would justify the more complex path. Names the trigger to

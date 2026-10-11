@@ -60,7 +60,11 @@ is picked up or parked to keep it quiet; `[x]` only on a verified/APPROVED resul
 ## Open questions
 
 _Unresolved items blocking execution, mirrored from the master plan with their
-recommendations. Empty once the human has answered them all._
+recommendations. Empty once the human has answered them all. An `Assumed`
+decision (an owner's "build anyway" over a builder's `deviation` stop) is
+mirrored here as one line `Assumed <date> → <home>` (master plan Locked
+decisions, or `decision-log.md` under autopilot) until it is ratified — prose
+only, no glyph, never a blocker._
 
 (none)
 
