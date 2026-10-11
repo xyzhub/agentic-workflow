@@ -19,7 +19,7 @@
 import path from 'node:path';
 import { realpathSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { clockLeak } from './lint.mjs';
+import { clockLeak, budgetVerdict, descriptionOver, ruleRestatement, RULES } from './lint.mjs';
 
 // must: 'block' — a clock in some costume; the L3 rule rejects it.
 //       'pass'  — an observable state a probe can check.
@@ -124,6 +124,49 @@ export const CASES = [
   ['pass',  '≥2 further missions\' transcripts exist post-v1.43',  'real row OB-2'],
 ];
 
+// ── Budget verdicts (AC-14) — the pure functions the gate uses, decided
+// directly (planner "Fixture mechanics" 2026-10-11: no temp-tree copy). Each
+// row is [label, got, want]; F0 is the real `node tools/lint.mjs` run asserted
+// by the Verify step, not here.
+export const BUDGET_CASES = [
+  ['F1 description 401 chars → over', descriptionOver('x'.repeat(401)), true],
+  ['F1b description 400 chars → boundary passes', descriptionOver('x'.repeat(400)), false],
+  ['F3 agent ceiling + 1 B → fail', budgetVerdict(16001, 16000), 'fail'],
+  ['F4 91% of ceiling → warn', budgetVerdict(Math.round(16000 * 0.91), 16000), 'warn'],
+  ['F5 exactly 100% → not a fail', budgetVerdict(16000, 16000) !== 'fail', true],
+];
+
+// ── Rule restatement (AC-12/AC-13). The §5 LA-1 mechanics as prose must read
+// as a restatement; a one-line pointer and a backticked mention must not; the
+// two live paraphrase sites (pre-swap text) must fail. A hooks/-style message
+// IS a restatement to the detector — it is let through only because the scan
+// excludes hooks/ (scope, not detector).
+const OVERRUN_PROSE = `At **k ≥ 1.5 × N** the hook prints 🛑 OVERRUN on every prompt and the
+orchestrator MUST NOT start another brief: it gives the owner the scope
+decision — ship a defined subset now / continue at a revised estimate / abort —
+with the remaining phases and what each buys, records the answer as a dated
+locked decision, and only then revises \`Estimate:\`.`;
+
+const REVIEWER_210_PRESWAP = `- **Security-boundary flag set where the Fable tier applies** — any brief whose
+  diff touches auth / a session credential / authorization / tenancy / money /
+  schema / migrations / a security boundary marks its checkpoint Fable.`;
+
+const MISSION_176_PRESWAP = `**Reviewer tier survives the runtime switch.** A codex reviewer tune covers
+ROUTINE checkpoints only. When the diff's risk class demands Fable — auth, a
+session/entry credential, authorization, tenancy, money, schema, migrations, or
+any security boundary — you override the tune and spawn the Claude reviewer on Fable.`;
+
+const HOOKS_STYLE_MSG = `🛑 OVERRUN — Sessions used ≥ 1.5× Estimate; the orchestrator must stop and give the owner the scope decision (ship a defined subset / revised estimate / abort).`;
+
+export const RULE_CASES = [
+  ['F2 §5 LA-1 mechanics as prose → restatement', ruleRestatement(OVERRUN_PROSE, RULES['overrun-1.5x']), true],
+  ['F2b overrun pointer → pass', ruleRestatement('the overrun STOP applies (§5 LA-1)', RULES['overrun-1.5x']), false],
+  ['reviewer.md:210-212 pre-swap → restatement', ruleRestatement(REVIEWER_210_PRESWAP, RULES['fable-boundary']), true],
+  ['mission.md:176-179 pre-swap → restatement', ruleRestatement(MISSION_176_PRESWAP, RULES['fable-boundary']), true],
+  ['backticked mention → pass', ruleRestatement('prose about `1.5× the estimate` and the `scope decision` and `subset`', RULES['overrun-1.5x']), false],
+  ['hooks-style message (excluded by scan scope, not by the detector)', ruleRestatement(HOOKS_STYLE_MSG, RULES['overrun-1.5x']), true],
+];
+
 // Guarded on being the entry point, so importing CASES (to score an older
 // implementation against the same corpus, say) does not run the suite.
 // realpath both sides — see the same guard in lint.mjs: a plain resolve()
@@ -146,9 +189,16 @@ for (const [must, when, source] of CASES) {
     console.error(`  FAIL  want=${must} got=${got}${hit ? ` (matched "${hit.clause}" as ${hit.kind})` : ''}  [${source}]\n        when: ${when}`);
   }
 }
+for (const [label, got, want] of [...BUDGET_CASES, ...RULE_CASES]) {
+  if (got !== want) {
+    bad++;
+    console.error(`  FAIL  want=${JSON.stringify(want)} got=${JSON.stringify(got)}  [${label}]`);
+  }
+}
+const total = CASES.length + BUDGET_CASES.length + RULE_CASES.length;
 if (bad) {
-  console.error(`\nlint-test: ${bad} of ${CASES.length} wrong`);
+  console.error(`\nlint-test: ${bad} of ${total} wrong`);
   process.exit(1);
 }
-console.log(`lint-test: clean (${CASES.length} clock-guard cases)`);
+console.log(`lint-test: clean (${total} cases)`);
 }
