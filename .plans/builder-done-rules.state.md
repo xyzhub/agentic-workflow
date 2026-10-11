@@ -72,6 +72,7 @@ _Any departure from a brief — logged the moment it happens, with why (§4)._
 _≤10 lines per entry: what shipped, the verify signal, the branch, what the next
 session needs._
 
+- 2026-10-11 Phase 1 landed: pushed e47fc98, CI green (ci-wait exit 0), staging step passed (lint clean on branch, `claude --plugin-dir` consumer load OK), PR #120 to `main` opened (v1.55.0) — awaiting Baker's merge (human-merge gate). Checkpoint p1 row stays [~] until merged. Sessions used 2/4. S2 cuts `mission/builder-done-rules-p2` from e47fc98.
 - 2026-10-11 Checkpoint p1 re-review: APPROVE (Fable, narrow, on 6bff754+2d39298). Scorecard QA 3 · DX 2 · Efficiency 3 · Architecture 3. AC-12/13/14/15a all PASS. One orchestrator hygiene finding (ledger row grammar, this commit fixes it). Minor for P2 docs row: mirror the template's "ONE prose home" paragraph. Proceeding: push → CI → staging step → PR to main (v1.55.0).
 - 2026-10-11 S1-fix done (devops, 6bff754 + 2d39298): name key on raw text, one-corrective recall, 6 harness cases (80→86), three residue pointer swaps (mission.md rule 6 + step 3, planner.md), dead export dropped, v1.55.0 + CHANGELOG + docs/WORKFLOW.md §5 mirror (4 markers) + README line. Gates: lint exit 0 zero warn, lint-test 86, agents-test ok. Numbers unchanged. Pre-merge Closing probed: version P1 part fired; docs P1 part done. Checkpoint p1 re-review (Fable, narrow, resumed reviewer) spawned on 839582d..HEAD.
 - 2026-10-11 Checkpoint p1 verdict: REQUEST CHANGES (Fable). Scorecard QA 1 · DX 2 · Efficiency 3 · Architecture 2. Per-AC: AC-12 PASS (residue mission.md:74-75, planner.md:99-101 once AC-13 fixed) · AC-13 FAIL (`one-next-up` undetectable: name key tested after backtick strip; `one-corrective-retry` weak recall) · AC-14 PASS · AC-15a PASS (numbers reproduced exactly). Release policy surfaced; owner decided P1 = v1.55.0, P2 = v1.56.0. S1-fix spawned (session 2/4).
@@ -80,4 +81,5 @@ session needs._
 - 2026-10-11 plan: trio authored by the planner from the four decision docs; Estimate 4 (2 briefs + 2 Fable checkpoints, owner-decided); plan-judge APPROVED with six named fixes (applied same day); OQ-1 answered by the owner (codex `deviation:` prefix, enum unchanged). Ready for S1.
 
 SUPERSEDED next-up (historical, do NOT read as state): S1
-Next up: Checkpoint p1
+SUPERSEDED next-up (historical, do NOT read as state): Checkpoint p1
+Next up: S2
