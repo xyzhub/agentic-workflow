@@ -47,6 +47,8 @@
 #     present these as token math).
 #   - the point is window/model/config-dependent: if compaction behavior
 #     changes upstream, RE-MEASURE from a fresh corpus — do not scale.
+[ "${AGENTIC_WORKFLOW_CHILD:-0}" = 1 ] && exit 0 # a claude-p child (run-claude.mjs): silent
+
 ADVISORY_BYTES=3700000  # 0.55 × 6,727,626 = 3,700,194 → floored (S2 block)
 URGENT_BYTES=5380000    # 0.80 × 6,727,626 = 5,382,101 → floored (S2 block)
 

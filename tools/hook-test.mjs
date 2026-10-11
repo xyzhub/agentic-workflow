@@ -1765,6 +1765,32 @@ const CLOSING_NONE_DUE = {
     check('merge-guard: files is not an array → BLOCK', blocks(r, 'could not read PR #101'), why(r)); }
 }
 
+// ── Child silencer (tune-presets D4): inside a claude-p child spawned by
+// tools/run-claude.mjs (AGENTIC_WORKFLOW_CHILD=1) the four UserPromptSubmit
+// hooks and both beat-enforcers exit 0 silently. Each case first proves the
+// same setup DOES print without the variable, so silence means the silencer.
+{
+  const CHILD = { AGENTIC_WORKFLOW_CHILD: '1' };
+  const activeLedger = { 'pay.state.md': ['Estimate: 2 sessions', 'Sessions used: 1', '- [x] S1 — build', '- [ ] Checkpoint — phase 1 review', 'Next up: Checkpoint', ''].join('\n') };
+  const branchCmd = `git init -q -b main >/dev/null 2>&1; ${hookCommand('UserPromptSubmit', 'feature branch')}`;
+  const cases = [
+    ['branch warning', { event: 'UserPromptSubmit', command: branchCmd, input: {} }],
+    ['router', { event: 'UserPromptSubmit', desc: 'Router (D2)', input: { prompt: 'add a login feature' }, ledgers: activeLedger }],
+    ['mission-budget', { event: 'UserPromptSubmit', desc: 'mission-budget (D3', input: {}, ledgers: activeLedger }],
+    ['handoff-budget', { event: 'UserPromptSubmit', desc: BUDGET, transcript: { bytes: ADVISORY } }],
+    ['beat-enforcer PreToolUse', { event: 'PreToolUse', desc: PRE, input: { tool_input: { command: 'git commit -m x' } }, ledgers: NOT_STARTED }],
+    ['beat-enforcer Stop', { event: 'Stop', desc: STOP, input: { stop_hook_active: false }, ledgers: NOT_STARTED }],
+  ];
+  for (const [name, spec] of cases) {
+    const fresh = (tag) => (spec.transcript ? { ...spec, input: { session_id: sid(tag) } } : spec);
+    const child = runHook({ ...fresh('child'), env: CHILD });
+    const control = runHook(fresh('control'));
+    check(`child silencer: ${name} — AGENTIC_WORKFLOW_CHILD=1 → stdout '' and exit 0 (control prints)`,
+      child.code === 0 && child.stdout === '' && control.code === 0 && control.stdout.trim() !== '',
+      `child=${JSON.stringify(child.stdout)} control=${JSON.stringify(control.stdout.slice(0, 80))}`);
+  }
+}
+
 if (failures.length) {
   console.error(`\nhook-test: ${failures.length} failure(s)`);
   process.exit(1);

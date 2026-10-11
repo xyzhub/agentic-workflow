@@ -39,6 +39,8 @@
 #
 # stdin: the hook event JSON (unused beyond being drained). cwd: the project.
 
+[ "${AGENTIC_WORKFLOW_CHILD:-0}" = 1 ] && exit 0 # a claude-p child (run-claude.mjs): silent
+
 INPUT=$(cat) # drain stdin; nothing in the event is load-bearing here
 : "$INPUT"
 

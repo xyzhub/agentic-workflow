@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "BRANCH=$(git branch --show-current 2>/dev/null); DEF=$(git symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null | sed 's|^origin/||'); DEF=${DEF:-main}; if [ -n \"$BRANCH\" ] && [ \"$BRANCH\" = \"$DEF\" ]; then echo \"⚠️ On $DEF — create a feature branch before changes (git checkout -b feat/<desc>).\"; fi",
+            "command": "[ \"${AGENTIC_WORKFLOW_CHILD:-0}\" = 1 ] && exit 0; BRANCH=$(git branch --show-current 2>/dev/null); DEF=$(git symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null | sed 's|^origin/||'); DEF=${DEF:-main}; if [ -n \"$BRANCH\" ] && [ \"$BRANCH\" = \"$DEF\" ]; then echo \"⚠️ On $DEF — create a feature branch before changes (git checkout -b feat/<desc>).\"; fi",
             "description": "Remind to use a feature branch when on the default branch",
             "timeout": 5
           }
@@ -17,7 +17,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "INPUT=$(cat); PROMPT=$(printf '%s' \"$INPUT\" | jq -r '.prompt // \"\"' 2>/dev/null); case \"$PROMPT\" in /*) exit 0;; esac; if [ ! -f docs/WORKFLOW.md ] && [ ! -d .plans ]; then exit 0; fi; if printf '%s' \"$PROMPT\" | grep -qiE '^[[:space:]]*(what|how|why|who|whom|whose|when|where|which|is|are|am|do|does|did|can|could|should|would|will|explain|tell me|show me|thanks|thank you)([^a-z]|$)'; then exit 0; fi; if printf '%s' \"$PROMPT\" | grep -qiE '(^|[^a-z])(add|build|implement|create|ship|fix|refactor|feature|make|write|scaffold|integrate|set up|rework|redesign|rename|migrate)([^a-z]|$)'; then echo \"↪ This looks like a work request with no command — route it through the workflow (classify altitude → the matching /agentic-workflow: command, or /agentic-workflow:next if unsure; hand a feature request to the intake agent). Don't answer off-protocol.\"; fi; exit 0",
+            "command": "[ \"${AGENTIC_WORKFLOW_CHILD:-0}\" = 1 ] && exit 0; INPUT=$(cat); PROMPT=$(printf '%s' \"$INPUT\" | jq -r '.prompt // \"\"' 2>/dev/null); case \"$PROMPT\" in /*) exit 0;; esac; if [ ! -f docs/WORKFLOW.md ] && [ ! -d .plans ]; then exit 0; fi; if printf '%s' \"$PROMPT\" | grep -qiE '^[[:space:]]*(what|how|why|who|whom|whose|when|where|which|is|are|am|do|does|did|can|could|should|would|will|explain|tell me|show me|thanks|thank you)([^a-z]|$)'; then exit 0; fi; if printf '%s' \"$PROMPT\" | grep -qiE '(^|[^a-z])(add|build|implement|create|ship|fix|refactor|feature|make|write|scaffold|integrate|set up|rework|redesign|rename|migrate)([^a-z]|$)'; then echo \"↪ This looks like a work request with no command — route it through the workflow (classify altitude → the matching /agentic-workflow: command, or /agentic-workflow:next if unsure; hand a feature request to the intake agent). Don't answer off-protocol.\"; fi; exit 0",
             "description": "Router (D2): soft-nudge an un-prefixed work request to route through the workflow; silent on slash-commands, plain questions/chat, and non-workflow cwd (no docs/WORKFLOW.md and no .plans/); stdout-inject only, never exit 2",
             "timeout": 5
           }
