@@ -98,7 +98,7 @@ at 1.5× (§5, orderly LA-1: 18 planned → 44 run, no choice offered). So:
   is a fresh context that re-pays the protocol and the read list.
 - No standing/resident agents in the plan (§12 LA-5): every review, counsel and
   audit is a one-shot spawn at a checkpoint or gate. If a phase is
-  money/schema-critical, mark its checkpoint `Fable` in the brief — tiering is
+  boundary-class, mark its checkpoint `Fable` in the brief (§5 LA-5) — tiering is
   unchanged; shape is.
 
 ## Size every brief to the budget

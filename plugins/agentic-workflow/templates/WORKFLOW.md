@@ -445,7 +445,7 @@ mechanical half):
   review, three merges and a verify went unrecorded; a compaction erased them.
 - **Exactly one `Next up:` (LA-7).**
   <!-- rule: one-next-up -->
-  Supersede by renaming the old line
+  Keep exactly one `Next up:` line. Supersede by renaming the old line
   (`SUPERSEDED next-up (historical):`); the hook reads the first and warns on
   duplicates; the lint backstop fails on disagreement.
   <!-- /rule -->

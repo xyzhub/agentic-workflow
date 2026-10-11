@@ -964,8 +964,10 @@ function checkBudgets() {
 // at three actor sites — as a `<!-- rule-copy: <id> -->…<!-- /rule-copy -->`
 // block byte-identical to §5 after a per-line leading-whitespace strip. A
 // paragraph outside the fences that matches a rule's NAME key AND ≥2 of its
-// word-bounded MECHANICS keys is a restatement and a finding. This guard covers
-// the PLUGIN TREE ONLY — never a venture's own `docs/WORKFLOW.md` copy (AC-13).
+// word-bounded MECHANICS keys is a restatement and a finding — §5 prose OUTSIDE
+// the fences is scanned too, so WORKFLOW's own out-of-§5 restatements are caught.
+// This guard covers the PLUGIN TREE ONLY — never a venture's own
+// `docs/WORKFLOW.md` copy (AC-13).
 const RULES = {
   'overrun-1.5x': {
     la: 'LA-1',
@@ -974,8 +976,8 @@ const RULES = {
   },
   'one-corrective-retry': {
     la: 'rule 3',
-    name: /one[- ]corrective/i,
-    mechanics: [/re-?spawn/i, /then (surface|escalat)/i, /\bhuman decides\b/i, /\bfix attempt\b/i],
+    name: /one[- ]corrective|re-?spawn(?:ed)? once|retr(?:y|ied) once/i,
+    mechanics: [/re-?spawn/i, /corrective note/i, /escalat/i, /then (surface|escalat)/i, /\bhuman decides\b/i, /\bfix attempt\b/i],
   },
   'fable-boundary': {
     la: 'LA-5',
@@ -991,30 +993,18 @@ const RULES = {
 
 const stripInline = (text) => text.replace(/<!--[\s\S]*?-->/g, ' ').replace(/`[^`]*`/g, ' ');
 
-// True when `paragraph` restates `rule`: its NAME key matches AND ≥2 of its
-// word-bounded MECHANICS keys match, after stripping HTML comments and
-// backticked spans (so prose *about* a term is not a hit). Pure.
+// True when `paragraph` restates `rule`: its NAME key matches on the RAW
+// paragraph (a rule's name is backticked in every real mention — `Next up:`,
+// `Fable` — and vanishes from a stripped §5 block, which would make the canonical
+// undetectable), AND ≥2 of its word-bounded MECHANICS keys match after stripping
+// HTML comments and backticked spans (so prose *about* a mechanic is not a hit).
+// Pure.
 function ruleRestatement(paragraph, rule) {
+  if (!rule.name.test(paragraph)) return false;
   const t = stripInline(paragraph);
-  if (!rule.name.test(t)) return false;
   let hits = 0;
   for (const m of rule.mechanics) if (m.test(t)) hits++;
   return hits >= 2;
-}
-
-// Split on blank lines AND list/table-row starts, so a one-line pointer inside a
-// bullet is its own paragraph. Pure.
-function splitParagraphs(text) {
-  const paras = [];
-  let cur = [];
-  const flush = () => { if (cur.join('').trim()) paras.push(cur.join('\n')); cur = []; };
-  for (const line of text.split('\n')) {
-    if (!line.trim()) { flush(); continue; }
-    if (/^\s*(?:[-*+]|\d+[.)]|\|)/.test(line)) flush();
-    cur.push(line);
-  }
-  flush();
-  return paras;
 }
 
 function section5(text) {
@@ -1097,7 +1087,7 @@ function checkRuleDedup() {
 // `tools/lint-test.mjs` can decide them directly. The run below is guarded on
 // being the entry point: importing this file for the harness must not execute
 // the whole gate (and must not `process.exit`).
-export { clockLeak, budgetVerdict, descriptionOver, ruleRestatement, splitParagraphs, RULES };
+export { clockLeak, budgetVerdict, descriptionOver, ruleRestatement, RULES };
 
 // realpath BOTH sides: `import.meta.url` is already symlink-resolved, so a
 // plain `path.resolve(argv[1])` comparison fails when this file is invoked

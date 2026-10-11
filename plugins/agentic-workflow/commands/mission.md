@@ -71,8 +71,8 @@ defects; three merges and a gate went unrecorded and a compaction erased them.
    done-or-not (orderly #605). Commits reference an issue with `(#N)`; the close
    is a reviewed decision at the PR to the default branch. The guardrail hook
    blocks a closing keyword in a commit message.
-6. **Exactly one `Next up:` line (LA-7).** Keep exactly one; supersede by
-   renaming the old line, never leaving a second that still parses (§5 LA-7).
+6. **Exactly one `Next up:` line (LA-7)** — keep one, never a second that still
+   parses (§5 LA-7).
 7. **Model tiering stays; the reviewer tier keys on RISK CLASS, not diff size**
    (opus builders; Fable for boundary-class reviews — §5 LA-5). The saving is in
    *shape* (one-shot, at decision points), not the tier; a two-line boundary
@@ -153,9 +153,8 @@ Read `.plans/<mission>.state.md` → `Next up:`. For each pending brief:
 3. On its return: confirm gates are green and the ledger was updated (the row
    marked `[x]` when verified — or `[~]` if it is parked/awaiting you, never left
    `[ ]` once picked up — handoff entry, `Next up:` advanced). Apply the
-   **one-corrective-retry rule** — on failure, re-spawn once with a corrective
-   note (that is a session: increment); if it fails again, stop and surface to
-   the human.
+   **one-corrective-retry rule** (§5): on failure, retry once (that is a session —
+   increment `Sessions used:`); a second failure stops and surfaces to the owner.
 4. **Merge rule**: if a brief finished well under budget and the next brief is
    in the same phase, the same agent may take it; checkpoints always end a
    session.

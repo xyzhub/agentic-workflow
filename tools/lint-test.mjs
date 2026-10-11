@@ -17,7 +17,7 @@
 // ones least likely to catch the next mistake. The `source` column is the
 // provenance claim — keep it honest when adding cases.
 import path from 'node:path';
-import { realpathSync } from 'node:fs';
+import { readFileSync, realpathSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { clockLeak, budgetVerdict, descriptionOver, ruleRestatement, RULES } from './lint.mjs';
 
@@ -158,6 +158,20 @@ any security boundary — you override the tune and spawn the Claude reviewer on
 
 const HOOKS_STYLE_MSG = `🛑 OVERRUN — Sessions used ≥ 1.5× Estimate; the orchestrator must stop and give the owner the scope decision (ship a defined subset / revised estimate / abort).`;
 
+// Per-id invariant: each §5 canonical block, read from the real template, must
+// read as a restatement of its own rule — else the rule is undetectable and the
+// guard is a no-op (the one-next-up regression ckpt p1 caught).
+const WORKFLOW = path.join(
+  path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..'),
+  'plugins/agentic-workflow/templates/WORKFLOW.md',
+);
+const CANON = {};
+for (const m of readFileSync(WORKFLOW, 'utf8').matchAll(/<!-- rule: (\S+) -->([\s\S]*?)<!-- \/rule -->/g))
+  CANON[m[1]] = m[2];
+export const CANON_CASES = Object.keys(RULES).map((id) => [
+  `§5 canonical block "${id}" self-detects`, ruleRestatement(CANON[id] ?? '', RULES[id]), true,
+]);
+
 export const RULE_CASES = [
   ['F2 §5 LA-1 mechanics as prose → restatement', ruleRestatement(OVERRUN_PROSE, RULES['overrun-1.5x']), true],
   ['F2b overrun pointer → pass', ruleRestatement('the overrun STOP applies (§5 LA-1)', RULES['overrun-1.5x']), false],
@@ -165,6 +179,10 @@ export const RULE_CASES = [
   ['mission.md:176-179 pre-swap → restatement', ruleRestatement(MISSION_176_PRESWAP, RULES['fable-boundary']), true],
   ['backticked mention → pass', ruleRestatement('prose about `1.5× the estimate` and the `scope decision` and `subset`', RULES['overrun-1.5x']), false],
   ['hooks-style message (excluded by scan scope, not by the detector)', ruleRestatement(HOOKS_STYLE_MSG, RULES['overrun-1.5x']), true],
+  // backticked `Next up:` two-sentence restatement → caught (name tests raw).
+  ['backticked `Next up:` restatement → restatement', ruleRestatement('Keep exactly one `Next up:` line. The hook reads the first and warns on duplicates.', RULES['one-next-up']), true],
+  // reviewer's fresh one-corrective paraphrase (no literal term) → caught.
+  ['one-corrective paraphrase → restatement', ruleRestatement('A failed session is re-spawned once with a corrective note; a second failure escalates to the human.', RULES['one-corrective-retry']), true],
 ];
 
 // Guarded on being the entry point, so importing CASES (to score an older
@@ -189,13 +207,13 @@ for (const [must, when, source] of CASES) {
     console.error(`  FAIL  want=${must} got=${got}${hit ? ` (matched "${hit.clause}" as ${hit.kind})` : ''}  [${source}]\n        when: ${when}`);
   }
 }
-for (const [label, got, want] of [...BUDGET_CASES, ...RULE_CASES]) {
+for (const [label, got, want] of [...BUDGET_CASES, ...CANON_CASES, ...RULE_CASES]) {
   if (got !== want) {
     bad++;
     console.error(`  FAIL  want=${JSON.stringify(want)} got=${JSON.stringify(got)}  [${label}]`);
   }
 }
-const total = CASES.length + BUDGET_CASES.length + RULE_CASES.length;
+const total = CASES.length + BUDGET_CASES.length + CANON_CASES.length + RULE_CASES.length;
 if (bad) {
   console.error(`\nlint-test: ${bad} of ${total} wrong`);
   process.exit(1);
