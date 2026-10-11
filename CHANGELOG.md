@@ -18,12 +18,16 @@ _(empty)_
   passed as `--autocompact`; `CLAUDECODE`/`CLAUDE_CODE_ENTRYPOINT` are stripped;
   the child runs `--restricted --permission-mode acceptEdits --permission-prompts
   none --strict-mcp-config` with `--tools`/`--allowedTools` from one allowlist,
-  never `--bare` or `bypassPermissions`. A bare (or glob-first) `Bash` rule is
-  refused with exit 3. Exit `0` done · `3` blocked (incl. `budget:` on max turns)
-  · `1` failed (incl. no result line). Harness `tools/run-claude-test.mjs` + lint
-  `checkRunClaudeHarness`.
-- **Hook child-silencer.** The four prompt hooks and both beat-enforcers exit 0
-  silently when `AGENTIC_WORKFLOW_CHILD=1` (set by the adapter); six hook-test cases.
+  never `--bare` or `bypassPermissions`. An unrestricted `Bash` rule (bare,
+  wildcard, wrapper shells such as `sh -c`/`env`/`xargs`, interpreters,
+  `find -exec`) is refused with exit 3. Exit `0` done · `3` blocked (incl.
+  `budget:` on max turns) · `1` failed (incl. no result line). Harness
+  `tools/run-claude-test.mjs` (75 cases) + lint `checkRunClaudeHarness`.
+  Residual advisory: quoting disguises of a shell name; the interpreter class is
+  a deliberate author grant.
+- **Hook child-silencer.** The six advisory hooks and compact-resume exit 0
+  silently when `AGENTIC_WORKFLOW_CHILD=1` (set by the adapter), as their first
+  statement; guardrail hooks untouched; hook-test +11 cases.
 - **Haiku shadows + budget re-route (AC-7).** `mission-sessions.md` read budget
   gains "Haiku tier: ≤500 lines, maxTurns 24"; a `claude-p` `budget:` block is
   re-spawned once on the row's `fallback` (mission.md step 3).

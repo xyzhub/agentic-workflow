@@ -16,6 +16,22 @@ grades the protocol's own behavior the way a QA team would.
 
 ---
 
+## 2026-10-11 — tune-presets: four presets shipped, the Haiku child runtime built and approved
+
+The tune-presets mission is built and approved. Phase 1 is merged: PR #126, version 1.57.0, on main. Phase 2 is version 1.58.0 and sits in PR #127 waiting for the owner's merge.
+
+Phase 1 gives each project one choice of spend level: Lean, Balanced, Rigorous or Unattended. Each preset sets the model and effort for all 20 agents. Balanced matches today's setup and changes no files. The `tune preset` command applies, shows or resets a preset, and only removes settings that a preset wrote. Bootstrap and adopt now ask one preset question, and the health check flags drift. This matters because the owner can now cap spend per project instead of tuning agents one at a time.
+
+Phase 2 builds the runtime for the cheap roles. A new adapter runs the record-keeping agents (chronicler, writer, curator, intake) on Haiku 5.5 as a separate child process, with its own compaction setting at 100,000 tokens that does not touch the parent session. We ran it for real twice. The chronicler run took 6 turns and cost about $0.002; the intake run took 7 turns and cost about $0.003. Both used only Haiku. The phase also adds per-tick and per-mission token ceilings that print a stop warning when reached.
+
+Review went in two steps. The Phase 1 reviewer (Sonnet 5.5) passed every criterion. The Phase 2 reviewer (Fable) first asked for changes: the rule that blocks an unrestricted shell permission could be sidestepped by wrapper commands such as `sh -c` or `xargs`. This repo's own Codex rules already name that class. One corrective session fixed it plus four smaller points, and the second pass approved. One quoting trick that disguises a shell name remains, with a one-line fix planned for the next release.
+
+Numbers: 3 of 4 estimated sessions used (ratio 0.75). Pending: the Phase 2 merge, a plugin reinstall, and a live check (`tune preset show`, the health check, one Haiku chronicler run, the budget print), then settle.
+
+Lessons: we re-derived a known security class instead of reusing the one already written down; the plan locked a command line the earlier spike had never run end to end; and a reminder hook nagged about a condition that was not met. Retro items are filed after close.
+
+---
+
 ## 2026-10-11 — builder-done-rules: closed, both halves live
 
 The owner merged both pull requests today: #120 (version 1.55.0) and #121 (version 1.56.0, merge 573297b). Checks passed on both, and version 1.56.0 is now the live version on the main branch. The mission is closed.
