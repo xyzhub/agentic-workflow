@@ -8,6 +8,50 @@ has no tags — each version-stamped commit on `main` IS the release.
 
 _(empty)_
 
+## [1.58.0] — 2026-10-11
+### Added — tune presets (phase 2 of tune-presets: runtime)
+- **`tools/run-claude.mjs` — the `claude-p` runtime (AC-6).** Runs one role as a
+  child `claude -p` and writes the shared distillate (`templates/distillate.schema.json`).
+  `--preset <name>` reads model, effort, `maxTurns`, `compact_window`,
+  `allowed_tools` and `read_budget` from the role's row; explicit flags win. The
+  window is set as `CLAUDE_CODE_AUTO_COMPACT_WINDOW` on the child env only and
+  passed as `--autocompact`; `CLAUDECODE`/`CLAUDE_CODE_ENTRYPOINT` are stripped;
+  the child runs `--restricted --permission-mode acceptEdits --permission-prompts
+  none --strict-mcp-config` with `--tools`/`--allowedTools` from one allowlist,
+  never `--bare` or `bypassPermissions`. An unrestricted `Bash` rule (bare,
+  wildcard, wrapper shells such as `sh -c`/`env`/`xargs`, interpreters,
+  `find -exec`) is refused with exit 3. Exit `0` done · `3` blocked (incl.
+  `budget:` on max turns) · `1` failed (incl. no result line). Harness
+  `tools/run-claude-test.mjs` (75 cases) + lint `checkRunClaudeHarness`.
+  Residual advisory: quoting disguises of a shell name; the interpreter class is
+  a deliberate author grant.
+- **Hook child-silencer.** The six advisory hooks and compact-resume exit 0
+  silently when `AGENTIC_WORKFLOW_CHILD=1` (set by the adapter), as their first
+  statement; guardrail hooks untouched; hook-test +11 cases.
+- **Haiku shadows + budget re-route (AC-7).** `mission-sessions.md` read budget
+  gains "Haiku tier: ≤500 lines, maxTurns 24"; a `claude-p` `budget:` block is
+  re-spawned once on the row's `fallback` (mission.md step 3).
+- **`claude-p` runtime resolution (AC-8).** mission.md step 2 runs it like
+  `codex` (background Bash, read the distillate file, orchestrator commits);
+  the foreign-runtime paragraph now covers both.
+- **Tick + mission budgets (AC-10).** Ledger lines `Tick budget:` /
+  `Tick tokens:` / `Mission budget:`; `mission-budget.sh` prints
+  `· tick k/N tokens`, 🛑 TICK BUDGET and 🛑 MISSION BUDGET (print only); §5
+  Loop mode carries the rule; planner copies `unattended.tick_budget`.
+### Changed
+- The adapter passes the role body as `--system-prompt-file`, not `--agent`:
+  on claude 2.1.296 `-p --agent` takes the agent's `tools:` as the whole tool
+  set and drops the StructuredOutput tool `--json-schema` needs.
+### Evidence — AC-9 (claude 2.1.296, `--preset lean --model claude-haiku-5-5`)
+- chronicler: done, exit 0, schema-valid; `modelUsage` = `claude-haiku-5-5`
+  only; 6 turns; first request 10,694 / peak 12,424 prompt tokens; init tools
+  Bash, Edit, Glob, Grep, Read, StructuredOutput, Write; no `compact_boundary`;
+  child argv `--autocompact 100000`; ~$0.002.
+- intake: done, exit 0, schema-valid; Haiku only; 7 turns; first 6,729 / peak
+  11,376; init tools Glob, Grep, Read, StructuredOutput; no compaction; ~$0.003.
+- Parent `CLAUDE_CODE_AUTO_COMPACT_WINDOW` unset before and after both runs.
+  Artifacts: `.plans/tune-presets.artifacts/ac9-{chronicler,intake}.*`.
+
 ## [1.57.0] — 2026-10-11
 ### Added — tune presets (phase 1 of tune-presets: configuration)
 - **`templates/tune-presets.json` (AC-1).** Four presets — `lean` · `balanced` ·

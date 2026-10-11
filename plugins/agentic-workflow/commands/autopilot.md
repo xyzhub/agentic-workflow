@@ -62,7 +62,8 @@ When the mission-budget hook prints 🛑 OVERRUN the overrun STOP binds the flig
 exactly as it binds a mission (§5 LA-1): surface the decision to the owner via
 the owner channel (§12) or the next interactive turn, record it as a dated
 locked decision in `decision-log.md`, revise `Estimate:`, and only then
-continue. Never keep a standing/resident agent
+continue. 🛑 TICK BUDGET / 🛑 MISSION BUDGET bind a `continue` tick the same
+way (§5 Loop mode). Never keep a standing/resident agent
 (supervisor, advisor, reviewer) alive across beats — counsel, review and audit
 are one-shot spawns at gates; a resident agent needs an explicit owner line in
 the ledger and is beaten on decisions only, with its running cost re-quoted

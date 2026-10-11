@@ -34,10 +34,24 @@
 #     Estimate is revised (a dated locked decision) — an overrun is a standing
 #     condition, not a one-shot nudge, and the owner must be able to predict
 #     every firing.
+#   - Loop budgets (tune-presets D3), all optional, same `^Key: <int>` grammar:
+#       Tick budget: N            (planner, from unattended.tick_budget)
+#       Tick tokens: k            (orchestrator: running total, reset at tick
+#                                  start, written after every brief)
+#       Mission budget: M         (orchestrator: Σ tick tokens)
+#     With `Tick budget:` the status line gains ` · tick k/N tokens`; k ≥ N →
+#     🛑 TICK BUDGET; M ≥ N × ceil(Estimate / 2) → 🛑 MISSION BUDGET (a tick =
+#     brief + gate + ≤1 corrective, so ticks ≈ Estimate / 2). Print only — the
+#     orchestrator stops; the only in-flight stop is the child's --max-turns.
+#     No `Tick budget:` → output byte-identical to the fields' absence.
+#   - Inside a claude-p child (AGENTIC_WORKFLOW_CHILD=1, tools/run-claude.mjs)
+#     the hook is silent.
 #   - Ledger text is only grepped/echoed, never executed; the numbers are
 #     validated as digits before arithmetic.
 #
 # stdin: the hook event JSON (unused beyond being drained). cwd: the project.
+
+[ "${AGENTIC_WORKFLOW_CHILD:-0}" = 1 ] && exit 0 # a claude-p child (run-claude.mjs): silent
 
 INPUT=$(cat) # drain stdin; nothing in the event is load-bearing here
 : "$INPUT"
@@ -62,12 +76,22 @@ USED=$(grep -E '^Sessions used:[[:space:]]*[0-9]+' "$LEDGER" 2>/dev/null | head 
       | sed -E 's/^Sessions used:[[:space:]]*([0-9]+).*/\1/')
 case "$EST" in *[!0-9]*) EST='' ;; esac
 case "$USED" in '' | *[!0-9]*) USED=0 ;; esac
+field() { # first `^<Key>: <int>` value, digits only, else empty
+  grep -E "^$1:[[:space:]]*[0-9]+" "$LEDGER" 2>/dev/null | head -1 \
+    | sed -E "s/^$1:[[:space:]]*([0-9]+).*/\\1/"
+}
+TB=$(field 'Tick budget'); TT=$(field 'Tick tokens'); MB=$(field 'Mission budget')
+case "$TB" in '' | *[!0-9]* | 0) TB='' ;; esac
+case "$TT" in '' | *[!0-9]*) TT=0 ;; esac
+case "$MB" in '' | *[!0-9]*) MB='' ;; esac
+TICK=''
+[ -n "$TB" ] && TICK=" · tick ${TT}/${TB} tokens"
 
 # ── Status line (≤1 line + Next up) ────────────────────────────────────────
 if [ -n "$EST" ]; then
-  echo "🧵 Mission ${NAME} — session ${USED}/${EST} (est.) — ${LEDGER}"
+  echo "🧵 Mission ${NAME} — session ${USED}/${EST} (est.)${TICK} — ${LEDGER}"
 else
-  echo "🧵 Mission ${NAME} — no Estimate: line — ${LEDGER}"
+  echo "🧵 Mission ${NAME} — no Estimate: line${TICK} — ${LEDGER}"
 fi
 [ -n "$NEXT" ] && echo "  $NEXT"
 
@@ -81,6 +105,14 @@ if [ -z "$EST" ]; then
   echo "  📐 No \`Estimate: N sessions\` in the ledger — the planner writes it before execution (default 1); the orchestrator increments \`Sessions used:\` at every session start."
 elif [ $((2 * USED)) -ge $((3 * EST)) ]; then
   echo "  🛑 OVERRUN — session ${USED} of ${EST} estimated (≥1.5×). STOP before starting any further brief: give the owner the scope decision — (a) ship a defined subset now, (b) continue at a revised estimate, or (c) abort — with the remaining phases and what each buys. Record the answer as a dated locked decision and update \`Estimate:\`. Continuing silently is not a neutral default (§5, LA-1)."
+fi
+
+# ── D3: tick + mission token budgets (print only, never block) ─────────────
+if [ -n "$TB" ] && [ "$TT" -ge "$TB" ]; then
+  echo "  🛑 TICK BUDGET — ${TT} of ${TB} tick tokens spent. Do NOT start another brief this tick: write the ledger, post to the owner channel when §10 has one, and end the tick (§5 Loop mode)."
+fi
+if [ -n "$TB" ] && [ -n "$MB" ] && [ -n "$EST" ] && [ "$MB" -ge $((TB * ((EST + 1) / 2))) ]; then
+  echo "  🛑 MISSION BUDGET — ${MB} tokens spent ≥ ${TB} × ceil(${EST}/2) ticks. STOP before any further brief and give the owner the scope decision, as for an overrun (§5)."
 fi
 
 exit 0

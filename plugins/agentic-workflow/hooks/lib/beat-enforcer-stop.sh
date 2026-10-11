@@ -52,6 +52,8 @@
 #
 # stdin: the hook event JSON. cwd: the project dir (reads .plans/ relatively).
 
+[ "${AGENTIC_WORKFLOW_CHILD:-0}" = 1 ] && exit 0 # a claude-p child (run-claude.mjs): silent
+
 INPUT=$(cat)
 
 # Re-fire guard: a Stop hook re-invoked because a prior stop was blocked must not

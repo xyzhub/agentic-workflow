@@ -62,7 +62,8 @@ branch; mark parallel-safe phases; note checkpoints.
 **`.plans/<mission>.state.md` — ledger.** The session checklist (all unchecked),
 open questions, empty deviations + handoff logs, `Next up: S1` — **exactly one
 such line** — and the two budget lines in the header: `Estimate: N sessions`
-and `Sessions used: 0`.
+and `Sessions used: 0`; when §10's **Tune preset** is `unattended`, copy
+`unattended.tick_budget` from `templates/tune-presets.json` as `Tick budget: <int>`.
 
 ## Classify every Closing row
 

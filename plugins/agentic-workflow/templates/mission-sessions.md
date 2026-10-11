@@ -43,8 +43,8 @@ at once._
   live-verify in a real client if there's a runtime surface (§2); when a route,
   the schema, or a catalogued anchor changed: `node tools/catalog.mjs --check`
   green and the `features.md` row(s) rewritten in the same branch (§6.1)._
-- **Read budget**: _NN lines (≤30% of context, ~1,500). Suits: `backend` |
-  `frontend` | `security` | `devops`._
+- **Read budget**: _NN lines (≤30% of context, ~1,500; Haiku tier: ≤500 lines,
+  maxTurns 24). Suits: `backend` | `frontend` | `security` | `devops`._
 
 **Checkpoint** ends phase 1 — the independent `reviewer` (fresh context) re-runs
 the gates and diff-reviews `base..head`, per the gate policy in the ledger.
