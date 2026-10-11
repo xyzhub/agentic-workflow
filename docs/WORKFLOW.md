@@ -1,6 +1,6 @@
 # The Workflow — one agentic protocol from idea to viable product
 
-<!-- protocol-master: v1.53.2 -->
+<!-- protocol-master: v1.59.0 -->
 
 ## Quick reference — humans start here
 
@@ -257,7 +257,7 @@ Shipped by this plugin as hooks. Advisory except where marked:
 | `Write`/`Edit` | Reminder to update docs when high-impact files change; on a route file (`server/api/**`) or the schema, when the project ships `tools/catalog.mjs`, it names the catalog (§6.1: regenerate + rewrite the feature row in the same PR — the reviewer gates it) |
 | `Read` (whole file, no `limit`) | **Read advisory** (context discipline) — nudges toward a ranged read or a delegating subagent (§6.2 Delegated reads) when a whole-file read targets a file over `READ_ADVISORY_LINES` (800 lines); a discipline line, not a measured optimum — this repo has no corpus to confirm an effect size, so none is claimed; never blocks |
 | Prompt submit | **Router** (governance) — an un-prefixed work request gets a soft "route it through the protocol — hand to `intake`" nudge; silent on plain chat, never blocks |
-| Prompt submit | **Mission-budget** (governance; supersedes the thread-keeper) — injects the active ledger's status line `Mission <name> — session k/N (est.)` + its **first** `Next up:` line each turn (§12 LA-7: the old `tail -1` fed the owner the stalest state for a day; duplicates now draw a loud warning). Reads `Estimate: N sessions` and `Sessions used: k` from the ledger header and, once **k ≥ 1.5 × N**, prints 🛑 OVERRUN on every prompt until the estimate is revised — a protocol STOP for the orchestrator (no further brief until the owner chooses subset / revised estimate / abort), never a hook block; a missing `Estimate:` draws a one-line reminder; the optional tick/mission budget lines add `· tick k/N tokens` and 🛑 TICK / MISSION BUDGET (§5 Loop mode). Prompt hooks and beat-enforcers are silent in a `claude-p` child (`AGENTIC_WORKFLOW_CHILD=1`). Silent when no active ledger — *active* is one shared predicate (`hooks/lib/active-ledger.sh`, also used by handoff-budget, compact-resume and the beat-enforcers): the newest-touched ledger, skipped while never started (`Sessions used: 0` or `Status: planned`), and NOT active once it carries a `Closed:` stamp, a `Status:` other than `active`, a first `Next up:` saying the mission is closed/complete, or no open beat (a `[~] … → OB-<n>` row promoted to the register is not a beat) — an older never-closed ledger is never fallen back to; every hook in this table carries a `timeout` (5 s; compact-resume 30 s) so none can stall a turn; never blocks |
+| Prompt submit | **Mission-budget** (governance; supersedes the thread-keeper) — injects the active ledger's status line `Mission <name> — session k/N (est.)` + its **first** `Next up:` line each turn (§12 LA-7: the old `tail -1` fed the owner the stalest state for a day; duplicates now draw a loud warning). Reads `Estimate: N sessions` and `Sessions used: k` from the ledger header and, once **k ≥ 1.5 × N**, prints 🛑 OVERRUN on every prompt until the estimate is revised — the §5 LA-1 overrun stop for the orchestrator, never a hook block; a missing `Estimate:` draws a one-line reminder; the optional tick/mission budget lines add `· tick k/N tokens` and 🛑 TICK / MISSION BUDGET (§5 Loop mode). Prompt hooks and beat-enforcers are silent in a `claude-p` child (`AGENTIC_WORKFLOW_CHILD=1`). Silent when no active ledger — *active* is one shared predicate (`hooks/lib/active-ledger.sh`, also used by handoff-budget, compact-resume and the beat-enforcers): the newest-touched ledger, skipped while never started (`Sessions used: 0` or `Status: planned`), and NOT active once it carries a `Closed:` stamp, a `Status:` other than `active`, a first `Next up:` saying the mission is closed/complete, or no open beat (a `[~] … → OB-<n>` row promoted to the register is not a beat) — an older never-closed ledger is never fallen back to; every hook in this table carries a `timeout` (5 s; compact-resume 30 s) so none can stall a turn; never blocks |
 | Prompt submit | **Handoff-budget** (governance) — nudges (≤3 lines) to write/refresh `docs/product/session-handoff.md` before compaction takes the window, once cumulative transcript **bytes** — a loose proxy, including tool results the window has already evicted, never a token measurement — cross an advisory (3,700,000 B) or urgent (5,380,000 B) band, boundary-inclusive; silent below the advisory band, once already fired for that band this session, while an active mission ledger exists, or once the handoff is already newer than the crossing; never blocks |
 | turn end | **Beat-enforcer backstop** (governance, `Stop`) — nudges a not-started ledger beat (`chronicler` at close, `reviewer` at a checkpoint) at the overdue moment; it scans the open beats top-down and nudges the **first due** one — a beat whose own row is held is stepped over, not treated as a wall — and stays silent when nothing is due, i.e. when unfinished work, an unreleased ⛔/HARD PAUSE row, or an unreleased `[~]` **HELD** row sits above every candidate (a `[ ]` HELD row is parked, not a barrier: the scan steps over it); advisory, never blocks |
 | `git commit` / `gh pr create` / `gh pr merge` | **Beat-enforcer** (governance, `PreToolUse`) — the same nudge at the closing action, but with **no due-ness scan yet**: it reports the **first** not-started beat outright, so it can name one that is held or behind unfinished work (the due-ness port is pending); advisory, never blocks |
@@ -327,7 +327,7 @@ end a session). For a long *interactive* session with no natural session end,
 **Reflex backstops** — four §3 governance hooks keep a *running* session
 on-protocol without being read: the *mission-budget* hook surfaces the active
 ledger's `session k/N` + first `Next up:` every turn and turns into the
-overrun STOP at 1.5× the estimate; the *beat-enforcer* nudges a
+overrun STOP at 1.5× the estimate (§5 LA-1); the *beat-enforcer* nudges a
 not-started beat (`chronicler` at close, `reviewer` at a checkpoint) at the moment
 you try to close or advance; *compact-resume* fires the moment the context
 window is compacted and is never silent (OQ6): with an active ledger it directs
@@ -422,7 +422,10 @@ mechanical half):
   points), not tier. And a security/auth/money review must **close the threat,
   not just verify the diff** — step outside the changed lines for a second
   path to the same asset (orderly #605→#730). A miscalled tier is a process
-  finding.
+  finding. A project may opt out of this escalation per-project by tuning the
+  reviewer's `boundary_escalation: off` (#91) — the tuned tier then stands for
+  boundary diffs, and the reviewer records a process finding when the tier reads
+  as miscalled.
   *Incident:* six supervisor beats ≈ 1.08M tokens, 94% of a session's top-tier
   review spend, against 70k for the one-shot review that found the real defects.
 - **Write-ahead at every merge, gate result, and gate SPAWN (LA-6).** Builders
@@ -767,7 +770,8 @@ Three artifacts kept current so the project's story survives any single session:
   contained HTML published as a Claude Artifact to a stable URL (recorded in the
   file's `artifact-url` comment) the owner keeps bookmarked.
 
-**When**: at session close, at every checkpoint, and at stage transitions. The
+**When**: at session close, at stage transitions, and once at mission close
+(never between phases, #133). The
 implementer spawns the chronicler with a summary (PRs, deviations, incidents, any
 stage change); the chronicler edits the three files, then the **main session
 republishes** `overview.html` via the Artifact tool to its recorded URL
@@ -905,7 +909,14 @@ drive the real flow, confirm monitoring is receiving, record the result).
   upgrade an underperformer, `/agentic-workflow:tune <agent> reset` to restore the default.
   When a `TUNED`-prefixed variant of an agent exists, orchestrators spawn
   THAT one. Tunes are files: committed and reviewed like any harness change
-  (§8); `tune preset <name>` sets every agent at once.
+  (§8). A tune may also set the **runtime** (codex), per-agent **effort**
+  (both runtimes, #94), the **tools** list (which widens the codex sandbox),
+  the **skills** list (loaded natively on claude, inlined on codex, #95), the
+  reviewer's **boundary-escalation** (#91), the **prompt** body, or every agent
+  at once (`tune preset`) — each
+  stamped with the base version and a base hash, with `diff`, `rebase` and
+  `reset`; `${CLAUDE_PLUGIN_ROOT}/tools/agents.mjs --json` prints the registry
+  a wrapper reads (#93).
 - Guardrail hooks (§3) install automatically.
 - Commands: `/agentic-workflow:welcome` (the guided front door — orient, then
   guide or auto-drive, filling the project docs), `/agentic-workflow:brainstorm` (shape a raw idea into a chosen framing via the
@@ -977,6 +988,7 @@ drive the real flow, confirm monitoring is receiving, record the result).
 | **Background commit review** (Claude Code built-in) | enabled. Its `claude -p` child must inherit the claude.ai login: `ANTHROPIC_API_KEY` is NOT set in any shell or app environment that launches Claude Code (decided 2026-10-11, #134 — a set key overrides the login, disables the connectors and strips the review's findings to bare titles). Probe: `claude auth status` → `"authMethod": "claude.ai"` and `env | grep -c '^ANTHROPIC_API_KEY='` → `0`, run from the launching shell |
 | **Build** | none (markdown plugin — nothing compiles) |
 | **Datastore seed/reset** | none |
+| **Remote executor** (optional) | none — all gates run locally in seconds (owner, sync 2026-10-11); `/agentic-workflow:connect server <tailscale-host>` records one if that ever changes |
 | **Test users / auth access** | none — markdown plugin, nothing to authenticate to (sync 2026-09-17) |
 | **Deploy + live-verify** | merge to `main` IS the release (marketplace installs from main; no tags). Live-verify: `/plugin update` + `/reload-plugins` in a consumer session — plugin loads clean — then `/doctor` in an adopted project |
 | **Eval suite** (behavioral) | `node evals/run.mjs` — tier 2, before releases, never CI (~$1–5/scenario); flaky scenario → re-run it alone before calling regression |
@@ -1019,10 +1031,8 @@ carries an `Estimate:` for the whole flight (sessions per stage, written by the
 planner at V3 and by autopilot itself for the other stages) and autopilot
 increments `Sessions used:` in the active mission ledger at every stage step,
 brief and `continue` tick, so the mission-budget hook (§3) reads it and the
-🛑 OVERRUN stop applies to the flight exactly as to a mission: at 1.5× the
-estimate autopilot stops and gives the owner the scope decision (ship the
-subset that exists / continue at a revised estimate / abort) through the owner
-channel or the next interactive turn — it never keeps building silently. No
+🛑 OVERRUN stop applies to the flight exactly as to a mission (§5 LA-1) — it
+never keeps building silently. No
 standing/resident agents (LA-5): counsel, review and audit are one-shot spawns
 at gates. Every stage's merges and gate verdicts are written to the ledger and
 decision log as they happen (LA-6). Design-quality tooling runs at the
