@@ -12,7 +12,7 @@ fresh agent resumes the mission from this file alone. Write-ahead — update it
 (§12 LA-6). Deploys to `.plans/builder-done-rules.state.md`._
 
 Estimate: 4 sessions
-Sessions used: 2
+Sessions used: 3
 
 _Budget lines read by the mission-budget hook every turn; the overrun STOP and
 its scope decision are §5 LA-1. `Estimate:` rises only as a dated locked
@@ -31,7 +31,7 @@ decision point, §12 LA-5.)
 - [x] S1 — budgets + dedup detector + description trims + pointer swaps (branch `mission/builder-done-rules-p1`, `devops`; AC-12, AC-13, AC-14, AC-15a)
 - [~] Checkpoint p1 — Fable reviewer: harnesses + diff `main..p1` + per-AC verdict AC-12..AC-15a → PR to `main`
 - [x] S1-fix — corrective (same `devops`, branch `mission/builder-done-rules-p1`): detector name-key on raw text, one-corrective mechanics recall, canonical self-detect harness cases, two residual pointer swaps, dead export, v1.55.0 + CHANGELOG + docs/WORKFLOW.md §5 mirror
-- [ ] S2 — done-rules + trio templates + judge + Assumed/settle + Test policy + /fix (branch `mission/builder-done-rules-p2`, `backend`; AC-1..AC-11, AC-15b/c/d)
+- [~] S2 — done-rules + trio templates + judge + Assumed/settle + Test policy + /fix (branch `mission/builder-done-rules-p2`, `backend`; AC-1..AC-11, AC-15b/c/d)
 - [ ] Checkpoint p2 — Fable reviewer: harnesses + diff `p1..p2` + per-AC verdict AC-1..AC-15 + PR-body numbers → PR to `main`
 
 ## Open questions
@@ -72,6 +72,7 @@ _Any departure from a brief — logged the moment it happens, with why (§4)._
 _≤10 lines per entry: what shipped, the verify signal, the branch, what the next
 session needs._
 
+- 2026-10-11 S2 spawned: `backend` on `mission/builder-done-rules-p2` (cut from P1 head e47fc98 + ledger commit), S2 brief `#s2`; Sessions used 3/4. Release lock: P2 = v1.56.0.
 - 2026-10-11 Phase 1 landed: pushed e47fc98, CI green (ci-wait exit 0), staging step passed (lint clean on branch, `claude --plugin-dir` consumer load OK), PR #120 to `main` opened (v1.55.0) — awaiting Baker's merge (human-merge gate). Checkpoint p1 row stays [~] until merged. Sessions used 2/4. S2 cuts `mission/builder-done-rules-p2` from e47fc98.
 - 2026-10-11 Checkpoint p1 re-review: APPROVE (Fable, narrow, on 6bff754+2d39298). Scorecard QA 3 · DX 2 · Efficiency 3 · Architecture 3. AC-12/13/14/15a all PASS. One orchestrator hygiene finding (ledger row grammar, this commit fixes it). Minor for P2 docs row: mirror the template's "ONE prose home" paragraph. Proceeding: push → CI → staging step → PR to main (v1.55.0).
 - 2026-10-11 S1-fix done (devops, 6bff754 + 2d39298): name key on raw text, one-corrective recall, 6 harness cases (80→86), three residue pointer swaps (mission.md rule 6 + step 3, planner.md), dead export dropped, v1.55.0 + CHANGELOG + docs/WORKFLOW.md §5 mirror (4 markers) + README line. Gates: lint exit 0 zero warn, lint-test 86, agents-test ok. Numbers unchanged. Pre-merge Closing probed: version P1 part fired; docs P1 part done. Checkpoint p1 re-review (Fable, narrow, resumed reviewer) spawned on 839582d..HEAD.
