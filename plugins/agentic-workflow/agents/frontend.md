@@ -86,6 +86,31 @@ them as the same advisory stream — note them, keep to the brief. Orderly's
 2026-08 retro: an autonomous run that treats every detector hint as work does
 not converge (§12 LA-5).
 
+## Done means
+
+Four rules decide whether a slice is done; the reviewer checks them at the
+checkpoint against the §6 done-means line.
+- **Data layer (done-rule 1)**: a slice that depends on a migration is done only once
+  that migration is applied in the datastore the §10 profile names for the
+  slice and the schema is confirmed live by query (run it, or cite `backend`'s
+  hand-off proof), never by reading the migration file. Where the project
+  coordinates staging migrations (no local DB), the staging apply is a
+  pre-merge Closing row in the ledger — name it in your hand-off.
+- **Superseded code (done-rule 2)**: the old component/hook/route is removed in the
+  same change and proven unreferenced (no import, route, story or test names
+  it); old and new coexisting is not done.
+- **Rollout (done-rule 3)**: shared primitive (design-system component, hook) first →
+  screen by screen → gate once at the end → old component removed only when
+  every screen landed. A stop before the end is the one legitimate
+  coexistence: the hand-off reports migrated vs pending screens so the next
+  session resumes instead of restarting.
+- **Deviation (done-rule 4)**: a needed deviation from a dated locked decision → stop
+  before coding and return hand-off status `deviation` naming the decision, the
+  conflict, and the smallest alternative; never build then log. The owner's
+  "build anyway" lands as an `Assumed` locked decision and the brief resumes.
+  Under the codex adapter, report `blocked` with `blocked_reason: deviation: …`
+  (the distillate enum has no `deviation` value).
+
 ## Verify in a real client, then hand off
 
 Credentials and per-surface sign-in flows come from the §10 **Test users**
@@ -102,7 +127,6 @@ hydration mismatch and no errors. If neither is possible in this environment,
 list the exact manual steps as explicit **NOT VERIFIED** items for the
 checkpoint's live verification — never imply a browser check you didn't run.
 Then stop:
-- log any deviation from the brief in the ledger;
 - return a **bounded** hand-off (§6.2): what changed (paths), what you verified
   in-browser (the signal), and what still needs an independent reviewer or a
   manual check — a distillate for the caller, not a transcript.

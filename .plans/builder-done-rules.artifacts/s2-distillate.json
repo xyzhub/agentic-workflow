@@ -1,0 +1,25 @@
+{
+  "status": "failed",
+  "summary": "distillate not valid JSON",
+  "changed_paths": [],
+  "gates": [
+    {
+      "name": "distillate schema",
+      "result": "red",
+      "first_error": "distillate not valid JSON"
+    }
+  ],
+  "deviations": [],
+  "next": [
+    "raw last message saved at .plans/builder-done-rules.artifacts/s2-distillate.json.raw.txt; retry once with --note \"return only the JSON distillate\""
+  ],
+  "blocked_reason": null,
+  "runtime": {
+    "name": "codex",
+    "model": "gpt-6-astra",
+    "effort": "medium",
+    "thread_id": "01a129f2-5d10-7a50-8fe4-ff705e9f2408"
+  },
+  "usage": null,
+  "high_impact_touched": []
+}

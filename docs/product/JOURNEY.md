@@ -16,6 +16,38 @@ grades the protocol's own behavior the way a QA team would.
 
 ---
 
+## 2026-10-11 — builder-done-rules: the second half is built and approved
+
+Phase 2 of builder-done-rules is done and sits in PR #121 as version 1.56.0, stacked on the Phase 1 pull request, #120. Both wait for the owner to merge, #120 first.
+
+What it adds. The builder agents now have written rules for when work counts as done: a database change is confirmed live by querying it, old code that was replaced is removed and nothing still points at it, and a change that touches many sites can be resumed part-way. If a builder finds it must break a decision the owner locked, it stops before writing code and goes straight to the owner, with no retry. Plans now carry numbered acceptance criteria and a table showing where each value comes from; the plan reviewer checks that table and the code reviewer gives a verdict on each criterion. Decisions can be marked "Assumed", and the settle command lists them until the owner ratifies them. The project profile gains a Test policy row the reviewer reads. The fix command gains a loop that hunts the root cause.
+
+The reviewer's first pass asked for changes. The settle check for Assumed decisions matched too much and raised 15 false alarms. The labels AC-1 to AC-4 clashed with the criterion ids that real projects already use, so the owner renamed them done-rule 1 to 4. One corrective round fixed both, and the second pass approved with every lens scoring 3 of 3.
+
+What went wrong: the specially tuned Codex runtime failed before it took a single turn. The Codex command-line tool, version 0.160.1, rejected the model name gpt-6-astra on a ChatGPT account. Phase 2 therefore ran on Claude Fable instead.
+
+Final numbers: agent descriptions went from 9,687 to 6,898 characters, and the number over the cap went from 16 to 0. The mission instructions file went from 21,336 to 21,281 bytes and the reviewer's from 14,308 to 13,029. Five sessions were used against an estimate of four (1.25 times, under the 1.5 times point where we stop and ask).
+
+Next: the owner merges #120 then #121 and reinstalls the plugin; then the settle command closes the mission, and operate-triage follows.
+
+Lesson: a label that is handy inside the plugin can collide with names already in use in the projects that receive it. Choose names with the receiving side in mind.
+
+---
+
+## 2026-10-11 — builder-done-rules: the first half is built and approved
+
+A new mission, builder-done-rules, was planned today after looking at a public skills repository (jsmastery-pro/skills, MIT licence). We took patterns only and copied no text. The mission has two phases and an estimate of four working sessions. Two are used.
+
+Phase 1 is about keeping the plugin's own instructions small and consistent. The automatic checker now enforces size limits on agent descriptions and prompts, and it catches a rule that has been copied into the wrong place. Four rules are now written once in a fixed form. Three of them are copied word for word where the agent that follows the rule actually runs, and everywhere else a short pointer replaces the copy. Twenty agent descriptions were shortened, from 9,687 to 6,898 characters, and none is now over the 400-character limit (17 were). Two of the longest instructions also shrank, and the checker's own test set grew from 69 to 86 cases.
+
+The reviewer's first pass asked for changes. The new duplicate-rule check could not see the rule that tells an agent what to do next, because it removed the backticks around that rule's name before looking for it. One fix was made and the second pass approved.
+
+Decision: the owner chose to ship each phase as its own version, because merging to main is what makes a release. Phase 1 is version 1.55.0 in PR #120, waiting for the owner. Phase 2 will be 1.56.0. It teaches the builder agents what "done" means, adds numbered acceptance criteria to plans, and adds a root-cause loop to the fix command. It is being built now.
+
+Lesson: a checker that cannot see the thing it guards looks like a pass. The reviewer found it by testing the rule that was most likely to slip through.
+
+---
+
 ## 2026-10-07 — six owner asks shipped together as v1.54.0
 
 Gatehouse asks, issues #91 to #96, landed in version 1.54.0 through PR #112, which the owner merged. Each agent can now be tuned on its own: skills, effort level, tools and prompt, with commands to stamp, compare, rebase and reset a tune. The reviewer can be told to stop escalating boundary questions. A machine-readable registry lists every agent, including project-only ones and an on-demand phase. Codex runs get skills inlined and a warning when a run changes Codex's own rules. A fleet of executors rounds it out.

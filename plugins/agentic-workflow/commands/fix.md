@@ -13,10 +13,20 @@ escalate to a full session.
    issue number (`#N`) or the fix maps to a queue item, read the issue first —
    it is the acceptance criteria — and reference it in the branch/PR
    (`fix/N-<desc>`, `Closes #N` in the PR body so the merge closes it).
-2. **Fix** — the smallest change that resolves it; add or adjust a test if the
-   behavior is testable.
-3. **Verify** — run the project test gate (and typecheck if the fix could affect
-   types); for a runtime-surface fix, confirm it in a real client.
+2. **Fix — the root-cause loop**, one beat at a time:
+   - reproduce deterministically first (a failing command, test, or request —
+     no reproduction, no fix);
+   - one falsifiable hypothesis at a time; a change that doesn't move the
+     reproduction is refuted — discard it, don't stack it;
+   - fix the cause, not the symptom (a guard around the crash site is not a fix);
+   - regression test: red against the old code, green against the fix;
+   - sibling hunt — grep for the same bad assumption elsewhere and fix or file
+     each sibling;
+   - if the cause is a bad decision rather than a bug, say so and route it to
+     the `architect` (an options memo), not a patch.
+3. **Verify** — the regression test went red then green; run the project test
+   gate (and typecheck if the fix could affect types); for a runtime-surface
+   fix, confirm it in a real client.
 4. **Commit + PR** — `type(scope): description` with the Co-Authored-By trailer;
    push; `gh pr create --fill`.
 5. **Record** — a Task-altitude change updates `CHANGELOG.md` only (spawn the

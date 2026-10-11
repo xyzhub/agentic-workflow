@@ -108,6 +108,7 @@ trio dogfoods them). Full wording: the brief, §"Acceptance criteria" and
    owes <decision>; built on <assumption>; authorized by <who> <date>` ·
    `ratified <date>`); the same shape is allowed as a `## Locked decisions`
 
+- 2026-10-11 — **Done-rule labels (owner, at checkpoint p2)**: venture-facing labels are `done-rule 1–4`, not `AC-1..AC-4`; the AC cross-reference lives only in this mission's brief and CHANGELOG. Reason: a venture's own AC-1 would collide in reviewer verdicts and its docs/WORKFLOW.md would cite undefined ids.
 - 2026-10-11 — **Release per phase (owner, at checkpoint p1)**: Phase 1 ships as v1.55.0 (own CHANGELOG entry, docs/WORKFLOW.md §5 mirror in the same diff, PR mergeable alone); Phase 2 ships as v1.56.0. Supersedes the planner refinement "1.55.0 covering both phases". Reason: merging to `main` IS the release (§10); a P1 merge at 1.54.0 would be an unversioned release.
    bullet (`Assumed <date> —`); `P/commands/settle.md` step 2b greps both homes
    for `Assumed` without a later `ratified` → surface list, never a blocker;

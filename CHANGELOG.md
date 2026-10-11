@@ -8,6 +8,46 @@ has no tags — each version-stamped commit on `main` IS the release.
 
 _(empty)_
 
+## [1.56.0] — 2026-10-11
+### Added — builder done-rules, AC ids + value sourcing, Assumed status, Test policy, /fix loop (phase 2 of builder-done-rules)
+- **Builder done-rules (AC-1..AC-4).** `agents/backend.md` and `agents/frontend.md`
+  gain a `## Done means` block: a migration is done only when applied in the
+  §10-named datastore and the schema is confirmed live by query (coordinated
+  staging migrations → a pre-merge Closing row); superseded code is removed and
+  proven unreferenced in the same change; rollouts run primitive → sites → gate
+  once, and a mid-rollout stop reports migrated vs pending paths; a needed
+  deviation from a dated locked decision stops before coding and returns the new
+  hand-off status `deviation` (codex adapter: `blocked` with `blocked_reason:
+  deviation: …`). It replaces "log any deviation in the ledger".
+  `commands/mission.md` routes `deviation` (and the codex prefix) to the owner
+  directly — no corrective retry, no session increment; "build anyway" lands as
+  an `Assumed` locked decision. `templates/WORKFLOW.md` §6 carries the one-line
+  **Done means** anchor (AC-5); §7 DONE points at it.
+- **AC ids + value sourcing (AC-6..AC-8).** `templates/mission-plan.md` numbers
+  criteria `AC-N` and gains `## Value sourcing` (AC · Value · Source kind {input,
+  column, derivation, locked decision, open question} · Where; a literal
+  `none — no values produced` row is valid); `templates/mission-sessions.md`
+  briefs open with `ACs:`; `templates/decision-memo.md` gains "Values this
+  decision settles"; `agents/planner.md` requires all three. The reviewer's
+  output gains a **Per-AC verdict** (`AC-n: pass|fail — evidence`, `uncovered:`),
+  and plan-judge mode REVISEs on an uncovered AC id or an unsourced value — cell
+  defects are named fixes inside the one REVISE.
+- **`Assumed` decision status (AC-9).** `templates/decision-log.md` gains a
+  Status column (`decided` · `Assumed — owes…; built on…; authorized by…` ·
+  `ratified <date>`); the master plan allows `Assumed <date> — …` bullets; the
+  ledger mirrors one `Assumed <date> → <home>` line; `commands/settle.md` step
+  2b probes and surfaces unratified entries — never a blocker.
+- **§10 Test policy row (AC-10).** `configured` · `none-by-design` · `none-yet`;
+  the reviewer's QA lens reads it first; `/adopt` and `/bootstrap` seed it. This
+  repo's `docs/WORKFLOW.md` records `configured`.
+- **`/fix` root-cause loop (AC-11).** Deterministic reproduction → one falsifiable
+  hypothesis at a time → cause not symptom → regression test red then green →
+  sibling hunt → a bad decision routes to the architect.
+### Changed
+- `agents/reviewer.md` UX lens: the impeccable paragraph is a pointer to §0.2
+  (AC-15c trim); `docs/WORKFLOW.md` mirrors the §5 "ONE prose home" paragraph,
+  the §6 done-means line and the §10 Test policy row.
+
 ## [1.55.0] — 2026-10-11
 ### Added — prompt budgets + a §5 rule-dedup guard (phase 1 of builder-done-rules)
 - **Byte/description budgets in `tools/lint.mjs` (AC-14/AC-15).** One `BUDGETS`

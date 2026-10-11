@@ -438,6 +438,13 @@ mechanical half):
   (`SUPERSEDED next-up (historical):`); the hook reads the first and warns on
   duplicates; the lint backstop fails on disagreement.
   <!-- /rule -->
+
+  These four rules have ONE prose home — this §5, each fenced
+  `<!-- rule: <id> -->`; everywhere else in the plugin is a one-line pointer
+  (`(§5 LA-n)`) or a byte-identical `<!-- rule-copy: <id> -->` block, and
+  `tools/lint.mjs` (`checkRuleDedup`) fails a second prose statement outside the
+  fences. The guard covers the **plugin tree only** — never a venture's own
+  `docs/WORKFLOW.md` copy, which this repo's lint never reads.
 - **Hotfix path (Lane A): when the defect is live on the default branch and
   staging has diverged, do NOT land the fix on staging.** A fix branched from
   the default branch and merged into a staging branch that is far ahead
@@ -584,6 +591,12 @@ the fresh-context `reviewer` VERIFIES. No specialist self-approves, merges, or
 pushes the default branch. Reach for them when a session has a clear single-domain
 slice, or when a mission has parallel slices that can run at once; a plain session
 on the main agent is fine for small or cross-cutting work.
+
+**Done means** (done-rules 1–4, `agents/backend.md` / `agents/frontend.md`):
+migration applied + schema confirmed live by query · superseded code removed
+and unreferenced · rollout sequenced primitive → sites → gate once · a
+deviation from a dated decision stops before coding (hand-off status
+`deviation`).
 
 **Roles are runtime-neutral: the prompt is the role, the runtime is a spawn
 detail.** A role runs on `claude` (the Agent tool, the default) or on a foreign
@@ -846,7 +859,7 @@ different moments.
 
 ## 7. Fulfilment: definition of done
 
-DONE = gates green → live verification passed (real client for UI) → docs updated
+DONE (§6 done-means) = gates green → live verification passed (real client for UI) → docs updated
 when behavior/config changed → **catalog current** (`docs/product/catalog/`
 regenerated and the feature row rewritten when a route, the schema, or a
 catalogued anchor changed — §6.1) → PR merged by HITL → **post-deploy verification on
@@ -951,6 +964,7 @@ drive the real flow, confirm monitoring is receiving, record the result).
 | **Staging** | none — markdown plugin with no deploy; a phase's "staging verify" is the tier-1 lint on the phase branch + `claude --plugin-dir` load in a consumer session; the PR to `main` opens after that (added 2026-08-19 with the §5 staging flow) |
 | **Test gate** | `node tools/lint.mjs` (tier 1 — deterministic; CI runs it on every push/PR) |
 | **Typecheck/lint gate** | covered by the test gate — `tools/lint.mjs` IS the lint |
+| **Test policy** | configured — `tools/lint.mjs` + `tools/lint-test.mjs` (added 2026-10-11) |
 | **Build** | none (markdown plugin — nothing compiles) |
 | **Datastore seed/reset** | none |
 | **Test users / auth access** | none — markdown plugin, nothing to authenticate to (sync 2026-09-17) |

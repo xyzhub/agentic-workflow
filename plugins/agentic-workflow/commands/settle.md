@@ -40,6 +40,18 @@ For each `[ ]` row, run its `probe:` exactly as written:
 - Probe fails, errors, or is ambiguous → surface it with the reason.
   **Fail closed**: an unproven condition is an unmet condition.
 
+**2b. Assumed probe.** Grep the dated-decision homes for `Assumed` entries not yet
+ratified — ratification **edits the Assumed line in place** to `ratified
+<date>`, so an unratified entry is exactly a line still lacking that word:
+
+```bash
+grep -nE '^[[:space:]]*-[[:space:]]+Assumed [0-9]{4}-[0-9]{2}-[0-9]{2}|\|[[:space:]]*Assumed — |^Assumed [0-9]{4}-[0-9]{2}-[0-9]{2} →' .plans/*.md docs/product/decision-log.md | grep -v ratified
+```
+
+Every hit goes on the **surface list** (step 4) with its home and the owed
+decision — the owner ratifies or reverses; the agent never fires one, and an
+Assumed entry is never a blocker (not for a merge, not for the close gate).
+
 **Deploy-green ladder** (branch-reap conditions — "merged AND the deploy that
 carried it concluded green"). The §10 profile rows (**Deploy + live-verify**,
 **Test gate**, **Default branch**) decide which rung applies; the evidence line
@@ -161,7 +173,8 @@ green.
   in the evidence. Rows are **never deleted**.
 - Rows that could not fire stay `[ ]`, untouched.
 - End the output with the **surface list**: every `probe: manual` row, every
-  failed or ambiguous probe, and every skipped deletion with its reason.
+  failed or ambiguous probe, every unratified `Assumed` decision (step 2b), and
+  every skipped deletion with its reason.
 
 **Where the write-back lands (L1).** Post-merge (the feature PR merged, or the
 default branch checked out), every write-back goes on the mission's ONE

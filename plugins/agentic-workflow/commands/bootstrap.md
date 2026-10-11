@@ -25,6 +25,9 @@ then. Ask questions only when a human is actually present to answer them.
 - **Package manager / gates** — from `package.json` scripts (test, typecheck/lint,
   build), or the equivalent for the stack (Cargo, Go, Poetry, etc.). Prefer the
   scripts that CI runs.
+- **Test policy** — `configured` when a test command exists; `none-yet` when
+  none does; `none-by-design` ONLY from an explicit human answer — never
+  inferred (the reviewer's QA lens keys on this row).
 - **Datastore seed/reset** — a `seed`/`db:reset` script, a migrations dir, or
   none.
 - **Deploy + live-verify** — CI deploy workflow, `fly.toml`, Dockerfile, Vercel,

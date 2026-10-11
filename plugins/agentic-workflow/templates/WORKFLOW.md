@@ -603,6 +603,12 @@ pushes the default branch. Reach for them when a session has a clear single-doma
 slice, or when a mission has parallel slices that can run at once; a plain session
 on the main agent is fine for small or cross-cutting work.
 
+**Done means** (done-rules 1–4, `agents/backend.md` / `agents/frontend.md`):
+migration applied + schema confirmed live by query · superseded code removed
+and unreferenced · rollout sequenced primitive → sites → gate once · a
+deviation from a dated decision stops before coding (hand-off status
+`deviation`).
+
 **Roles are runtime-neutral: the prompt is the role, the runtime is a spawn
 detail.** A role runs on `claude` (the Agent tool, the default) or on a foreign
 runtime like **Codex** (`tools/run-codex.mjs`, §9) when the mission's tune table
@@ -864,7 +870,7 @@ different moments.
 
 ## 7. Fulfilment: definition of done
 
-DONE = gates green → live verification passed (real client for UI) → docs updated
+DONE (§6 done-means) = gates green → live verification passed (real client for UI) → docs updated
 when behavior/config changed → **catalog current** (`docs/product/catalog/`
 regenerated and the feature row rewritten when a route, the schema, or a
 catalogued anchor changed — §6.1) → PR merged by HITL → **post-deploy verification on
@@ -979,6 +985,7 @@ concrete values.
 | **Staging** | _(the staging branch and its URL — e.g. `staging` → `https://staging.example.com`; every mission phase lands here, deploys, and is verified by `/agentic-workflow:verify` BEFORE its PR to the default branch opens (§5). `none` → the mission creates `staging` from the default branch on first use and records it here; a venture with no staging deploy verifies on the preview/branch deploy the §10 Deploy row names)_ |
 | **Test gate** | _(e.g. `npm test`)_ |
 | **Typecheck/lint gate** | _(e.g. `npm run typecheck`)_ |
+| **Test policy** | _(`configured` — a test gate exists; the reviewer files coverage findings as usual · `none-by-design` — an explicit human decision not to test here; no missing-test findings · `none-yet` — tests are owed but not started; the reviewer files exactly one note. Absent reads as `configured`.)_ |
 | **Build** | _(e.g. `npm run build`)_ |
 | **Datastore seed/reset** | _(e.g. `npm run seed`)_ |
 | **Remote executor** (optional) | _(`ssh <alias> · repo at <path> · sync: push + fetch` — heavy work (Docker via the docker context, integration suites, builds) runs on this server while the session stays local; set up by `/agentic-workflow:connect server <tailscale-host>`, probed by `/agentic-workflow:doctor`. Pushed-branch-tip only, never a dirty tree (LA-8). This single-row legacy form equals a default executor named `default` in §10.1; a fleet lives in §10.1 instead. `none` (or absent) → everything local)_ |

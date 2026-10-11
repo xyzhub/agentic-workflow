@@ -32,13 +32,19 @@ Pick a short kebab-case mission name. Start each file from its bundled template 
 `.plans/<mission>.state.md`. Then:
 
 **`.plans/<mission>.md` — master plan.** Numbered tasks, each with concrete
-acceptance criteria. **Locked decisions** as dated entries. Risks. Open questions,
-each with a recommended option — these go to the human before execution.
+acceptance criteria numbered `AC-N` (stable for the mission's life). A
+`## Value sourcing` table — every value the feature produces or displays with
+its source kind and where (columns and kinds per the template); lift the
+architect memos' "Values this decision settles" bullets in as `locked decision`
+rows; a `none — no values produced` row when nothing applies. **Locked
+decisions** as dated entries. Risks. Open questions, each with a recommended
+option — these go to the human before execution.
 
 **`.plans/<mission>.sessions.md` — session briefs.** A protocol pointer (link the
 project's `docs/WORKFLOW.md` §5, don't restate it), the large-files table,
-and one brief per session: the **exact reads with line counts and anchors**, the
-do/verify steps, and a read budget. An optional per-brief header field `runtime:
+and one brief per session: an `ACs:` line naming the AC ids it satisfies (every
+id cited by at least one brief — the plan-judge REVISEs an orphan), the **exact
+reads with line counts and anchors**, the do/verify steps, and a read budget. An optional per-brief header field `runtime:
 codex[:<model>] [effort=<low|medium|high>]` names a foreign runtime for that
 brief's role — set it **only** when the mission's tune table already puts that
 role on codex or the owner asked; omit it and the role runs on `claude` (the
