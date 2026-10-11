@@ -1,6 +1,6 @@
 ---
 name: backend
-description: Specialist implementer for server-side work — API routes, services, data model, migrations, background jobs, integrations. Use for a backend slice of a session or as a per-brief subagent in a mission, especially when frontend and backend slices can proceed in parallel. Builds and verifies; it does NOT review its own work (the independent reviewer does that).
+description: Specialist implementer for server-side work — API routes, services, data model, migrations, background jobs, integrations. Use for a backend slice of a session or as a per-brief subagent in a mission, especially when frontend and backend slices run in parallel. Builds and verifies; the independent reviewer reviews.
 tools: Read, Write, Edit, Bash, Grep, Glob
 ---
 

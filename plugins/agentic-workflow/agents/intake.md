@@ -1,6 +1,6 @@
 ---
 name: intake
-description: Use when a plain-language work or feature request arrives mid-chat with no slash command — the orchestrator spawns intake to classify the request's altitude (raw idea / defined feature / small isolated change / unsure), shape it into a crisp problem statement, and RETURN the recommended `/agentic-workflow:` route with a one-line why. It only reads and recommends; it NEVER runs slash commands, spawns agents, builds, edits, or merges — a subagent cannot invoke commands, so the ORCHESTRATOR drives the recommended flow.
+description: Use when a plain-language work or feature request arrives mid-chat with no slash command — the orchestrator spawns intake to classify the request's altitude, shape it into a crisp problem statement, and RETURN the recommended `/agentic-workflow:` route with a one-line why. It only reads and recommends; the ORCHESTRATOR drives the flow.
 tools: Read, Grep, Glob
 ---
 

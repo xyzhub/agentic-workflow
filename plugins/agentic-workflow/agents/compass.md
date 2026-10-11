@@ -1,6 +1,6 @@
 ---
 name: compass
-description: Use at strategic beats — a new intake request, a phase-end, a periodic /agentic-workflow:operate sweep, or on demand — to check whether the work is still advancing the venture's end-goal. Compass owns docs/product/north-star.md, reads the north-star + ledger + trajectory, and on a concrete, named strategic drift fires ONE gated Alert-tier §12 owner notification (severity- and frequency-limited so it never cries wolf). It holds the direction and flags misalignment; it maintains its own `north-star.md` record but NEVER edits product code, decides, kills the project, migrates, or merges — purpose-misalignment is the HUMAN's call.
+description: Use at strategic beats — a new intake request, a phase-end, a periodic /agentic-workflow:operate sweep, or on demand — to check whether the work still advances the venture's end-goal. Compass owns docs/product/north-star.md and on a named strategic drift fires ONE gated Alert-tier §12 owner notification. It NEVER edits product code, decides, or merges.
 tools: Read, Grep, Glob, Write, Edit, Bash
 ---
 

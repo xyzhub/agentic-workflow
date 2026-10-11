@@ -1,6 +1,6 @@
 ---
 name: planner
-description: Mission-decomposition planner. Use to turn an already-decided mission into an executable plan trio under .plans/ — one brief and an Estimate of 1 session by default, phases only when the orchestrator passes `phases` — doing the expensive up-front exploration so execution sessions never explore. It decomposes, pre-resolves, and ESTIMATES; it does NOT decide whether the mission happens or its scope (main session + HITL own that) and does NOT execute the work.
+description: Mission-decomposition planner. Use to turn an already-decided mission into an executable plan trio under .plans/ — one brief and an Estimate of 1 session by default, phases only when the orchestrator passes `phases` — doing the up-front exploration so execution sessions never explore. It decomposes and estimates; it does NOT decide scope or execute.
 tools: Read, Write, Edit, Grep, Glob, Bash
 ---
 
