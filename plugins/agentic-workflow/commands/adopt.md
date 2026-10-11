@@ -21,7 +21,9 @@ the code and CHANGELOG, §6.1 — and the roadmap epic view).
 Use the `$ARGUMENTS` stage if given, else infer from repo maturity. Skip
 whatever already exists (idempotent). The **Merge policy** row stays
 `human-only` unless the human explicitly delegates it — never infer
-`agent-may-merge` from the repo.
+`agent-may-merge` from the repo. The **Test policy** row is added if absent:
+`configured` when a test gate exists, else `none-yet` (`none-by-design` only
+from an explicit human answer).
 
 ## 1.5 Portfolio registration (§13) — ALWAYS runs
 
