@@ -12,7 +12,7 @@ fresh agent resumes the mission from this file alone. Write-ahead — update it
 (§12 LA-6). Deploys to `.plans/tune-presets.state.md`._
 
 Estimate: 4 sessions
-Sessions used: 0
+Sessions used: 1
 
 _Budget lines read by the mission-budget hook every turn; the overrun STOP and
 its scope decision are §5 LA-1. `Estimate:` rises only as a dated locked
@@ -43,7 +43,7 @@ decision point, §12 LA-5.)
 
 ## Checklist
 
-- [ ] S1 — presets JSON + lint/fixtures + registry bump + `tune preset` verbs + bootstrap/adopt question + `/doctor` checks + docs, v1.57.0 (branch `mission/tune-presets-p1`, `devops`; AC-1, AC-2, AC-3, AC-4, AC-5, AC-11, AC-12)
+- [~] S1 — presets JSON + lint/fixtures + registry bump + `tune preset` verbs + bootstrap/adopt question + `/doctor` checks + docs, v1.57.0 (branch `mission/tune-presets-p1`, `devops`; AC-1, AC-2, AC-3, AC-4, AC-5, AC-11, AC-12)
 - [ ] Checkpoint p1 — Sonnet 5.5 (effort medium) reviewer: lint (zero `warn:`) + lint-test + agents-test + diff `main..p1` + per-AC verdict AC-1, 2, 3, 4, 5, 11, 12 → PR to `main` (v1.57.0)
 - [ ] S2 — `run-claude.mjs` + harness + hook silencer + Haiku shadows/re-route + `claude-p` in mission.md + AC-9 runs + tick/mission budgets, v1.58.0 (branch `mission/tune-presets-p2`, cut from the P1 head, `backend`; AC-6, AC-7, AC-8, AC-9, AC-10)
 - [ ] Checkpoint p2 — Fable (effort high) reviewer: all harnesses + diff `p1..p2` + per-AC verdict AC-6..AC-10 with the AC-9 artifacts read + Security lens on the child flags and on P1's boundary-class content (Haiku `allowed_tools` rows, lint bare-`Bash` rule, mission.md rule-7 text) → PR to `main` (v1.58.0); then the mission close (chronicler once)
@@ -78,12 +78,14 @@ _OB grammar: `- [ ] OB-<n> · added YYYY-MM-DD (<source>, pre-merge|post-merge) 
 _Any departure from a brief — logged here the moment it happens, with why.
 Deviating is allowed; deviating silently is not (§4)._
 
-(none)
+- 2026-10-11 S1 spawn: the project tune `.claude/agents/devops.md` still pins `claude-opus-4-8` (owner rule 2026-09-17, superseded by the 2026-10-11 rule "builders on Opus 5.5"; the tune fix is PR #124, unmerged). S1 ran the base `agentic-workflow:devops` role on Opus 5.5 instead of the stale tune — model-only override, same prompt.
 
 ## Handoff log (newest first)
 
 _≤10 lines per entry: what this session did, the verify signal, the branch, and
 what the next session needs. Newest on top; crash-safe by write-ahead._
+
+- 2026-10-11 orchestrator (write-ahead): S1 spawned — `devops` (Opus 5.5) on `mission/tune-presets-p1` cut from `1a28ab9`; `Sessions used: 1/4`. Gate policy human-merge recorded. Pending: builder self-check + hand-off, then Checkpoint p1 (Sonnet 5.5, effort medium).
 
 - 2026-10-11 planner: trio authored at `11e04fb` on `mission/tune-presets`; shape amended by the owner to 2 phases / Estimate 4 before any brief ran; no open questions; S1 is ready for `devops` on `mission/tune-presets-p1`.
 
