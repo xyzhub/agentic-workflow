@@ -204,6 +204,8 @@ export const PRESET_CASES = [
     names(mutate((j) => { delete j.presets.lean.agents.chronicler.compact_window; }), 'lean.chronicler: Haiku row needs compact_window'), true],
   ['P4 Haiku row with bare Bash → finding [planner]',
     names(mutate((j) => { j.presets.unattended.agents.intake.allowed_tools.push('Bash'); }), 'bare Bash'), true],
+  ['P4c Haiku row with wrapper shell Bash(sh -c:*) → finding (same semantic rule as run-claude.mjs)',
+    names(mutate((j) => { j.presets.lean.agents.writer.allowed_tools.push('Bash(sh -c:*)'); }), 'bare Bash'), true],
   ['P4b Haiku row with glob-first Bash(*) → finding (same semantic rule as run-claude.mjs)',
     names(mutate((j) => { j.presets.lean.agents.curator.allowed_tools.push('Bash(*)'); }), 'bare Bash'), true],
 ];

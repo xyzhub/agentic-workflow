@@ -68,7 +68,8 @@ const USAGE = `run-claude.mjs — run one workflow role as a child \`claude -p\`
   --cwd      the working directory of the run; \`changed_paths\` is the git
              delta vs a snapshot taken before the spawn.
   --out      where the distillate JSON is written. This is the interface. The
-             child's stream-json events are saved beside it (.events.jsonl).
+             child's stream-json events are saved beside it (.events.jsonl) —
+             a full transcript incl. tool results: never commit it unredacted.
   --preset   read model, effort, maxTurns, compact_window, allowed_tools and
              read_budget from templates/tune-presets.json for --role. Explicit
              flags win over the preset row.
@@ -141,13 +142,21 @@ export function splitTools(list) {
 // (`Bash(*)`, `Bash(:*)`, `Bash(* *)`, `Bash(*:*)`, `Bash(?x *)`), matches
 // every command and is as bare as `Bash`. A scoped rule names its command
 // literally first: `Bash(git log:*)`. Case-insensitive on the tool name.
+// A rule whose command is a shell, wrapper or interpreter (`Bash(sh -c:*)`,
+// `Bash(env:*)`, `Bash(node -e:*)`, `Bash(/bin/sh:*)`) — the class
+// templates/codex.rules forbids — or a `find … -exec` runs anything too.
+export const WRAPPERS = new Set(['sh', 'bash', 'zsh', 'dash', 'ksh', 'fish', 'env', 'eval', 'exec',
+  'command', 'source', '.', 'xargs', 'nohup', 'timeout', 'sudo', 'node', 'python', 'python3', 'perl', 'ruby']);
 export function isBareBash(t) {
   const m = String(t).trim().match(/^bash\s*(?:\(([\s\S]*)\))?$/i);
   if (!m) return false;
   const cmd = (m[1] ?? '').trim();
   if (!cmd) return true;
-  const first = cmd.split(/[\s:]+/)[0];
-  return first === '' || /[*?[\]{}]/.test(first);
+  const tokens = cmd.toLowerCase().split(/[\s:]+/);
+  const first = tokens[0];
+  if (first === '' || /[*?[\]{}]/.test(first)) return true;
+  if (WRAPPERS.has(path.basename(first)) || WRAPPERS.has(first)) return true;
+  return tokens.includes('-exec') || tokens.includes('-execdir');
 }
 
 // ── resolution: flags > preset row > role file > defaults ─────────────────
@@ -179,9 +188,17 @@ export function resolveRun(o, roleText, presetsPath = PRESETS_PATH) {
   const compactWindow = Number(o.compactWindow || row.compact_window || DEFAULTS.compactWindow);
   if (compactWindow < 100000 || compactWindow > 1000000) return { error: `compact window ${compactWindow} outside 100000–1000000 (claude --autocompact range)` };
   const readBudget = Number(row.read_budget || DEFAULTS.readBudget);
-  const allowed = o.allowedTools ? splitTools(o.allowedTools)
+  // D1: a hand tune wins. Any tuned shadow (hand, composed `preset:x, tools`,
+  // or pure preset) narrows the row's allowlist to the base tools its own
+  // `tools:` keeps — a no-op on a pure preset shadow, which copies the base.
+  const shadow = /^> Tuned from /m.test(roleText);
+  const own = new Set(toolsOf(roleText));
+  let allowed = o.allowedTools ? splitTools(o.allowedTools)
     : Array.isArray(row.allowed_tools) ? row.allowed_tools.map(String)
       : toolsOf(roleText);
+  if (!o.allowedTools && Array.isArray(row.allowed_tools) && shadow) {
+    allowed = allowed.filter((t) => own.has(t.replace(/\(.*$/, '').trim()));
+  }
   return { model, effort, maxTurns, compactWindow, readBudget, allowed };
 }
 

@@ -248,6 +248,10 @@ group('resolution');
   const r = runAdapter(LEAN, { repo });
   ok('project shadow wins: .claude/agents/chronicler.md body is the system prompt (frontmatter stripped)',
     (r.record.spf || '').trim() === 'shadow body' && JSON.parse(r.events.split('\n')[0]).role_file.endsWith('.claude/agents/chronicler.md'));
+  writeFileSync(path.join(repo, '.claude/agents/chronicler.md'), '---\nname: chronicler\ntools: Read, Edit, Grep\nmodel: claude-haiku-5-5\n---\n\n> Tuned from agentic-workflow v1.58.0 (base sha256:abc) — tools override (Read, Edit, Grep). Reset with /tune chronicler reset.\n\nhand body\n');
+  const ht = runAdapter(LEAN, { repo });
+  ok('a hand-tuned shadow narrows the preset row allowlist (hand tune wins, D1): no Write, no Bash rules',
+    flagVal(ht.record.argv, '--tools') === 'Read,Edit,Grep' && flagVal(ht.record.argv, '--allowedTools') === 'Read,Edit,Grep', flagVal(ht.record.argv, '--allowedTools'));
   rmSync(path.join(repo, '.claude'), { recursive: true, force: true });
   const w = runAdapter([...LEAN, '--max-turns', '40', '--compact-window', '200000', '--model', 'claude-sonnet-5-5'], { repo });
   ok('explicit flags win over the preset row (turns, window on argv AND env, model)',
@@ -276,6 +280,10 @@ for (const [label, args] of [
   ['--allowed-tools Bash(*:*)', ['--role', 'chronicler', '--brief', 'x', '--model', 'claude-haiku-5-5', '--allowed-tools', 'Bash(*:*)']],
   ['--allowed-tools Bash()', ['--role', 'chronicler', '--brief', 'x', '--model', 'claude-haiku-5-5', '--allowed-tools', 'Bash()']],
   ['--allowed-tools "Read Bash" (space-separated)', ['--role', 'chronicler', '--brief', 'x', '--model', 'claude-haiku-5-5', '--allowed-tools', 'Read Bash']],
+  ['--allowed-tools Bash(sh -c:*) (wrapper shell)', ['--role', 'chronicler', '--brief', 'x', '--model', 'claude-haiku-5-5', '--allowed-tools', 'Read,Bash(sh -c:*)']],
+  ['--allowed-tools Bash(env:*) (wrapper)', ['--role', 'chronicler', '--brief', 'x', '--model', 'claude-haiku-5-5', '--allowed-tools', 'Read,Bash(env:*)']],
+  ['--allowed-tools Bash(find . -exec:*)', ['--role', 'chronicler', '--brief', 'x', '--model', 'claude-haiku-5-5', '--allowed-tools', 'Read,Bash(find . -exec:*)']],
+  ['--allowed-tools Bash(/bin/sh:*) (path to a shell)', ['--role', 'chronicler', '--brief', 'x', '--model', 'claude-haiku-5-5', '--allowed-tools', 'Bash(/bin/sh:*)']],
   ['--allowed-tools bash (lowercase)', ['--role', 'chronicler', '--brief', 'x', '--model', 'claude-haiku-5-5', '--allowed-tools', 'Read,bash']],
   ['role tools: with bare Bash and no allowlist', ['--role', 'chronicler', '--brief', 'x', '--model', 'claude-haiku-5-5']],
 ]) {
@@ -285,6 +293,15 @@ for (const [label, args] of [
     `exit ${r.status} ${JSON.stringify(r.out)}`);
 }
 
+ok('isBareBash refuses every wrapper shell / interpreter / find -exec rule (the codex.rules class)',
+  ['Bash(sh:*)', 'Bash(sh -c:*)', 'Bash(bash -c:*)', 'Bash(zsh:*)', 'Bash(/bin/sh:*)', 'Bash(env:*)', 'Bash(eval:*)', 'Bash(exec:*)',
+    'Bash(xargs:*)', 'Bash(sudo:*)', 'Bash(nohup:*)', 'Bash(timeout 5:*)', 'Bash(node -e:*)', 'Bash(python3 -c:*)', 'Bash(source:*)',
+    'Bash(.:*)', 'Bash(find . -exec:*)', 'Bash(find . -name x -execdir rm:*)', 'Bash(command:*)', 'Bash( SH -c:*)'].every(mod.isBareBash));
+{
+  const j = JSON.parse(readFileSync(path.join(PLUGIN, 'templates/tune-presets.json'), 'utf8'));
+  const haiku = Object.values(j.presets).flatMap((p) => Object.values(p.agents)).filter((r) => r.runtime === 'claude-p');
+  ok(`the ${haiku.length} shipped Haiku rows carry no rule the check refuses`, haiku.length === 8 && haiku.every((r) => !r.allowed_tools.some(mod.isBareBash)));
+}
 ok('isBareBash is semantic: empty or glob-first command parts are bare; literal-first rules are scoped',
   ['Bash', 'Bash()', 'Bash(*)', 'Bash(:*)', 'Bash(* *)', 'Bash(*:*)', 'Bash( * )', 'Bash(?it *)', 'bash'].every(mod.isBareBash)
   && !['Bash(git log:*)', 'Bash(gh pr list:*)', 'Read', 'Grep'].some(mod.isBareBash));
