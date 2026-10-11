@@ -97,28 +97,10 @@ formatting in server-rendered HTML); verified in a real client with a clean
 console. No manipulation mechanics (§0.2): fabricated scarcity/urgency,
 confirm-shaming, exit friction beyond sign-up friction; rewards and progress
 indicators map to real user progress, and variable-ratio reward mechanics
-require a recorded human decision. When the impeccable toolset (Paul Bakaus,
-Apache-2.0, github.com/pbakaus/impeccable) is present — probe (§0.2), ANY of:
-`grep -qsi impeccable ~/.claude/plugins/installed_plugins.json` exits 0, or
-`.claude/skills/impeccable/` exists in the project, or
-`node_modules/.bin/impeccable` exists — also apply its anti-pattern rules to
-UI-touching diffs under this lens, citing the rules behind each finding. On a
-UI-touching diff, run its detector CLI **once, here at the checkpoint** (§0.2
-stage map) — the locally-installed binary
-(`node_modules/.bin/impeccable detect <changed UI paths>`) if present,
-`npx impeccable detect <changed UI paths>` as fallback — and report its
-findings with severities. **Classify each finding blocking or advisory**:
-blocking = it breaks a user-visible flow, an accessibility requirement, or a
-documented design-system rule of the project (`DESIGN.md`/`PRODUCT.md`);
-advisory = everything else (taste, density, polish). Only blocking findings may
-contribute to REQUEST CHANGES; advisory findings go into your report as a
-backlog list for the ledger — the builder was told not to loop on them, and
-you must not re-open that loop (§12 LA-5: an autonomous run that treats every
-detector hint as work never converges). The gate is advisory and fail-open: if
-the CLI errors or times out, say so and continue — it informs findings under
-this lens, never replaces your verdict, and never blocks on its own. When
-impeccable is absent, review exactly as today, never run its CLI, and never
-fabricate an impeccable citation.
+require a recorded human decision. When impeccable is present (§0.2 probe +
+stage map), apply its rules under this lens, run its detector once here,
+classify each finding blocking/advisory (only blocking may feed REQUEST
+CHANGES); fail-open — absent or erroring, review as today, cite nothing from it.
 
 **DX** — README/conventions file/docs still truthful after the change (stale-doc
 rule); an owner-facing artifact the diff changed (status page, JOURNEY, a report
@@ -142,7 +124,10 @@ config guard must cover any newly-required security setting.
 without a measured need; AI features use the cheapest adequate model tier and
 respect token budgets; the change reuses existing engines where one fits.
 
-**QA** — do the tests assert the new behavior (not just execute it)? Edge cases:
+**QA** — read the §10 **Test policy** row first: `none-by-design` → no
+missing-test findings; `none-yet` → exactly one note that tests are owed;
+`configured` or absent → coverage findings as below. Do the tests assert the
+new behavior (not just execute it)? Edge cases:
 empty states, concurrency/claim patterns, idempotency, timezone handling. Are
 failures observable (structured logs + error capture on user-facing paths)?
 
@@ -167,6 +152,10 @@ state changes, additive-only migrations unless explicitly approved, and any
     REQUEST CHANGES. Scores are diagnostic — they can never soften a concrete
     finding; the binary verdict remains the gate signal.
   - Scorecards feed the status page's pillar-health panel via the `chronicler`.
+- **Per-AC verdict**: one line per AC id the briefs cite, `AC-n: pass|fail —
+  evidence`, plus `uncovered: none | AC-k …` for ids no brief or diff covers
+  (specced but never built is a finding, not silence). Done-rules AC-1..AC-4
+  (§6 done-means) are checked here when the diff touches data/rollout.
 - Findings ranked by severity, each with file:line and a concrete failure
   scenario (style nits only if they violate documented conventions)
 - Gate results, manual items performed, datastore end-state
@@ -203,6 +192,12 @@ your one pass is meant to catch it up front.
   brief (§5 LA-5) marks its checkpoint Fable.
 - **`Estimate:` = briefs + checkpoints only** — correctives are counted when they
   fire, never pre-booked.
+- **Every AC id is cited by ≥ 1 brief** (`ACs:` line) — an uncovered id →
+  REVISE.
+- **Every value a brief's Do produces has a `## Value sourcing` row** — a
+  missing row → REVISE; an empty cell, a kind outside the five, or a
+  `derivation` without file:line is a named fix inside the one REVISE, never a
+  second REVISE; `open question` rows are routed, not REVISEd.
 
 **Output** — ≤ one page: per-brief findings, then a **single `APPROVE` or
 `REVISE`** verdict for the whole trio. REVISE names exactly what the planner must
