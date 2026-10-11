@@ -155,6 +155,10 @@ Read `.plans/<mission>.state.md` → `Next up:`. For each pending brief:
    `[ ]` once picked up — handoff entry, `Next up:` advanced). Apply the
    **one-corrective-retry rule** (§5): on failure, retry once (that is a session —
    increment `Sessions used:`); a second failure stops and surfaces to the owner.
+   Status `deviation` (a dated locked decision blocks the brief) → the owner
+   directly (AskUserQuestion / §12), no corrective retry, no `Sessions used:`
+   increment; "build anyway" lands as an `Assumed` locked decision (AC-9) and
+   the brief resumes.
 4. **Merge rule**: if a brief finished well under budget and the next brief is
    in the same phase, the same agent may take it; checkpoints always end a
    session.
@@ -168,8 +172,9 @@ blocked · `1` failed), and **commit the distillate's `changed_paths` yourself**
 (`type(scope): …`). The one-corrective-retry rule (step 3 above) re-spawns the
 adapter with `--resume <thread_id> --note "<corrective>"` — **one** retry, then
 stop and surface; there is **no automatic vendor fallback** (`blocked` → one
-retry → surface). Treat `changed_paths` **empty on a `done` status as
-suspicious**: mark the row `[~]` and get reviewer confirmation before `[x]`.
+retry → surface). A `blocked` whose `blocked_reason` starts `deviation:` takes
+step 3's `deviation` route (owner directly, no retry; locked 2026-10-11). Treat
+`changed_paths` **empty on a `done` status as suspicious**: mark the row `[~]` and get reviewer confirmation before `[x]`.
 
 **Reviewer tier survives the runtime switch.** A `codex` `reviewer` tune covers
 **ROUTINE checkpoints only**; when the diff is boundary-class (§5 LA-5),
