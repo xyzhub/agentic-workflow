@@ -62,6 +62,7 @@ the mission's ONE bookkeeping PR). Rows are never deleted._
 
 ## Deviations
 - 2026-10-11 S1 (builder design calls, recorded at checkpoint p1): detector requires the rule NAME key AND ≥2 word-bounded mechanics keys (lock said "two mechanics tokens"; ≥1 would flag the ledger template's own pointer) · §5 LA-5 incident wording "Fable spend" → "top-tier review spend" so the unfenced LA-5 tail is not itself a restatement · dropped boundary sentences from descriptions were NOT moved to bodies because each already exists there (chronicler:103/127, designer:131-132, advisor:35, curator:68, brainstormer:60, analyst:27-28).
+- 2026-10-11 S2 runtime: the `backend` tune (codex:gpt-6-astra) failed before its first turn — codex-cli 0.160.1 returned 400 "The 'gpt-6-astra' model is not supported when using Codex with a ChatGPT account" (thread 01a129f2…, distillate `.plans/builder-done-rules.artifacts/s2-distillate.json`, zero changed paths). Owner decision (verbatim): "run Claude Fable 5.1". S2 re-spawned on the Claude `backend` role, model Fable, counted as session 3 (owner: "Re-spawn IS session 3"). Follow-up: re-verify the codex model via `/agentic-workflow:connect codex` (issue to file at close).
 
 _Any departure from a brief — logged the moment it happens, with why (§4)._
 
@@ -72,6 +73,7 @@ _Any departure from a brief — logged the moment it happens, with why (§4)._
 _≤10 lines per entry: what shipped, the verify signal, the branch, what the next
 session needs._
 
+- 2026-10-11 S2 re-spawned on Claude (Fable) after the codex adapter failed with zero work — see Deviations. Sessions used stays 3/4.
 - 2026-10-11 S2 spawned: `backend` on `mission/builder-done-rules-p2` (cut from P1 head e47fc98 + ledger commit), S2 brief `#s2`; Sessions used 3/4. Release lock: P2 = v1.56.0.
 - 2026-10-11 Phase 1 landed: pushed e47fc98, CI green (ci-wait exit 0), staging step passed (lint clean on branch, `claude --plugin-dir` consumer load OK), PR #120 to `main` opened (v1.55.0) — awaiting Baker's merge (human-merge gate). Checkpoint p1 row stays [~] until merged. Sessions used 2/4. S2 cuts `mission/builder-done-rules-p2` from e47fc98.
 - 2026-10-11 Checkpoint p1 re-review: APPROVE (Fable, narrow, on 6bff754+2d39298). Scorecard QA 3 · DX 2 · Efficiency 3 · Architecture 3. AC-12/13/14/15a all PASS. One orchestrator hygiene finding (ledger row grammar, this commit fixes it). Minor for P2 docs row: mirror the template's "ONE prose home" paragraph. Proceeding: push → CI → staging step → PR to main (v1.55.0).
