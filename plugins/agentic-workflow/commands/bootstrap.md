@@ -28,6 +28,11 @@ then. Ask questions only when a human is actually present to answer them.
 - **Test policy** — `configured` when a test command exists; `none-yet` when
   none does; `none-by-design` ONLY from an explicit human answer — never
   inferred (the reviewer's QA lens keys on this row).
+- **Tune preset** — ONE question when a human is present: which posture,
+  `lean` · `balanced` (recommended) · `rigorous` · `unattended`
+  (`templates/tune-presets.json`)? Recommend `rigorous` instead when the
+  interview names payments, auth or PII (the auth-surface signal that seeds
+  AUTH.md, step 3). Unanswered → `balanced`, marked `default`.
 - **Datastore seed/reset** — a `seed`/`db:reset` script, a migrations dir, or
   none.
 - **Deploy + live-verify** — CI deploy workflow, `fly.toml`, Dockerfile, Vercel,
@@ -73,7 +78,11 @@ Copy the bundled master from `${CLAUDE_PLUGIN_ROOT}/templates/WORKFLOW.md` into
 values from step 1. Replace the "this is the bundled master" banner at the top
 with a version stamp — `<!-- protocol-master: vX.Y.Z -->`, where X.Y.Z is the
 plugin version from `${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json` —
-`/agentic-workflow:check` uses it to detect protocol drift. Keep the empty **Local
+`/agentic-workflow:check` uses it to detect protocol drift. Write the **Tune
+preset** row as `<name> (applied YYYY-MM-DD)` — unanswered →
+`balanced (default, applied YYYY-MM-DD)`; readers take the first token as the
+name — and apply it per `/agentic-workflow:tune preset <name>` (`balanced`
+writes no files). Keep the empty **Local
 amendments** section at the end. This project-local copy now wins over the
 bundled one.
 
