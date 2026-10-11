@@ -170,7 +170,10 @@ green.
 
 - Fired rows: tick `[x]` and append `· fired YYYY-MM-DD (<evidence>)` — the
   real date (`date +%F`), with the merge/condition proof and the ladder rung
-  in the evidence. Rows are **never deleted**.
+  in the evidence. Rows are **never deleted**. One line per row:
+  `node ${CLAUDE_PLUGIN_ROOT}/tools/ledger.mjs <mission> fire "<row-prefix>"
+  "<evidence>"` (`promote "<row-prefix>"` for a deferral, `close` for the
+  stamp — each refuses an ambiguous row rather than guessing, #132).
 - Rows that could not fire stay `[ ]`, untouched.
 - End the output with the **surface list**: every `probe: manual` row, every
   failed or ambiguous probe, every unratified `Assumed` decision (step 2b), and

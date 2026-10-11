@@ -58,7 +58,10 @@ builder's `deviation` stop lands here as `Assumed <date> — owes <decision>;
 built on <assumption>; authorized by <who>`, mirrored as one line in the
 ledger's Open questions, and stays until ratification **edits that line in
 place** to `ratified <date>` (`/agentic-workflow:settle` surfaces it until then; it
-never blocks a merge)._
+never blocks a merge). A lock that names a command line or flag set is valid
+only when the spike/counsel transcript shows that exact invocation succeeding
+end to end — cite the line; what the spike did not run is `Assumed`, not
+locked (#130)._
 
 - _YYYY-MM-DD — the decision, stated so a fresh agent needs no more context._
 - _Assumed YYYY-MM-DD — owes <decision>; built on <assumption>; authorized by <who>._

@@ -38,6 +38,7 @@ const PLUGIN = path.join(ROOT, 'plugins/agentic-workflow');
 const ADAPTER = path.join(PLUGIN, 'tools/run-codex.mjs');
 const SCHEMA = path.join(PLUGIN, 'templates/distillate.schema.json');
 const RULES = path.join(PLUGIN, 'templates/codex.rules');
+const { WRAPPER_RULES, WRAPPERS } = await import(path.join(PLUGIN, 'tools/shell-wrappers.mjs'));
 
 let passed = 0;
 const fails = [];
@@ -274,6 +275,20 @@ function rulesGroup() {
   const covered = new Set(rules.flatMap((r) => r.covers));
   ok('every guarded command family has a rule', FAMILIES.every((f) => covered.has(f)),
     FAMILIES.filter((f) => !covered.has(f)).join(', '));
+
+  // #129 (2026-10-11): the wrapper class is declared ONCE in tools/shell-wrappers.mjs.
+  // Forward: every entry with a codex form is covered here; every exemption carries
+  // its reason there. Reverse: every wrapper this file covers is declared there with
+  // that exact form — so neither list can gain or lose a member silently.
+  for (const w of WRAPPER_RULES) {
+    if (w.codex) ok(`shared denylist: "${w.name}" → a rule covers \`${w.codex.join(' ')}\``, covered.has(w.codex.join(' ')));
+    else ok(`shared denylist: "${w.name}" exempt from codex.rules WITH a recorded reason`, typeof w.why === 'string' && w.why.length > 20, w.why);
+  }
+  const codexForms = new Set(WRAPPER_RULES.filter((w) => w.codex).map((w) => w.codex.join(' ')));
+  for (const c of covered) {
+    if (!WRAPPERS.has(c.split(' ')[0])) continue;
+    ok(`codex.rules covers "${c}" is declared in shell-wrappers.mjs with that form`, codexForms.has(c));
+  }
 
   for (const r of rules) {
     const label = r.covers.join(' / ') || r.pattern.replace(/\s+/g, ' ').slice(0, 40);

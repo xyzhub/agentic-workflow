@@ -29,10 +29,17 @@
 #         of those markers (work above it is genuinely in progress → not its
 #         turn). Rows carrying a marker are parked, not unfinished, so (iii)
 #         steps over them; that is what makes (i)'s "keep scanning" reachable.
+#   (iv)  (2026-10-11, #131) the row's own `when:` names ANOTHER checklist row
+#         as its gate — `when: checkpoint p2 APPROVED`, `when: S2 merged`,
+#         `when: \`ckpt-p1\` [x]` — and that row is not yet `[x]`. The beat is
+#         gated, not forgotten, so SKIP it and keep scanning (like (i)). A gate
+#         id that matches no row leaves the old behavior (nudge). Observed
+#         defect: five consecutive stops nudging `docs/record synced … — when:
+#         checkpoint p2 APPROVED` while the checkpoint was still in review.
 # (ii) and (iii) look only UPWARD, so once either fires no later candidate can be
-# due either and the scan stops. Only (i) advances to the next candidate.
-# This is the one place prose is read, and only for these blocking markers —
-# every other decision stays glyph-only.
+# due either and the scan stops. Only (i) and (iv) advance to the next candidate.
+# This is the one place prose is read, and only for these blocking markers and
+# the `when:` gate — every other decision stays glyph-only.
 #
 # 2026-08-03 (S5b) — this scan replaced a `head -1`: the enforcer used to evaluate
 # ONLY the first [ ] candidate, so a single HELD checkpoint above an open one
@@ -89,6 +96,23 @@ while IFS= read -r HIT; do
   case "$ROW" in
     *HELD*|*⛔*|*"HARD PAUSE"*) continue ;;
   esac
+
+  # (iv) the row is gated on another row's state (`when: <id> APPROVED|merged|[x]`).
+  # Fold the row's wrapped continuation lines first — a Closing row's `when:`
+  # often sits on a continuation line.
+  ROWFULL=$(awk -v s="$BEAT_LINE" 'NR==s{printf "%s",$0; next} NR>s{ if ($0 ~ /^[ \t]+[^ \t]/) printf " %s",$0; else exit }' "$LEDGER" | tr '[:upper:]' '[:lower:]')
+  GATE_ID=$(printf '%s' "$ROWFULL" | sed -nE 's/.*when: *`?(checkpoint|ckpt)?[ `-]*([a-z0-9][a-z0-9_-]*)`? *(approved|merged|\[x\]).*/\2/p')
+  if [ -n "$GATE_ID" ]; then
+    # The gate row is any OTHER checklist row whose HEAD (text before the first
+    # ` — ` / `(`) names the id, e.g. `- [~] Checkpoint p2 — …` or `- [x] S2 — …`.
+    GATE_GLYPH=$(awk -v id="$GATE_ID" -v self="$BEAT_LINE" '
+      NR != self && /^- \[/ {
+        head = tolower($0); sub(/ — .*/, "", head); sub(/\(.*/, "", head); gsub(/`/, "", head)
+        sub(/^- \[.\] */, "", head)
+        if (match(head, "(^|[^a-z0-9_])(checkpoint |ckpt[- ])?" id "([^a-z0-9_-]|$)")) { print substr($0, 4, 1); exit }
+      }' "$LEDGER")
+    if [ -n "$GATE_GLYPH" ] && [ "$GATE_GLYPH" != x ]; then continue; fi
+  fi
 
   # Checklist rows ABOVE this candidate.
   ABOVE=$(head -n "$((BEAT_LINE - 1))" "$LEDGER" | grep -E '^- \[')

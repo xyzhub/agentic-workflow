@@ -37,14 +37,24 @@ acceptance criteria numbered `AC-N` (stable for the mission's life). A
 its source kind and where (columns and kinds per the template); lift the
 architect memos' "Values this decision settles" bullets in as `locked decision`
 rows; a `none — no values produced` row when nothing applies. **Locked
-decisions** as dated entries. Risks. Open questions, each with a recommended
+decisions** as dated entries — and a lock that names a command line or flag set
+is valid **only when the spike or counsel transcript shows that exact
+invocation succeeding end to end** (cite the line); anything the spike did not
+run is recorded as `Assumed <date> — …`, never as a lock (#130: a locked
+`claude -p --agent` the spike never ran with `--tools` cost a mid-brief
+transport switch). Risks. Open questions, each with a recommended
 option — these go to the human before execution.
 
 **`.plans/<mission>.sessions.md` — session briefs.** A protocol pointer (link the
 project's `docs/WORKFLOW.md` §5, don't restate it), the large-files table,
 and one brief per session: an `ACs:` line naming the AC ids it satisfies (every
 id cited by at least one brief — the plan-judge REVISEs an orphan), the **exact
-reads with line counts and anchors**, the do/verify steps, and a read budget. An optional per-brief header field `runtime:
+reads with line counts and anchors**, the do/verify steps, and a read budget.
+A brief that touches a **permission gate** (an allowlist, an execpolicy rule, a
+hook that refuses a command) carries a `Prior art:` line naming the rule file
+that already encodes the same class (`tools/shell-wrappers.mjs`,
+`templates/codex.rules`, `hooks/hooks.json`) so the builder extends it instead
+of re-deriving it (#129). An optional per-brief header field `runtime:
 codex[:<model>] [effort=<low|medium|high>]` names a foreign runtime for that
 brief's role — set it **only** when the mission's tune table already puts that
 role on codex or the owner asked; omit it and the role runs on `claude` (the

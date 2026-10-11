@@ -190,6 +190,77 @@ prefix_rule(
     justification = "`timeout 5 git push` runs an arbitrary command after its duration argument, past the matched prefix. The adapter bounds runtime itself; a delegated run never needs `timeout` to wrap another command.",
 )
 
+# 2026-10-11 (#129): the wrapper class below is declared ONCE in
+# tools/shell-wrappers.mjs; tools/run-codex-test.mjs cross-checks that every
+# entry with a codex form has a `# covers:` line here and that every exemption
+# (zsh, source, `.`, find -exec) carries its reason there. The inline-code
+# flags of the interpreters are the bypass (`node -e "execSync('git push')"`);
+# `node tools/lint.mjs` and `python3 script.py` stay allowed.
+# covers: dash -c, ksh -c, fish -c
+# match: dash -c git push
+# match: ksh -c 'gh pr merge 1'
+# match: fish -c git push
+# not_match: dash script.sh
+# not_match: ls -la
+prefix_rule(
+    pattern = [["dash", "ksh", "fish"], "-c"],
+    decision = "forbidden",
+    justification = "Same bypass as `sh -c`: any shell's `-c` form puts the real command inside a string argument no prefix token can inspect. A delegated run already has a shell; it never needs to wrap one to reach a plain command.",
+)
+
+# covers: eval, exec
+# match: eval git push
+# match: exec gh pr merge 1
+# not_match: ls -la
+# not_match: node tools/lint.mjs
+prefix_rule(
+    pattern = [["eval", "exec"]],
+    decision = "forbidden",
+    justification = "`eval git push` re-parses its arguments as a command and `exec git push` replaces the shell with one; both move the real executable past the matched prefix. A delegated run never needs either builtin to reach a plain command.",
+)
+
+# covers: sudo
+# match: sudo git push
+# match: sudo -u root gh pr merge 1
+# not_match: ls -la
+# not_match: node tools/lint.mjs
+prefix_rule(
+    pattern = ["sudo"],
+    decision = "forbidden",
+    justification = "`sudo <cmd>` runs an arbitrary command past the matched prefix, with privileges a delegated run must never hold. The sandbox is unprivileged by design; nothing a brief asks for needs root.",
+)
+
+# covers: node -e
+# match: node -e process.exit()
+# match: node -e require('child_process')
+# not_match: node tools/lint.mjs
+# not_match: node --version
+prefix_rule(
+    pattern = ["node", "-e"],
+    decision = "forbidden",
+    justification = "`node -e \"require('child_process').execSync('git push')\"` runs any command from inline code no prefix rule can read. Running a script file (`node tools/lint.mjs`) stays allowed — the inline-code flag is the bypass, not the interpreter.",
+)
+# covers: python -c, python3 -c
+# match: python3 -c import os
+# match: python -c import os
+# not_match: python3 script.py
+# not_match: python3 --version
+prefix_rule(
+    pattern = [["python", "python3"], "-c"],
+    decision = "forbidden",
+    justification = "`python3 -c \"import os; os.system('git push')\"` runs any command from inline code no prefix rule can read. Running a script file (`python3 script.py`) stays allowed — the inline-code flag is the bypass, not the interpreter.",
+)
+# covers: perl -e, ruby -e
+# match: perl -e system(1)
+# match: ruby -e system(1)
+# not_match: perl script.pl
+# not_match: ruby script.rb
+prefix_rule(
+    pattern = [["perl", "ruby"], "-e"],
+    decision = "forbidden",
+    justification = "`perl -e 'system(\"git push\")'` / `ruby -e` run any command from inline code no prefix rule can read. Running a script file stays allowed — the inline-code flag is the bypass, not the interpreter.",
+)
+
 # ── 5. git global options before the subcommand push it past rule 1 ─────────
 # The space form is blocked; the equals form (`--git-dir=/x`) is a documented
 # residue literal tokens cannot close (see the header). `-c` also sets config

@@ -8,6 +8,51 @@ has no tags — each version-stamped commit on `main` IS the release.
 
 _(empty)_
 
+## [1.59.0] — 2026-10-11
+### Added — retro fixes from tune-presets (#129–#134, one PR)
+- **`tools/ledger.mjs` — one-line ledger beats (#132).** `mark`, `fire`,
+  `promote`, `handoff`, `next-up`, `sessions`, `close` (+ `--commit`, `--no-push`,
+  `--date`, `--plans`) replace the hand-written heredoc + commit + push the
+  orchestrator ran eight times per mission. A verb refuses an ambiguous row
+  (exit 2, candidates listed) instead of guessing; `fire`/`promote` look inside
+  `## Closing` only; `promote` lands the verbatim copy in `.plans/OBLIGATIONS.md`
+  as the next `OB-<n>`; `close` refuses over an open row. A refusal leaves the
+  file byte-identical. Harness `tools/ledger-test.mjs` (37 cases), wired into
+  lint as check 10.10; `mission.md` rules 5/§5 and `settle.md` §4 point at the verbs.
+- **`tools/shell-wrappers.mjs` — the one shell-wrapper denylist (#129).**
+  Shells, launchers and interpreters are declared once; `run-claude.mjs`
+  `isBareBash` re-exports it, `lint.mjs` imports it, and `run-codex-test.mjs`
+  cross-checks `templates/codex.rules` both ways (every wrapper with a codex
+  form is covered; every exemption — `zsh`, `source`, `.`, `find -exec` —
+  carries its reason). Quoting hardening: quotes/backslashes are stripped
+  before the first token is read and a first token carrying a shell
+  metacharacter (`git;sh`, `$(sh)`, `FOO=bar`) is refused — `Bash("sh" -c:*)`,
+  `Bash(s\h:*)` no longer pass (the checkpoint-p2 advisory residual).
+- **`templates/codex.rules`** gains the wrappers the shared list showed missing:
+  `dash|ksh|fish -c`, `eval`, `exec`, `sudo`, `node -e`, `python|python3 -c`,
+  `perl|ruby -e` — inline-code flags only, so `node tools/lint.mjs` stays
+  allowed. Every example verified through `codex execpolicy check` (harness 252).
+### Changed
+- **Beat-enforcer Stop hook is condition-aware (#131).** A `[ ]` row whose
+  `when:` names another checklist row (`when: checkpoint p2 APPROVED`,
+  `when: S2 merged`, `` when: `ckpt-p1` [x] ``) is skipped until that row is
+  `[x]`; an id matching no row keeps the old nudge. Five harness cases; the
+  five-consecutive-stops nag on `docs/record synced` is the reproduction.
+- **No between-phase status-page republish (#133).** `mission.md` §4 and the
+  WORKFLOW §6.1 "When": the chronicler runs once at mission close and the main
+  session republishes then; between phases the ledger, PR body and owner report
+  carry the state. Republish earlier only with no owner channel AND a mission
+  spanning more than a day.
+- **Locks are what the spike ran (#130).** Planner, plan template and plan-judge:
+  a locked decision naming a command line or flag set must cite the spike line
+  where that exact invocation succeeded end to end; otherwise it is `Assumed`.
+  Plan-judge gains the check, plus "permission-gate briefs name their prior art"
+  (`Prior art:` brief field, #129).
+- **§10 row `Background commit review` (#134, this repo's profile):** the
+  review's `claude -p` child must inherit the claude.ai login — `ANTHROPIC_API_KEY`
+  is not set in any shell/app environment that launches Claude Code; probe
+  `claude auth status` → `claude.ai`.
+
 ## [1.58.0] — 2026-10-11
 ### Added — tune presets (phase 2 of tune-presets: runtime)
 - **`tools/run-claude.mjs` — the `claude-p` runtime (AC-6).** Runs one role as a

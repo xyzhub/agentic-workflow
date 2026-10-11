@@ -7,7 +7,7 @@ import { readFileSync, readdirSync, existsSync, realpathSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { isBareBash } from '../plugins/agentic-workflow/tools/run-claude.mjs';
+import { isBareBash } from '../plugins/agentic-workflow/tools/shell-wrappers.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const PLUGIN = path.join(ROOT, 'plugins/agentic-workflow');
@@ -509,6 +509,25 @@ function checkRunClaudeHarness() {
     const detail = `${res.stdout ?? ''}${res.stderr ?? ''}`
       .split('\n').filter((l) => /FAIL|failure|Error/.test(l)).join(' | ');
     fail(runner, null, `run-claude harness failed — run \`node tools/run-claude-test.mjs\`: ${detail || '(no detail)'}`);
+  }
+}
+
+// ── 10.10 ledger verbs harness (tier-1.5, #132) ──────────────────────────
+// `tools/ledger.mjs` writes the mission ledger and the obligations register
+// for the orchestrator; a verb that matched the wrong row or wrote a row the
+// Closing grammar rejects would corrupt the one file a fresh agent resumes
+// from. The harness runs every verb and every refusal against a fixture.
+function checkLedgerHarness() {
+  const runner = path.join(ROOT, 'tools/ledger-test.mjs');
+  if (!existsSync(runner)) {
+    fail(runner, null, 'ledger harness missing — tools/ledger-test.mjs must exist so the gate proves the ledger verbs write grammar-valid rows and refuse ambiguity (do not silently drop the check)');
+    return;
+  }
+  const res = spawnSync('node', [runner], { encoding: 'utf8' });
+  if (res.status !== 0) {
+    const detail = `${res.stdout ?? ''}${res.stderr ?? ''}`
+      .split('\n').filter((l) => /FAIL|failure|Error/.test(l)).join(' | ');
+    fail(runner, null, `ledger harness failed — run \`node tools/ledger-test.mjs\`: ${detail || '(no detail)'}`);
   }
 }
 
@@ -1182,7 +1201,7 @@ const isEntryPoint = () => {
 };
 
 if (isEntryPoint()) {
-  for (const check of [checkManifests, checkAgents, checkCommands, checkCrossRefs, checkTemplateRefs, checkPluginRootBraced, checkSections, checkFrontmatterYaml, checkTemplateFrontmatter, checkHooks, checkObfuscation, checkHookBehavior, checkClockGuard, checkMarkerMutation, checkContextAttrib, checkCatalogSelftest, checkCiWaitSelftest, checkPublishGateSelftest, checkRunCodexHarness, checkRunClaudeHarness, checkAgentsRegistryHarness, checkStandingSteers, checkNextUpAgreement, checkClosing, checkObligationsRegister, checkBudgets, checkRuleDedup, checkTunePresets]) {
+  for (const check of [checkManifests, checkAgents, checkCommands, checkCrossRefs, checkTemplateRefs, checkPluginRootBraced, checkSections, checkFrontmatterYaml, checkTemplateFrontmatter, checkHooks, checkObfuscation, checkHookBehavior, checkClockGuard, checkMarkerMutation, checkContextAttrib, checkCatalogSelftest, checkCiWaitSelftest, checkPublishGateSelftest, checkRunCodexHarness, checkRunClaudeHarness, checkLedgerHarness, checkAgentsRegistryHarness, checkStandingSteers, checkNextUpAgreement, checkClosing, checkObligationsRegister, checkBudgets, checkRuleDedup, checkTunePresets]) {
     check();
   }
 
