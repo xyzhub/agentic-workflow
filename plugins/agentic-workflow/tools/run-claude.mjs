@@ -26,9 +26,11 @@
 // Isolation (locked, D4): CLAUDECODE / CLAUDE_CODE_ENTRYPOINT are stripped
 // from the child env; AGENTIC_WORKFLOW_CHILD=1 silences the plugin's prompt
 // hooks and beat-enforcers inside the child; --strict-mcp-config keeps the
-// owner's MCP servers out; --permission-mode acceptEdits + --permission-prompts
-// none + an explicit --tools/--allowedTools pair is the whole permission
-// surface. This file must NEVER pass --bare (it skips .claude/agents/ and the
+// owner's MCP servers out; --restricted confines the file tools to --cwd and
+// ignores user/project/local settings (so no settings-borne hook or allow rule
+// leaks in — witnessed at AC-9: a Write outside --cwd was denied, one inside
+// landed); --permission-mode acceptEdits + --permission-prompts none + an
+// explicit --tools/--allowedTools pair is the whole permission surface. This file must NEVER pass --bare (it skips .claude/agents/ and the
 // subscription login) or bypassPermissions — main() refuses if either appears.
 
 import {
@@ -233,6 +235,7 @@ export function buildArgv({ systemPromptFile, r, schemaText, prompt, resume = nu
     '--effort', r.effort,
     '--permission-mode', 'acceptEdits',
     '--permission-prompts', 'none',
+    '--restricted',
     '--tools', baseTools(r.allowed).join(','),
     '--allowedTools', r.allowed.join(','),
     '--strict-mcp-config',
@@ -346,6 +349,7 @@ export function main(argv = process.argv.slice(2), env = process.env) {
   writeFileSync(systemPromptFile, stripFrontmatter(readFileSync(rf, 'utf8')));
   const args = buildArgv({ systemPromptFile, r, schemaText, prompt, resume: o.resume || null });
   if (args.some((a) => FORBIDDEN.includes(a))) {
+    rmSync(tmp, { recursive: true, force: true });
     console.error(`run-claude: refusing to run — ${FORBIDDEN.join(' / ')} must never be passed`);
     return 1;
   }

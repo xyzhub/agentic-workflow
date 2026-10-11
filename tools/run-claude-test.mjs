@@ -179,6 +179,7 @@ const base = runAdapter(LEAN, { repo });
   ok('--permission-mode acceptEdits', flagVal(a, '--permission-mode') === 'acceptEdits');
   ok('--permission-prompts none', flagVal(a, '--permission-prompts') === 'none');
   ok('--strict-mcp-config present', a.includes('--strict-mcp-config'));
+  ok('--restricted present (file tools confined to --cwd; user/project settings + their hooks ignored)', a.includes('--restricted'));
   ok('--output-format stream-json + --verbose', flagVal(a, '--output-format') === 'stream-json' && a.includes('--verbose'));
   let schemaOk = false;
   try { schemaOk = JSON.parse(flagVal(a, '--json-schema')).title === SCHEMA.title; } catch { /* no */ }
