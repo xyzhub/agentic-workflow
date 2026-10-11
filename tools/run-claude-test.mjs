@@ -265,6 +265,12 @@ group('bare Bash refusal (exit 3, nothing spawned)');
 for (const [label, args] of [
   ['--allowed-tools Read,Bash', ['--role', 'chronicler', '--brief', 'x', '--model', 'claude-haiku-5-5', '--allowed-tools', 'Read,Bash']],
   ['--allowed-tools Bash(*)', ['--role', 'chronicler', '--brief', 'x', '--model', 'claude-haiku-5-5', '--allowed-tools', 'Read,Bash(*)']],
+  ['--allowed-tools Bash(:*)', ['--role', 'chronicler', '--brief', 'x', '--model', 'claude-haiku-5-5', '--allowed-tools', 'Read,Bash(:*)']],
+  ['--allowed-tools Bash(* *)', ['--role', 'chronicler', '--brief', 'x', '--model', 'claude-haiku-5-5', '--allowed-tools', 'Read,Bash(* *)']],
+  ['--allowed-tools Bash(*:*)', ['--role', 'chronicler', '--brief', 'x', '--model', 'claude-haiku-5-5', '--allowed-tools', 'Bash(*:*)']],
+  ['--allowed-tools Bash()', ['--role', 'chronicler', '--brief', 'x', '--model', 'claude-haiku-5-5', '--allowed-tools', 'Bash()']],
+  ['--allowed-tools "Read Bash" (space-separated)', ['--role', 'chronicler', '--brief', 'x', '--model', 'claude-haiku-5-5', '--allowed-tools', 'Read Bash']],
+  ['--allowed-tools bash (lowercase)', ['--role', 'chronicler', '--brief', 'x', '--model', 'claude-haiku-5-5', '--allowed-tools', 'Read,bash']],
   ['role tools: with bare Bash and no allowlist', ['--role', 'chronicler', '--brief', 'x', '--model', 'claude-haiku-5-5']],
 ]) {
   const r = runAdapter(args, { repo });
@@ -272,6 +278,10 @@ for (const [label, args] of [
     r.status === 3 && r.record === null && r.out.status === 'blocked' && /bare/.test(r.out.blocked_reason) && validate(r.out, SCHEMA).length === 0,
     `exit ${r.status} ${JSON.stringify(r.out)}`);
 }
+
+ok('isBareBash is semantic: empty or glob-first command parts are bare; literal-first rules are scoped',
+  ['Bash', 'Bash()', 'Bash(*)', 'Bash(:*)', 'Bash(* *)', 'Bash(*:*)', 'Bash( * )', 'Bash(?it *)', 'bash'].every(mod.isBareBash)
+  && !['Bash(git log:*)', 'Bash(gh pr list:*)', 'Read', 'Grep'].some(mod.isBareBash));
 
 group('EXIT map');
 {
@@ -302,6 +312,12 @@ group('EXIT map');
   ok('changed_paths + high_impact_touched come from the tree', JSON.stringify(tree.out.changed_paths) === '["CHANGELOG.md"]'
     && JSON.stringify(tree.out.high_impact_touched) === '["CHANGELOG.md"]', JSON.stringify(tree.out.changed_paths));
   git(repo, 'checkout', '--', 'CHANGELOG.md');
+  writeFileSync(path.join(repo, '.gitignore'), '*.log\n');
+  git(repo, 'add', '.gitignore');
+  git(repo, '-c', 'user.email=t@t', '-c', 'user.name=t', '-c', 'commit.gpgsign=false', 'commit', '-q', '--no-verify', '-m', 'ignore');
+  const ign = runAdapter(LEAN, { repo, spec: { writes: { 'secret.log': 'x' } } });
+  ok('a NEW git-ignored write is reported as a deviation (changed_paths cannot see it)',
+    ign.out.deviations.some((x) => /wrote git-ignored secret\.log/.test(x)) && ign.out.changed_paths.length === 0, JSON.stringify(ign.out.deviations));
 }
 
 group('CLAUDE_BIN beats PATH');

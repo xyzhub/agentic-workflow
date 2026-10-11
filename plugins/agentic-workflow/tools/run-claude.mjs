@@ -113,7 +113,9 @@ export function parseArgs(argv) {
   return o;
 }
 
-// Split a tool list on commas that are not inside parentheses.
+// Split a tool list on commas AND whitespace outside parentheses — claude
+// reads --allowedTools as "comma or space-separated", so `Read Bash` is two
+// rules (one of them bare), never one.
 export function splitTools(list) {
   const out = [];
   let depth = 0;
@@ -121,7 +123,7 @@ export function splitTools(list) {
   for (const ch of String(list)) {
     if (ch === '(') depth++;
     if (ch === ')') depth = Math.max(0, depth - 1);
-    if (ch === ',' && depth === 0) { out.push(cur); cur = ''; continue; }
+    if ((ch === ',' || /\s/.test(ch)) && depth === 0) { out.push(cur); cur = ''; continue; }
     cur += ch;
   }
   out.push(cur);
@@ -129,8 +131,19 @@ export function splitTools(list) {
 }
 
 // An unscoped Bash rule lets the child run anything (commit, push on a feature
-// branch). Refused, never narrowed silently.
-export const isBareBash = (t) => /^Bash(\(\s*(\*|:\*)?\s*\))?$/.test(t.trim());
+// branch). Refused, never narrowed silently. Semantic, not a string match: any
+// Bash rule whose command part is empty, or whose FIRST token is a glob
+// (`Bash(*)`, `Bash(:*)`, `Bash(* *)`, `Bash(*:*)`, `Bash(?x *)`), matches
+// every command and is as bare as `Bash`. A scoped rule names its command
+// literally first: `Bash(git log:*)`. Case-insensitive on the tool name.
+export function isBareBash(t) {
+  const m = String(t).trim().match(/^bash\s*(?:\(([\s\S]*)\))?$/i);
+  if (!m) return false;
+  const cmd = (m[1] ?? '').trim();
+  if (!cmd) return true;
+  const first = cmd.split(/[\s:]+/)[0];
+  return first === '' || /[*?[\]{}]/.test(first);
+}
 
 // ── resolution: flags > preset row > role file > defaults ─────────────────
 export function presetRow(name, role, presetsPath = PRESETS_PATH) {
@@ -239,6 +252,18 @@ export const FORBIDDEN = ['--bare', 'bypassPermissions', '--dangerously-skip-per
 
 export const resolveBin = (env = process.env) => env.CLAUDE_BIN || 'claude';
 
+// Git-ignored entries (`!!` lines; ignored directories stay collapsed, so this
+// is cheap). changed_paths cannot see an ignored write, so a NEW ignored entry
+// is reported as a deviation for a human to read. Accepted residue: a write
+// inside an already-ignored directory is not seen. Writes outside --cwd are not
+// in the tree at all — acceptEdits auto-approves edits only inside the working
+// directory, and --permission-prompts none denies the rest.
+export function ignoredSnapshot(cwd) {
+  const r = spawnSync('git', ['status', '--porcelain', '--ignored'], { cwd, encoding: 'utf8' });
+  if (r.status !== 0) return new Set();
+  return new Set((r.stdout || '').split('\n').filter((l) => l.startsWith('!! ')).map((l) => l.slice(3).trim()));
+}
+
 // ── stream-json mining (tolerant: bad lines skipped, never a throw) ────────
 export function parseStream(text) {
   const s = { init: null, result: null, firstPrompt: null, peakPrompt: 0, compacted: false };
@@ -319,6 +344,7 @@ export function main(argv = process.argv.slice(2), env = process.env) {
 
   mkdirSync(path.dirname(path.resolve(o.out)), { recursive: true });
   const before = statusSnapshot(o.cwd);
+  const ignoredBefore = ignoredSnapshot(o.cwd);
   const bin = resolveBin(env);
   const res = spawnSync(bin, args, {
     cwd: o.cwd, env: cenv, encoding: 'utf8', maxBuffer: 256 * 1024 * 1024, stdio: ['ignore', 'pipe', 'pipe'],
@@ -354,7 +380,8 @@ export function main(argv = process.argv.slice(2), env = process.env) {
   const hi = highImpactTouched(paths, highImpactPatterns(o.cwd));
   const modelUsed = (s.result && s.result.modelUsage && Object.keys(s.result.modelUsage)[0]) || r.model;
   const threadId = (s.result && s.result.session_id) || (s.init && s.init.session_id) || o.resume || null;
-  const evidence = [];
+  const evidence = [...ignoredSnapshot(o.cwd)].filter((p) => !ignoredBefore.has(p))
+    .map((p) => `warning: the run wrote git-ignored ${p} — not in changed_paths; review it by hand`);
   if (s.peakPrompt) evidence.push(`peak context ≈ ${s.peakPrompt} tokens (first request ${s.firstPrompt}); window ${r.compactWindow}`);
   if (s.compacted) evidence.push(`budget: compaction fired at ${r.compactWindow}`);
   const denials = (s.result && Array.isArray(s.result.permission_denials)) ? s.result.permission_denials : [];
