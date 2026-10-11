@@ -186,6 +186,14 @@ your one pass is meant to catch it up front.
   the docs or cited sources already answer.
 - **Decisions consistent with the source** — no brief contradicts a locked
   decision or the design memo/issue it derives from.
+- **Every locked argv/flag set has a spike line that ran it** — a lock naming a
+  command line (`claude -p --agent …`, a flag combination) cites the spike or
+  counsel transcript line where that exact invocation succeeded end to end;
+  one with no such line is an `Assumed` decision, not a lock → named fix
+  inside the one REVISE (#130).
+- **Permission-gate briefs name their prior art** — a brief touching an
+  allowlist, an execpolicy rule or a refusing hook carries a `Prior art:` line
+  naming the existing rule file for the same class; missing → named fix (#129).
 - **Size within budget** — the read/write budget is plausible for one session;
   flag an over-full brief to split.
 - **Security-boundary flag set where the Fable tier applies** — a boundary-class

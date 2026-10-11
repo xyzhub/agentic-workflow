@@ -38,6 +38,10 @@ at once._
   anchors this brief touches (e.g. `F-12`, `api.md /api/staff/orders/**`,
   `data-model.md#Payment`) — read these BEFORE the code reads; they are the
   current state (§6.1). `none` only when the brief touches no catalogued anchor._
+- **Prior art**: _only when the brief touches a permission gate (an allowlist,
+  an execpolicy rule, a refusing hook): the rule file that already encodes the
+  class — `tools/shell-wrappers.mjs`, `templates/codex.rules`, `hooks/hooks.json`
+  — so the builder extends it, never re-derives it (#129). Omit otherwise._
 - **Do**: _the smallest change meeting the acceptance criteria for its task(s)._
 - **Verify**: _the gate signal — e.g. `npm test` green (cases X, Y asserted);
   live-verify in a real client if there's a runtime surface (§2); when a route,
