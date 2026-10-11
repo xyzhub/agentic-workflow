@@ -74,12 +74,12 @@ defects; three merges and a gate went unrecorded and a compaction erased them.
 6. **Exactly one `Next up:` line (LA-7)** — keep one, never a second that still
    parses (§5 LA-7).
 7. **Model tiering stays; the reviewer tier keys on RISK CLASS, not diff size**
-   (opus builders; Fable for boundary-class reviews — §5 LA-5). The saving is in
-   *shape* (one-shot, at decision points), not the tier; a two-line boundary
-   diff still gets Fable (orderly #605→#730) — unless the project's
-   `.claude/agents/reviewer.md` carries `boundary_escalation: off` (#91), in
-   which case the tuned reviewer takes boundary diffs and flags a miscalled tier
-   as a process finding.
+   (opus builders; Fable for boundary-class reviews — §5 LA-5; the plan-judge
+   runs on Fable under every preset). The saving is in *shape* (one-shot, at
+   decision points), not the tier; a two-line boundary diff still gets Fable
+   (orderly #605→#730) — unless `.claude/agents/reviewer.md` carries
+   `boundary_escalation: off` (#91): then any non-Fable reviewer tune takes
+   boundary diffs and flags a miscalled tier as a process finding.
 
 ## 1. Plan (if no trio exists)
 
@@ -177,13 +177,14 @@ retry → surface). A `blocked` whose `blocked_reason` starts `deviation:` takes
 step 3's `deviation` route (owner directly, no retry). Treat
 `changed_paths` **empty on a `done` status as suspicious**: mark the row `[~]` and get reviewer confirmation before `[x]`.
 
-**Reviewer tier survives the runtime switch.** A `codex` `reviewer` tune covers
+**Reviewer tier survives the runtime switch and the preset.** Any non-Fable
+`reviewer` tune (a `codex` runtime, a preset's Opus gate) covers
 **ROUTINE checkpoints only**; when the diff is boundary-class (§5 LA-5),
 **including the rules file `.codex/rules/agentic-workflow.rules` and the
 adapter's sandbox-flag derivation**, you **override the tune and spawn the
-Claude `reviewer` on Fable** — unless the project's `.claude/agents/reviewer.md`
-carries `boundary_escalation: off` (#91), in which case the tuned reviewer takes
-the boundary diff and the orchestrator's choice stands. A miscalled tier is a
+Claude `reviewer` on Fable** — unless `.claude/agents/reviewer.md` carries
+`boundary_escalation: off` (#91): then the tuned reviewer takes the boundary
+diff and the orchestrator's choice stands. A miscalled tier is a
 reviewer process finding either way.
 
 ## 3. Checkpoint at each phase end (the only phase end, without `phases`)

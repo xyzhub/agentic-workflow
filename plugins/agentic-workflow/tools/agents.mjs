@@ -48,6 +48,9 @@ const toolsOrNull = (v) => (v ? toList(v) : null);
 
 // The banner every /tune writes (old form has no `(base sha256:…)`).
 const BANNER_RE = /^> Tuned from agentic-workflow v(\S+?)(?: \(base sha256:([0-9a-f]{12})\))? —/m;
+// A preset-authored shadow names its preset in the banner's kind list, after
+// the `—`: `preset:lean override (…)` or composed `preset:lean, model override`.
+const PRESET_RE = /^> Tuned from agentic-workflow v[^\n]*? — [^\n]*?\bpreset:([a-z][a-z0-9-]*)/m;
 
 const frontmatterBlock = (text) => {
   const m = text.match(/^---\n([\s\S]*?)\n---/);
@@ -145,6 +148,7 @@ export function registry(projectDir = process.cwd()) {
         kind: overrideKind(baseText, shadowText),
         base_version: banner ? banner[1] : null,
         base_sha: banner && banner[2] ? banner[2] : null,
+        preset: shadowText.match(PRESET_RE)?.[1] ?? null,
       };
     }
 

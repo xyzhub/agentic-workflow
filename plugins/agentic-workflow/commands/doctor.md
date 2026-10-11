@@ -79,6 +79,15 @@ The profile is load-bearing and written once — verify it still tells the truth
 - **Mission budget fields**: every active `.plans/*.state.md` carries exactly
   one `Next up:` line and an `Estimate:` line; missing/duplicate → 🟡 with the
   ledger named (the mission-budget hook is already saying so each turn).
+- **Preset drift**: a `.claude/agents/` shadow whose banner kind is exactly
+  `preset:<name>` (no per-agent kind composed after it) but whose `effective`
+  (`agents.mjs --json`) ≠ the §10 **Tune preset** row's preset in
+  `templates/tune-presets.json` (the `tune preset show` comparator) → 🟡
+  naming the agent — re-apply `/agentic-workflow:tune preset <name>`.
+- **Preset switch while open**: the §10 row's first token ≠ the `preset:` name
+  on any shadow (or no row while preset shadows exist) AND a `.plans/*.state.md`
+  lacks `Closed:` with `Sessions used:` > 0 → 🔴 "preset switched mid-mission
+  (out of v1): revert or close the mission first". Clean state → no finding.
 - Any `TBD — confirm` leftovers → 🟡 with the row named.
 
 ## 3. Records & plans

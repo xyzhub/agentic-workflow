@@ -152,6 +152,17 @@ async function registryGroup(schema) {
     banner: `> Tuned from agentic-workflow v${version} (base sha256:${sha12(path.join(BASE_DIR, 'designer.md'))}) — tools override. Reset with /tune designer reset.`,
   }).replace(/^tools: .*$/m, 'tools: Read, Grep, Glob'));
 
+  // (i) preset-authored shadow (tune preset lean) on chronicler → preset "lean".
+  writeFileSync(path.join(ad, 'chronicler.md'), shadow('chronicler', {
+    keys: { effort: 'low', runtime: 'claude-p', maxTurns: 24 },
+    banner: `> Tuned from agentic-workflow v${version} (base sha256:${sha12(path.join(BASE_DIR, 'chronicler.md'))}) — preset:lean override (model: claude-haiku-5-5, effort: low, runtime: claude-p, maxTurns: 24). Reset with /tune chronicler reset.`,
+  }).replace(/^model: .*$/m, 'model: claude-haiku-5-5'));
+  // (j) composed: a per-agent model tune after the preset → kind list `preset:lean, model`.
+  writeFileSync(path.join(ad, 'writer.md'), shadow('writer', {
+    keys: { effort: 'low' },
+    banner: `> Tuned from agentic-workflow v${version} (base sha256:${sha12(path.join(BASE_DIR, 'writer.md'))}) — preset:lean, model override (model: claude-opus-5-5, effort: low). Reset with /tune writer reset.`,
+  }).replace(/^model: .*$/m, 'model: claude-opus-5-5'));
+
   // Project-only agents: .claude/agents files that shadow no plugin agent.
   // (e) carries its own phase: ; (f) has none → on-demand.
   writeFileSync(path.join(ad, 'scout.md'),
@@ -191,6 +202,16 @@ async function registryGroup(schema) {
     JSON.stringify(dz.override?.kind) === JSON.stringify(['tools'])
     && JSON.stringify(dz.effective.tools) === JSON.stringify(['Read', 'Grep', 'Glob'])
     && dz.tools.includes('Write'), JSON.stringify(dz));
+
+  const ch = byName.chronicler;
+  ok('(i) a preset banner → override.preset "lean", effective carries the preset row',
+    ch.override?.preset === 'lean' && ch.effective.model === 'claude-haiku-5-5'
+    && ch.effective.runtime === 'claude-p' && ch.effective.effort === 'low', JSON.stringify(ch.override));
+  const wr = byName.writer;
+  ok('(j) a composed `preset:lean, model` banner → preset "lean", kind includes model',
+    wr.override?.preset === 'lean' && wr.override.kind.includes('model'), JSON.stringify(wr.override));
+  ok('a hand tune (no preset: token) → override.preset null',
+    be.override.preset === null && fe.override.preset === null && se.override.preset === null, JSON.stringify(be.override));
 
   ok('every plugin agent carries source "plugin"',
     clean.agents.every((a) => a.source === 'plugin'));

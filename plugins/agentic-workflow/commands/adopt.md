@@ -23,7 +23,11 @@ whatever already exists (idempotent). The **Merge policy** row stays
 `human-only` unless the human explicitly delegates it — never infer
 `agent-may-merge` from the repo. The **Test policy** row is added if absent:
 `configured` when a test gate exists, else `none-yet` (`none-by-design` only
-from an explicit human answer).
+from an explicit human answer). The **Tune preset** row is added if absent
+the same way: ONE question (`balanced` recommended; `rigorous` when payments,
+auth or PII are named), row `<name> (applied YYYY-MM-DD)`, applied per
+`/agentic-workflow:tune preset <name>`; unanswered →
+`balanced (default, applied YYYY-MM-DD)`.
 
 ## 1.5 Portfolio registration (§13) — ALWAYS runs
 

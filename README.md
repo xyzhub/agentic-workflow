@@ -34,7 +34,7 @@ plugins/agentic-workflow/            # the plugin
   hooks/     hooks.json               # guardrails
   skills/    protocol/                # the entry-point skill
   tools/     run-codex.mjs            # run a role on the Codex CLI (second runtime); agents.mjs (machine-readable agent registry), catalog.mjs, ci-wait.mjs, conform.mjs, publish-gate.mjs
-  templates/ WORKFLOW.md, overview.html, idea.md, prd.md, ux-brief.md, architecture.md, interface-contract.md, flight-plan.md, decision-log.md, decision-memo.md, mission-*.md (plan, sessions, state), agents-md.md, agents-registry.schema.json, codex.rules, distillate.schema.json, registry.md, launch-*.md (plan, positioning, landing-page, announcement, content-plan), publish-queue.md, publish-log.md, session-handoff.md, business-*.md (executive-summary, model, pricing)
+  templates/ WORKFLOW.md, overview.html, idea.md, prd.md, ux-brief.md, architecture.md, interface-contract.md, flight-plan.md, decision-log.md, decision-memo.md, mission-*.md (plan, sessions, state), agents-md.md, agents-registry.schema.json, tune-presets.json, codex.rules, distillate.schema.json, registry.md, launch-*.md (plan, positioning, landing-page, announcement, content-plan), publish-queue.md, publish-log.md, session-handoff.md, business-*.md (executive-summary, model, pricing)
   README.md
 ```
 
@@ -46,7 +46,9 @@ changes for a project that never opts in. Since v1.54.0 `/agentic-workflow:tune`
 also carries per-agent effort, tools, skills, the reviewer's boundary-escalation
 and prompt edits — each stamped, with diff/rebase/reset — and
 `tools/agents.mjs --json` prints a machine-readable agent registry; a project
-can run heavy gates across a fleet of remote executors (§10.1). See the
+can run heavy gates across a fleet of remote executors (§10.1). Since v1.57.0
+`/agentic-workflow:tune preset <lean|balanced|rigorous|unattended>` sets every
+agent's tier at once from `templates/tune-presets.json`. See the
 [plugin README](./plugins/agentic-workflow/README.md) for the full description.
 
 ## Development — running the checks
