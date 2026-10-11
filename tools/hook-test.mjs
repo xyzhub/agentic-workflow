@@ -229,6 +229,38 @@ const HARD_PAUSE_NOT_STARTED = ledger(
   '- [x] S2 — build',
   '- [ ] Checkpoint — phase 2 review');
 
+// ── Condition-aware fixtures (2026-10-11, #131) — a `when:` gate on another row ──
+// The exact shape that nudged five stops in a row: the chronicler's Closing row
+// names the checkpoint as its gate while the checkpoint is still in review ([~]).
+const GATED_UNMET = ledger(
+  '- [x] S2 — build',
+  '- [~] Checkpoint p2 — Fable (effort high) reviewer: all harnesses + diff',
+  '## Closing',
+  '- [ ] docs/record synced · added 2026-10-11 (planner, pre-merge) — do: chronicler runs ONCE at mission close — when: checkpoint p2 APPROVED — probe: manual');
+// Same row once the checkpoint is [x] → the chronicler beat IS due → nudge.
+const GATED_MET = ledger(
+  '- [x] S2 — build',
+  '- [x] Checkpoint p2 — Fable (effort high) reviewer: all harnesses + diff',
+  '## Closing',
+  '- [ ] docs/record synced · added 2026-10-11 (planner, pre-merge) — do: chronicler runs ONCE at mission close — when: checkpoint p2 APPROVED — probe: manual');
+// A gate id that matches no row → the old behavior is preserved (nudge).
+const GATED_UNKNOWN = ledger(
+  '- [x] S2 — build',
+  '- [x] Checkpoint p2 — review',
+  '## Closing',
+  '- [ ] docs/record synced · added 2026-10-11 (planner, pre-merge) — do: chronicler — when: checkpoint p9 APPROVED — probe: manual');
+// `when: S2 merged` against a parked S2, backticked id, `[x]` spelling, and the
+// `when:` sitting on a WRAPPED continuation line (how real ledgers fold rows).
+const GATED_MERGED = ledger(
+  '- [~] S2 — build (PR open)',
+  '## Closing',
+  '- [ ] reviewer re-run · added 2026-10-11 (planner, post-merge) — do: one-shot reviewer',
+  '  over the merge commit — when: `S2` merged — probe: manual');
+const GATED_CKPT_X = ledger(
+  '- [ ] Checkpoint `ckpt-p1` — **HELD** — phase 1 review',
+  '## Closing',
+  '- [ ] chronicler sweep · added 2026-10-11 (planner, pre-merge) — do: chronicler — when: `ckpt-p1` [x] — probe: manual');
+
 // ── Stop backstop (fires every turn-end) ─────────────────────────────────
 {
   const r = runHook({ event: 'Stop', desc: STOP, input: { stop_hook_active: false }, ledgers: NOT_STARTED });
@@ -324,6 +356,26 @@ const HARD_PAUSE_NOT_STARTED = ledger(
 {
   const r = runHook({ event: 'Stop', desc: STOP, input: { stop_hook_active: false }, ledgers: HARD_PAUSE_NOT_STARTED });
   check('Stop: unreleased [ ] HARD PAUSE row above → silent', r.code === 0 && !nudged(r), `stdout=${JSON.stringify(r.stdout)}`);
+}
+{
+  const r = runHook({ event: 'Stop', desc: STOP, input: { stop_hook_active: false }, ledgers: GATED_UNMET });
+  check('Stop (#131): [ ] row gated `when: checkpoint p2 APPROVED` while p2 is [~] → silent', r.code === 0 && !nudged(r), `stdout=${JSON.stringify(r.stdout)}`);
+}
+{
+  const r = runHook({ event: 'Stop', desc: STOP, input: { stop_hook_active: false }, ledgers: GATED_MET });
+  check('Stop (#131): same row once p2 is [x] → nudges', r.code === 0 && nudged(r), `stdout=${JSON.stringify(r.stdout)}`);
+}
+{
+  const r = runHook({ event: 'Stop', desc: STOP, input: { stop_hook_active: false }, ledgers: GATED_UNKNOWN });
+  check('Stop (#131): gate id matching no row → old behavior, nudges', r.code === 0 && nudged(r), `stdout=${JSON.stringify(r.stdout)}`);
+}
+{
+  const r = runHook({ event: 'Stop', desc: STOP, input: { stop_hook_active: false }, ledgers: GATED_MERGED });
+  check('Stop (#131): wrapped row `when: `S2` merged` while S2 is [~] → silent', r.code === 0 && !nudged(r), `stdout=${JSON.stringify(r.stdout)}`);
+}
+{
+  const r = runHook({ event: 'Stop', desc: STOP, input: { stop_hook_active: false }, ledgers: GATED_CKPT_X });
+  check('Stop (#131): `when: `ckpt-p1` [x]` while ckpt-p1 is [ ] HELD → silent', r.code === 0 && !nudged(r), `stdout=${JSON.stringify(r.stdout)}`);
 }
 
 // ── mission-budget (D3, UserPromptSubmit) — status line, single Next up:, overrun STOP ──
