@@ -48,7 +48,9 @@ const spec = JSON.parse(fs.readFileSync(process.env.SHIM_SPEC, 'utf8'));
 const keys = ['CLAUDE_CODE_AUTO_COMPACT_WINDOW', 'AGENTIC_WORKFLOW_CHILD', 'CLAUDECODE', 'CLAUDE_CODE_ENTRYPOINT'];
 const env = {};
 for (const k of keys) env[k] = k in process.env ? process.env[k] : null;
-fs.writeFileSync(spec.record, JSON.stringify({ argv, cwd: process.cwd(), env }));
+const si = argv.indexOf('--system-prompt-file');
+const spf = si >= 0 && fs.existsSync(argv[si + 1]) ? fs.readFileSync(argv[si + 1], 'utf8') : null;
+fs.writeFileSync(spec.record, JSON.stringify({ argv, cwd: process.cwd(), env, spf }));
 for (const [rel, content] of Object.entries(spec.writes || {})) {
   fs.mkdirSync(path.dirname(rel), { recursive: true });
   fs.writeFileSync(rel, content);
@@ -167,7 +169,9 @@ const base = runAdapter(LEAN, { repo });
   const a = base.record.argv;
   ok('exit 0 on a done distillate', base.status === 0 && base.out.status === 'done', `exit ${base.status} ${base.stderr}`);
   ok('-p is the first argument', a[0] === '-p');
-  ok('--agent agentic-workflow:chronicler when no project shadow exists', flagVal(a, '--agent') === 'agentic-workflow:chronicler', flagVal(a, '--agent'));
+  ok('no --agent (it drops StructuredOutput on 2.1.296); the plugin chronicler body is the --system-prompt-file when no shadow exists',
+    !a.includes('--agent') && /You are the Chronicler/.test(base.record.spf || '') && !/^---/.test(base.record.spf || ''));
+  ok('the system-prompt temp file is removed after the run', !existsSync(flagVal(a, '--system-prompt-file')));
   ok('--model claude-haiku-5-5 from the preset row', flagVal(a, '--model') === 'claude-haiku-5-5');
   ok('--max-turns 24 from the preset row', flagVal(a, '--max-turns') === '24');
   ok('--autocompact 100000 (the per-process window)', flagVal(a, '--autocompact') === '100000');
@@ -182,8 +186,8 @@ const base = runAdapter(LEAN, { repo });
   ok('--tools = the base names of the allowlist', flagVal(a, '--tools') === 'Read,Write,Edit,Bash,Grep,Glob', flagVal(a, '--tools'));
   ok('--allowedTools carries the scoped Bash rules, no bare Bash',
     flagVal(a, '--allowedTools').includes('Bash(git log:*)') && !mod.splitTools(flagVal(a, '--allowedTools')).some(mod.isBareBash), flagVal(a, '--allowedTools'));
-  ok('flag order pinned: -p --agent --model --max-turns --autocompact --effort --permission-mode',
-    ['-p', '--agent', '--model', '--max-turns', '--autocompact', '--effort', '--permission-mode'].map((f) => a.indexOf(f)).every((v, i, arr) => v >= 0 && (i === 0 || v > arr[i - 1])));
+  ok('flag order pinned: -p --system-prompt-file --model --max-turns --autocompact --effort --permission-mode',
+    ['-p', '--system-prompt-file', '--model', '--max-turns', '--autocompact', '--effort', '--permission-mode'].map((f) => a.indexOf(f)).every((v, i, arr) => v >= 0 && (i === 0 || v > arr[i - 1])));
   const prompt = a[a.length - 1];
   ok('prompt (last arg) carries the S3 section only + a # Budget block naming 500 lines and 24 turns',
     prompt.includes('the brief under test') && !prompt.includes('wrong brief') && /# Budget[\s\S]*500 lines[\s\S]*24 turns/.test(prompt));
@@ -241,7 +245,8 @@ group('resolution');
   mkdirSync(path.join(repo, '.claude/agents'), { recursive: true });
   writeFileSync(path.join(repo, '.claude/agents/chronicler.md'), '---\nname: chronicler\ntools: Read, Write, Edit, Bash, Grep, Glob\nmodel: claude-haiku-5-5\neffort: low\nruntime: claude-p\nmaxTurns: 24\n---\nshadow body\n');
   const r = runAdapter(LEAN, { repo });
-  ok('--agent chronicler when .claude/agents/chronicler.md exists (project shadow wins)', flagVal(r.record.argv, '--agent') === 'chronicler');
+  ok('project shadow wins: .claude/agents/chronicler.md body is the system prompt (frontmatter stripped)',
+    (r.record.spf || '').trim() === 'shadow body' && JSON.parse(r.events.split('\n')[0]).role_file.endsWith('.claude/agents/chronicler.md'));
   rmSync(path.join(repo, '.claude'), { recursive: true, force: true });
   const w = runAdapter([...LEAN, '--max-turns', '40', '--compact-window', '200000', '--model', 'claude-sonnet-5-5'], { repo });
   ok('explicit flags win over the preset row (turns, window on argv AND env, model)',

@@ -31,12 +31,15 @@
 // surface. This file must NEVER pass --bare (it skips .claude/agents/ and the
 // subscription login) or bypassPermissions — main() refuses if either appears.
 
-import { readFileSync, writeFileSync, existsSync, mkdirSync, realpathSync } from 'node:fs';
+import {
+  readFileSync, writeFileSync, existsSync, mkdirSync, mkdtempSync, rmSync, realpathSync,
+} from 'node:fs';
+import { tmpdir } from 'node:os';
 import { spawnSync } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
-  PLUGIN_ROOT, SCHEMA_PATH, briefText, roleFile, frontmatterValue, toolsOf, validate,
+  PLUGIN_ROOT, SCHEMA_PATH, briefText, roleFile, stripFrontmatter, frontmatterValue, toolsOf, validate,
   statusSnapshot, changedPaths, highImpactPatterns, highImpactTouched,
 } from './run-codex.mjs';
 
@@ -54,9 +57,9 @@ const USAGE = `run-claude.mjs — run one workflow role as a child \`claude -p\`
                       [--allowed-tools "<A,B,Bash(git log:*)>"]
                       [--resume <session-id>] [--note "<corrective text>"]
 
-  --role     a role in the plugin's agents/. The child runs \`--agent <role>\`
-             when \`.claude/agents/<role>.md\` exists in --cwd (a tune or preset
-             shadow wins), else \`--agent agentic-workflow:<role>\`.
+  --role     a role in the plugin's agents/. A \`.claude/agents/<role>.md\`
+             shadow in --cwd (tune or preset) wins. Its body becomes the
+             child's --system-prompt-file (not --agent — see below).
   --brief    \`<file>#<anchor>\` pulls that heading's section out of the plan
              file (relative to --cwd). A value that is not an existing file is
              used as the brief text itself.
@@ -184,9 +187,12 @@ export function resolveRun(o, roleText, presetsPath = PRESETS_PATH) {
 // keeps the scoped rules (what runs without a prompt). Both derive from one list.
 export const baseTools = (allowed) => [...new Set(allowed.map((t) => t.replace(/\(.*$/, '').trim()))];
 
-// A project shadow (tune or preset) outranks the plugin agent.
-export const agentName = (role, cwd) =>
-  (existsSync(path.join(cwd, '.claude/agents', `${role}.md`)) ? role : `agentic-workflow:${role}`);
+// Transport (memos §D4 fallback, applied at AC-9 2026-10-11): NOT `--agent`.
+// On claude 2.1.296 a `-p --agent <role>` session takes the agent file's
+// `tools:` as its whole tool set — it overrides --tools AND drops the
+// StructuredOutput tool --json-schema needs, so no distillate comes back.
+// The role body (roleFile(): project shadow wins, else the plugin's agent) is
+// passed as --system-prompt-file; --tools/--model carry what --agent did.
 
 // ── prompt ─────────────────────────────────────────────────────────────────
 export const CONTRACT = `Your result is captured as structured output that must validate against the
@@ -216,11 +222,11 @@ export function buildPrompt(o, r) {
 }
 
 // ── argv + env ─────────────────────────────────────────────────────────────
-export function buildArgv({ agent, r, schemaText, prompt, resume = null }) {
+export function buildArgv({ systemPromptFile, r, schemaText, prompt, resume = null }) {
   const a = ['-p'];
   if (resume) a.push('--resume', resume);
   a.push(
-    '--agent', agent,
+    '--system-prompt-file', systemPromptFile,
     '--model', r.model,
     '--max-turns', String(r.maxTurns),
     '--autocompact', String(r.compactWindow),
@@ -335,7 +341,10 @@ export function main(argv = process.argv.slice(2), env = process.env) {
 
   const prompt = buildPrompt(o, r);
   const schemaText = JSON.stringify(JSON.parse(readFileSync(SCHEMA_PATH, 'utf8')));
-  const args = buildArgv({ agent: agentName(o.role, o.cwd), r, schemaText, prompt, resume: o.resume || null });
+  const tmp = mkdtempSync(path.join(tmpdir(), 'run-claude-'));
+  const systemPromptFile = path.join(tmp, `${o.role}.md`);
+  writeFileSync(systemPromptFile, stripFrontmatter(readFileSync(rf, 'utf8')));
+  const args = buildArgv({ systemPromptFile, r, schemaText, prompt, resume: o.resume || null });
   if (args.some((a) => FORBIDDEN.includes(a))) {
     console.error(`run-claude: refusing to run — ${FORBIDDEN.join(' / ')} must never be passed`);
     return 1;
@@ -349,6 +358,7 @@ export function main(argv = process.argv.slice(2), env = process.env) {
   const res = spawnSync(bin, args, {
     cwd: o.cwd, env: cenv, encoding: 'utf8', maxBuffer: 256 * 1024 * 1024, stdio: ['ignore', 'pipe', 'pipe'],
   });
+  rmSync(tmp, { recursive: true, force: true });
   const events = res.stdout || '';
   const stderr = res.stderr || '';
   if (stderr) process.stderr.write(stderr);
@@ -358,6 +368,7 @@ export function main(argv = process.argv.slice(2), env = process.env) {
   const record = {
     type: 'adapter',
     bin,
+    role_file: rf,
     argv: args.slice(0, -1).map((a) => (a === schemaText ? '<distillate.schema.json>' : a)).concat('<prompt>'),
     child_env: { CLAUDE_CODE_AUTO_COMPACT_WINDOW: cenv.CLAUDE_CODE_AUTO_COMPACT_WINDOW, AGENTIC_WORKFLOW_CHILD: cenv.AGENTIC_WORKFLOW_CHILD, CLAUDECODE: cenv.CLAUDECODE ?? null, CLAUDE_CODE_ENTRYPOINT: cenv.CLAUDE_CODE_ENTRYPOINT ?? null },
     parent_window: parentWindow ?? null,
