@@ -12,7 +12,7 @@ fresh agent resumes the mission from this file alone. Write-ahead — update it
 (§12 LA-6). Deploys to `.plans/builder-done-rules.state.md`._
 
 Estimate: 4 sessions
-Sessions used: 0
+Sessions used: 1
 
 _Budget lines read by the mission-budget hook every turn; the overrun STOP and
 its scope decision are §5 LA-1. `Estimate:` rises only as a dated locked
@@ -28,8 +28,8 @@ decision point, §12 LA-5.)
 
 ## Checklist
 
-- [ ] S1 — budgets + dedup detector + description trims + pointer swaps (branch `mission/builder-done-rules-p1`, `devops`; AC-12, AC-13, AC-14, AC-15a)
-- [ ] Checkpoint p1 — Fable reviewer: harnesses + diff `main..p1` + per-AC verdict AC-12..AC-15a → PR to `main`
+- [x] S1 — budgets + dedup detector + description trims + pointer swaps (branch `mission/builder-done-rules-p1`, `devops`; AC-12, AC-13, AC-14, AC-15a)
+- [~] Checkpoint p1 — Fable reviewer: harnesses + diff `main..p1` + per-AC verdict AC-12..AC-15a → PR to `main`
 - [ ] S2 — done-rules + trio templates + judge + Assumed/settle + Test policy + /fix (branch `mission/builder-done-rules-p2`, `backend`; AC-1..AC-11, AC-15b/c/d)
 - [ ] Checkpoint p2 — Fable reviewer: harnesses + diff `p1..p2` + per-AC verdict AC-1..AC-15 + PR-body numbers → PR to `main`
 
@@ -70,6 +70,9 @@ _Any departure from a brief — logged the moment it happens, with why (§4)._
 _≤10 lines per entry: what shipped, the verify signal, the branch, what the next
 session needs._
 
+- 2026-10-11 S1 done (devops, 4 commits 3c8dcdf..a7e36b6 on `mission/builder-done-rules-p1`): BUDGETS + checkBudgets, RULES + checkRuleDedup (pure exports, lint-test 69→80 cases), four §5 rule fences + AC-13 scope note, three rule-copy blocks, pointer swaps (incl. flight-plan, tune.md ~102 found by the detector), 20 description trims. Numbers: descriptions 9,687→6,898 chars, files>400 17→0, mission.md 21,336→20,969 B, reviewer.md 14,308→13,438 B. Gates: lint exit 0 zero warn, lint-test 80 ok, agents-test 26 ok. Builder flags for review: detector = name key AND ≥2 mechanics keys; §5 LA-5 wording "Fable spend"→"top-tier review spend". Pre-merge Closing rows all keyed to S2 (version 1.55.0, docs mirror, numbers) — none fire at p1. Checkpoint p1 reviewer (Fable) spawned on `main..mission/builder-done-rules-p1`.
+- 2026-10-11 S1 spawned: `devops` on branch `mission/builder-done-rules-p1` (cut from `mission/builder-done-rules` at f29a722), S1 brief in `.plans/builder-done-rules.sessions.md#s1`; Sessions used 1/4.
 - 2026-10-11 plan: trio authored by the planner from the four decision docs; Estimate 4 (2 briefs + 2 Fable checkpoints, owner-decided); plan-judge APPROVED with six named fixes (applied same day); OQ-1 answered by the owner (codex `deviation:` prefix, enum unchanged). Ready for S1.
 
-Next up: S1
+SUPERSEDED next-up (historical, do NOT read as state): S1
+Next up: Checkpoint p1
