@@ -87,6 +87,8 @@ Deviating is allowed; deviating silently is not (§4)._
 _≤10 lines per entry: what this session did, the verify signal, the branch, and
 what the next session needs. Newest on top; crash-safe by write-ahead._
 
+- 2026-10-11 orchestrator: **Checkpoint p1 APPROVE** (Sonnet 5.5, medium; ~49k tokens, 1 min). AC-1/2/3/4/5/11/12 all PASS; scorecard DX 3 · Efficiency 3; no blocking findings. Tier confirmed right for the diff. Builder flags ruled: fallback wording acceptable; rule-7 wording correct; composed-kind quirk advisory. Staging step (§10: tier-1 lint + plugin validate on the phase branch) green at `5553229`. **PR #126** opened to `main` (v1.57.0) — https://github.com/xyzhub/agentic-workflow/pull/126 — awaiting Baker's merge (human-merge policy). Checkpoint row stays `[~]` until merged. Backlog (advisory): lint bare-`Bash` rule matches only the exact string `Bash` — tighten at the Fable p2 pass; `mission.md` 143 B headroom; `tune.md` apply/reset prose-only. `Sessions used: 1/4`. Next: after #126 merges, cut `mission/tune-presets-p2` from `main` and run S2 (`backend`, Opus 5.5).
+
 - 2026-10-11 orchestrator: S1 `[x]` at `ef7a180` (8 commits on `mission/tune-presets-p1`); gates re-run by the orchestrator: lint clean / lint-test 91 / agents-test 30 / mission.md 21,457 B / WORKFLOW.md 107,485 B / tune.md 15,961 B. Pre-merge Closing pass: `version bumped (P1)` + `metrics baselines` fired. **Checkpoint p1 spawned** 2026-10-11 ~16:00 +03 — one-shot `reviewer`, Sonnet 5.5, effort medium, range `origin/main..ef7a180`, per-AC verdict AC-1/2/3/4/5/11/12 + builder deviations (Haiku fallback wording in tune.md, rule-7 wording, registry composed-kind quirk). Verdict pending.
 
 - 2026-10-11 S1 devops: Tasks 1-7 landed on `mission/tune-presets-p1` (7 commits, `eca468b`..`cb41182`, v1.57.0). Gates: `lint: clean`, zero `warn:`; `lint-test: clean (91 cases)` (86 + 5 PRESET_CASES); agents-test 30 cases (27 + 3); `claude plugin validate` passed, `--plugin-dir` loads (hooks fire).
@@ -98,4 +100,4 @@ what the next session needs. Newest on top; crash-safe by write-ahead._
 
 - 2026-10-11 planner: trio authored at `11e04fb` on `mission/tune-presets`; shape amended by the owner to 2 phases / Estimate 4 before any brief ran; no open questions; S1 is ready for `devops` on `mission/tune-presets-p1`.
 
-Next up: Checkpoint p1
+Next up: S2 (blocked on the human merge of PR #126; cut `mission/tune-presets-p2` from the merged `main`)
