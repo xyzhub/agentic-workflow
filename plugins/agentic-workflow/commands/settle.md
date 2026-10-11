@@ -40,11 +40,12 @@ For each `[ ]` row, run its `probe:` exactly as written:
 - Probe fails, errors, or is ambiguous → surface it with the reason.
   **Fail closed**: an unproven condition is an unmet condition.
 
-**2b. Assumed probe.** Grep the dated-decision homes for `Assumed` entries that
-no later `ratified` entry supersedes:
+**2b. Assumed probe.** Grep the dated-decision homes for `Assumed` entries not yet
+ratified — ratification **edits the Assumed line in place** to `ratified
+<date>`, so an unratified entry is exactly a line still lacking that word:
 
 ```bash
-grep -n 'Assumed' .plans/*.md docs/product/decision-log.md 2>/dev/null | grep -v 'ratified'
+grep -nE '^[[:space:]]*-[[:space:]]+Assumed [0-9]{4}-[0-9]{2}-[0-9]{2}|\|[[:space:]]*Assumed — |^Assumed [0-9]{4}-[0-9]{2}-[0-9]{2} →' .plans/*.md docs/product/decision-log.md | grep -v ratified
 ```
 
 Every hit goes on the **surface list** (step 4) with its home and the owed

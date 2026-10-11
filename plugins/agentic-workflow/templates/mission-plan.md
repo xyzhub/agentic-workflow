@@ -56,8 +56,9 @@ A decision that new evidence invalidates becomes an open question below, not a
 silent change (unlocking is the human's call). An owner's "build anyway" over a
 builder's `deviation` stop lands here as `Assumed <date> — owes <decision>;
 built on <assumption>; authorized by <who>`, mirrored as one line in the
-ledger's Open questions, and stays until a dated `ratified` entry replaces it
-(`/agentic-workflow:settle` surfaces it; it never blocks a merge)._
+ledger's Open questions, and stays until ratification **edits that line in
+place** to `ratified <date>` (`/agentic-workflow:settle` surfaces it until then; it
+never blocks a merge)._
 
 - _YYYY-MM-DD — the decision, stated so a fresh agent needs no more context._
 - _Assumed YYYY-MM-DD — owes <decision>; built on <assumption>; authorized by <who>._

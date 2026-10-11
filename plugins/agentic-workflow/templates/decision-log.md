@@ -12,4 +12,4 @@ what else was considered, why, and — most importantly — how to undo it.
 
 | Date | Decision | Options considered | Why | How to reverse | Status |
 |---|---|---|---|---|---|
-| _(YYYY-MM-DD)_ | _(what was chosen)_ | _(the road not taken)_ | _(one line)_ | _(concrete steps, or "irreversible — was human-confirmed")_ | _(`decided` — the default · `Assumed — owes <decision>; built on <assumption>; authorized by <who> <date>` — an owner's "build anyway" over a builder's `deviation` stop; `/agentic-workflow:settle` surfaces it until a `ratified <date>` row supersedes it, never blocks a merge · `ratified <date>`)_ |
+| _(YYYY-MM-DD)_ | _(what was chosen)_ | _(the road not taken)_ | _(one line)_ | _(concrete steps, or "irreversible — was human-confirmed")_ | _(`decided` — the default · `Assumed — owes <decision>; built on <assumption>; authorized by <who> <date>` — an owner's "build anyway" over a builder's `deviation` stop; `/agentic-workflow:settle` surfaces it until ratification edits this cell in place to `ratified <date>`, never blocks a merge · `ratified <date>`)_ |
