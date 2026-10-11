@@ -31,7 +31,7 @@ per-process knobs on the child.
 Estimate: 4 sessions — `phases` mode, 2 phases, owner-amended 2026-10-11 (see
 Locked decisions, "Shape amended"): 2 briefs + 2 checkpoints. Per phase:
 P1 = 1 brief (presets JSON + lint + registry + tune verbs + bootstrap/adopt +
-doctor + docs) + 1 checkpoint (Opus 5.5); P2 = 1 brief (adapter + hook
+doctor + docs) + 1 checkpoint (Sonnet 5.5 · effort medium; owner economy 2026-10-11); P2 = 1 brief (adapter + hook
 silencer + Haiku shadows + mission.md `claude-p` + AC-9 runs + tick budget) +
 1 checkpoint (Fable). No corrective is pre-booked.
 
@@ -171,11 +171,10 @@ checks). `P` = `plugins/agentic-workflow`._
     adapter on `claude-haiku-5-5` → valid distillate, `modelUsage` =
     haiku only, `system/init` tool list recorded, first-request tokens, parent
     `printenv CLAUDE_CODE_AUTO_COMPACT_WINDOW` empty before and after; (2)
-    intake the same way; (3) the deliberate ~120K overflow probe (a brief that
-    reads `CHANGELOG.md` + `docs/product/JOURNEY.md` + `docs/WORKFLOW.md` whole,
-    `--max-turns 40`) → either a `compact_boundary` event near 100K in the
-    event stream or a clean `blocked budget:` exit 3 with a schema-valid
-    distillate; peak prompt quoted. AC-9 may move `maxTurns`/`read_budget` as a
+    intake the same way; (3) DROPPED by owner economy 2026-10-11 — no overflow probe; the window is
+    witnessed by `--autocompact 100000` present in the child argv and reported
+    in `system/init`, quoted in both run records (the flag is a stronger witness
+    than a fired compaction, and cheaper). AC-9 may move `maxTurns`/`read_budget` as a
     dated note in the ledger (lock).
 13. **Tick + mission budgets** — AC-10 under the D3 lock: ledger header fields
     `Tick budget: <int>` (planner, from `unattended.tick_budget` when §10 names
@@ -227,7 +226,7 @@ checks). `P` = `plugins/agentic-workflow`._
 | AC-6 | `--autocompact <compact_window>` passed beside the env var | derivation (plan-judge) | `claude --help` 2.1.296 lists `--autocompact <auto\|tokens>` (100k–1M); lock "Child isolation (D4)" keeps the env var |
 | AC-1 | `schema_version: 1` in `tune-presets.json` | derivation (planner) | `P/templates/agents-registry.schema.json:4` (the registry's versioning rule: shape changes ship as a plugin minor bump — the JSON mirrors it with an explicit integer) |
 | AC-7 | `blocked_reason` prefix `budget:`; compaction → `deviations` line, not a block; re-route once to `fallback` = the corrective retry | locked decision | 2026-10-11 memos.md §D2 values + lock "Haiku adapter stays in v1" |
-| AC-9 | overflow probe size ≈120K; evidence fields | locked decision | 2026-10-11 lock "Haiku adapter stays in v1" + metrics.md §4 AC-9 |
+| AC-9 | window witness = `--autocompact 100000` in child argv + `system/init` (no overflow probe); evidence fields | locked decision | 2026-10-11 owner economy amendment (brief, Locked decisions) + plan-judge fix 9 |
 | AC-10 | fields `Tick budget:` · `Tick tokens:` · `Mission budget:`; tick = brief + gate + ≤1 corrective; print-only | locked decision | 2026-10-11 lock "Budgets (D3)" |
 | AC-10 | 🛑 MISSION BUDGET threshold = `Tick budget × ceil(Estimate / 2)` | derivation (planner) | `Estimate` counts briefs + checkpoints (`docs/WORKFLOW.md:393-394`), a tick = brief + gate + ≤1 corrective (lock "Budgets (D3)") → ticks ≈ Estimate / 2; `hooks/lib/mission-budget.sh:62-70` integer-math pattern |
 | AC-11 | byte ceilings to hold: `mission.md` < 21,600 B · `templates/WORKFLOW.md` < 108,000 B (90 % warn bands) | derivation | `tools/lint.mjs:897-907` (`BUDGETS` 24,000 / 120,000, warn 90 %); measured 2026-10-11: 21,384 B / 106,973 B |
@@ -241,6 +240,7 @@ decisions._
 
 - 2026-10-11 — **Shape (original)**: `phases`, 3 phases, `Estimate: 6` (P1 JSON + lint + schema + tune verbs; P2 adapter + Haiku + AC-9; P3 bootstrap/adopt/doctor + tick + hook + docs). Gate policy human-merge; one release per phase.
 - **Shape amended 2026-10-11 by owner: 2 phases, Estimate 4.** Owner (verbatim): "try to reduce token spending in this mission, 6 sessions is high for a preset configuration." P1 "configuration" = AC-1, 2, 3, 4, 5, 11, 12 (v1.57.0; checkpoint reviewer **Opus 5.5** — planner recommendation: no auth / money / schema / boundary in the diff, §5 rule 7 does not require Fable; the owner sees this at hand-off). P2 "runtime" = AC-6, 7, 8, 9, 10 (v1.58.0; checkpoint reviewer **Fable** — hook stack + a child process's permission flags are boundary-class). Scope and every other lock unchanged. Token economies bind: one builder per phase and the orchestrator **resumes** that builder for a corrective; checkpoint reviewers re-run gates + per-AC verdict + the diff-touched lenses only, ≤ one page, a post-corrective pass reviews the corrective diff only; the chronicler runs ONCE at mission close (orchestrator updates the status page between); the plan-judge is one pass with named cell fixes applied by the planner, no re-judge; AC-9's Haiku runs stay (≈$0.004 each); no counsel at checkpoints.
+- **Token-economy amendment 2026-10-11 (owner: "yes" to levers 3–6)**: builders self-check the per-AC list before hand-off; Checkpoint p1 on **Sonnet 5.5 · effort medium** (P1 is JSON + markdown + lint; its boundary-class rows are re-read by the P2 Fable pass); Checkpoint p2 Fable at **effort high**, diff-touched lenses + per-AC only; AC-9 overflow probe dropped — `--autocompact 100000` in the child argv/`system/init` is the window witness.
 - 2026-10-11 — **Haiku adapter stays in v1 (A and B)**: owner kept A after financial counsel showed ≤$0.14/mission saving; the spike proved the transport (`claude -p --agent agentic-workflow:chronicler --model claude-haiku-5-5`, 1 turn, 9,887-token first request, parent env untouched, no nesting refusal on 2.1.296); AC-9 adds a deliberate ~120K overflow probe as the only witness of the window.
 - 2026-10-11 — **D1 semantics**: one `templates/tune-presets.json`; a shadow is written only where a preset cell differs from the agent's base frontmatter — Balanced on this repo = §10 row `balanced`, zero files; preset-authored := banner kind `preset:<name>` AND `effective == JSON row`; `apply` skips-and-reports any existing shadow lacking a `preset:` banner; `reset` deletes only preset-authored shadows; re-apply idempotent.
 - 2026-10-11 — **Child isolation (D4)**: adapter strips `CLAUDECODE` and `CLAUDE_CODE_ENTRYPOINT`, passes `--strict-mcp-config`, `--max-turns`, `--permission-mode acceptEdits --permission-prompts none` (never bypass, never `--bare`), `--output-format stream-json --verbose --json-schema templates/distillate.schema.json`; sets `AGENTIC_WORKFLOW_CHILD=1` and the four UserPromptSubmit hooks + beat-enforcer exit 0 when set (hook-test fixture). `exit 0` with no `result` line → `failed`. `CLAUDE_CODE_AUTO_COMPACT_WINDOW=100000` on the child env object only.

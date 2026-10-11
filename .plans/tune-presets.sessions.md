@@ -34,7 +34,6 @@ runs once, at mission close.
 | `docs/WORKFLOW.md` | 1324 | — (mirror; lint never reads it) |
 | `CHANGELOG.md` | 1293 | — |
 | `tools/lint.mjs` | 1119 | — |
-| `docs/product/JOURNEY.md` | 744 | — (AC-9 overflow-probe input only) |
 | `tools/run-codex-test.mjs` | 733 | — |
 | `P/tools/run-codex.mjs` | 577 | — |
 | `P/commands/mission.md` | 327 | **21,384 / 24,000 (warn ≥ 21,600)** |
@@ -73,7 +72,7 @@ runs once, at mission close.
 
 ## Phase 1 — configuration (branch: `mission/tune-presets-p1`, release v1.57.0)
 
-_Not parallel-safe (one brief). Checkpoint reviewer: **Opus 5.5** (planner
+_Not parallel-safe (one brief). Checkpoint reviewer: **Sonnet 5.5 · effort medium** (owner economy 2026-10-11; was Opus 5.5 — planner
 recommendation — markdown + JSON + lint code, no auth / money / schema /
 boundary; §5 rule 7 does not require Fable). Builder: `devops`._
 
@@ -110,6 +109,7 @@ boundary; §5 rule 7 does not require Fable). Builder: `devops`._
   6. `P/commands/doctor.md` §2: **Preset drift** (🟡) and **Preset switch while open** (🔴) per master plan Task 6; clean state → silent.
   7. Docs: `P/templates/WORKFLOW.md` §5 one sentence (pointer only — no mechanics; the dedup guard keys on the four rule ids, but keep it a pointer anyway), §9 clause, §10 row; `docs/WORKFLOW.md` mirror with `balanced (default, applied 2026-10-11)`; `P/commands/mission.md` rule-7 widening + plan-judge clause; README line; CHANGELOG `## [1.57.0]` (Added: presets JSON + lint, `tune preset`, registry `override.preset` minor bump, bootstrap/adopt question, doctor checks); `plugin.json` 1.57.0; metrics doc §1 gains row B12 `wc -c` baselines: tune.md 12,213 · mission.md 21,384 · doctor.md 7,699 · bootstrap.md 10,718 · adopt.md 8,025 · templates/WORKFLOW.md 106,973.
 - **Verify**:
+  - **Self-check first (owner economy 2026-10-11)**: before hand-off, run the per-AC list exactly as Checkpoint p1 will — every grep proof below, every AC-1/2/3/4/5/11/12 condition — and fix what fails; the hand-off states "self-check: N/N pass". A corrective costs a session.
   - `node tools/lint.mjs` → `lint: clean`, **zero `warn:` lines** (stderr empty); `node tools/lint-test.mjs` → `lint-test: clean (N cases)`, N ≥ today's + 5; `node tools/agents-test.mjs` green (cases ≥ 27 + 2).
   - Metrics test (a) on a scratch copy (`git worktree add /tmp/tp-scratch HEAD` or `cp -R`): for each of the 4 presets, apply → shadow count = the number of cells that differ (Balanced = 0; record the counts), banners carry `preset:<name>` + version + hash, lint + agents-test green; `tune diff` empty for each preset-authored shadow; `tune preset reset` → preset shadows 0, the scratch's hand-authored `backend.md`/`devops.md` untouched and reported. AC-3: `tune chronicler model sonnet` after `tune preset lean` → kind `preset:lean, model`, `tune diff` shows it, `tune preset reset` keeps and reports it.
   - Metrics test (c)-1 reasoning check (prose commands — no synthetic bootstrap run): read back bootstrap/adopt/doctor text against AC-4/AC-5 wording; the reviewer verdicts them per id.
@@ -118,7 +118,7 @@ boundary; §5 rule 7 does not require Fable). Builder: `devops`._
   - Never touch this repo's live `.claude/agents/` (holds hand-authored shadows, B2).
 - **Read budget**: ≈1,260 lines (≤30 % of context). Suits: `devops`.
 
-**Checkpoint p1** ends phase 1 — one-shot `reviewer` (**Opus 5.5**, fresh
+**Checkpoint p1** ends phase 1 — one-shot `reviewer` (**Sonnet 5.5, effort medium**, fresh
 context): re-run `node tools/lint.mjs` (zero `warn:`), `lint-test`,
 `agents-test`; diff-review `main..mission/tune-presets-p1`; per-AC verdict
 AC-1, 2, 3, 4, 5, 11, 12; lenses the diff touched only (DX, Efficiency); ≤ one
@@ -170,6 +170,7 @@ decision (§5 LA-1) — never a silent second brief._
   6. AC-10: `mission-budget.sh` three greps + prints + two stop texts (integer math; absent fields → today's output byte-identical); hook-test cases (4); `mission.md` loop/tick rule pointer + `autopilot.md` sentence; `mission-state.md` header docs; `planner.md` sentence; `templates/WORKFLOW.md` §5 Loop-mode canonical sentence + §3 clause.
   7. Docs: §9 bullet, §10 Runtimes placeholder, `docs/WORKFLOW.md` mirrors incl. the Runtimes row; README one line; CHANGELOG `## [1.58.0]` (Added: `run-claude.mjs` + harness, hook child-silencer, Haiku shadows + re-route, `claude-p` resolution, tick/mission budgets; Evidence: AC-9 numbers); `plugin.json` 1.58.0.
 - **Verify**:
+  - **Self-check first (owner economy 2026-10-11)**: before hand-off, run the per-AC list exactly as Checkpoint p2 will — every harness, every AC-6..AC-10 condition, the Security-lens items (never bypass, never `--bare`, env strip, allowlist) — and fix what fails; the hand-off states "self-check: N/N pass".
   - `node tools/lint.mjs` → `lint: clean`, zero `warn:`; `node tools/run-claude-test.mjs`, `node tools/hook-test.mjs`, `node tools/run-codex-test.mjs` (untouched, still green), `node tools/lint-test.mjs`, `node tools/agents-test.mjs` all green.
   - AC-9 artifacts present under `.plans/tune-presets.artifacts/`; the handoff quotes the numbers; distillates validate (`node -e` with the adapter's exported `validate` against `SCHEMA_PATH`, or the harness's validator).
   - `wc -c P/commands/mission.md` < 21,600; `wc -c P/templates/WORKFLOW.md` < 108,000; both + the AC-9 numbers in the PR body.
@@ -177,7 +178,7 @@ decision (§5 LA-1) — never a silent second brief._
   - `claude --plugin-dir plugins/agentic-workflow` loads clean.
 - **Read budget**: ≈1,490 lines (≤30 % of context; the densest brief — see the split note above). Suits: `backend`.
 
-**Checkpoint p2** ends phase 2 — one-shot `reviewer` (**Fable**, fresh
+**Checkpoint p2** ends phase 2 — one-shot `reviewer` (**Fable, effort high — never xhigh/max**, fresh
 context): re-run every harness above; diff-review
 `mission/tune-presets-p1..mission/tune-presets-p2`; per-AC verdict AC-6..AC-10
 with the AC-9 artifacts read; Security lens on the child flags (never bypass,

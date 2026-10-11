@@ -19,10 +19,12 @@ its scope decision are §5 LA-1. `Estimate:` rises only as a dated locked
 decision in the master plan. Shape amended by the owner 2026-10-11 from 6 to 4
 (2 briefs + 2 checkpoints) — see the master plan's Locked decisions._
 
+Operating guidance (owner economy 2026-10-11): drive this mission from a fresh, quiet session — ideally one brief or checkpoint per tick — and batch owner questions at the two checkpoints; the orchestrator context is the unmeasured half of the bill.
+
 Gate policy: **human-merge** — after APPROVE the phase passes the §10 Staging
 step (tier-1 lint on the phase branch + `claude --plugin-dir` load) and opens
 its PR to `main` for Baker to merge. Recorded at mission start 2026-10-11.
-Checkpoints: **p1 on Opus 5.5** (planner recommendation — configuration-only
+Checkpoints: **p1 on Sonnet 5.5 · effort medium** (owner economy 2026-10-11; was Opus 5.5) (planner recommendation — configuration-only
 diff: markdown + JSON + lint code, no auth / money / schema / boundary; §5 rule
 7 does not require Fable; the owner may raise it to Fable at hand-off);
 **p2 on Fable** (hook stack + a child process's permission flags — boundary
@@ -42,9 +44,9 @@ decision point, §12 LA-5.)
 ## Checklist
 
 - [ ] S1 — presets JSON + lint/fixtures + registry bump + `tune preset` verbs + bootstrap/adopt question + `/doctor` checks + docs, v1.57.0 (branch `mission/tune-presets-p1`, `devops`; AC-1, AC-2, AC-3, AC-4, AC-5, AC-11, AC-12)
-- [ ] Checkpoint p1 — Opus 5.5 reviewer: lint (zero `warn:`) + lint-test + agents-test + diff `main..p1` + per-AC verdict AC-1, 2, 3, 4, 5, 11, 12 → PR to `main` (v1.57.0)
+- [ ] Checkpoint p1 — Sonnet 5.5 (effort medium) reviewer: lint (zero `warn:`) + lint-test + agents-test + diff `main..p1` + per-AC verdict AC-1, 2, 3, 4, 5, 11, 12 → PR to `main` (v1.57.0)
 - [ ] S2 — `run-claude.mjs` + harness + hook silencer + Haiku shadows/re-route + `claude-p` in mission.md + AC-9 runs + tick/mission budgets, v1.58.0 (branch `mission/tune-presets-p2`, cut from the P1 head, `backend`; AC-6, AC-7, AC-8, AC-9, AC-10)
-- [ ] Checkpoint p2 — Fable reviewer: all harnesses + diff `p1..p2` + per-AC verdict AC-6..AC-10 with the AC-9 artifacts read + Security lens on the child flags and on P1's boundary-class content (Haiku `allowed_tools` rows, lint bare-`Bash` rule, mission.md rule-7 text) → PR to `main` (v1.58.0); then the mission close (chronicler once)
+- [ ] Checkpoint p2 — Fable (effort high) reviewer: all harnesses + diff `p1..p2` + per-AC verdict AC-6..AC-10 with the AC-9 artifacts read + Security lens on the child flags and on P1's boundary-class content (Haiku `allowed_tools` rows, lint bare-`Bash` rule, mission.md rule-7 text) → PR to `main` (v1.58.0); then the mission close (chronicler once)
 
 ## Open questions
 
@@ -66,7 +68,7 @@ _OB grammar: `- [ ] OB-<n> · added YYYY-MM-DD (<source>, pre-merge|post-merge) 
 - [ ] version bumped + stamped (P1) · added 2026-10-11 (planner, pre-merge) — do: `plugins/agentic-workflow/.claude-plugin/plugin.json` → `1.57.0` and the CHANGELOG `## [1.57.0]` entry stamped — when: the S1 diff on `mission/tune-presets-p1` carries both and lint is green — probe: `grep -c '"version": "1.57.0"' plugins/agentic-workflow/.claude-plugin/plugin.json` + `grep -c '^## \[1.57.0\]' CHANGELOG.md` (both 1)
 - [ ] version bumped + stamped (P2) · added 2026-10-11 (planner, pre-merge) — do: `plugin.json` → `1.58.0` and the CHANGELOG `## [1.58.0]` entry stamped with the AC-9 numbers — when: the S2 diff on `mission/tune-presets-p2` carries both and every harness is green — probe: `grep -c '"version": "1.58.0"' plugins/agentic-workflow/.claude-plugin/plugin.json` + `grep -c '^## \[1.58.0\]' CHANGELOG.md`
 - [ ] metrics baselines recorded · added 2026-10-11 (planner, pre-merge) — do: `docs/product/decisions/2026-10-11-tune-presets-metrics.md` §1 gains the `wc -c` baseline row (tune.md 12,213 · mission.md 21,384 · doctor.md 7,699 · bootstrap.md 10,718 · adopt.md 8,025 · templates/WORKFLOW.md 106,973) and §6 drops the AC-7/AC-10 "open" line (locked 2026-10-11) — when: the row is in the S1 diff — probe: `grep -c 'wc -c' docs/product/decisions/2026-10-11-tune-presets-metrics.md` ≥ 1
-- [ ] AC-9 evidence filed · added 2026-10-11 (planner, pre-merge) — do: `.plans/tune-presets.artifacts/ac9-{chronicler,intake,overflow}.json` + `.events.jsonl` committed on `mission/tune-presets-p2`, numbers quoted in the S2 handoff and the P2 PR body — when: the three runs completed (any of done / blocked-budget with a schema-valid distillate) — probe: `ls .plans/tune-presets.artifacts/ac9-*.json | wc -l` = 3
+- [ ] AC-9 evidence filed · added 2026-10-11 (planner, pre-merge) — do: `.plans/tune-presets.artifacts/ac9-{chronicler,intake}.json` + `.events.jsonl` committed on `mission/tune-presets-p2`, numbers quoted in the S2 handoff and the P2 PR body — when: both runs completed (any of done / blocked-budget with a schema-valid distillate) — probe: `ls .plans/tune-presets.artifacts/ac9-*.json | wc -l` = 3
 - [ ] docs/record synced · added 2026-10-11 (planner, pre-merge) — do: chronicler runs ONCE at mission close on `mission/tune-presets-p2`: JOURNEY entry for both releases, overview/status page, CHANGELOG cross-check; `docs/WORKFLOW.md` §10 carries `**Tune preset** | balanced (default, 2026-10-11)` and the Runtimes row names `claude-p` — when: checkpoint p2 APPROVED — probe: `grep -c 'Tune preset' docs/WORKFLOW.md` ≥ 1 + `grep -c 'tune-presets' docs/product/JOURNEY.md` ≥ 1
 - [ ] branch + worktree cleanup · added 2026-10-11 (planner, post-merge) — do: delete `mission/tune-presets-p1`, `mission/tune-presets-p2` (local + remote) and prune the AC-9 scratch worktree `/tmp/tp-ac9` and any `/tmp/tp-scratch` — when: both phase PRs are merged to `main` and CI is green on the merge commits (§10: merge IS the release) — probe: `gh pr list --state merged --search "tune-presets"` + `git worktree list`
 - [ ] live-verify after reinstall · added 2026-10-11 (planner, post-merge) — do: in a consumer session on v1.58.0: `/agentic-workflow:tune preset show` renders the Balanced matrix with no `*`; `/agentic-workflow:doctor` is clean on this repo (§10 row `balanced`, no preset shadows); `/agentic-workflow:tune preset lean` on a scratch adopted project writes the differing shadows and `preset reset` removes exactly them; one `claude-p` chronicler run through `mission.md` step 2 returns a distillate and the orchestrator commits its `changed_paths`; the mission-budget hook prints `· tick k/N tokens` on a ledger seeded with `Tick budget:` — when: v1.58.0 is installed (`/plugin update` + `/reload-plugins`) — probe: manual
