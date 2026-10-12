@@ -144,13 +144,31 @@ _Seeded by the owner 2026-10-12 from the goal statement and the ledgers;
   forks are V0 ideas each gated on a paying client. Full statement:
   `docs/product/decisions/2026-10-12-goal-statement.md` (pointer row in the
   portfolio registry's ledger, xyzhub/registry).
+- **New venture, gated (owner, 2026-10-12 amendment)** — the **Missions
+  server**: a distribution of Paperclip (MIT; upstream core untouched, XYZ
+  additions as Paperclip plugins through its distribution catalog, branding
+  limited to a listed file set) in its own repository. It absorbs the current
+  Missions service; the **Missions runner** (the existing runner package,
+  shipped standalone) is hired into it as an agent and is the only place
+  that launches unmodified Claude Code with the plugin and hooks; the
+  **Missions desktop** app becomes the founder's client of the server.
+  Brakes become runtime-agnostic (approvals and execution policy at the
+  ticket layer, a sandbox per run, scoped credentials, gate tools), with
+  Claude hooks as an extra layer. Industry forks of the plugin are
+  departments hired into the server. V0 idea doc any time; build after
+  operate-triage and adaptive ceremony ship. The plugin never depends on it.
+  Reasons and evidence: the goal statement's amendment.
 - **Cut / out of scope** — Missions as the driver or as a build track
   (follows the engine: pin bump + contract tests after each release, nothing
-  more; today pinned at 1.54.1). Plan A for Missions (tmux-driven hosted
-  containers; kept for comparison only in that repo). Interactive gate cards
-  inside the plugin (Missions' job). Paid promotion fired by the workflow
-  (human-only by protocol). Monetizing the plugin binary or marketplace
-  listing (free, MIT).
+  more; today pinned at 1.54.1). A control plane built from scratch, or a
+  deep fork of Paperclip's core (the distribution rebases on upstream).
+  Running the workflow through Paperclip's own Claude Code adapter (its
+  hooks do not load there). A new product name (Firm, Bureau, Works, Flow and
+  others were considered and dropped; Missions keeps its name). Plan A for
+  Missions (tmux-driven hosted containers; kept for comparison only in that
+  repo). Interactive gate cards inside the plugin (Missions' job). Paid
+  promotion fired by the workflow (human-only by protocol). Monetizing the
+  plugin binary or marketplace listing (free, MIT).
 
 ---
 _Purpose is the human's; the rollup is `compass`'s standing output. The "what"

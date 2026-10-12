@@ -346,3 +346,107 @@ that client's industry first.
 5. **Course shape and host.**
 6. **E1 fallback posture** when signals are ambiguous: full ceremony or lean?
 7. **Catalog**: derive one for the plugin, or amend the landing-template rule?
+
+---
+
+## Amendment, 2026-10-12 (owner, same day): the control plane is Missions, built as a Paperclip distribution
+
+Recorded after a comparison with Paperclip (paperclipai/paperclip, MIT), the
+open-source company-of-agents control plane: org chart with reporting lines,
+heartbeats, per-agent budgets, runtime-enforced review and approval stages,
+task watchdogs, a plugin SDK, and a distribution catalog for shipping
+prebuilt plugins inside a custom image. These decisions supersede E5–E7's
+"fork obligations" framing and the Missions track above where they conflict.
+
+### Decisions
+
+1. **No control plane from scratch, and no multi-industry abstraction in the
+   plugin.** The company layer is a fork of Paperclip kept as a
+   **distribution**: upstream core untouched; XYZ additions shipped as
+   Paperclip plugins through its distribution catalog; branding limited to a
+   small, listed file set (logo, title, design tokens, the server-side
+   branding seam); rebased on each Paperclip release. Paperclip's maintainers
+   do not accept rebranding upstream (their review on a downstream fork says
+   so), and no theming switch exists upstream (the white-label pull request,
+   number 9000, closed unmerged on 2026-09-22), so branding is fork work by
+   their own rule. Renaming every internal string is an anti-goal; brand the
+   shell only.
+2. **The product keeps the Missions name and becomes two layers plus a
+   client.**
+   - **Missions server** — the Paperclip distribution, in a **new
+     repository**: companies, agents, missions (Paperclip's issues, renamed
+     in the UI layer only; Paperclip's own "mission", a company goal,
+     becomes "goal"), approvals, budgets, the web UI, and the accounts and
+     machine list the current Missions service holds today, which it
+     absorbs.
+   - **Missions runner** — the existing `packages/runner` in the Missions
+     monorepo, shipped **standalone** (CLI or background service, no
+     Electron; Windows and Linux land here). It is the only place that
+     launches unmodified Claude Code with the plugin directory and the gate
+     hook attached, so it is where the compliance frame and the safety
+     boundary live. The server hires it through Paperclip's process or HTTP
+     adapter, never through Paperclip's Claude Code adapter.
+   - **Missions desktop** — the founder's client of the server: gate cards,
+     plain-language translation, the composer, Release. It migrates to the
+     server when the server can serve gate cards; the pilot is not stopped
+     for this. Runner and desktop are one Electron package today, so the
+     split costs no code now.
+3. **Why not Paperclip's own Claude Code adapter.** Under it, Claude Code
+   hooks do not run: user settings are skipped (paperclip issue 6483), and on
+   a managed AI connection a per-run temporary home loads no user or project
+   settings and a settings override is refused (issue 15417, filed against
+   Paperclip 2026.1001.0). Paperclip governs at the ticket layer; it does
+   not watch tool calls. If a hooks pass-through lands upstream, this
+   decision is revisited.
+4. **Brakes become runtime-agnostic**, because Paperclip supports many
+   runtimes and a Claude-only hook is not a brake there. The safety boundary
+   is expressed as: Paperclip approvals and execution policy at the ticket
+   layer; a sandbox per run; scoped credentials so an agent cannot push to
+   main or post without a token it does not hold; gate tools that mint a
+   one-time claim before any irreversible action (the publish gate's design,
+   finished). Claude hooks stay as an extra layer when the runtime is
+   Claude. This replaces E5's "MCP-aware guard" item.
+5. **Industry forks of the plugin are departments hired into the server.**
+   The fork rule (discipline files untouched) stands; the multi-department
+   layer is Paperclip's, so the plugin never builds one.
+6. **The explainer splits.** The generated map (organisation, typed
+   relationships, pathways, gates, guardrails, live view, trace) stays in the
+   plugin for terminal users. The richer org chart renders as a Missions
+   server plugin reading the same registry.
+7. **Three ideas borrowed into the plugin regardless:** refuse to mark a
+   checkpoint row done without a recorded reviewer verdict (a block, not a
+   nag); a consecutive agent-to-agent review-round cap with human escalation
+   at every checkpoint; a decision record per verdict with actor, outcome and
+   run id, in Paperclip's shape so the ledger and a Missions company agree.
+8. **Dependency rule, unchanged and now binding three repos.** The Missions
+   server and runner depend on the plugin at a pinned version through the
+   runner's vendor pin and contract tests. The plugin never references,
+   imports or assumes either. Orderly and every other venture see no change
+   unless they later choose to run through the server.
+9. **Timing.** The server repository's V0 idea doc can be written any time
+   (riskiest assumption: a Paperclip user will pay XYZ for a configured
+   distribution rather than configure Paperclip themselves; cheapest test:
+   XYZ's own departments on it, then one outside prospect). The build starts
+   after `operate-triage` and adaptive ceremony (E0, E1) ship, so it does not
+   compete with them for the owner's sessions.
+10. **Naming closed.** Missions keeps its name across server, runner and
+    desktop. Candidates considered and dropped, with the reason: Firm
+    (viable, superseded by reusing Missions), Bureau, Flow and Mission Flow
+    (collide with "Agentic Workflow" and with the mission noun), Works
+    (Thoughtworks' Agent/works, June 2026, same category), Vector, Tether,
+    Synapse, Core, Infrastruxure (Schneider Electric trademark), Isotope,
+    Nodal, Truss (all taken in or next to this category), Affine (AFFiNE,
+    same audience), Pipeline (CI and sales meanings), Protocol (the method's
+    own word). Open: whether the method takes "The XYZ Protocol" as its
+    public name with the `agentic-workflow` slug unchanged.
+
+### Effect on the workstreams above
+
+- E5 becomes: runtime-agnostic brakes (decision 4) + the runner's adapter
+  contract and standalone build. The fork file map stays as an explainer
+  view.
+- E6 (the marketing fork) is hired into the Missions server as a department.
+- E7 keeps the plugin's generated map; the org-chart UI moves to a server
+  plugin.
+- The Missions track gains the server repository as its own venture with its
+  own V0, gated as in decision 9.
