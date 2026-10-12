@@ -81,6 +81,14 @@ paths against each other; until then they count equally.
     publish-gate mechanics), so it can merge every base release.
   - A fork that reimplements skills the ecosystem already ships — the
     discipline is the product; the skills are commodities.
+  - A hand-drawn diagram of the workflow. The engine must be understandable
+    and explainable — its organisation and roles, the typed relationships
+    between agents (who reports to whom, who supervises whom, who briefs,
+    advises or owns what, with the physical spawn path shown separately
+    from the logical reporting lines), message pathways, stages, gates,
+    guardrails and live state — through maps **generated** from the
+    agent registry, the command and hook sources and the ledgers; a drawing
+    that is not generated drifts the week after it is made.
   - A non-development loop whose irreversible actions are guarded only by
     prose. Today the guard hooks match Bash, Write and Edit; MCP and HTTP
     tool calls never pass through them. A fork is proven only with the
@@ -121,9 +129,13 @@ _Seeded by the owner 2026-10-12 from the goal statement and the ledgers;
   ceremony (one gate-class taxonomy shared with the loop; the stage table
   read from the protocol template so a fork that rewrites it inherits the
   mechanism); structured and interactive owner surfaces (the client
-  experience, also what Missions renders); what the base owes its forks (an
-  MCP-aware fail-closed guard, an irreversible-action row in the project
-  profile, a fork file map with a lint check); **fork one: marketing**, run
+  experience, also what Missions renders); the **explainer** — generated
+  maps of the organisation chart, message pathways, lifecycle and gates,
+  guardrails, a live view and a trace, from the registry and the sources,
+  one truth shared by the README, the wiki, the status page and Missions'
+  roster; what the base owes its forks (an MCP-aware fail-closed guard, an
+  irreversible-action row in the project profile, the fork file map as one
+  view of the explainer); **fork one: marketing**, run
   on XYZ's own launch; the public front (landing, services page, generated
   wiki, demo), produced by that fork's loop; then the revenue tests (two
   priced proposals, the Orderly retainer priced against measured founder
