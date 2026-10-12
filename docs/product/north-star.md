@@ -18,16 +18,27 @@ owns the Purpose**.
 _Written by the owner, 2026-10-12._
 
 The Agentic Workflow is the engine that drives all of XYZ's development work
-and is XYZ's most important asset. It exists so that every XYZ build ships
-faster, with fewer owner prompts and no safety regressions, and so that
-outsiders can find it, learn it and adopt it — bringing XYZ revenue through
-development engagements run on the workflow, maintenance retainers where the
-operate loop watches a client's users' bug reports, technical consulting on
-adopting agentic development, and paid education for individuals and teams.
-The plugin stays open source: it is the proof of capability and the lead
-source. Missions (xyzhub/missions), the app for non-technical people, is a
-companion in an early stage: it inherits every engine improvement through its
-pinned version and changes with the engine; it is not the driver.
+and is XYZ's most important asset. Its core is not development: it is an
+**operating discipline for unattended agentic work** — missions with ledgers,
+gates a human answers, a safety boundary that fails closed, budgets with an
+overrun stop, one-shot reviews, an owner channel, an audit trail. Software
+development is the first domain that discipline runs in. It exists so that
+every XYZ build ships faster, with fewer owner prompts and no safety
+regressions; so that outsiders can find it, learn it and adopt it; and so
+that the same discipline carries into non-development domains — marketing and
+social media, bookkeeping and accounting, lead generation and customer
+acquisition, anything that can be automated with or without a human in the
+loop — **by forking the plugin and modifying the fork for that industry**.
+That brings XYZ revenue through development engagements run on the
+workflow, **paid industry adaptations** (XYZ forks and tailors the workflow
+to a client's industry and business, then runs it for them or hands it over
+with training), managed operations where the loop runs a client's recurring
+work and watches their users' reports, technical consulting on adopting
+agentic operations, and paid education for individuals and teams. The plugin stays
+open source: it is the proof of capability and the lead source. Missions
+(xyzhub/missions), the app for non-technical people, is a companion in an
+early stage: it inherits every engine improvement through its pinned version
+and changes with the engine; it is not the driver.
 
 ## Definition of worthy progress
 
@@ -39,13 +50,20 @@ paths against each other; until then they count equally.
      across the portfolio: fewer sessions, fewer owner prompts, less reviewer
      spend, fewer correctives, no safety regressions.
   2. **Revenue arrives through the plugin** — a development engagement won, a
-     maintenance retainer signed, a consulting engagement won, a paid course
-     or workshop.
-  3. **Pipeline grows** — enquiries and proposals attributable to the
+     paid industry adaptation (a client's fork built and handed over or
+     run for them), a managed-operations retainer signed (maintenance of a
+     built app, or a recurring non-development loop such as a client's
+     bookkeeping close or social calendar), a consulting engagement won, a
+     paid course or workshop.
+  3. **A second domain is proven** — one non-development loop running
+     unattended under the same ledger, gate, budget and audit discipline, on
+     real work, with its irreversible actions mechanically guarded. Counts
+     once per domain, first time only.
+  4. **Pipeline grows** — enquiries and proposals attributable to the
      plugin's public front, the wiki, a talk or a course module, fed into
      XYZ's existing enquiries and proposals pipeline.
-  4. **Reach grows** — plugin installs, docs traffic, course sign-ups.
-  5. **Missions stays healthy** — pinned to a current engine version,
+  5. **Reach grows** — plugin installs, docs traffic, course sign-ups.
+  6. **Missions stays healthy** — pinned to a current engine version,
      contract tests green, its pilot targets moving. Follows 1; never
      competes with it for effort.
 - Does **not** count (anti-goals):
@@ -56,6 +74,17 @@ paths against each other; until then they count equally.
     loop's escalation classes are one list, in one template).
   - A second interactive gate layer inside the plugin — Missions renders
     gates; the plugin emits them as structured data.
+  - A generic multi-industry abstraction in the base (packs, domain
+    switches). Another industry is a **fork** of the plugin, modified for
+    that industry; the base stays a development plugin. A fork never edits
+    the discipline files (hooks, ledger and mission tools, owner-channel and
+    publish-gate mechanics), so it can merge every base release.
+  - A fork that reimplements skills the ecosystem already ships — the
+    discipline is the product; the skills are commodities.
+  - A non-development loop whose irreversible actions are guarded only by
+    prose. Today the guard hooks match Bash, Write and Edit; MCP and HTTP
+    tool calls never pass through them. A fork is proven only with the
+    base's MCP-aware, fail-closed guard reading its irreversible-action list.
   - Anything that reopens the compliance frame (unmodified Claude Code, the
     user's own subscription, no credential handling) or the safety boundary
     (merge, deploy, spend, publish stay human-gated).
@@ -89,13 +118,20 @@ _Seeded by the owner 2026-10-12 from the goal statement and the ledgers;
   n=1 venture**: it builds its in-app support channel from the spec, and
   mission 2 (`operate-fix`, issue #90) starts once ten real reports have
   flowed through it. After that, in order: the engine adapts its own
-  ceremony (one gate-class taxonomy shared with the loop); structured and
-  interactive owner surfaces (the client experience, also what Missions
-  renders); the public front (landing, services page, generated wiki, demo);
-  then the revenue tests (two priced proposals, the Orderly retainer priced
-  against measured founder minutes, two consulting conversations, one free
-  course module with a paid follow-on). Full statement: the owner's goal
-  document of 2026-10-12 (to be recorded in the portfolio registry).
+  ceremony (one gate-class taxonomy shared with the loop; the stage table
+  read from the protocol template so a fork that rewrites it inherits the
+  mechanism); structured and interactive owner surfaces (the client
+  experience, also what Missions renders); what the base owes its forks (an
+  MCP-aware fail-closed guard, an irreversible-action row in the project
+  profile, a fork file map with a lint check); **fork one: marketing**, run
+  on XYZ's own launch; the public front (landing, services page, generated
+  wiki, demo), produced by that fork's loop; then the revenue tests (two
+  priced proposals, the Orderly retainer priced against measured founder
+  minutes, one client's marketing loop, two consulting conversations, one
+  free course module with a paid follow-on). Bookkeeping and lead-generation
+  forks are V0 ideas each gated on a paying client. Full statement: the
+  owner's goal document of 2026-10-12 (to be recorded in the portfolio
+  registry).
 - **Cut / out of scope** — Missions as the driver or as a build track
   (follows the engine: pin bump + contract tests after each release, nothing
   more; today pinned at 1.54.1). Plan A for Missions (tmux-driven hosted
