@@ -141,9 +141,9 @@ _Seeded by the owner 2026-10-12 from the goal statement and the ledgers;
   priced proposals, the Orderly retainer priced against measured founder
   minutes, one client's marketing loop, two consulting conversations, one
   free course module with a paid follow-on). Bookkeeping and lead-generation
-  forks are V0 ideas each gated on a paying client. Full statement: the
-  owner's goal document of 2026-10-12 (to be recorded in the portfolio
-  registry).
+  forks are V0 ideas each gated on a paying client. Full statement:
+  `docs/product/decisions/2026-10-12-goal-statement.md` (pointer row in the
+  portfolio registry's ledger, xyzhub/registry).
 - **Cut / out of scope** — Missions as the driver or as a build track
   (follows the engine: pin bump + contract tests after each release, nothing
   more; today pinned at 1.54.1). Plan A for Missions (tmux-driven hosted
