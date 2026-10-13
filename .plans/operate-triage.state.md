@@ -72,7 +72,7 @@ Target version **1.60.0** (Replan 2026-10-13; 1.53.0 was taken by pr-economy).
 _Glyphs: `[ ]` not started · `[~]` in-flight / deferred / awaiting owner · `[x]`
 done (verified, not merely written)._
 
-- [~] S1 — `templates/support-channel-spec.md`, `templates/operate-triage.md`, `tools/operate-triage.mjs` + selftest + lint row 10.11, `/operate triage #N | diagnose #N | digest` modes with Boundaries, eval scenario `operate-triage` (fake-`gh` shim, `run.mjs` PATH rule), `ops.md` diagnose contract, WORKFLOW §4/§6/§9/§12 both copies, record (1.60.0, CHANGELOG, READMEs, evals/README) (branch `mission/operate-triage`; builder `backend`)
+- [x] S1 — `templates/support-channel-spec.md`, `templates/operate-triage.md`, `tools/operate-triage.mjs` + selftest + lint row 10.11, `/operate triage #N | diagnose #N | digest` modes with Boundaries, eval scenario `operate-triage` (fake-`gh` shim, `run.mjs` PATH rule), `ops.md` diagnose contract, WORKFLOW §4/§6/§9/§12 both copies, record (1.60.0, CHANGELOG, READMEs, evals/README) (branch `mission/operate-triage`; builder `backend`)
 - [~] Checkpoint ckpt-p1 — TWO one-shot `reviewer` spawns on **Fable**: (a) six-lens diff review of `<base>..mission/operate-triage` incl. a re-run of `node evals/run.mjs operate-triage`; (b) the BUILDABLE read of the spec (brief text in the sessions file) → then lint + `claude --plugin-dir` load → one PR to `main`, human merges
 
 ## Open questions
@@ -119,6 +119,8 @@ Deviating is allowed; deviating silently is not (§4)._
 
 _≤10 lines per entry: what this session did, the verify signal, the branch, and
 what the next session needs. Newest on top; crash-safe by write-ahead._
+
+- 2026-10-13 ckpt-p1 (b) re-check (Fable): BUILDABLE — AC-3 pass; 3 blockers closed, advisories sound, softened 'diagnosed' copy accepted (status set locked), no new invented values, names byte-identical. ckpt-p1 combined: APPROVE (a APPROVE + b BUILDABLE). Next: #90 hand-over comment, push, CI, PR to main.
 
 - 2026-10-13 S1-fix built (Fable re-check spawned): 1123486 spec fixes (webhook 503/401, needs-info relay, rules 7/8 staff close/resolved, opt-in **Reply**, reduced loop relay, softened diagnosed copy instead of new status — status set locked, heading escape, re-queue path, edited/deleted ignored) + e57d9a3 eval asserts one ops spawn. Gates green; eval pass judge 100% ($0.56). Narrow BUILDABLE re-check (Fable, same reviewer) spawned on d737133..e57d9a3.
 
