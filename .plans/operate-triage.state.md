@@ -12,10 +12,10 @@ fresh agent resumes the mission from this file alone. Write-ahead — update it
 orchestrator has no session boundary to force a write; a compaction erases
 everything since the last one — §12 LA-6)._
 
-Status: planned
+Status: active
 
-Estimate: 1 session
-Sessions used: 0
+Estimate: 2 sessions
+Sessions used: 2
 
 _The two budget lines above are read by the mission-budget hook every turn. The
 planner writes `Estimate:` (1 = one brief S1 + one checkpoint, inside which two
@@ -72,8 +72,8 @@ Target version **1.60.0** (Replan 2026-10-13; 1.53.0 was taken by pr-economy).
 _Glyphs: `[ ]` not started · `[~]` in-flight / deferred / awaiting owner · `[x]`
 done (verified, not merely written)._
 
-- [ ] S1 — `templates/support-channel-spec.md`, `templates/operate-triage.md`, `tools/operate-triage.mjs` + selftest + lint row 10.11, `/operate triage #N | diagnose #N | digest` modes with Boundaries, eval scenario `operate-triage` (fake-`gh` shim, `run.mjs` PATH rule), `ops.md` diagnose contract, WORKFLOW §4/§6/§9/§12 both copies, record (1.60.0, CHANGELOG, READMEs, evals/README) (branch `mission/operate-triage`; builder `backend`)
-- [ ] Checkpoint ckpt-p1 — TWO one-shot `reviewer` spawns on **Fable**: (a) six-lens diff review of `<base>..mission/operate-triage` incl. a re-run of `node evals/run.mjs operate-triage`; (b) the BUILDABLE read of the spec (brief text in the sessions file) → then lint + `claude --plugin-dir` load → one PR to `main`, human merges
+- [x] S1 — `templates/support-channel-spec.md`, `templates/operate-triage.md`, `tools/operate-triage.mjs` + selftest + lint row 10.11, `/operate triage #N | diagnose #N | digest` modes with Boundaries, eval scenario `operate-triage` (fake-`gh` shim, `run.mjs` PATH rule), `ops.md` diagnose contract, WORKFLOW §4/§6/§9/§12 both copies, record (1.60.0, CHANGELOG, READMEs, evals/README) (branch `mission/operate-triage`; builder `backend`)
+- [~] Checkpoint ckpt-p1 — TWO one-shot `reviewer` spawns on **Fable**: (a) six-lens diff review of `<base>..mission/operate-triage` incl. a re-run of `node evals/run.mjs operate-triage`; (b) the BUILDABLE read of the spec (brief text in the sessions file) → then lint + `claude --plugin-dir` load → one PR to `main`, human merges
 
 ## Open questions
 
@@ -101,24 +101,46 @@ never deleted: a fired row keeps its line and appends `· fired YYYY-MM-DD
 `[~] … → OB-<n>`; `/agentic-workflow:settle` enforces that._
 
 - [ ] branch + worktree cleanup · added 2026-10-06 (planner, post-merge) — do: delete `mission/operate-triage` (local and remote) and prune its stale worktrees — when: the PR to `main` is merged AND the lint run on its merge commit concluded green per §10 — probe: `gh pr list --state merged` + `gh run list` _(deferred until green, via `/agentic-workflow:settle`)_
-- [ ] docs/record synced · added 2026-10-06 (planner, pre-merge) — do: confirm CHANGELOG 1.60.0, both READMEs, `evals/README.md`, `templates/WORKFLOW.md` §4/§6/§9/§12 and the `docs/WORKFLOW.md` mirror (stamp v1.60.0) describe the shipped modes; every label/status/field name is spelled identically in `templates/support-channel-spec.md`, `templates/operate-triage.md` and `commands/operate.md` — when: S1's commits are on `mission/operate-triage` and the brief's Verify passed on that branch — probe: the cross-check grep in the brief's Verify + `git diff main...mission/operate-triage --stat`
+- [x] docs/record synced · added 2026-10-06 (planner, pre-merge) — do: confirm CHANGELOG 1.60.0, both READMEs, `evals/README.md`, `templates/WORKFLOW.md` §4/§6/§9/§12 and the `docs/WORKFLOW.md` mirror (stamp v1.60.0) describe the shipped modes; every label/status/field name is spelled identically in `templates/support-channel-spec.md`, `templates/operate-triage.md` and `commands/operate.md` — when: S1's commits are on `mission/operate-triage` and the brief's Verify passed on that branch — probe: the cross-check grep in the brief's Verify + `git diff main...mission/operate-triage --stat` · fired 2026-10-13 (01192c0 + 7c1e842; builder cross-check grep: 12 label names in all 3 files, WORKFLOW §4/§6/§9/§12 identical in both copies; diff main...mission/operate-triage 24 files +1178/-24; reviewer re-verifies)
 - [ ] live-verify after reinstall · added 2026-10-06 (planner, post-merge) — do: in a real session after `/plugin update` + `/reload-plugins`, in a GitHub-backed checkout file ONE hand-written issue in contract shape with `source/user` and run `/agentic-workflow:operate triage #N` then `/agentic-workflow:operate digest`: the triage comment and label land, the digest is sent on the Slack owner channel (this repo's §10 row) or reported `kept locally` with the reason — when: the 1.60.0 PR to `main` is merged and the plugin is reinstalled — probe: manual
-- [ ] version bumped + stamped · added 2026-10-06 (planner, pre-merge) — do: `plugins/agentic-workflow/.claude-plugin/plugin.json` → 1.60.0 (the §10 Version pin), `docs/WORKFLOW.md` line 3 → `v1.60.0`, CHANGELOG entry stamped `[1.60.0]` — when: this mission's CHANGELOG entry names a version — probe: `grep -c 1.60.0 plugins/agentic-workflow/.claude-plugin/plugin.json CHANGELOG.md docs/WORKFLOW.md`
+- [x] version bumped + stamped · added 2026-10-06 (planner, pre-merge) — do: `plugins/agentic-workflow/.claude-plugin/plugin.json` → 1.60.0 (the §10 Version pin), `docs/WORKFLOW.md` line 3 → `v1.60.0`, CHANGELOG entry stamped `[1.60.0]` — when: this mission's CHANGELOG entry names a version — probe: `grep -c 1.60.0 plugins/agentic-workflow/.claude-plugin/plugin.json CHANGELOG.md docs/WORKFLOW.md` · fired 2026-10-13 (grep -c 1.60.0 = 1 in plugin.json, CHANGELOG.md, docs/WORKFLOW.md; commits 7c1e842 + 01192c0)
 - [ ] venture n=1 through the in-app channel (brief L3) · added 2026-10-06 (planner, post-merge) — do: one real venue report filed through a venture's shipped support channel is triaged and diagnosed by the modes, the draft reply is relayed by the human, the issue shows the trail — when: a venture has built `docs/product/engineering/support-channel-spec.md` section (i) items 1–8 (labels, endpoint, widget, sync, thread, copy-kit pattern, triage file, one hand-filed ticket) — probe: manual _(expected to defer past close → promote to OB-<n>, orchestrator edits the register)_
 - [ ] month-review trigger (metrics doc §5) · added 2026-10-06 (planner, post-merge) — do: run the first month-review of the bug loop (metrics §2 table with denominators printed, the paired metric above read first) — when: at least 10 `source/user` reports carry a `loop/*` or `needs-info` label in a venture checkout — probe: `gh issue list --label source/user --state all --json labels --jq '[.[]|select(any(.labels[].name; startswith("loop/") or .=="needs-info"))]|length'` (≥ 10) _(expected to defer past close → promote to OB-<n>)_
-- [ ] mission 2 hand-over note · added 2026-10-06 (planner, pre-merge) — do: post ONE comment on #90 headed `operate-triage hand-over` listing the hooks mission 1 left (tool verbs incl. `--channel` and the alive clock, the `Ceilings:` line with its `unset` slots, the `loop/paused` label switch, the state-dir path, the fences file name, the reserved Merge-policy grammar, the mechanical `--allowedTools` residual with its in-repo prior art `tools/run-claude.mjs --restricted` + `tools/shell-wrappers.mjs`) AND the three L4 mitigations the lock carries (CLI version pinned on the server with auto-update off; a per-tick preflight proving plugin + hooks loaded via a dry `git push` probe expecting `BLOCKED:`, fail closed; the subscription-usage question re-checked and recorded BEFORE the cron line is written) — when: S1's commits are on `mission/operate-triage` with spec section (h) written — probe: `gh issue view 90 --comments | grep -c 'operate-triage hand-over'` (≥ 1) _(Replan 2026-10-13: was "when `operate-fix` planning starts"; firing it on #90 before the merge keeps it out of the register and needs no third PR)_
+- [x] mission 2 hand-over note · added 2026-10-06 (planner, pre-merge) — do: post ONE comment on #90 headed `operate-triage hand-over` listing the hooks mission 1 left (tool verbs incl. `--channel` and the alive clock, the `Ceilings:` line with its `unset` slots, the `loop/paused` label switch, the state-dir path, the fences file name, the reserved Merge-policy grammar, the mechanical `--allowedTools` residual with its in-repo prior art `tools/run-claude.mjs --restricted` + `tools/shell-wrappers.mjs`) AND the three L4 mitigations the lock carries (CLI version pinned on the server with auto-update off; a per-tick preflight proving plugin + hooks loaded via a dry `git push` probe expecting `BLOCKED:`, fail closed; the subscription-usage question re-checked and recorded BEFORE the cron line is written) — when: S1's commits are on `mission/operate-triage` with spec section (h) written — probe: `gh issue view 90 --comments | grep -c 'operate-triage hand-over'` (≥ 1) _(Replan 2026-10-13: was "when `operate-fix` planning starts"; firing it on #90 before the merge keeps it out of the register and needs no third PR)_ · fired 2026-10-13 (posted https://github.com/xyzhub/agentic-workflow/issues/90#issuecomment-6135504430; probe grep -c = 1)
 
 ## Deviations
 
 _Any departure from a brief — logged here the moment it happens, with why.
 Deviating is allowed; deviating silently is not (§4)._
 
-(none)
+- 2026-10-13 (S1 builder, declared; ckpt-p1 (a) accepted all) — (1) `notify --channel` also accepts `telegram`/`unset` → kept locally with the real reason; (2) `contract --body` also accepts `gh issue view --json` output; (3) `contract` exit 2 prints only the needs-info line on stdout, JSON on stderr; (4) Boundaries / posture rule 7 Bash list adds `gh issue list`, `gh api` (digest, read-only), `git rev-parse`, `mktemp -d`, `date -u`; (5) triage adds `needs-info` via `$OT labels`; (6) no `run r-xxxx` id in comment headers (no scheduled ticks yet); (7) spec adds `SupportTicket` report-text fields, webhook/token transport (`GITHUB_WEBHOOK_SECRET`, `GITHUB_SUPPORT_TOKEN`), `{{OWNER_GITHUB_LOGINS}}` relay allowlist, `**Internal**` owner-comment prefix; (8) post-eval mode-text + scenario.md edits (re-run by ckpt-p1 (a): judge 100%).
 
 ## Handoff log (newest first)
 
 _≤10 lines per entry: what this session did, the verify signal, the branch, and
 what the next session needs. Newest on top; crash-safe by write-ahead._
+
+- 2026-10-13 PR #141 opened to main (https://github.com/xyzhub/agentic-workflow/pull/141), CI green on 78b13ea; staging = none (lint + --plugin-dir load = staging verify, done). ckpt-p1 stays [~] until the human merges. Sessions 2/2.
+
+- 2026-10-13 Pre-merge Closing complete (3/3). #90 hand-over posted. Branch pushed for CI.
+
+- 2026-10-13 ckpt-p1 (b) re-check (Fable): BUILDABLE — AC-3 pass; 3 blockers closed, advisories sound, softened 'diagnosed' copy accepted (status set locked), no new invented values, names byte-identical. ckpt-p1 combined: APPROVE (a APPROVE + b BUILDABLE). Next: #90 hand-over comment, push, CI, PR to main.
+
+- 2026-10-13 S1-fix built (Fable re-check spawned): 1123486 spec fixes (webhook 503/401, needs-info relay, rules 7/8 staff close/resolved, opt-in **Reply**, reduced loop relay, softened diagnosed copy instead of new status — status set locked, heading escape, re-queue path, edited/deleted ignored) + e57d9a3 eval asserts one ops spawn. Gates green; eval pass judge 100% ($0.56). Narrow BUILDABLE re-check (Fable, same reviewer) spawned on d737133..e57d9a3.
+
+- 2026-10-13 S1-fix (backend): all 10 BUILDABLE items fixed in 1123486 (spec + prefix mentions) and the checks commit after it; gates lint/lint-test/hook-test/selftest clean; eval operate-triage PASS judge 100% $0.56 with the new one-ops-spawn check passing. Unpushed.
+
+- 2026-10-13 owner scope decision (overrun STOP): Estimate 1 → 2 (locked 2026-10-13). S1-fix started: Sessions used 2/2; S1 builder resumed with the corrective (3 blockers + advisories + A4).
+
+- 2026-10-13 ckpt-p1 (a) diff (Fable): APPROVE — gates re-run green, eval on final text pass judge 100% ($0.61), all 8 departures accepted, both pre-merge rows re-verified. Scores DX 3, Sec 3, Eff 3, QA 2, Arch 2. Advisory: A1 deviations unlogged (now logged), A2 push for CI, A3 kept digest never writes lastDigestAt (→ #90 hand-over), A4 checks.mjs doesn't assert one ops spawn. Combined ckpt-p1: REQUEST CHANGES via (b). S1-fix would be session 2/1 = overrun STOP → owner scope decision asked.
+
+- 2026-10-13 ckpt-p1 (b) BUILDABLE (Fable): REQUEST CHANGES — AC-3 fail, 3 blocking spec gaps: (1) webhook secret unset → fail-open, needs 503; (2) needs-info missing-fields comment not relayed to staff (no prefix match); (3) staff 'closed' / post-resolved message has no GitHub-side rule. Advisory: owner-comment relay opt-out (**Internal**) leaks by default; loop comments relayed wholesale; loop/diagnose→'We found the cause' copy; heading injection on re-render. Scores: Sec 1, UX 2, DX 2, Arch 3. Waiting on (a).
+
+- 2026-10-13 S1 builder done: 8 commits dcd3f36..01192c0; lint clean, lint-test 95, hook-test clean, selftest 11 ok, eval operate-triage pass (judge 82%, $0.59, pre-final-edit), plugin validate + --plugin-dir load ok. Pre-merge Closing: version + docs/record fired; #90 hand-over deferred until checkpoint APPROVE. ckpt-p1 spawned: two one-shot Fable reviewers — (a) six-lens diff 053db57..mission/operate-triage + eval re-run, (b) BUILDABLE read of the spec.
+
+- 2026-10-13 S1 (backend) built all 9 steps on mission/operate-triage, 8 commits dcd3f36..01192c0, unpushed. Gates: lint clean (row 10.11 in), lint-test clean (95), hook-test clean, operate-triage selftest clean (11), eval operate-triage PASS judge 82% $0.59 (draft-reply-plain 0: judge could not see the comment; judge-files now adds .gh/state.json), claude plugin validate + headless --plugin-dir load OK. Pre-merge Closing evidence: version 1.60.0 in plugin.json/CHANGELOG/docs/WORKFLOW.md stamp (01192c0, 7c1e842); docs/record synced in 01192c0. S1 row left [~] for the checkpoint.
+
+- 2026-10-13 S1 started on mission/operate-triage (from main 053db57): Sessions used 1/1, Status active; builder backend (claude, Opus default) spawned.
 
 - 2026-10-13 replan closed: owner answered OQ-1 = unset (locked 2026-10-13). Trio APPROVEd; no open questions. Resume with /agentic-workflow:mission operate-triage continue.
 
@@ -133,4 +155,4 @@ what the next session needs. Newest on top; crash-safe by write-ahead._
 - 2026-10-13 planner (replan): re-resolved on `plan/operate-triage-replan` from `main` c0049d1 (v1.59.0). Ledger matched git (no branch, no S1 commit, Sessions used 0) — no correction. No S1 scope shipped in 1.53–1.59. Target 1.53.0 → 1.60.0; lint row 10.9 → 10.11; anchors + large-files table re-measured; AC-1…AC-18 + Value sourcing added; Closing rows classified pre/post-merge, hand-over row now fires on #90 pre-merge. Estimate unchanged: 1 session. Open: OQ-1 (runs/day default, recommend `unset`). Baseline `node tools/lint.mjs` clean, `hook-test: clean`.
 - 2026-10-06 planner: trio authored on `feat/launch-media-plan` (converted from the operate-bugfix brief's lock table L0–L5 + Mission 1 scope). Nothing built. Baseline `node tools/hook-test.mjs` = 123 ok, `node tools/lint.mjs` clean. Queued BEHIND `publish-approval`; `Status: planned` + `Sessions used: 0` keep this ledger invisible to the hooks. Awaiting the plan-judge; no owner question blocks S1.
 
-Next up: S1
+Next up: owner merges PR #141; then close via /agentic-workflow:settle on chore/operate-triage-bookkeeping

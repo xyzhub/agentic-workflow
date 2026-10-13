@@ -116,11 +116,18 @@ for (const name of scenarios) {
   sh('git add -A && git commit -qm "fixture baseline" --no-verify');
   if (existsSync(path.join(scenarioDir, 'setup.sh'))) sh(`bash "${path.join(scenarioDir, 'setup.sh')}"`);
 
-  // The agent run. If the fixture ships a fake codex (bin/codex), point the
-  // adapter's CODEX_BIN at it so a codex-routing scenario can never reach the
-  // real binary — "a shim on PATH" is not a mechanism the runner has.
+  // The agent run. If the fixture ships a `bin/` directory it is prepended to
+  // `PATH` (fake `gh`, fake `codex`); the adapter additionally gets `CODEX_BIN`
+  // so a codex-routing scenario can never reach the real binary. XDG_STATE_HOME
+  // points under the eval's work dir so no scenario writes the runner's home.
   const fakeCodex = path.join(dir, 'bin', 'codex');
-  const childEnv = existsSync(fakeCodex) ? { ...process.env, CODEX_BIN: fakeCodex } : process.env;
+  const binDir = path.join(dir, 'bin');
+  const childEnv = {
+    ...process.env,
+    PATH: existsSync(binDir) ? binDir + path.delimiter + process.env.PATH : process.env.PATH,
+    XDG_STATE_HOME: path.join(work, 'state'),
+    ...(existsSync(fakeCodex) ? { CODEX_BIN: fakeCodex } : {}),
+  };
   const args = ['-p', prompt, '--output-format', 'stream-json', '--verbose',
     '--plugin-dir', PLUGIN, '--dangerously-skip-permissions', '--max-budget-usd', budget,
     '--model', process.env.EVAL_MODEL || 'sonnet'];

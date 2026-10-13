@@ -552,6 +552,25 @@ function checkAgentsRegistryHarness() {
   }
 }
 
+// ── 10.11 operate-triage selftest (tier-1.5) ────────────────────────────
+// The bug-report modes' deterministic core (contract parse, impact score read
+// from the shipped template's Weights: line, label grammar, owner-channel
+// notify that never claims a send, digest-due clocks) ships in the plugin.
+// Delegate to its selftest, fail-closed on a missing runner — same shape as 10.6.
+function checkOperateTriageSelftest() {
+  const runner = path.join(PLUGIN, 'tools/operate-triage.mjs');
+  if (!existsSync(runner)) {
+    fail(runner, null, 'operate-triage script missing — plugins/agentic-workflow/tools/operate-triage.mjs must exist so the gate proves the contract/score/labels/notify/digest-due verdicts (do not silently drop the check)');
+    return;
+  }
+  const res = spawnSync('node', [runner, '--selftest'], { encoding: 'utf8' });
+  if (res.status !== 0) {
+    const detail = `${res.stdout ?? ''}${res.stderr ?? ''}`
+      .split('\n').filter((l) => /FAIL|failure|Error/.test(l)).join(' | ');
+    fail(runner, null, `operate-triage selftest failed — run \`node plugins/agentic-workflow/tools/operate-triage.mjs --selftest\`: ${detail || '(no detail)'}`);
+  }
+}
+
 // ── Mission-ledger helpers (checks 11 + 12) ─────────────────────────────────
 // Both ledger checks read `.plans/*.state.md` — deployed ledgers, not templates.
 // A repo with no `.plans/` (a fresh consumer) simply has nothing to check.
@@ -1201,7 +1220,7 @@ const isEntryPoint = () => {
 };
 
 if (isEntryPoint()) {
-  for (const check of [checkManifests, checkAgents, checkCommands, checkCrossRefs, checkTemplateRefs, checkPluginRootBraced, checkSections, checkFrontmatterYaml, checkTemplateFrontmatter, checkHooks, checkObfuscation, checkHookBehavior, checkClockGuard, checkMarkerMutation, checkContextAttrib, checkCatalogSelftest, checkCiWaitSelftest, checkPublishGateSelftest, checkRunCodexHarness, checkRunClaudeHarness, checkLedgerHarness, checkAgentsRegistryHarness, checkStandingSteers, checkNextUpAgreement, checkClosing, checkObligationsRegister, checkBudgets, checkRuleDedup, checkTunePresets]) {
+  for (const check of [checkManifests, checkAgents, checkCommands, checkCrossRefs, checkTemplateRefs, checkPluginRootBraced, checkSections, checkFrontmatterYaml, checkTemplateFrontmatter, checkHooks, checkObfuscation, checkHookBehavior, checkClockGuard, checkMarkerMutation, checkContextAttrib, checkCatalogSelftest, checkCiWaitSelftest, checkPublishGateSelftest, checkRunCodexHarness, checkRunClaudeHarness, checkLedgerHarness, checkAgentsRegistryHarness, checkOperateTriageSelftest, checkStandingSteers, checkNextUpAgreement, checkClosing, checkObligationsRegister, checkBudgets, checkRuleDedup, checkTunePresets]) {
     check();
   }
 

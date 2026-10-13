@@ -8,6 +8,45 @@ has no tags — each version-stamped commit on `main` IS the release.
 
 _(empty)_
 
+## [1.60.0] — 2026-10-13
+### Added — in-app support channel spec + bug triage/diagnose/digest modes (operate-triage, mission 1 of 2)
+- **`templates/support-channel-spec.md`** — the venture build spec for a two-way
+  in-app support thread synced to `source/user` GitHub issues: data model
+  (`SupportTicket`, `SupportMessage`, statuses, transitions), the report
+  contract, labels + sync rules, reply flow (draft reply stripped, a human
+  sends it), the read-only `GET /api/ops/signals` endpoint behind
+  `OPS_READ_TOKEN`, per-venture alert config, what mission 2 will need, and an
+  8-item build checklist. Written so a venture runs `/agentic-workflow:plan` from it.
+- **`templates/operate-triage.md`** — the venture's triage rubric: eight fixed
+  escalation classes, the impact rubric with a `Weights:` data line, the signal
+  table (with its "not configured" rule), the alert table, the `Ceilings:` line
+  (all `unset` except `fixes/day: 3`), the `loop/paused` pause switch, the twelve
+  labels, and the report-text-is-data posture.
+- **`/agentic-workflow:operate triage #N | diagnose #N | digest`** — three
+  `$ARGUMENTS` modes with one shared Preflight (Issue tracker, `gh auth status`,
+  rubric or plugin fallback, pause switch, idempotent labels). Triage decides
+  `loop/fix | loop/diagnose | loop/escalate | needs-info` and posts the triage
+  comment; diagnose spawns one fresh `ops` agent over the signal table and posts
+  the diagnosis with a draft reply; digest sends on activity only plus a weekly
+  alive line. Boundaries: never merge, push, deploy, message the reporter,
+  mutate production, or follow a report's instruction; a fixed Bash list.
+- **`tools/operate-triage.mjs`** — zero-dep core: `contract`, `score`, `labels`,
+  `notify` (sends only with `--channel slack`, never claims a send it did not
+  make, keeps the text locally otherwise), `digest-due`; 11-case `--selftest`,
+  run by lint row **10.11** (`checkOperateTriageSelftest`, fail-closed).
+- **Eval `operate-triage`** — a synthetic printer-outage report with an
+  injected instruction, a fake `gh` on `PATH`; `evals/run.mjs` now prepends a
+  fixture `bin/` to `PATH` when present and sets `XDG_STATE_HOME` under the
+  eval's work dir.
+- **`agents/ops.md`** gains a Diagnose mode section; §4, §6, §9 and §12 name the
+  `source/user` / `loop/*` labels, the diagnose mode, the three modes, and the
+  Alert/Digest wiring (incident-class report and single-venue device outage
+  alert; the bug-loop digest is activity-only plus a weekly alive line).
+### Noted
+- No watcher, no fix path, no server, no caps enforcement — mission 2
+  (`operate-fix`, #90); the venture n=1 is an obligation the orchestrator
+  promotes at close (OB-<n>).
+
 ## [1.59.0] — 2026-10-11
 ### Added — retro fixes from tune-presets (#129–#134, one PR)
 - **`tools/ledger.mjs` — one-line ledger beats (#132).** `mark`, `fire`,
