@@ -14,8 +14,8 @@ everything since the last one — §12 LA-6)._
 
 Status: active
 
-Estimate: 1 session
-Sessions used: 1
+Estimate: 2 sessions
+Sessions used: 2
 
 _The two budget lines above are read by the mission-budget hook every turn. The
 planner writes `Estimate:` (1 = one brief S1 + one checkpoint, inside which two
@@ -119,6 +119,8 @@ Deviating is allowed; deviating silently is not (§4)._
 
 _≤10 lines per entry: what this session did, the verify signal, the branch, and
 what the next session needs. Newest on top; crash-safe by write-ahead._
+
+- 2026-10-13 owner scope decision (overrun STOP): Estimate 1 → 2 (locked 2026-10-13). S1-fix started: Sessions used 2/2; S1 builder resumed with the corrective (3 blockers + advisories + A4).
 
 - 2026-10-13 ckpt-p1 (a) diff (Fable): APPROVE — gates re-run green, eval on final text pass judge 100% ($0.61), all 8 departures accepted, both pre-merge rows re-verified. Scores DX 3, Sec 3, Eff 3, QA 2, Arch 2. Advisory: A1 deviations unlogged (now logged), A2 push for CI, A3 kept digest never writes lastDigestAt (→ #90 hand-over), A4 checks.mjs doesn't assert one ops spawn. Combined ckpt-p1: REQUEST CHANGES via (b). S1-fix would be session 2/1 = overrun STOP → owner scope decision asked.
 

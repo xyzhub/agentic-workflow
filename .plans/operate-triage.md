@@ -538,6 +538,15 @@ shipped templates, tool and modes produce or print, and where it comes from._
   counts. The 2026-10-06 draft's `20` is dropped. Owner chose "unset
   (Recommended)" via AskUserQuestion.
 
+- 2026-10-13 (owner, overrun scope decision at ckpt-p1) — Estimate 1 → **2 sessions**: ONE
+  corrective `S1-fix` fixes the BUILDABLE reviewer's 3 blocking spec gaps (webhook secret
+  unset → 503; needs-info missing-fields comment relayed to staff; staff close / post-resolved
+  message GitHub-side rules) plus the cheap advisories (owner-comment relay opt-in, relay only
+  Decision/Next/Result lines of loop comments, honest `diagnosing` status copy, strip leading
+  `### ` in field values, name the needs-info re-queue path, `issue_comment` edited/deleted
+  ignored) and A4 (checks.mjs asserts one `ops` spawn). Then a narrow re-check of the spec.
+  Owner chose "One fix pass, estimate → 2 (Recommended)" via AskUserQuestion.
+
 ## Open questions
 
 - ~~**OQ-1 (Replan 2026-10-13) — the `triage+diagnose runs/day` default.**~~ **Answered 2026-10-13: `unset` — see Locked decisions.** The
