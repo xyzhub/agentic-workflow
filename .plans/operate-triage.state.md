@@ -120,6 +120,10 @@ Deviating is allowed; deviating silently is not (§4)._
 _≤10 lines per entry: what this session did, the verify signal, the branch, and
 what the next session needs. Newest on top; crash-safe by write-ahead._
 
+- 2026-10-13 S1-fix built (Fable re-check spawned): 1123486 spec fixes (webhook 503/401, needs-info relay, rules 7/8 staff close/resolved, opt-in **Reply**, reduced loop relay, softened diagnosed copy instead of new status — status set locked, heading escape, re-queue path, edited/deleted ignored) + e57d9a3 eval asserts one ops spawn. Gates green; eval pass judge 100% ($0.56). Narrow BUILDABLE re-check (Fable, same reviewer) spawned on d737133..e57d9a3.
+
+- 2026-10-13 S1-fix (backend): all 10 BUILDABLE items fixed in 1123486 (spec + prefix mentions) and the checks commit after it; gates lint/lint-test/hook-test/selftest clean; eval operate-triage PASS judge 100% $0.56 with the new one-ops-spawn check passing. Unpushed.
+
 - 2026-10-13 owner scope decision (overrun STOP): Estimate 1 → 2 (locked 2026-10-13). S1-fix started: Sessions used 2/2; S1 builder resumed with the corrective (3 blockers + advisories + A4).
 
 - 2026-10-13 ckpt-p1 (a) diff (Fable): APPROVE — gates re-run green, eval on final text pass judge 100% ($0.61), all 8 departures accepted, both pre-merge rows re-verified. Scores DX 3, Sec 3, Eff 3, QA 2, Arch 2. Advisory: A1 deviations unlogged (now logged), A2 push for CI, A3 kept digest never writes lastDigestAt (→ #90 hand-over), A4 checks.mjs doesn't assert one ops spawn. Combined ckpt-p1: REQUEST CHANGES via (b). S1-fix would be session 2/1 = overrun STOP → owner scope decision asked.
