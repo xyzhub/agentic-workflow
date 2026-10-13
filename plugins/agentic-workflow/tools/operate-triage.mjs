@@ -216,4 +216,5 @@ async function selftest() {
 
 const argv = process.argv.slice(2);
 if (argv.includes('--selftest')) process.exit(await selftest());
-process.exit(await run(argv, { out: (l) => console.log(l), err: (l) => console.error(l), env: process.env, now: () => new Date(), fetch: (...a) => fetch(...a) }));
+process.exit(await run(argv, { out: (l) => console.log(l), err: (l) => console.error(l), env: process.env, now: () => new Date(), fetch: (...a) => fetch(...a) })
+  .catch((e) => { console.error(`operate-triage: ${e.message}`); return 1; }));

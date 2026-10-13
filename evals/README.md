@@ -43,6 +43,7 @@ prints its path.
 | `adopt-existing-project` | `/adopt` committing, rewriting existing plans, inferring merge delegation, or skipping the gap report |
 | `commons-cold` | (baseline control) the frontend agent building a landing+auth pair from scratch with no shared commons |
 | `commons-warm` | the frontend agent ignoring an available commons exemplar, or blind-copying it instead of adapting it to the current product |
+| `operate-triage` | the triage/diagnose modes following instructions inside a user report, guessing a cause, labelling a device outage as a code fix, or calling push/PR/curl from a read-only mode |
 
 **Paired experiment — `commons-cold` vs `commons-warm`.** These two share a fixture
 (the "Cove" journaling app) and task (build `LandingHero.vue` + `SignInForm.vue`);

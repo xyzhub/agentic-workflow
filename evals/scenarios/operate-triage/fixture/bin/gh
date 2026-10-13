@@ -1,0 +1,46 @@
+#!/usr/bin/env node
+// Fake `gh` for the operate-triage eval — no network. evals/run.mjs prepends
+// fixture bin/ to PATH. Serves six verbs only: auth status · label list|create ·
+// issue view|edit|comment (--body-file only) · issue list. Labels and comments
+// live in .gh/state.json; every call is appended to .gh/calls.log.
+const fs = require('node:fs');
+const path = require('node:path');
+const GH = path.join(__dirname, '..', '.gh');
+const argv = process.argv.slice(2);
+fs.appendFileSync(path.join(GH, 'calls.log'), argv.join(' ') + '\n');
+const die = () => { process.stderr.write(`fake gh: unsupported: ${argv.join(' ')}\n`); process.exit(1); };
+const args = []; const opts = {};
+for (let i = 0; i < argv.length; i++) {
+  const a = argv[i];
+  if (a === '--repo' || a === '-R') { i++; continue; }
+  if (!a.startsWith('-')) { args.push(a); continue; }
+  const v = argv[i + 1]; i++;
+  (opts[a] = opts[a] || []).push(...(a.endsWith('-label') ? String(v).split(',') : [v]));
+}
+const LABELS = ['source/user', 'needs-info', 'loop/fix', 'loop/diagnose', 'loop/diagnosed', 'loop/escalate', 'loop/ready', 'loop/paused', 'type/ops', 'size/XS', 'size/S', 'size/M'];
+const SF = path.join(GH, 'state.json');
+const issue = JSON.parse(fs.readFileSync(path.join(GH, 'issues', '612.json'), 'utf8'));
+const st = fs.existsSync(SF) ? JSON.parse(fs.readFileSync(SF, 'utf8')) : { labels: issue.labels.map((l) => l.name), comments: [] };
+const save = () => fs.writeFileSync(SF, JSON.stringify(st, null, 2) + '\n');
+const view = () => ({ ...issue, labels: st.labels.map((name) => ({ name })), comments: st.comments });
+const pick = (o) => { const f = opts['--json']; if (!f) return o; const r = {}; for (const k of f[0].split(',')) r[k] = o[k]; return r; };
+const out = (x) => process.stdout.write((typeof x === 'string' ? x : JSON.stringify(x, null, 2)) + '\n');
+const [a0, a1, a2] = args; const n = String(a2 || '').replace('#', '');
+const allowed = (ks) => Object.keys(opts).every((k) => ks.includes(k));
+
+if (a0 === 'auth' && a1 === 'status') out('github.com\n  ✓ Logged in to github.com as eval (fake)');
+else if (a0 === 'label' && a1 === 'list') out(opts['--json'] ? LABELS.map((name) => ({ name })) : LABELS.join('\n'));
+else if (a0 === 'label' && a1 === 'create') out(`created ${a2} (fake)`);
+else if (a0 === 'issue' && a1 === 'view' && n === '612' && allowed(['--json'])) out(opts['--json'] ? pick(view()) : `${issue.title}\n\n${issue.body}`);
+else if (a0 === 'issue' && a1 === 'edit' && n === '612' && allowed(['--add-label', '--remove-label'])) {
+  for (const l of opts['--remove-label'] || []) st.labels = st.labels.filter((x) => x !== l);
+  for (const l of opts['--add-label'] || []) if (!st.labels.includes(l)) st.labels.push(l);
+  save(); out(issue.url);
+} else if (a0 === 'issue' && a1 === 'comment' && n === '612' && allowed(['--body-file']) && opts['--body-file']) {
+  const f = opts['--body-file'][0];
+  st.comments.push({ author: { login: 'owner' }, body: fs.readFileSync(f === '-' ? 0 : f, 'utf8'), createdAt: new Date().toISOString() });
+  save(); out(`${issue.url}#issuecomment-${st.comments.length}`);
+} else if (a0 === 'issue' && a1 === 'list' && allowed(['--label', '--state', '--json', '--limit'])) {
+  const want = opts['--label'] || [];
+  out(want.every((l) => st.labels.includes(l)) ? [pick(view())] : []);
+} else die();
