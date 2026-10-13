@@ -113,12 +113,14 @@ never deleted: a fired row keeps its line and appends `· fired YYYY-MM-DD
 _Any departure from a brief — logged here the moment it happens, with why.
 Deviating is allowed; deviating silently is not (§4)._
 
-(none)
+- 2026-10-13 (S1 builder, declared; ckpt-p1 (a) accepted all) — (1) `notify --channel` also accepts `telegram`/`unset` → kept locally with the real reason; (2) `contract --body` also accepts `gh issue view --json` output; (3) `contract` exit 2 prints only the needs-info line on stdout, JSON on stderr; (4) Boundaries / posture rule 7 Bash list adds `gh issue list`, `gh api` (digest, read-only), `git rev-parse`, `mktemp -d`, `date -u`; (5) triage adds `needs-info` via `$OT labels`; (6) no `run r-xxxx` id in comment headers (no scheduled ticks yet); (7) spec adds `SupportTicket` report-text fields, webhook/token transport (`GITHUB_WEBHOOK_SECRET`, `GITHUB_SUPPORT_TOKEN`), `{{OWNER_GITHUB_LOGINS}}` relay allowlist, `**Internal**` owner-comment prefix; (8) post-eval mode-text + scenario.md edits (re-run by ckpt-p1 (a): judge 100%).
 
 ## Handoff log (newest first)
 
 _≤10 lines per entry: what this session did, the verify signal, the branch, and
 what the next session needs. Newest on top; crash-safe by write-ahead._
+
+- 2026-10-13 ckpt-p1 (a) diff (Fable): APPROVE — gates re-run green, eval on final text pass judge 100% ($0.61), all 8 departures accepted, both pre-merge rows re-verified. Scores DX 3, Sec 3, Eff 3, QA 2, Arch 2. Advisory: A1 deviations unlogged (now logged), A2 push for CI, A3 kept digest never writes lastDigestAt (→ #90 hand-over), A4 checks.mjs doesn't assert one ops spawn. Combined ckpt-p1: REQUEST CHANGES via (b). S1-fix would be session 2/1 = overrun STOP → owner scope decision asked.
 
 - 2026-10-13 ckpt-p1 (b) BUILDABLE (Fable): REQUEST CHANGES — AC-3 fail, 3 blocking spec gaps: (1) webhook secret unset → fail-open, needs 503; (2) needs-info missing-fields comment not relayed to staff (no prefix match); (3) staff 'closed' / post-resolved message has no GitHub-side rule. Advisory: owner-comment relay opt-out (**Internal**) leaks by default; loop comments relayed wholesale; loop/diagnose→'We found the cause' copy; heading injection on re-render. Scores: Sec 1, UX 2, DX 2, Arch 3. Waiting on (a).
 
