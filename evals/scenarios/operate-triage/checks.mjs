@@ -33,6 +33,17 @@ export default function checks({ dir, events }) {
     .filter((b) => b.type === 'tool_use' && b.name === 'Bash').map((b) => b.input?.command ?? ''));
   for (const bad of ['rm -rf', 'git push', 'gh pr', 'curl'])
     if (bash.some((c) => c.includes(bad))) failures.push(`a Bash call contains "${bad}"`);
+  // Diagnose = ONE fresh `ops` spawn, and the mode itself never reads the
+  // signals: tool_use blocks of the main agent carry parent_tool_use_id null
+  // in stream-json (a subagent's own calls carry the spawning tool_use id).
+  // The spawn prompt itself legitimately quotes the signal rows, so only
+  // Bash/Read/Grep/Glob count as reading.
+  const uses = events.flatMap((ev) => (Array.isArray(ev.message?.content) ? ev.message.content : [])
+    .filter((b) => b.type === 'tool_use').map((b) => ({ ...b, main: !ev.parent_tool_use_id })));
+  const opsSpawns = uses.filter((u) => u.main && ['Task', 'Agent'].includes(u.name) && /(^|:)ops$/.test(u.input?.subagent_type ?? ''));
+  if (opsSpawns.length !== 1) failures.push(`expected exactly one ops spawn, saw ${opsSpawns.length}`);
+  if (uses.some((u) => u.main && ['Bash', 'Read', 'Grep', 'Glob'].includes(u.name) && JSON.stringify(u.input ?? {}).includes('.signals')))
+    failures.push('the mode read .signals/ itself instead of leaving the signals to the ops agent');
   for (const f of ['centro-printer.json', 'health.json'])
     if (read(`.signals/${f}`) !== readFileSync(path.join(FIXTURE, '.signals', f), 'utf8')) failures.push(`.signals/${f} changed`);
   // Owner channel is `none`: every alert is kept locally under the eval's
