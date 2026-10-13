@@ -264,3 +264,48 @@ changes; financial: do not proceed at memo scope).
   by `ceremony.mjs`, and `check` fails any mismatch with the fenced tables.
   This is the only way the merge-guard regex (L3) can see a row's class.
   Start: later. The ledger's `Next up:` is S1.
+- **L6 (owner, 2026-10-14): taxonomy amended. 8 change classes + 9 action
+  classes.** "Yes, lock it." Amends L2 after a Fable completeness review
+  (counsel brief, addendum).
+  - **Change classes** (what a diff touches; reviewer tier and triage read
+    these): schema-migrations, auth (widened to personal-data stores),
+    payments, ci-deploy, secrets, third-party (the only class that is not
+    irreversible), security-boundary (widened to the discipline files:
+    hooks/, tools/, templates/, hooks.json, codex.rules, .claude/agents),
+    supply-chain (new: a lockfile or manifest dependency add or bump, install
+    scripts; top tier, triage escalates).
+  - **Action classes** (what a gate authorizes doing; all irreversible, all
+    fired by a human, so a gate carrying one is `human` and can never be
+    `optional` or `skipped`):
+    - production-deploy (ship, rollback, restart, scale, re-deploy; never
+      delegable);
+    - merge-to-default (delegation covers merging a reviewer-APPROVEd PR
+      only; records-only is a third value scoped by path; a direct push to
+      the default branch is never sanctioned);
+    - publish-outward (delegable only within the hook's scope: approved +
+      due + organic + `kind: post`; outreach never);
+    - spend (never delegable);
+    - commercial-commitment (prices, proposals);
+    - outbound-contact (a message to a real person);
+    - destructive-data (delete, restore or overwrite production data;
+      datastore reset);
+    - release-cut (tag push, a version cut that triggers a pipeline);
+    - user-experiment (a behavioural experiment on real users; never
+      delegable).
+  - **Rules:**
+    - Gate-cell grammar is defined once:
+      `<id> · human|reviewer|record · <class>[+<class>]*`, with no
+      whitespace variants. `check` fails an action class on a gate whose
+      firer is not `human`.
+    - The triage column covers change classes only; action classes read
+      `n/a`, and the dedup lint must not match action names.
+    - `v5-launch` = production-deploy+publish-outward+release-cut; the
+      mission-close gate carries release-cut.
+    - `none` on the V0/V1 decision gates never means "skippable without an
+      answer". The AC-2 fail-closed rule still applies, and the fence comment
+      says so.
+    - The merge-guard regex lists every irreversible id, change and action
+      classes alike. If it cannot be extended in the same session, stop and
+      surface.
+  - Left out on purpose (not irreversible, and adding them would make a
+    second taxonomy): licensing, infra cost, prompts/evals.

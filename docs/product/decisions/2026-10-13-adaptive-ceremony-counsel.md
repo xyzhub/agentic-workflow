@@ -70,3 +70,22 @@ Advisors: technical (Fable), financial (Fable). Inputs: the brief, the memos
   pays back.
 - Technical: a harness run showing that an agent who edits §10.2 to skip an
   irreversible gate is stopped before the gate passes.
+
+## Addendum, 2026-10-14 — completeness review (technical, Fable)
+
+Verdict: **complete with changes**. Gaps found:
+- `release-cut` and `user-experiment` were missing as action classes;
+- supply-chain was missing (now an 8th change class);
+- the discipline files and personal data were missing (now covered by
+  widening security-boundary and auth).
+
+Rule fixes:
+- merge-to-default wording: a direct push is never sanctioned;
+- the publish delegation must carry the hook's real scope;
+- triage cannot observe actions, so action classes are `n/a` in its column;
+- the `+` grammar is defined once, and an action-class gate is
+  human-fired;
+- `none` on V0/V1 stays fail-closed.
+
+What would flip the verdict to "incomplete": the merge-guard regex cannot
+cover the action ids. The owner locked all of this as L6.

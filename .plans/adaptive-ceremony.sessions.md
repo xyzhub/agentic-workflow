@@ -132,21 +132,51 @@ P3 reads P2's tool).
      (b) `wc -c plugins/agentic-workflow/templates/WORKFLOW.md` and the
      per-section awk (`awk '/^## /{if(h)printf "%7d B  %s\n", n, h; h=$0; n=0} {n+=length($0)+1} END{printf "%7d B  %s\n", n, h}'`)
      — quote total + §0/§5/§10/§11 before and after.
-  2. **`templates/gate-classes.md`** (new, ≤ 70 lines): frontmatter (`status:
-     semi-static`, `owner-agent: architect`, `refresh-trigger: event`), the
-     terms line, ONE table `| class | id | matches (paths / concepts) |
-     irreversible | reviewer tier | triage |` with the seven classes from D3
-     (ids as locked; `matches` text absorbs credential/tenancy under auth,
-     money under payments, webhooks under third-party; `security-boundary`
-     covers ingress sanitisation, CSP/CORS, sandboxing, webhook signature
-     checks), a second small table `## Qualifiers (triage only)` for
-     `not-reproducible` and `size-above-s` with `triage: escalate`, and a
-     `## Readers` list (operate-triage, §5 LA-5 reviewer tier, reviewer agent,
-     `ceremony.mjs` via the fenced `Gate` cells). **The file never contains the
-     word `Fable`** — say "top tier".
+  2. **`templates/gate-classes.md`** (new, ≤ 110 lines; L6 2026-10-14 is the
+     spec — brief lines 267–311): frontmatter (`status: semi-static`,
+     `owner-agent: architect`, `refresh-trigger: event`), the terms line, then:
+     - `## Change classes` — `| class | id | covers | irreversible | reviewer
+       tier | triage |`, eight rows: `schema-migrations`; `auth` (covers
+       sign-in, sessions, tokens, roles, permissions, authorization/tenancy,
+       **personal-data stores**); `payments` (incl. money flows); `ci-deploy`;
+       `secrets`; `third-party` (external API behaviour, webhooks, vendor
+       SDKs — irreversible `no`, the only one); `security-boundary` (ingress
+       sanitisation, CSP/CORS, sandboxing, webhook signature checks, **and
+       the discipline files: `hooks/`, `tools/`, `templates/`, `hooks.json`,
+       `codex.rules`, `.claude/agents`**); `supply-chain` (a lockfile or
+       manifest dependency add or bump, install scripts — top tier, triage
+       escalates). Tier `top` = schema-migrations, auth, payments,
+       security-boundary, supply-chain; triage `escalate` on all eight.
+     - `## Action classes` — `| class | id | covers | delegable | irreversible |`,
+       nine rows, all irreversible `yes`, triage `n/a` stated in the section
+       lead: `production-deploy` (ship, rollback, restart, scale, re-deploy;
+       never), `merge-to-default` (a reviewer-APPROVEd PR under §10 Merge
+       policy; records-only by path; a direct push is never sanctioned),
+       `publish-outward` (only approved + due + organic + `kind: post` under
+       the hook's scope; outreach never), `spend` (never),
+       `commercial-commitment` (prices, proposals), `outbound-contact` (a
+       message to a real person), `destructive-data` (delete/restore/
+       overwrite production data; datastore reset), `release-cut` (tag push,
+       a version cut that triggers a pipeline), `user-experiment` (never).
+       Lead sentence: a gate carrying an action class is `human`-fired and
+       can never be `optional` or `skipped`.
+     - `## Qualifiers (triage only)` — `not-reproducible`, `size-above-s`,
+       `triage: escalate`; never a gate's class.
+     - `## Gate-cell grammar` — the SINGLE definition:
+       `<id> · human|reviewer|record · <class>[+<class>]*` or `… · none`,
+       U+00B7 separators with one space each side, no whitespace variants;
+       `+` joins classes with no spaces; `none` on a decision gate (V0/V1)
+       is fail-closed under AC-2, never "skippable without an answer".
+     - `## Readers` — operate-triage (triage column, change classes only),
+       §5 LA-5 reviewer tier, `agents/reviewer.md`, `ceremony.mjs` via the
+       fenced `Gate` cells, `hooks/lib/merge-guard.sh` (the irreversible id
+       list only, spelled in the script), and "left out on purpose:
+       licensing, infra cost, prompts/evals".
+     **The file never contains the word `Fable`** — say "top tier".
   3. **Three consumers point at it.** `templates/operate-triage.md` 16–34:
-     keep the heading, replace the 8-item list with "the seven change classes
-     and two qualifiers in `templates/gate-classes.md` (column `triage`);
+     keep the heading, replace the 8-item list with "the eight change classes
+     and two qualifiers in `templates/gate-classes.md` (column `triage`;
+     action classes are `n/a` for triage);
      matching any → `loop/escalate`, naming the class id verbatim" + the
      existing code-vs-operational paragraph. `agents/reviewer.md` line 3:
      "risky-change reviews (the classes whose reviewer tier is `top` in
@@ -163,13 +193,17 @@ P3 reads P2's tool).
      `checkRuleDedup`): over `agents/`, `commands/`, `skills/`, `templates/`
      (minus `gate-classes.md`), fail any paragraph (blank-line delimited,
      HTML comments + backticks stripped like `stripInline`) that matches ≥ 4
-     of the class keys `[/schema\/migrations|schema-migrations/i, /\bauth\b/i,
-     /\bpayments?\b/i, /ci\/deploy|ci-deploy/i, /\bsecrets?\b/i,
-     /third-party/i, /security[- ]boundary/i]` — message per J4: "Found an
-     inline list of gate classes in `<file>` line N. Link
-     `templates/gate-classes.md` instead." Export the pure predicate; add 3
-     lint-test cases (triage's old list → fail; the §10 Merge-policy prose →
-     pass; a 3-key paragraph → pass). Add it to the check list. Run lint;
+     of the **change-class** keys `[/schema\/migrations|schema-migrations/i,
+     /\bauth\b/i, /\bpayments?\b/i, /ci\/deploy|ci-deploy/i, /\bsecrets?\b/i,
+     /third-party/i, /security[- ]boundary/i, /supply[- ]chain/i]` — **action
+     names (`deploy`, `merge`, `publish`, `spend`, `release`, …) are never
+     keys** (L6: §11's safety-boundary paragraph legitimately names all nine
+     actions). Message per J4: "Found an inline list of gate classes in
+     `<file>` line N. Link `templates/gate-classes.md` instead." Export the
+     pure predicate; add 5 lint-test cases (triage's old 8-item list → fail;
+     a restated 4-key change-class list with new wording → fail; §11's
+     action list paragraph (WORKFLOW ≈ 1088–1105, verbatim) → pass; the §10
+     Merge-policy prose → pass; a 3-key paragraph → pass). Add it to the check list. Run lint;
      fix every hit it finds in the tree (expect: the old reviewer line, the
      old triage list — both already rewritten in step 3; the brief/memos are
      under `docs/` and are not scanned).
@@ -182,21 +216,23 @@ P3 reads P2's tool).
      docs/product/decisions/, docs/product/business/`; V2 `.github/workflows/,
      README.md`; V3 `none`; V4 `docs/product/engineering/runbook.md`; V5
      `docs/product/launch/launch-plan.md`; V6 `none`). `Gate` cell starts
-     `<id> · human|reviewer · <class|none>`: `v0-go-no-go · human · none`,
-     `v1-scope-approval · human · none`, `v2-deploy-pipeline · reviewer ·
-     ci-deploy`, `v3-mvp-criteria · reviewer · none`, `v4-security-audit ·
-     reviewer · security-boundary; v4-ux-audit · reviewer · none;
-     v4-dx-audit · reviewer · none; v4-efficiency-audit · reviewer · none`,
-     `v5-launch · human · none`, `v6-operate · reviewer · none`. Forks rename
-     freely; the parser keys on headers.
+     with the grammar `gate-classes.md` defines (`<id> · human|reviewer|record
+     · <class>[+<class>]*`, never restated here — the fence comment points at
+     the file and adds: "`none` on a decision gate is fail-closed (AC-2), not
+     skippable"): `v0-go-no-go · human · none`, `v1-scope-approval · human ·
+     none`, `v2-deploy-pipeline · reviewer · ci-deploy`, `v3-mvp-criteria ·
+     reviewer · none`, `v4-security-audit · reviewer · security-boundary;
+     v4-ux-audit · reviewer · none; v4-dx-audit · reviewer · none;
+     v4-efficiency-audit · reviewer · none`, **`v5-launch · human ·
+     production-deploy+publish-outward+release-cut`** (L6), `v6-operate ·
+     reviewer · none`. Forks rename freely; the parser keys on headers.
   6. **§5 `checkpoint-gates` fence** (insert after the trio table, before
-     "Rules:" at 376): a 7-line list `- <id> · human|reviewer · <class|none>`
-     for `plan-judge · reviewer · none`, `phase-reviewer · reviewer · none`
-     (note: tier escalates by diff class, LA-5), `staging-verify · reviewer ·
-     none`, `counsel · human · none`, `multi-vote-audit · reviewer ·
+     "Rules:" at 376): a 7-line list in the same grammar for `plan-judge ·
+     reviewer · none`, `phase-reviewer · reviewer · none` (note: tier
+     escalates by diff class, LA-5), `staging-verify · reviewer · none`,
+     `counsel · human · none`, `multi-vote-audit · reviewer ·
      security-boundary`, `chronicler · record · none` (a record beat, not a
-     review — the second field admits `human|reviewer|record`; say so in
-     the fence comment and in the parser), `mission-close · human · none`.
+     review), **`mission-close · human · release-cut`** (L6).
      Then the new canonical rule, after the `one-next-up`
      block (451): `<!-- rule: ceremony-skip -->` "a gate whose effective
      §10.2 cell is `skipped` writes exactly one ledger Deviations line `gate
@@ -267,7 +303,9 @@ P3 reads P2's tool).
   repo). Pre-merge Closing rows are not yet due (version/record fire in S3).
 - **Read budget**: ≈ 980 lines + ≈ 110 lines for the counter
   (`ledger.mjs` whole, `ledger-test.mjs` 1–60 + the `sessions` cases,
-  `mission-state.md` 1–35) ≈ 1,090 lines read + ≈ 300 lines written.
+  `mission-state.md` 1–35) + brief 261–311 (L5/L6, 50 lines) + WORKFLOW
+  1085–1110 (§11 action paragraph, the dedup pass fixture) ≈ 1,165 lines
+  read + ≈ 340 lines written (gate-classes.md grew to ≤ 110 under L6).
   Suits: `backend` (markdown + lint/ledger JS; no runtime surface).
 
 **Checkpoint ckpt-p1** ends phase 1 — one-shot `reviewer` on **Fable**
@@ -343,8 +381,15 @@ checks every table/row against the Value sourcing rows (ids, grammar, plain
      - `check [--json] [--brief]` → findings: `absent`, `proposed`,
        `unreadable`, `refused-override <id>`, `drift` (ONE line, count +
        list; irreversible-class drift names the rows it tightened), `token
-       mismatch` (the `· class:<id>` token in `signal` ≠ fence — OQ-2).
-       Exit 0 always unless `--strict`.
+       mismatch` (the `· class:<id>[+<id>]*` token in `signal` ≠ fence — L5),
+       and the two L6 grammar rules — **`action-class gate not human`** (a
+       gate cell carrying any of the nine action ids whose firer is
+       `reviewer` or `record` → finding, and `effective` = `required`) and
+       **`malformed class list`** (a `+` with spaces, a leading/trailing `+`,
+       an unknown id, `none` combined with a class → finding; the whole
+       table is then treated as `unreadable` for that gate: `required`).
+       The id sets come from `gate-classes.md`'s two tables, parsed by the
+       `id` column (never hard-coded). Exit 0 always unless `--strict`.
      - rendering: the §10 row cells and the 10.2 table, **plain first-column
        cells**, `signal` ending `· class:<id>` for gate rows (OQ-2 — owner
        ACCEPTED 2026-10-13, lock L5; counsel condition 4 amended). Never
@@ -361,7 +406,14 @@ checks every table/row against the Value sourcing rows (ids, grammar, plain
      → 4 stage rows, ids from the table, no `v0`..`v6` anywhere; (c) no fence
      → `unreadable`, every `effective` = `required`; (d) an override line
      skipping an irreversible gate → `effective` renders `required (override
-     refused: ci-deploy is irreversible)`, and the same for `optional`; (e)
+     refused: ci-deploy is irreversible)`, and the same for `optional`; (d2)
+     L6 grammar: a fence with `v5-launch · reviewer ·
+     production-deploy+release-cut` → `check` finding `action-class gate not
+     human`, `effective v5-launch` = `required`; a cell `auth + payments`
+     (spaces) and a cell `auth+` → finding `malformed class list`, `required`;
+     a valid `v5-launch · human · production-deploy+publish-outward+release-cut`
+     → no finding and `classOf` returns all three; (d3) an override skipping
+     `mission-close` (`release-cut`, an action id) → refused; (e)
      `proposed` row → all `required`; (f) drift: fixture repo gains
      `stripe` in `package.json` after the profile → `check` prints ONE drift
      line and `effective v4-security-audit` = `required`; (g) `--log` writes
@@ -382,16 +434,24 @@ checks every table/row against the Value sourcing rows (ids, grammar, plain
      (**sed, not awk** — `tools/hook-test.mjs:47` `BIN_LIST` is `bash sh git
      grep sed head tr cut wc cat mkdir dirname`; awk is absent and the
      `# externals:` line must stay a subset) and `block` when it matches the
-     OQ-2 regex (the six irreversible ids spelled inline; `optional|skipped`),
-     message: "❌ BLOCKED: §10.2 Ceremony marks an irreversible-class gate
-     `<id>` as <cell> — set it back to `required` (an override cannot remove
-     the safety boundary; `/agentic-workflow:doctor` explains)". Update the
-     header contract comment (rule 3a); `# externals:` unchanged. `tools/hook-test.mjs`:
-     extend `wfMerge(cell, ceremony = '')` to append a 10.2 block; add cases
-     — skipped irreversible → BLOCK and gh NOT run; optional irreversible →
-     BLOCK; skipped `third-party` → allowed (records-only path continues);
-     a `required (override refused: …)` cell → allowed; no 10.2 → every
-     existing case unchanged (run the whole block).
+     L5/L6 regex — **all 16 irreversible ids spelled inline, change and
+     action alike**: `CERRX='^\| *[^|]+ *\| *gate *\|[^|]*\|[^|]*\|[^|]*class:([a-z-]+\+)*(schema-migrations|auth|payments|ci-deploy|secrets|security-boundary|supply-chain|production-deploy|merge-to-default|publish-outward|spend|commercial-commitment|outbound-contact|destructive-data|release-cut|user-experiment)(\+[a-z-]+)*[^|]*\| *(skipped|optional) *\|'`
+     (`third-party` alone is the only class that passes); message: "❌
+     BLOCKED: §10.2 Ceremony marks an irreversible-class gate `<id>` as
+     <cell> — set it back to `required` (an override cannot remove the
+     safety boundary; `/agentic-workflow:doctor` explains)". Update the
+     header contract comment (rule 3a); `# externals:` unchanged. **If the
+     list cannot be made to match in this session, stop and surface (L6) —
+     never ship a shorter list.** `tools/hook-test.mjs`: extend
+     `wfMerge(cell, ceremony = '')` to append a 10.2 block; add cases —
+     skipped `ci-deploy` → BLOCK and gh NOT run; optional `auth` → BLOCK;
+     skipped **`supply-chain`** → BLOCK; skipped **`v5-launch` with
+     `class:production-deploy+publish-outward+release-cut`** → BLOCK (an
+     action id inside a `+` list); optional **`release-cut`** on
+     `mission-close` → BLOCK; skipped `third-party` → allowed (records-only
+     path continues); a `required (override refused: …)` cell → allowed;
+     `class:third-party+auth` skipped → BLOCK (the id anywhere in the list);
+     no 10.2 → every existing case unchanged (run the whole block).
   5. Dogfood derive on this repo read-only: `node plugins/agentic-workflow/tools/ceremony.mjs derive --root . --json`
      — quote the row count, the asks, and the signals in the handoff (do
      NOT write to `docs/WORKFLOW.md` here; S3 does the `/sync` write).
@@ -517,6 +577,15 @@ committed copy). APPROVE → PR to `main` (`human-merge`).
      naming `tools/ceremony.mjs` beside `conform.mjs`; plugin `README.md`
      tools listing (≈ 200–210) + sync row 184; root `README.md` line 36–37
      (`ceremony.mjs`, `gate-classes.md`). Re-measure WORKFLOW bytes; quote.
+  5b. **Class-naming copy rule (L6).** Every owner- or agent-facing string
+     S3 writes that mentions a class — the doctor refusal, the J4 reviewer
+     finding phrasing ("Risky change — class: `<id>` (`gate-classes.md`)"),
+     triage escalation comments, the autopilot safety-boundary paragraph
+     (§11 ≈ 1088–1105 already names the nine actions in prose: leave it, add
+     one pointer "(the action classes in `templates/gate-classes.md`)"), the
+     `/next` and intake lines — names at most ONE class id and points at
+     `templates/gate-classes.md`; never a list. Run `node tools/lint.mjs`
+     after each file; `checkClassListDedup` is the backstop, not the rule.
   6. **Dogfood (OQ-3).** Run the `/agentic-workflow:sync` procedure on this
      repo by hand per the new prose: `docs/WORKFLOW.md` gets the re-copied
      master (stamp → `v1.61.0`), §10 preserved via the awk line, the

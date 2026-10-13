@@ -147,13 +147,14 @@ change and is a post-merge Closing row here, not plugin work.
 
 | AC | Value | Source kind | Where |
 |---|---|---|---|
-| AC-8 | class ids `schema-migrations, auth, payments, ci-deploy, secrets, third-party, security-boundary`; qualifier ids `not-reproducible, size-above-s` | locked decision | 2026-10-13 L2 + memos D3 "Values this decision settles" |
+| AC-8 | change-class ids `schema-migrations, auth, payments, ci-deploy, secrets, third-party, security-boundary, supply-chain`; action-class ids `production-deploy, merge-to-default, publish-outward, spend, commercial-commitment, outbound-contact, destructive-data, release-cut, user-experiment`; qualifier ids `not-reproducible, size-above-s` | locked decision | 2026-10-14 L6 (amends 2026-10-13 L2 + memos D3) |
 | AC-8 | taxonomy file path `plugins/agentic-workflow/templates/gate-classes.md`; columns `class · matches · irreversible · reviewer tier · triage` | locked decision | 2026-10-13 L2 ("one column per reader") + D3 |
-| AC-5 | irreversible = every class except `third-party` | locked decision | 2026-10-13 L2 |
-| AC-8 | reviewer tier `top` = schema-migrations, auth, payments, security-boundary (today's Fable set) | locked decision | memos D3 |
-| AC-8 | triage `escalate` = all 7 classes + both qualifiers | locked decision | memos D3 |
+| AC-5 | irreversible = every change class except `third-party` + every action class (16 ids) | locked decision | 2026-10-14 L6 |
+| AC-8 | reviewer tier `top` = schema-migrations, auth, payments, security-boundary, supply-chain; action classes carry no reviewer tier (`n/a` — human-fired) | locked decision | memos D3 + L6 |
+| AC-8 | triage `escalate` = all 8 change classes + both qualifiers; action rows `n/a` | locked decision | memos D3 + L6 |
+| AC-8 | gate-classes.md layout: `## Change classes` table `| class | id | covers | irreversible | reviewer tier | triage |` · `## Action classes` table `| class | id | covers | delegable | irreversible |` · `## Qualifiers (triage only)` · `## Gate-cell grammar` (the single definition) · `## Readers` | derivation | L6 "one column per reader" (L2) + the `n/a` rule; planner layout |
 | AC-8 | `fable-boundary` detector keys `[/gate-classes/, /reviewer[- ]tier/, /two-line/]`; `gate-classes.md` never contains the word `Fable` | locked decision | memos D3 "Consumption" |
-| AC-8 | class-list dedup threshold: ≥ 4 class keys in one paragraph outside `gate-classes.md` | locked decision | memos D3 (`checkClassListDedup`) |
+| AC-8 | class-list dedup threshold: ≥ 4 **change-class** keys in one paragraph outside `gate-classes.md`; action-class names are never keys | locked decision | memos D3 (`checkClassListDedup`) + L6 |
 | AC-1 | §10 row key `Ceremony profile`; heading `### 10.2 Ceremony`; columns `id · kind · stage · derived · signal · effective` (no class column) | locked decision | 2026-10-13 L1 (D1-A) + counsel condition 4; D1 column list minus `class` |
 | AC-1 | `kind ∈ {artifact, gate}`; cell values `required | optional | skipped` | locked decision | memos D1 |
 | AC-1 | row states: `proposed YYYY-MM-DD` · `confirmed YYYY-MM-DD by <who> · derived YYYY-MM-DD from N signals · N overrides` · `unreadable (YYYY-MM-DD)` · drift suffix `· drift YYYY-MM-DD: <signal> — not re-derived` | locked decision | memos D1/D4 values + brief designer table (six states) |
@@ -163,14 +164,15 @@ change and is a post-merge Closing row here, not plugin work.
 | AC-1 | signal sources (stage ← §0 artifact presence; deploy ← §10 Deploy row ≠ `none`; auth/payments/schema ← path + dependency probes; test/publish/merge policy + catalog ← §10 cells) | locked decision | memos D2 |
 | AC-2 | askable signals: stage, auth, payments, schema only; everything else decided by a §10 row or file presence | locked decision | memos D2 "Mitigation" |
 | AC-1 | a derived `skipped` needs a positive signal; a nothing-found probe on an irreversible-class gate becomes an ask | locked decision | 2026-10-13 L3 |
-| AC-3 | fences `<!-- stage-table -->` (§0) and `<!-- checkpoint-gates -->` (§5); required headers `Stage`, `Artifacts`, `Gate`; gate cell grammar `<id> · human|reviewer · <class|none>`; `;`-separated list allowed | locked decision | 2026-10-13 L1 (D4-B) + memos D4 |
+| AC-3 | fences `<!-- stage-table -->` (§0) and `<!-- checkpoint-gates -->` (§5); required headers `Stage`, `Artifacts`, `Gate`; gate cell grammar `<id> · human|reviewer|record · <class>[+<class>]*` (or `none`), no whitespace variants; `;`-separated list of gates per cell | locked decision | 2026-10-13 L1 (D4-B) + memos D4 + 2026-10-14 L6 |
+| AC-3 | §0 gate cells: `v0-go-no-go · human · none`, `v1-scope-approval · human · none`, `v2-deploy-pipeline · reviewer · ci-deploy`, `v3-mvp-criteria · reviewer · none`, `v4-security-audit · reviewer · security-boundary`, `v4-ux-audit · reviewer · none`, `v4-dx-audit · reviewer · none`, `v4-efficiency-audit · reviewer · none`, `v5-launch · human · production-deploy+publish-outward+release-cut`, `v6-operate · reviewer · none`; §5: `plan-judge · reviewer · none`, `phase-reviewer · reviewer · none`, `staging-verify · reviewer · none`, `counsel · human · none`, `multi-vote-audit · reviewer · security-boundary`, `chronicler · record · none`, `mission-close · human · release-cut` | locked decision | L6 for v5-launch + mission-close; memos D4 + planner for the rest |
 | AC-3 | §5 checkpoint gate ids: `plan-judge, phase-reviewer, staging-verify, counsel, multi-vote-audit, chronicler, mission-close` | locked decision | memos D4 |
 | AC-3 | the AC-3 fixture = a 4-stage table with renamed stages | locked decision | memos D4 |
 | AC-3 | unreadable table → all cells `required`, row `unreadable (YYYY-MM-DD)` | locked decision | memos D4 |
 | AC-5 | refusal text `required (override refused: <class> is irreversible)`; refusal covers `optional` too | locked decision | memos D6 + L3 bullet 1 + counsel |
 | AC-6 | deviation grammar `gate <id> skipped — ceremony (<signal|override YYYY-MM-DD>)`; rule id `ceremony-skip` | locked decision | memos D6 |
 | AC-7 | lint check name `checkCeremonyCopies` (gate ids ↔ rule-copies) and `checkCeremonyHarness` (runs `tools/ceremony-test.mjs`) | derivation | planner naming, following `tools/lint.mjs:520` (`checkLedgerHarness`) and `:1136` (`checkRuleDedup`) |
-| AC-5 | merge-guard regex: anchored on `^\| *(<id>) *\| *gate *\|` rows under `### 10.2` whose last cell is `skipped` or `optional` and whose id's class is irreversible — class resolved by the gate id's suffix convention `<stage>-<gate>` is NOT available to bash, so the §10.2 row carries the class **only inside the `signal` cell text** — see Open question OQ-2 | open question | OQ-2 below |
+| AC-5 | merge-guard regex: one `grep -E` over the `### 10.2` block of the committed copy — a `gate` row whose `signal` cell carries `class:` followed by ANY of the 16 irreversible ids (`schema-migrations|auth|payments|ci-deploy|secrets|security-boundary|supply-chain|production-deploy|merge-to-default|publish-outward|spend|commercial-commitment|outbound-contact|destructive-data|release-cut|user-experiment`, matched as a `+`-separated token with word boundaries) and whose `effective` cell is `skipped` or `optional` | locked decision | 2026-10-13 L5 (token) + 2026-10-14 L6 (every irreversible id, change and action alike) |
 | AC-10 | relation lines (verbatim seeds): §1 "altitude sizes the work; §10.2 decides which gates inside it run" · presets "a preset picks who runs a gate, never whether" · §11 "check-in level sets WHEN the human merges; §10.2 sets WHICH gates exist; a skipped gate is never re-enabled by check-in level, a required one never removed by it" | locked decision | memos D5 |
 | AC-10 | read points: `commands/mission.md`, `commands/autopilot.md`, `commands/next.md`, `agents/intake.md`; no new scalar | locked decision | memos D5 |
 | AC-11 | `/sync` writes `proposed`; `effective` = `required` everywhere until `confirmed` | locked decision | memos D2 + brief AC-11 |
@@ -190,7 +192,34 @@ change and is a post-merge Closing row here, not plugin work.
   credential/tenancy → auth, money → payments, webhooks → third-party;
   `not reproducible` and `size above S` are triage-only qualifiers;
   irreversible = every class except third-party; one file, one column per
-  reader.
+  reader. **Amended by L6 below (2026-10-14).**
+- 2026-10-13 — **L5 class tag allowed** (owner, after the plan-judge; brief
+  lines 261–266): each §10.2 gate row may carry a `· class:<id>` token in its
+  `signal` cell, written by `ceremony.mjs`, `check` fails any mismatch with
+  the fenced tables; counsel condition 4 is amended. OQ-2 is closed.
+- 2026-10-14 — **L6 taxonomy amended: 8 change classes + 9 action classes**
+  (owner, "Yes, lock it"; brief lines 267–311). Change classes (reviewer
+  tier + triage read these): `schema-migrations`, `auth` (widened to
+  personal-data stores), `payments`, `ci-deploy`, `secrets`, `third-party`
+  (the only non-irreversible class), `security-boundary` (widened to the
+  discipline files: `hooks/`, `tools/`, `templates/`, `hooks.json`,
+  `codex.rules`, `.claude/agents`), `supply-chain` (new: lockfile/manifest
+  dependency add or bump, install scripts; top tier; triage escalates).
+  Action classes (what a gate authorizes; all irreversible, all
+  human-fired — a gate carrying one is `human` and can never be `optional`
+  or `skipped`): `production-deploy`, `merge-to-default`, `publish-outward`,
+  `spend`, `commercial-commitment`, `outbound-contact`, `destructive-data`,
+  `release-cut`, `user-experiment`. Rules: gate-cell grammar defined once —
+  `<id> · human|reviewer|record · <class>[+<class>]*`, no whitespace
+  variants; `check` fails an action class on a non-`human` firer and a
+  malformed `+`; triage column = change classes only, action rows read
+  `n/a`, the dedup lint never matches action names; `v5-launch` =
+  `production-deploy+publish-outward+release-cut`; `mission-close` carries
+  `release-cut`; `none` on the V0/V1 decision gates is still fail-closed
+  (AC-2; the fence comment says so); the merge-guard regex lists EVERY
+  irreversible id, change and action alike — if it cannot be extended in
+  the same session, stop and surface. Left out on purpose: licensing, infra
+  cost, prompts/evals.
 - 2026-10-13 — **L3 safety (all four)**: irreversible-class gates neither
   `skipped` nor `optional`; only `ceremony.mjs effective --log` writes the
   deviation line; one anchored regex in `merge-guard.sh`; the J2 copy is
@@ -248,7 +277,16 @@ change and is a post-merge Closing row here, not plugin work.
   rule, §10 row + 10.2 placeholder, and three relation lines. S1 measures
   after its edits and quotes the number in its handoff; above 116,000 B it
   trims §6 prose in the same commit and logs a deviation. Ceilings never
-  rise.
+  rise. **Re-checked for L6 (2026-10-14):** L6 adds ≈ 60 B to the §0 fence
+  (the `v5-launch` cell) and ≈ 12 B to §5 (`mission-close · human ·
+  release-cut`); the gate-cell grammar lives ONCE in `gate-classes.md`, not
+  in WORKFLOW, so the 6,000 B room stands. `gate-classes.md` has no lint
+  ceiling (templates other than WORKFLOW are unbudgeted; `BUDGETS` at
+  `tools/lint.mjs:955`). `commands/mission.md` (21,595 / 24,000 B) is
+  unaffected by L6. `agents/reviewer.md` is 13,609 of 16,000 B — S1's edit
+  there (shorter description + one pointer sentence) fits with 2,391 B to
+  spare; `templates/operate-triage.md` (7,142 B) is unbudgeted. Measure
+  both with `wc -c`, quote.
 - 2026-10-13 (planner) — **Harness shape**: `tools/ceremony-test.mjs` follows
   `tools/ledger-test.mjs` (fixtures in a `mkdtempSync` dir, real CLI runs,
   exit 0/1), reached by lint through `checkCeremonyHarness` in the shape of
@@ -314,10 +352,11 @@ change and is a post-merge Closing row here, not plugin work.
   `ceremony.mjs` ends with the literal token `· class:<id>` (the class is
   still joined at read time by the tool — the token is a rendering, not a
   second writer; `check` fails a row whose token disagrees with the fence),
-  and the guard's regex is `^\| *[^|]+ *\| *gate *\|[^|]*\|[^|]*\|[^|]*class:(schema-migrations|auth|payments|ci-deploy|secrets|security-boundary)[^|]*\| *(skipped|optional) *\|$`
-  — the six irreversible ids are spelled in the guard (one line, like
-  `RECRX` at `merge-guard.sh:81`), which is "reads only the §10.2 regex".
-  The alternative (a class column) breaks condition 4.
+  and the guard's regex is `^\| *[^|]+ *\| *gate *\|[^|]*\|[^|]*\|[^|]*class:([a-z-]+\+)*(<16 irreversible ids, |-joined>)(\+[a-z-]+)*[^|]*\| *(skipped|optional) *\|$`
+  — every irreversible id, change and action alike (L6 2026-10-14; the
+  list is in the Value sourcing AC-5 row), spelled in the guard on one line
+  like `RECRX` at `merge-guard.sh:81`, which is "reads only the §10.2
+  regex". Closed; kept for the record.
 - **OQ-3 — Dogfood on this repo in S3: write the `proposed` profile into this
   repo's `docs/WORKFLOW.md`?** **Recommendation:** yes — it is AC-11 live on a
   real adopted repo, it changes no behaviour (full ceremony until the owner
