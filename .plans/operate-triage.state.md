@@ -120,6 +120,8 @@ Deviating is allowed; deviating silently is not (§4)._
 _≤10 lines per entry: what this session did, the verify signal, the branch, and
 what the next session needs. Newest on top; crash-safe by write-ahead._
 
+- 2026-10-13 PR #141 opened to main (https://github.com/xyzhub/agentic-workflow/pull/141), CI green on 78b13ea; staging = none (lint + --plugin-dir load = staging verify, done). ckpt-p1 stays [~] until the human merges. Sessions 2/2.
+
 - 2026-10-13 Pre-merge Closing complete (3/3). #90 hand-over posted. Branch pushed for CI.
 
 - 2026-10-13 ckpt-p1 (b) re-check (Fable): BUILDABLE — AC-3 pass; 3 blockers closed, advisories sound, softened 'diagnosed' copy accepted (status set locked), no new invented values, names byte-identical. ckpt-p1 combined: APPROVE (a APPROVE + b BUILDABLE). Next: #90 hand-over comment, push, CI, PR to main.
@@ -153,4 +155,4 @@ what the next session needs. Newest on top; crash-safe by write-ahead._
 - 2026-10-13 planner (replan): re-resolved on `plan/operate-triage-replan` from `main` c0049d1 (v1.59.0). Ledger matched git (no branch, no S1 commit, Sessions used 0) — no correction. No S1 scope shipped in 1.53–1.59. Target 1.53.0 → 1.60.0; lint row 10.9 → 10.11; anchors + large-files table re-measured; AC-1…AC-18 + Value sourcing added; Closing rows classified pre/post-merge, hand-over row now fires on #90 pre-merge. Estimate unchanged: 1 session. Open: OQ-1 (runs/day default, recommend `unset`). Baseline `node tools/lint.mjs` clean, `hook-test: clean`.
 - 2026-10-06 planner: trio authored on `feat/launch-media-plan` (converted from the operate-bugfix brief's lock table L0–L5 + Mission 1 scope). Nothing built. Baseline `node tools/hook-test.mjs` = 123 ok, `node tools/lint.mjs` clean. Queued BEHIND `publish-approval`; `Status: planned` + `Sessions used: 0` keep this ledger invisible to the hooks. Awaiting the plan-judge; no owner question blocks S1.
 
-Next up: S1
+Next up: owner merges PR #141; then close via /agentic-workflow:settle on chore/operate-triage-bookkeeping
