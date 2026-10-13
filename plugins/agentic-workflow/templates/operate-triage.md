@@ -113,6 +113,10 @@ remove the label to resume.
 - `size/S` — small change.
 - `size/M` — too big for the loop → `loop/escalate` (size above S).
 
+Comment first lines the modes write — `**Loop triage**`, `**Loop diagnosis**`,
+`Not enough to act on:` — are the markers the support channel relays to venue
+staff (`support-channel-spec.md` sync rule 3); never reword them.
+
 Exactly one `loop/*` label at a time (`loop/paused` excepted); moves allowed:
 `fix → ready | escalate | diagnose`, `diagnose → diagnosed | fix | escalate`.
 

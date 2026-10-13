@@ -131,7 +131,9 @@ list in the rubric binds every step.
 1. `gh issue view N --json number,title,body,labels,createdAt,author > "$T/issue.json"`
    and read it. Stop unless `source/user` is among the labels ("not a user
    report — the loop reads no other label").
-2. `$OT contract --body "$T/issue.json" > "$T/contract.out"`. Exit 2 →
+2. `$OT contract --body "$T/issue.json" > "$T/contract.out"`. Exit 2 → its
+   stdout is the one-line comment starting `Not enough to act on:` (the
+   support channel relays it to staff — post it unedited):
    `gh issue comment N --body-file "$T/contract.out"`, then
    `$OT labels --from <current labels> --to needs-info` →
    `gh issue edit N <its output>` (adds `needs-info`), report, stop. Exit 0 → its JSON

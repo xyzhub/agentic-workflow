@@ -75,7 +75,7 @@ adapt the column types to the venture's ORM, keep the names.
 | `id` | id | yes | primary key |
 | `ticketId` | id → `SupportTicket.id` | yes | |
 | `authorKind` | enum | yes | `staff \| loop \| owner` |
-| `body` | text | yes | for `loop`, the relayed text after the strip rule in (d) |
+| `body` | text | yes | for `loop`, the reduced text per sync rule 4 in (d); for `owner`, the text after the `**Reply**` line |
 | `postedAt` | timestamp (UTC) | yes | |
 | `githubCommentId` | integer | no | unique; the idempotency key for sync in both directions |
 
@@ -85,7 +85,7 @@ adapt the column types to the venture's ORM, keep the names.
 |---|---|---|
 | (new) → `open` | sync worker | ticket submitted; issue created (sync rule 1) |
 | `open` → `needs-info` | loop | `needs-info` label added |
-| `needs-info` → `open` | staff | staff completes the missing fields in the thread form; the sync worker re-renders the issue body and removes `needs-info` |
+| `needs-info` → `open` | staff | staff completes the missing fields in the thread form; the sync worker re-renders the issue body and removes `needs-info` (this is the "remove this label to re-queue" the loop's comment asks for; the owner may also do it by hand after editing the body) |
 | `open` → `diagnosed` | loop | `loop/diagnose` or `loop/diagnosed` label |
 | `open` → `fix-queued` | loop | `loop/fix` label |
 | `open` → `escalated` | loop | `loop/escalate` label |
@@ -96,7 +96,7 @@ adapt the column types to the venture's ORM, keep the names.
 | `escalated` → `fix-queued` | owner | owner re-queues by hand (removes `loop/escalate`, adds `loop/fix`) |
 | any open status → `resolved` | owner | the GitHub issue is closed |
 | `resolved` → status of its labels | owner | the GitHub issue is reopened |
-| any → `closed` | staff | staff closes the ticket in the thread |
+| any → `closed` | staff | staff closes the ticket in the thread; the sync worker closes the issue (sync rule 7) |
 
 **What the venue staff see** (example lines — the final wording is the
 `writer`'s, from `design/brand/copy-kit.md`):
@@ -105,7 +105,7 @@ adapt the column types to the venture's ORM, keep the names.
 |---|---|
 | `open` | "We have your report — we're looking at it" |
 | `needs-info` | "We need a little more detail — please fill in the missing parts" |
-| `diagnosed` | "We found the cause — a reply is on its way" |
+| `diagnosed` | "We're checking what happened — a reply is on its way" (covers both `loop/diagnose` and `loop/diagnosed`) |
 | `fix-queued` | "This needs a change on our side — we're on it" |
 | `escalated` | "Our team is looking at this personally" |
 | `resolved` | "Fixed — tell us if you still see it" |
@@ -135,7 +135,10 @@ Two rules:
    which fields are missing, does not guess, and stops. The widget should make
    this rare by enforcing the required flags in the form (checklist item 3).
 
-Optional fields with no value are omitted (no empty heading).
+Optional fields with no value are omitted (no empty heading). On render,
+every line inside a field value that starts with `#` gets a leading backslash
+(`\### Where` renders as text), so a value can never open a heading of its
+own and smuggle a field past rule 1.
 
 ## (d) GitHub Issues sync and labels
 
@@ -189,26 +192,41 @@ groom labels the modes write `type/ops`, `size/XS`, `size/S`, `size/M`
 2. Each staff message → an issue comment whose first line is
    `**Venue message** · <UTC timestamp>`, then the message body; store the
    returned comment id on the message.
-3. Issue comments by the loop (first line starts `**Loop triage**` or
-   `**Loop diagnosis**`) and by the owner → thread messages of kind `loop` /
-   `owner`. "By the loop" and "by the owner" both require the comment author
-   to be one of `{{OWNER_GITHUB_LOGINS}}` (the loop posts with the owner's
-   `gh` identity); a loop-shaped comment from any other login is not relayed.
-   An owner comment whose first line is `**Internal**` is not relayed. Any
-   other commenter → not relayed. `**Venue message**` comments are never
-   relayed back (they came from the thread).
-4. The loop's draft reply is STRIPPED before relay: remove the line that
-   starts `Draft reply to ` and every following line that starts with `>`;
-   the relayed message shows "Diagnosis posted · reply pending" in its place.
+3. Only comments whose author is one of `{{OWNER_GITHUB_LOGINS}}` (the loop
+   posts with the owner's `gh` identity) are ever relayed, and only when the
+   first line starts with one of these markers:
+   `**Loop triage**`, `**Loop diagnosis**` or `Not enough to act on:` →
+   a thread message of kind `loop`; `**Reply**` → kind `owner` (the marker
+   line is dropped; the rest is the message). Relay is opt-in: every other
+   owner comment stays on GitHub. Any other commenter → not relayed.
+   `**Venue message**` comments are never relayed back (they came from the
+   thread).
+4. Loop comments are REDUCED before relay — staff never see the checklist,
+   the quoted report, code paths, the Observed table, "Could not observe"
+   detail, or the draft reply. Keep only the first line and the lines that
+   start `Decision:`, `Next:` or `Result:`; a `**Loop diagnosis**` message
+   adds "Diagnosis posted · reply pending". A `Not enough to act on:` comment
+   is one line and is relayed whole — it names the missing fields, and the
+   needs-info screen shows it above the form.
 5. Label change → ticket status per the mapping above; `impactSnapshot` takes
    the `impact <n>/10` text from the newest `**Loop triage**` comment.
 6. Sync is idempotent on `githubCommentId`: a comment id already stored is
    skipped, so redelivered webhooks and re-polls never duplicate a message.
+7. Staff close the ticket → the sync worker posts
+   `**Venue message** · <UTC timestamp> · closed by staff` and closes the
+   issue, so triage never picks it up again; the incoming `closed` event
+   leaves the ticket `closed` (not `resolved`). A `closed` ticket takes no new
+   messages — staff open a new ticket.
+8. A staff message on a `resolved` ticket → a `**Venue message**` comment on
+   the closed issue; the issue is NOT reopened by the sync. The owner reads it
+   and reopens (→ the status of its labels) or answers with a `**Reply**`.
 
 Transport: inbound GitHub events (`issues`: labeled, unlabeled, closed,
-reopened; `issue_comment`: created) arrive on a webhook route with the
-`X-Hub-Signature-256` HMAC verified against `GITHUB_WEBHOOK_SECRET` (reject on
-mismatch); outbound calls use a fine-grained token `GITHUB_SUPPORT_TOKEN`
+reopened; `issue_comment`: created — `edited` and `deleted` are ignored, the
+first relay stands) arrive on a webhook route with the `X-Hub-Signature-256`
+HMAC verified in constant time against `GITHUB_WEBHOOK_SECRET` (`401` on
+mismatch; `GITHUB_WEBHOOK_SECRET` unset → the route returns `503` and
+processes nothing — fail closed, never open); outbound calls use a fine-grained token `GITHUB_SUPPORT_TOKEN`
 scoped to Issues read/write on `{{GITHUB_REPO}}` only. Both are env NAMES in
 the runbook, values never in the repo. Only issues carrying `source/user` are
 synced.
@@ -216,12 +234,13 @@ synced.
 ## (e) Reply flow
 
 1. The loop's diagnosis comment is relayed into the thread as a `loop`
-   message with the draft reply stripped (sync rule 4); staff see
+   message reduced per sync rule 4; staff see its `Result:` line and
    "Diagnosis posted · reply pending".
 2. The draft reply (`Draft reply to <venue> (NOT sent — a human sends it):`)
-   is for the owner. The owner edits it and posts it as an ordinary issue
-   comment; sync rule 3 relays it as an `owner` message. Nothing is
-   auto-sent (out of v1).
+   is for the owner. The owner edits it and posts it as an issue comment whose
+   first line is `**Reply**`; sync rule 3 relays it (marker dropped) as an
+   `owner` message. An owner comment without the marker is never relayed — it
+   stays an internal note on GitHub. Nothing is auto-sent (out of v1).
 3. A staff answer in the thread reaches the issue as a `**Venue message**`
    comment (sync rule 2). The loop does not read comments as input; the owner
    does.
@@ -320,11 +339,12 @@ later, behind its own §10 delegation row.
 3. **Widget form** — fields = the contract in (c), required flags enforced;
    `App` and `When` filled by the app. Acceptance: submit is impossible with a
    required field empty; the created issue body has the headings in order.
-4. **Sync worker** — rules 1–6 in (d), both directions. Acceptance:
-   re-delivering the same webhook twice creates one message, not two.
+4. **Sync worker** — rules 1–8 in (d), both directions. Acceptance:
+   re-delivering the same webhook twice creates one message, not two; an
+   unsigned webhook gets `401`, and with `GITHUB_WEBHOOK_SECRET` unset `503`.
 5. **Thread UI** — one screen state per row of the "What the venue staff see"
    table, plus the message list. Acceptance: each status renders its line;
-   `loop` messages show the strip-rule text, never a draft reply.
+   `loop` messages show only the sync-rule-4 lines, never a draft reply.
 6. **Copy** — `design/brand/copy-kit.md` gains a "Support replies" pattern
    (the `writer` agent). Acceptance: the pattern exists with one filled
    example.
