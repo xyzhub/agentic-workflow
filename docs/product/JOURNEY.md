@@ -16,6 +16,20 @@ grades the protocol's own behavior the way a QA team would.
 
 ---
 
+## 2026-10-13 — operate-triage: the bug-report triage slice shipped as version 1.60.0
+
+The operate-triage mission is closed. The owner merged PR #141 (version 1.60.0, merge 17f1cad) and the automated checks passed. Its planning record went in earlier as PR #140. This is the first half of the unattended bug loop the owner wants: a finished product watches the bug reports its own users file, sorts them, and diagnoses them, while a person still approves every fix and every reply.
+
+What shipped is plugin material only, no product code. There is a build spec for an in-app support thread that mirrors each user report into a GitHub issue. There is a triage rubric a venture fills in: eight fixed "escalate to a human" classes, an impact scale, and a pause switch. And the `operate` command gained three modes: triage (decide whether a report gets fixed, diagnosed, escalated, or sent back for more information), diagnose (one fresh specialist reads the evidence and posts a likely cause with a draft reply that a human sends), and digest (a summary sent only when something happened, plus a weekly one).
+
+How it went. The mission had been planned back on 2026-10-06 and sat behind other work, so it was re-planned on 2026-10-13 against the current code. The independent plan reviewer first asked for changes: two numbers had no source and one test wrote into the real home folder. After six fixes it approved, and the owner settled the one open question (no default for runs per day). The build then finished in one session and the code review approved. A second, separate read asked a different question: could a stranger build the support channel from this spec alone? It said no, and named three gaps. A missing secret would have let anyone post fake reports. A "more information needed" reply would never have reached the user. And a staff member closing a ticket had no matching rule on the GitHub side.
+
+Decision and cost. Fixing those gaps was a second work session against an original estimate of one. The system stopped and asked, as designed, and the owner raised the estimate to two. One corrective round closed all three gaps plus smaller advisories; the same reviewer re-checked and judged the spec buildable. Final use: 2 sessions of 2. The lesson is that "the code is fine" and "someone else could build from this" are different tests, and the second one caught the three problems that mattered, so it earns its place on every spec-only mission.
+
+Hand-offs. A summary of the hooks left for the second mission (fixing on staging) was posted on issue #90 before the merge. Three checks that cannot run until later were added to the open-obligations list: OB-26 (try the new modes on a real hand-written issue after reinstalling the plugin), OB-27 (one real user report through a venture's finished support channel), and OB-28 (the first monthly review of the loop, once ten triaged reports exist).
+
+---
+
 ## 2026-10-11 — tune-presets: four presets shipped, the Haiku child runtime built and approved
 
 The tune-presets mission is built and approved. Phase 1 is merged: PR #126, version 1.57.0, on main. Phase 2 is version 1.58.0 and sits in PR #127 waiting for the owner's merge.
