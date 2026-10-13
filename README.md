@@ -33,8 +33,8 @@ plugins/agentic-workflow/            # the plugin
   commands/  welcome, brainstorm, bootstrap, adopt, autopilot, plan, mission, counsel, audit, release, verify, settle, groom, operate, publish, sync, ingest, next, doctor, tune, connect, start, check, pr, end, fix, retro, handoff
   hooks/     hooks.json               # guardrails
   skills/    protocol/                # the entry-point skill
-  tools/     run-codex.mjs            # run a role on the Codex CLI (second runtime); run-claude.mjs (a Haiku preset row as a child claude -p); agents.mjs (machine-readable agent registry), catalog.mjs, ci-wait.mjs, conform.mjs, publish-gate.mjs
-  templates/ WORKFLOW.md, overview.html, idea.md, prd.md, ux-brief.md, architecture.md, interface-contract.md, flight-plan.md, decision-log.md, decision-memo.md, mission-*.md (plan, sessions, state), agents-md.md, agents-registry.schema.json, tune-presets.json, codex.rules, distillate.schema.json, registry.md, launch-*.md (plan, positioning, landing-page, announcement, content-plan), publish-queue.md, publish-log.md, session-handoff.md, business-*.md (executive-summary, model, pricing)
+  tools/     run-codex.mjs            # run a role on the Codex CLI (second runtime); run-claude.mjs (a Haiku preset row as a child claude -p); agents.mjs (machine-readable agent registry), catalog.mjs, ci-wait.mjs, conform.mjs, operate-triage.mjs, publish-gate.mjs
+  templates/ WORKFLOW.md, overview.html, idea.md, prd.md, ux-brief.md, architecture.md, interface-contract.md, flight-plan.md, decision-log.md, decision-memo.md, mission-*.md (plan, sessions, state), agents-md.md, agents-registry.schema.json, tune-presets.json, codex.rules, distillate.schema.json, registry.md, launch-*.md (plan, positioning, landing-page, announcement, content-plan), publish-queue.md, publish-log.md, session-handoff.md, business-*.md (executive-summary, model, pricing), support-channel-spec.md, operate-triage.md
   README.md
 ```
 
