@@ -13,110 +13,138 @@ exploration happened once, here (2026-10-06)._
 Protocol: see `docs/WORKFLOW.md` §5 (mission machinery — don't restate it here).
 Master plan: `.plans/operate-triage.md` · Ledger: `.plans/operate-triage.state.md`
 
+Replan 2026-10-13: every read, anchor, line count and gate below was
+re-measured against `main` at c0049d1 (plugin v1.59.0). What changed and why:
+master plan `## Replan 2026-10-13`.
+
 Design sources (read the named ranges, never whole):
 `docs/product/decisions/2026-10-06-operate-bugfix-brief.md` (Locked decisions
 + Mission 1/2 scope), `…-journeys.md` (J1, J3, J4b, J6 digest + Alert),
 `…-memos.md` (facts, memos 1/2/6/8/11/12), `…-metrics.md` (§1, §3, §5),
 `docs/product/decision-log.md` (operate-bugfix counsel). Decisions are locked in
-the master plan; the sources are not re-litigated.
+the master plan; the sources are not re-litigated. (Unchanged since 29b1e92 —
+the ranges below still hold.)
 
 **Catalog**: none — this repo's §10 **Catalog** row is `none — markdown-only
-plugin` (`docs/product/catalog/` does not exist; checked 2026-10-06). No catalog
-reads, no catalog regeneration in Verify. (The spec this mission writes tells
-the VENTURE to catalog its endpoint; that is the venture's §6.1, not ours.)
+plugin` (`docs/product/catalog/` does not exist; re-checked 2026-10-13). No
+catalog reads, no catalog regeneration in Verify. (The spec this mission writes
+tells the VENTURE to catalog its endpoint; that is the venture's §6.1, not ours.)
 
 **Gates available in this repo** (§10):
 
 | Gate | Command | Tier |
 |---|---|---|
-| Test / lint gate (CI runs it) | `node tools/lint.mjs` | 1 — the brief and the checkpoint |
-| Hook behavior harness | `node tools/hook-test.mjs` | 1.5 — reached by lint; **baseline 123 `ok`, `hook-test: clean` (measured 2026-10-06; ≥ 136 once `publish-approval` has merged)** — this mission adds NO hook and NO harness case (nothing it ships is a hook) |
-| Tool selftest (new) | `node plugins/agentic-workflow/tools/operate-triage.mjs --selftest` | 1.5 — reached by lint after S1 (row 10.9) |
+| Test / lint gate (CI runs it) | `node tools/lint.mjs` | 1 — the brief and the checkpoint (clean on 2026-10-13) |
+| Lint unit harness (§10 Test policy, since 2026-10-11) | `node tools/lint-test.mjs` | 1 — run after editing `tools/lint.mjs` |
+| Hook behavior harness | `node tools/hook-test.mjs` | 1.5 — reached by lint; baseline `hook-test: clean` (2026-10-13) — this mission adds NO hook and NO harness case |
+| Tool selftest (new) | `node plugins/agentic-workflow/tools/operate-triage.mjs --selftest` | 1.5 — reached by lint after S1 (row **10.11**) |
 | Eval scenario (new) | `node evals/run.mjs operate-triage` | 2 — costs tokens (~$5); the builder runs it ONCE and quotes the summary line in the handoff; the checkpoint reviewer re-runs it |
 | Staging verify (§10 Staging = none) | lint green on the phase branch + `claude --plugin-dir plugins/agentic-workflow` load | at the checkpoint |
 
-**Facts already probed (do not re-probe):** `node` v24, `jq` present; no
-`package.json`, every tool is zero-dep; plugin tools live in
-`plugins/agentic-workflow/tools/` (`catalog.mjs`, `ci-wait.mjs`, `conform.mjs`,
-`run-codex.mjs` — plus `publish-gate.mjs` once 1.52.0 merges) and harnesses at
-the repo root `tools/`; `commands/operate.md` has NO `$ARGUMENTS` dispatch today
-(line 9 reads `$ARGUMENTS` only as a focus word); `connect.md` lines 26–31 are
-the dispatch pattern to copy (`**`server` mode** — `$ARGUMENTS` starts with
-`server` → skip … run the … setup at the end of this file`); `agents/ops.md`
-(48 lines) has no diagnose contract; `evals/run.mjs` passes `env: childEnv`
-built at lines 122–123 and the fixture is copied with `cpSync` (mode preserved;
-`setup.sh` still `chmod +x`es the shim); the eval runner invokes `claude -p …
---dangerously-skip-permissions` so a fixture `bin/gh` is reached only if `PATH`
-is prepended — today it is not; `tools/lint.mjs` `checkCrossRefs` (128–165)
-fails on any bare `/operate` (must be `/agentic-workflow:operate`) and on an
-agent mention that is not a real agent; `checkTemplateFrontmatter` (256–275)
-requires `status | owner-agent (real agent stem) | refresh-trigger` on every
-template; `checkSections` (198–224) requires every `§n` to exist as a
-WORKFLOW.md heading; `hooks/lib/active-ledger.sh` skips `Status: planned` and
-`Sessions used: 0` ledgers (this mission's state file stays invisible to hooks
-until the orchestrator starts it); the §10 template table carries a duplicate
-`Issue tracker` row (958–959) — pre-existing, not ours; `templates/overview.html`
-has no `data-region` markers (grep 2026-10-06) and is not touched; `.gitignore`
-does NOT ignore `.plans/` in this repo (only `.plans/runs/*`), so the trio is
-committed; Slack sender precedent is `agents/compass.md` 72–79 (curl + jq);
-`docs/WORKFLOW.md` mirrors `templates/WORKFLOW.md` at offset −8 for §4/§6/§9
-and −14 for §12 (this repo's §10 is 6 lines shorter); the `writer` owns
-`design/brand/copy-kit.md` (writer.md 11–24), `marketing` owns positioning
-(marketing.md 28–31) — support voice = the kit; `reviewer.md` 182–213 is the
-plan-judge mode (the shape the BUILDABLE brief below borrows: fresh, read-only,
-one-shot, a single verdict word).
+**Facts already probed (do not re-probe, 2026-10-13):** `node` v24, `jq`
+present; no `package.json`, every tool is zero-dep; plugin tools live in
+`plugins/agentic-workflow/tools/` (`agents.mjs`, `catalog.mjs`, `ci-wait.mjs`,
+`conform.mjs`, `ledger.mjs`, `publish-gate.mjs`, `run-claude.mjs`,
+`run-codex.mjs`, `shell-wrappers.mjs`) and harnesses at the repo root `tools/`
+(`lint-test.mjs`, `ledger-test.mjs`, `agents-test.mjs`, …);
+`commands/operate.md` has NO `$ARGUMENTS` dispatch today (line 9 reads
+`$ARGUMENTS` only as a focus word; its `argument-hint` at line 3 is unquoted);
+`connect.md` lines 26–33 are the dispatch pattern to copy (`**`server` mode** —
+`$ARGUMENTS` starts with `server` → skip … run the … setup at the end of this
+file`); `agents/ops.md` (48 lines; `## Duties` 18–35, `## Output` 36) has no
+diagnose contract; `evals/run.mjs` builds `childEnv` at 122–123 under the
+comment at 119–121, copies the fixture with `cpSync` at 113 (mode preserved;
+`setup.sh` still `chmod +x`es the shim) and invokes `claude -p …
+--dangerously-skip-permissions` at 124–127, so a fixture `bin/gh` is reached
+only if `PATH` is prepended — today it is not; `tools/lint.mjs`
+`checkCrossRefs` (129–167) fails on any bare `/operate` and on an agent mention
+that is not a real agent; `checkTemplateFrontmatter` (257–276) requires
+`status | owner-agent (real agent stem) | refresh-trigger` on every template;
+`checkSections` (199–225) requires every `§n` to exist as a WORKFLOW.md
+heading; `checkBudgets` (931–996) fails a command file over 24,000 B, an agent
+over 16,000 B, `templates/WORKFLOW.md` over 120,000 B (today: `operate.md`
+4,509 B, `ops.md` 2,782 B, WORKFLOW 107,980 B = 90%, already printing a
+`warn:` line); `checkRuleDedup` (1055–1180) scans `agents/`, `commands/`,
+`templates/` and flags a paragraph naming `Fable` with ≥2 of auth / credential
+/ schema / migration / money — so no template text names `Fable`; the
+selftest rows are 10.5 catalog, 10.6 ci-wait, 10.8 publish-gate, 10.7/10.7b
+adapter harnesses, 10.9 agents registry, 10.10 ledger — the new row is
+**10.11**, appended after `checkAgentsRegistryHarness` in the entry-point list
+(line 1204); `hooks/lib/active-ledger.sh` skips `Status: planned` and
+`Sessions used: 0` ledgers; `templates/overview.html` is not touched;
+`.gitignore` does NOT ignore `.plans/`; Slack sender precedent is
+`agents/compass.md` 68–82 (curl + jq); `docs/WORKFLOW.md` mirrors
+`templates/WORKFLOW.md` at offset −8 for §4/§6/§9 and −36 for §12; the
+`writer` owns `design/brand/copy-kit.md` (writer.md 13–28), `marketing` owns
+positioning — support voice = the kit; `reviewer.md` 170–214 is the
+plan-judge mode (the shape the BUILDABLE brief below borrows: fresh,
+read-only, one-shot, a single verdict word); `backend.md` 46–70 `## Done
+means` (four done-rules) binds the builder.
 
 ## Large-files table
 
+Measured `wc -l`, 2026-10-13.
+
 | File | Lines |
 |---|---|
-| `tools/hook-test.mjs` | 1337 |
-| `plugins/agentic-workflow/templates/WORKFLOW.md` | 1260 |
-| `docs/WORKFLOW.md` | 1255 |
-| `CHANGELOG.md` | 1056 |
-| `tools/lint.mjs` | 874 |
-| `plugins/agentic-workflow/tools/run-codex.mjs` | 487 |
+| `tools/hook-test.mjs` | 1872 |
+| `CHANGELOG.md` | 1417 |
+| `plugins/agentic-workflow/templates/WORKFLOW.md` | 1372 |
+| `docs/WORKFLOW.md` | 1345 |
+| `tools/lint.mjs` | 1214 |
 | `docs/product/decisions/2026-10-06-operate-bugfix-journeys.md` | 336 |
-| `plugins/agentic-workflow/tools/catalog.mjs` | 333 |
-| `plugins/agentic-workflow/README.md` | 315 |
+| `plugins/agentic-workflow/README.md` | 334 |
 | `docs/product/decisions/2026-10-06-operate-bugfix-memos.md` | 284 |
+| `plugins/agentic-workflow/commands/connect.md` | 261 |
+| `tools/lint-test.mjs` | 251 |
 | `docs/product/decisions/2026-10-06-operate-bugfix-brief.md` | 245 |
-| `plugins/agentic-workflow/commands/connect.md` | 242 |
-| `plugins/agentic-workflow/tools/conform.mjs` | 230 |
-| `plugins/agentic-workflow/templates/overview.html` | 215 |
-| `plugins/agentic-workflow/agents/reviewer.md` | 213 |
-| `evals/run.mjs` | ≈ 200 |
-| `plugins/agentic-workflow/hooks/hooks.json` | 181 |
-| `plugins/agentic-workflow/agents/marketing.md` | 145 |
+| `plugins/agentic-workflow/agents/reviewer.md` | 214 |
+| `evals/run.mjs` | 182 |
 | `plugins/agentic-workflow/tools/ci-wait.mjs` | 134 |
+| `plugins/agentic-workflow/agents/compass.md` | 116 |
 | `docs/product/decision-log.md` | 115 |
 | `docs/product/decisions/2026-10-06-operate-bugfix-metrics.md` | 108 |
+| `plugins/agentic-workflow/agents/backend.md` | 89 |
 | `plugins/agentic-workflow/templates/engineering-runbook.md` | 83 |
 | `plugins/agentic-workflow/commands/operate.md` | 77 |
+| `evals/README.md` | 75 |
+| `README.md` | 71 |
 | `evals/scenarios/reviewer-checkpoint/setup.sh` | 70 |
-| `README.md` | 64 |
 | `plugins/agentic-workflow/commands/verify.md` | 61 |
-| `plugins/agentic-workflow/agents/writer.md` | 59 |
+| `plugins/agentic-workflow/agents/writer.md` | 61 |
+| `evals/scenarios/codex-routing/fixture/bin/codex` | 58 |
 | `plugins/agentic-workflow/hooks/lib/active-ledger.sh` | 58 |
 | `plugins/agentic-workflow/agents/ops.md` | 48 |
+| `plugins/agentic-workflow/commands/fix.md` | 36 |
 | `plugins/agentic-workflow/templates/obligations.md` | 30 |
 | `evals/scenarios/plain-request-routing/fixture/docs/WORKFLOW.md` | 28 |
-| `plugins/agentic-workflow/commands/fix.md` | 26 |
+| `evals/scenarios/guardrail-push-block/checks.mjs` | 27 |
 | `plugins/agentic-workflow/templates/registry.md` | 15 |
 | `plugins/agentic-workflow/.claude-plugin/plugin.json` | 11 |
 
-## Phase 1 — spec + triage/diagnose/digest modes (branch: `mission/operate-triage`, cut from `main` after `publish-approval` merges; else from `feat/launch-media-plan`)
+## Phase 1 — spec + triage/diagnose/digest modes (branch: `mission/operate-triage`, cut from `main` — `publish-approval` merged as PR #101, so the fallback is moot)
 
 One brief, one checkpoint (two one-shot reviewers inside it). Not parallel
-(single session). Queued BEHIND `publish-approval`.
+(single session). Closes in two PRs: the feature PR (human merges) and ONE
+`chore/operate-triage-bookkeeping` PR for the post-merge Closing rows.
 
 ### S1 — spec template, triage template, tool + selftest, `/operate` modes, eval scenario, ops contract, protocol text, record
 
 Suits: **`backend`** (zero-dep Node tool with selftest; a fake-`gh` eval shim;
 lint + runner edits; a spec whose hard parts are a data model, a sync contract
-and an endpoint shape). Runtime: claude (default — no `runtime:` field).
+and an endpoint shape). Runtime: claude (default — no `runtime:` field; §10
+Tune preset `balanced`, `backend` on the plugin default since the 2026-10-11
+reset).
 
-- **Reads** (≈ 1,420 lines; order matters — design first, then edit sites):
+- **ACs**: AC-1, AC-2, AC-4, AC-5, AC-6, AC-7, AC-8, AC-9, AC-10, AC-11,
+  AC-12, AC-13, AC-14, AC-15, AC-16, AC-17, AC-18 (AC-3 is the checkpoint's
+  BUILDABLE verdict on this brief's spec; the diff reviewer verdicts per id).
+- **Prior art**: no permission gate is touched — the modes' Bash list is
+  prose (memo 12 residual). For the hand-over row only: the mechanical form
+  mission 2 will reach for already exists as `tools/shell-wrappers.mjs` and
+  `tools/run-claude.mjs --restricted`; do not edit either here.
+
+- **Reads** (≈ 1,460 lines, re-measured 2026-10-13; order matters — design first, then edit sites):
   1. `docs/product/decisions/2026-10-06-operate-bugfix-brief.md` 207–245
      (Locked decisions table L0–L5-G4, "### Mission 1", "### Mission 2" — the
      scope fence); 168–180 (Constraints); 156–166 (NOT in v1). Skip the
@@ -137,30 +165,35 @@ and an endpoint shape). Runtime: claude (default — no `runtime:` field).
   4. `…-metrics.md` 27–43 (§1 — the J1/J3/J4b/J6 rows: what evidence looks
      like), 66–76 (§3 paired metrics), 90–101 (§5 — the OB row the
      orchestrator adds to `## Closing`; the builder does not edit ledgers).
-  5. `docs/product/decision-log.md` 69–113 (operate-bugfix counsel; findings
+  5. `docs/product/decision-log.md` 69–115 (operate-bugfix counsel, heading
+     at 69 — unchanged since 29b1e92; findings
      2, 3, 5, 8 bind this mission's text).
-  6. `plugins/agentic-workflow/commands/connect.md` 1–31 (frontmatter +
+  6. `plugins/agentic-workflow/commands/connect.md` 1–33 (frontmatter +
      the `$ARGUMENTS` mode dispatch to copy), 74–111 (Slack path — the env
      NAMES and the round-trip the spec's precondition names).
   7. `plugins/agentic-workflow/commands/operate.md` whole (77).
-  8. `plugins/agentic-workflow/commands/fix.md` whole (26 — the `fix/N-<slug>`
+  8. `plugins/agentic-workflow/commands/fix.md` whole (36 — the `fix/N-<slug>`
      and `Closes #N` conventions the `loop/fix` comment line points at).
   9. `plugins/agentic-workflow/commands/verify.md` 44–61 (§4 FAIL = alert
      tier — the Alert precedent wording).
   10. `plugins/agentic-workflow/agents/ops.md` whole (48); `agents/writer.md`
-      11–24 (copy-kit ownership); `agents/compass.md` 66–82 (the Slack send
-      precedent: env names, `[project]` prefix).
-  11. `plugins/agentic-workflow/agents/reviewer.md` 182–213 (plan-judge mode —
+      13–28 (copy-kit ownership); `agents/compass.md` 68–82 (the Slack send
+      precedent: env names, `[project]` prefix); `agents/backend.md` 46–70
+      (`## Done means` — the four done-rules this brief is held to).
+  11. `plugins/agentic-workflow/agents/reviewer.md` 170–214 (plan-judge mode —
       the one-shot read-only shape; do not edit reviewer.md).
   12. `plugins/agentic-workflow/tools/ci-wait.mjs` 1–45 (header, argv helpers)
       and 88–112 (`selftest()` shape, `ok()` rows, `--selftest` dispatch).
-  13. `tools/lint.mjs` 128–183 (`checkCrossRefs`, `checkTemplateRefs` — what
-      the new prose must satisfy), 256–275 (`checkTemplateFrontmatter`),
-      437–453 (`checkCiWaitSelftest` — copy as row 10.9), 864 (the check list).
-  14. `evals/run.mjs` 1–45 (header, `parseScenario`), 108–135 (fixture copy,
+  13. `tools/lint.mjs` 129–184 (`checkCrossRefs`, `checkTemplateRefs` — what
+      the new prose must satisfy), 257–276 (`checkTemplateFrontmatter`),
+      442–458 (`checkCiWaitSelftest` — copy as row 10.11), 541–553
+      (`checkAgentsRegistryHarness`, the row the new one follows), 1204 (the
+      entry-point check list). Budgets and rule-dedup are stated in the facts
+      above — do not read 931–1180.
+  14. `evals/run.mjs` 1–45 (header, `parseScenario`), 108–130 (fixture copy,
       `setup.sh`, the `CODEX_BIN`/`childEnv` lines 122–123 to extend, the
-      `claude -p` args); `evals/README.md` 36–46 (scenario table rows) and
-      57–70 (anatomy + the namespaced-command gotcha).
+      `claude -p` args); `evals/README.md` 30–45 (scenario table rows) and
+      57–75 (anatomy + the namespaced-command gotcha).
   15. `evals/scenarios/reviewer-checkpoint/setup.sh` 1–25 (copy-from-plugin
       pattern), `scenario.md` whole (9), `checks.mjs` whole (8);
       `evals/scenarios/guardrail-push-block/checks.mjs` whole (27 — how to
@@ -168,22 +201,23 @@ and an endpoint shape). Runtime: claude (default — no `runtime:` field).
       1–25 (a zero-dep Node fake binary: shebang, argv, canned output);
       `evals/scenarios/plain-request-routing/fixture/docs/WORKFLOW.md` whole
       (28 — the fixture-excerpt shape to extend with a §10 table).
-  16. `plugins/agentic-workflow/templates/WORKFLOW.md` 302–312 (§4 queue
-      paragraph), 672–676 (§6 Ops paragraph), 884–890 (§9 operate line),
-      1056–1064 (§12 tiers table), 929–960 (§10 — the Owner channel 955,
-      Staging 940, Merge policy 938, Issue tracker 958 rows the spec cites).
-  17. `docs/WORKFLOW.md` 1–3 (stamp), 294–304 (§4 mirror), 664–668 (§6
-      mirror), 876–882 (§9 mirror), 1042–1050 (§12 mirror) — edit by applying
-      the SAME diff; confirm each anchor by `grep -n` before editing (offsets
-      drift if `publish-approval` merged first).
+  16. `plugins/agentic-workflow/templates/WORKFLOW.md` 306–314 (§4 queue
+      paragraph; the sentence ends at 311), 718–722 (§6 Ops paragraph), 938–944
+      (§9 operate line at 942), 1136–1145 (§12 tiers table; Alert 1142, Digest
+      1143), and the §10 rows the spec cites: Merge policy 993, Staging 996,
+      Owner channel 1012, Issue tracker 1015 (read those four lines only).
+  17. `docs/WORKFLOW.md` 1–3 (stamp), 298–306 (§4 mirror, sentence at 303),
+      710–714 (§6 mirror), 930–936 (§9 mirror, 934), 1100–1109 (§12 mirror,
+      Alert 1106, Digest 1107) — edit by applying the SAME diff; confirm each
+      anchor by `grep -n` before editing.
   18. `plugins/agentic-workflow/templates/engineering-runbook.md` 37–45
       (the alerts table shape the signal table mirrors), `templates/registry.md`
       whole (15 — cited by the spec as "not registered; irrelevant to the
       channel"), `templates/obligations.md` 19–27 (OB row grammar — for the
       spec's own "deferred" lines, not for editing the register).
   19. `README.md` 25–40 (tree: `tools/` line 36, `templates/` line 37);
-      `plugins/agentic-workflow/README.md` 157 (the `/operate` row) and
-      176–200 (the tree block; `tools/ci-wait.mjs` at 188).
+      `plugins/agentic-workflow/README.md` 172 (the `/operate` row) and
+      189–210 (the tree block; `tools/ci-wait.mjs` at 203).
   20. `plugins/agentic-workflow/.claude-plugin/plugin.json` whole (11);
       `CHANGELOG.md` 1–16 (`[Unreleased]` + the entry shape).
 - **Catalog**: none.
@@ -193,13 +227,16 @@ and an endpoint shape). Runtime: claude (default — no `runtime:` field).
   tools/lint.mjs` clean) before 4 (modes); then 5 (eval), 6 (ops + protocol),
   7 (record). If the session runs long, steps 5 and 7 are the FIRST to be left
   for an `S1-fix`, logged as a deviation, never silently dropped. Commit per
-  numbered step, format `operate-triage(S1): <summary>` (§4).
+  numbered step, format `operate-triage(S1): <summary>` (§4). Done-rule 3
+  applies to such a stop: the hand-off reports done vs pending steps so
+  `S1-fix` resumes instead of restarting. Done-rule 4: a needed departure from
+  a master-plan lock is a `deviation` stop before coding, never build-then-log.
   **Cut list (APPLIED in the steps below after the plan-judge — do not
   re-add)**: tool ≤ 220 lines and 11 selftest cases; `score` has NO built-in
   default rubric (no rubric file → exit 1 naming the path); `kept[]` is
   uncapped; `notify` and `digest-due` share one read/write of the state file;
   the `gh` shim ≤ 60 lines serving six verbs only (no `--jq`, no `--body`);
-  the digest's activity rule is `updatedAt > since` over `--label source/user`
+  the digest's activity rule is `updated-at ≥ since` (GitHub's `since`) over `labels=source/user`
   (no comment scanning); no `alert` verb (Alert is `notify --tier alert`); no
   Telegram sender (kept locally with the reason); no `pause:` file flag (the
   `loop/paused` label is the switch); no `operate watch`, lock, cursor, cap
@@ -243,8 +280,9 @@ and an endpoint shape). Runtime: claude (default — no `runtime:` field).
     status per the mapping; (6) sync is idempotent on `github comment id`.
   - (f) The endpoint section with the JSON shape in a fenced block, the
     token rule (`OPS_READ_TOKEN`, bearer, read-only BY SHAPE: no write route
-    under `/api/ops/`), `429` on > 60 req/min, every call logged with the
-    caller IP; a one-line "catalog it" reminder (`features.md` row + `api.md`
+    under `/api/ops/`), `429` above a `{{OPS_RATE_LIMIT}}` slot the venture
+    fills (no plugin number — memo 8 names no value; Replan 2026-10-13), every
+    call logged with the caller IP; a one-line "catalog it" reminder (`features.md` row + `api.md`
     regenerates — the venture's §6.1).
   - (g) The alert table (four rows, as task 1g) and the sentence "Requires
     `/agentic-workflow:connect slack` in this venture; Telegram or `none` →
@@ -293,7 +331,8 @@ and an endpoint shape). Runtime: claude (default — no `runtime:` field).
   diagnose mode never runs it and lists it under `Not checked: <signal> (not
   configured)`"; `## Alerts
   (per venture)` — the four-row table; `## Ceilings` — `Ceilings:
-  triage+diagnose runs/day: 20 · fixes/day: 3 · spend/day: unset ·
+  triage+diagnose runs/day: <per OQ-1 — `unset` unless the owner picks a
+  number> · fixes/day: 3 · spend/day: unset ·
   spend/week: unset` with two sentences: "The counts and the USD-or-turn
   spend figures are enforced by the watcher (mission 2); `unset` is printed
   in the digest until the owner fills them." and "**Pause switch:** a
@@ -385,11 +424,13 @@ and an endpoint shape). Runtime: claude (default — no `runtime:` field).
     the template's rubric line); users=2 flow=2 frequency=2 workaround=2 →
     10 → `impact 10/10 · incident: yes`; a flag of 3 → exit 1 usage.
 
-  **4. `tools/lint.mjs`**: row `// ── 10.9 operate-triage selftest (tier-1.5)`
-  = `checkOperateTriageSelftest`, a copy of `checkCiWaitSelftest` (437–453)
+  **4. `tools/lint.mjs`**: row `// ── 10.11 operate-triage selftest (tier-1.5)`
+  = `checkOperateTriageSelftest`, a copy of `checkCiWaitSelftest` (442–458)
   with the runner `plugins/agentic-workflow/tools/operate-triage.mjs` and the
-  fail-closed "script missing" message; append after `checkCiWaitSelftest`
-  (or after `checkPublishGateSelftest` if present) in the list at line 864.
+  fail-closed "script missing" message; the function goes after
+  `checkAgentsRegistryHarness` (ends 553) and its name after
+  `checkAgentsRegistryHarness` in the entry-point list (line 1204). Then
+  `node tools/lint-test.mjs` must stay green.
 
   **5. `plugins/agentic-workflow/commands/operate.md`**: frontmatter
   `argument-hint: '[focus e.g. errors|funnel|costs | triage #N | diagnose #N | digest]'`;
@@ -408,9 +449,14 @@ and an endpoint shape). Runtime: claude (default — no `runtime:` field).
   `loop/diagnose`, `loop/diagnosed`, `loop/escalate`, `loop/ready`,
   `loop/paused` and the four groom labels the modes write `type/ops`,
   `size/XS`, `size/S`, `size/M` (`type/bug` is the app's, §4) run `gh label
-  create <name> --color <hex> --description "<one line>" 2>/dev/null || true`
+  create <name> --description "<one line>" 2>/dev/null || true` (no `--color`
+  — gh assigns one; Replan 2026-10-13)
   — this list is spelled identically in both templates; `node
-  "${CLAUDE_PLUGIN_ROOT}/tools/operate-triage.mjs"` is `$OT` below), then
+  "${CLAUDE_PLUGIN_ROOT}/tools/operate-triage.mjs"` is `$OT` below; the
+  venture slug is `SLUG=$(basename "$(git rev-parse --show-toplevel)")` — the
+  repo directory name, the same token this repo's §10 Owner channel row uses
+  as its `[venture-workflow-plugin]` prefix — and every `<slug>` below is
+  `$SLUG`), then
   three subsections:
   - `### Triage a user report` — the exact `gh` lines: `gh issue view N
     --json number,title,body,labels,createdAt,author`; stop unless
@@ -449,11 +495,15 @@ and an endpoint shape). Runtime: claude (default — no `runtime:` field).
   - `### Digest` — first read the §10 **Owner channel** row of
     `docs/WORKFLOW.md`: it names Slack → `CH=slack`; `none`, Telegram, or
     absent → `CH=none` and say "digest will be kept locally — run
-    `/agentic-workflow:connect slack` to deliver it"; then `gh issue list
-    --label source/user --state all --limit 200 --json
-    number,title,labels,updatedAt`; activity = issues whose `updatedAt` >
-    `lastDigestAt` (from the state file; absent → now − 24 h) — nothing
-    else (cut list: no comment scanning);
+    `/agentic-workflow:connect slack` to deliver it"; then `SINCE` =
+    `lastDigestAt` from the state file (absent → now − 24 h) and `gh api
+    --paginate "repos/{owner}/{repo}/issues?labels=source/user&state=all&since=$SINCE&per_page=100"`
+    (GitHub's `since` filters on updated-at server-side and `--paginate`
+    walks every page, so nothing is truncated — no `--limit`; `per_page=100`
+    is the API's page maximum; drop entries carrying `pull_request`);
+    activity = the count of returned issues — nothing else (cut list: no
+    comment scanning). The eval does not exercise the digest, so the `gh`
+    shim does not serve `api`;
     `$OT digest-due --activity <n> --now <ISO>`; on `due: activity` compose the
     three lines (journeys 288–293 with `Merge:` replaced by `Fix queued
     (manual): #…`, counts for escalated / diagnosed / needs-info, the third
@@ -526,7 +576,17 @@ and an endpoint shape). Runtime: claude (default — no `runtime:` field).
   because it becomes false — then add `const binDir = path.join(dir, 'bin');`
   and build `childEnv` as one object: `{ ...process.env, PATH:
   existsSync(binDir) ? binDir + path.delimiter + process.env.PATH :
-  process.env.PATH, ...(existsSync(fakeCodex) ? { CODEX_BIN: fakeCodex } : {}) }`.
+  process.env.PATH, XDG_STATE_HOME: path.join(work, 'state'),
+  ...(existsSync(fakeCodex) ? { CODEX_BIN: fakeCodex } : {}) }` — the
+  `XDG_STATE_HOME` key is set for EVERY scenario (Replan revision
+  2026-10-13): `operate-triage.mjs` defaults its state dir to
+  `${XDG_STATE_HOME:-$HOME/.local/state}/agentic-workflow/<slug>/`, and the
+  fixture's `Owner channel | none` sends every Alert down the `kept locally`
+  path, so without it an eval would append to the runner's real home.
+  `checks.mjs` may read `kept[]` from
+  `path.join(path.dirname(dir), 'state/agentic-workflow/repo/operate.json')`
+  (the slug is `repo`, the fixture checkout's directory name) and asserts
+  nothing under `$HOME/.local/state/agentic-workflow/repo/` was created by the run.
   `evals/README.md`: a table row
   `| `operate-triage` | the triage/diagnose modes following instructions
   inside a user report, guessing a cause, labelling a device outage as a code
@@ -543,49 +603,52 @@ and an endpoint shape). Runtime: claude (default — no `runtime:` field).
   production; you return once.
 
   **8. Protocol text, `templates/WORKFLOW.md`** then the identical diff in
-  `docs/WORKFLOW.md` (+ stamp line 3 → `v1.53.0`); confirm each anchor with
-  `grep -n` first:
-  - §4 (insert after line 307, the sentence ending `optionally `epic/<id>` and `surface/<name>`.`; docs mirror after 299) add
+  `docs/WORKFLOW.md` (+ stamp line 3 → `v1.60.0`); confirm each anchor with
+  `grep -n` first; each addition is ONE sentence (the template is at 90% of
+  its 120,000-byte budget) and names no `Fable`:
+  - §4 (after line 311, the sentence ending `optionally `epic/<id>` and `surface/<name>`.`; docs mirror after 303) add
     `A user report filed through the in-app support channel carries
     `source/user` (the only label the bug-loop modes read), moves through
     exactly one `loop/{fix,diagnose,diagnosed,escalate,ready}` at a time, and
     `needs-info` when the report contract is incomplete (`templates/support-channel-spec.md`).`
-  - §6 Ops paragraph (672–676): after `Usually convened via
+  - §6 Ops paragraph (718–722; docs 710–714): after `Usually convened via
     `/agentic-workflow:operate`.` add `In `/agentic-workflow:operate diagnose
     #N` it reads the venture's signal table only, posts observed / not checked
     / cause / action / who / a draft client reply, and fires nothing.`
-  - §9 (888): `/agentic-workflow:operate` (the V6 loop; `triage #N |
+  - §9 (942; docs 934): `/agentic-workflow:operate` (the V6 loop; `triage #N |
     diagnose #N | digest` modes for user reports from the support channel)`.
-  - §12 Alert row (1062) examples: append `, an incident-class user report
+  - §12 Alert row (1142; docs 1106) examples: append `, an incident-class user report
     (impact ≥ 8), a single-venue device outage (per-venture default)`; Digest
-    row (1063): append `; the bug-loop digest goes out on activity only plus
+    row (1143; docs 1107): append `; the bug-loop digest goes out on activity only plus
     one weekly alive line — no message means nothing happened, not that the
     loop is dead (liveness is a dead-man check, mission 2)`.
 
-  **9. Record**: `plugin.json` → `1.53.0`; `CHANGELOG.md` `[Unreleased]` →
-  `## [1.53.0] — <today>` / `### Added — in-app support channel spec + bug
+  **9. Record**: `plugin.json` → `1.60.0`; `CHANGELOG.md` `[Unreleased]` →
+  `## [1.60.0] — <today>` / `### Added — in-app support channel spec + bug
   triage/diagnose/digest modes (operate-triage, mission 1 of 2)` with bullets
   (the two templates; the three `/operate` modes and their Boundaries; the
-  tool's verbs + lint row 10.9; the eval scenario + the `bin/` PATH rule;
+  tool's verbs + lint row 10.11; the eval scenario + the `bin/` PATH rule;
   Alert/digest wiring under §12 — activity-only + weekly alive) and a
   `### Noted` bullet "no watcher, no fix path, no server, no caps enforcement
   — mission 2 (`operate-fix`); the venture n=1 is OB-<n>"; fresh
   `## [Unreleased]` / `_(empty)_` above. `README.md` line 36 add
   `operate-triage.mjs`, line 37 add `support-channel-spec.md,
-  operate-triage.md`; plugin README row 157 → append `; `triage #N |
+  operate-triage.md`; plugin README row 172 → append `; `triage #N |
   diagnose #N | digest` modes handle user reports from the in-app support
   channel (`templates/support-channel-spec.md`) — read-only, never a push or
-  a merge`; tree block near 188 add `tools/operate-triage.mjs  # shipped by
+  a merge`; tree block after `tools/ci-wait.mjs` (203) add `tools/operate-triage.mjs  # shipped by
   the plugin: contract · score · labels · notify · digest-due`.
 
-- **Verify**: `node tools/lint.mjs` green (includes row 10.9 + hook-test at
-  its current baseline — unchanged by this mission); `node
+- **Verify**: `node tools/lint.mjs` green (includes row 10.11, `checkBudgets`
+  — a `warn:` line for `templates/WORKFLOW.md` is expected and is not a
+  failure — `checkRuleDedup`, and hook-test at its current baseline,
+  unchanged by this mission); `node tools/lint-test.mjs` green; `node
   plugins/agentic-workflow/tools/operate-triage.mjs --selftest` ends
   `operate-triage selftest: clean`; `node evals/run.mjs operate-triage` run
   ONCE → `✅ pass` with the judge % and cost quoted in the handoff (a ❌ is
   re-run once per evals/README before being treated as a defect); for each
   edited paragraph `diff <(sed -n 'a,bp' plugins/agentic-workflow/templates/WORKFLOW.md) <(sed -n 'c,dp' docs/WORKFLOW.md)`
-  is empty (ranges by heading grep); `grep -c 1.53.0` ≥ 1 in `plugin.json`,
+  is empty (ranges by heading grep); `grep -c 1.60.0` ≥ 1 in `plugin.json`,
   `CHANGELOG.md`, `docs/WORKFLOW.md`; cross-check grep: every label name in
   `commands/operate.md` appears in both templates (`for l in source/user
   needs-info loop/fix loop/diagnose loop/diagnosed loop/escalate loop/ready
@@ -595,9 +658,14 @@ and an endpoint shape). Runtime: claude (default — no `runtime:` field).
   `bash -n evals/scenarios/operate-triage/setup.sh`; `node
   evals/scenarios/operate-triage/fixture/bin/gh auth status` exits 0 from the
   fixture dir; `claude --plugin-dir plugins/agentic-workflow` loads without an
-  error (the staging verify). Catalog: none.
-- **Read budget**: ≈ 1,420 lines (under 1,500 — tight; the design-doc ranges
-  are the bulk and are read once). Suits: `backend`.
+  error (the staging verify); `grep -n '60 req\|--color' plugins/agentic-workflow/templates/support-channel-spec.md plugins/agentic-workflow/commands/operate.md`
+  returns nothing (the Replan 2026-10-13 cuts); `docs/record synced` and
+  `version bumped + stamped` are pre-merge Closing rows — name their evidence
+  in the hand-off so the orchestrator fires them on the branch before the
+  checkpoint. Catalog: none.
+- **Read budget**: ≈ 1,460 lines (re-measured 2026-10-13; under 1,500 —
+  tight; the design-doc ranges are the bulk and are read once). Suits:
+  `backend`.
 
 **Checkpoint ckpt-p1** ends phase 1 — TWO one-shot `reviewer` spawns on
 **Fable**, both fresh, both read-only, in this order:
@@ -611,12 +679,13 @@ never reaches a shell (`--body-file`, temp files, no interpolation); `notify`
 never claims a send it did not make and never writes under `.plans/`; the
 label grammar refuses two `loop/*`; §4/§6/§9/§12 identical across both
 copies; nothing from mission 2 (watch, lock, cursor, caps, fix path, server)
-was written; the `run.mjs` change is the `binDir`/`childEnv` lines plus the
+was written; the `run.mjs` change is the `binDir`/`childEnv` lines (incl.
+the `XDG_STATE_HOME` key under the eval `work` dir) plus the
 rewritten comment, and the PATH prepend only fires when `<dir>/bin` exists;
 `notify` refuses to send without `--channel slack` even when the Slack env
 vars are present; a digest send also restarts the alive clock.
 
-(b) **BUILDABLE read of the spec** — brief text for the orchestrator to hand
+(b) **BUILDABLE read of the spec** (AC-3) — brief text for the orchestrator to hand
 over verbatim: "You are a fresh venture build agent. The owner has just copied
 `plugins/agentic-workflow/templates/support-channel-spec.md` to
 `docs/product/engineering/support-channel-spec.md` in a Next.js + Prisma +
@@ -628,16 +697,21 @@ one page: for each of the spec's sections (a)–(i), could you plan a brief
 from it without asking the owner a question? List every question you WOULD
 have to ask (that is a finding). Check that every label, status and field
 name used in the spec also appears in the other two files with the same
-spelling. Verdict: a single word, **BUILDABLE** or **FINDINGS**, followed by
+spelling. A `{{…}}` slot the spec tells the owner to fill is not a finding;
+a value you would have to invent is. Verdict: a single word, **BUILDABLE** or **FINDINGS**, followed by
 the findings. You do not edit; you do not build; you return once." A
 FINDINGS verdict is a REQUEST CHANGES for S1 (one corrective pass, `S1-fix`,
 counted when it fires); a second FINDINGS goes to the owner.
 
-Then staging verify (lint + `claude --plugin-dir` load) → one PR to `main`
-(`feat(operate): 1.53.0 — support-channel spec + triage/diagnose/digest modes`),
-human merges. The orchestrator then adds the metrics-doc §5 OB row (10
-triaged reports → first month-review) and the venture-n=1 row to
-`.plans/OBLIGATIONS.md` via the ledger's `## Closing` promotion.
+Before the checkpoint the orchestrator fires the three pre-merge Closing rows
+on the phase branch (`node ${CLAUDE_PLUGIN_ROOT}/tools/ledger.mjs
+operate-triage fire "<row-prefix>" "<evidence>"`); the reviewer re-verifies
+them. Then staging verify (lint + `claude --plugin-dir` load) → the feature
+PR to `main` (`feat(operate): 1.60.0 — support-channel spec +
+triage/diagnose/digest modes`), human merges. The post-merge rows (cleanup,
+live-verify, and the venture-n=1 + month-review rows the orchestrator
+`promote`s to `.plans/OBLIGATIONS.md`) fire at `/agentic-workflow:settle`
+from the ONE `chore/operate-triage-bookkeeping` PR (§10 `records-only`).
 
 ---
 _Size every brief to its read budget; split any that can't fit and note the
