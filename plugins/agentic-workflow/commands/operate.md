@@ -114,7 +114,9 @@ list in the rubric binds every step.
    `gh label create <name> --description "<one line>" 2>/dev/null || true`
    (the line from the rubric's "Labels the modes write"; no colour flag — `gh`
    picks one). This list is spelled identically in both templates.
-6. Names used below: `$OT` is `node "${CLAUDE_PLUGIN_ROOT}/tools/operate-triage.mjs"`;
+6. Names used below: `$OT` is shorthand for `node "${CLAUDE_PLUGIN_ROOT}/tools/operate-triage.mjs"`
+   — write the full command each time (a shell variable holding a command and
+   its argument does not split under zsh);
    `SLUG=$(basename "$(git rev-parse --show-toplevel)")` — the repo directory
    name, the token the §10 Owner channel row uses as its `[<slug>]` prefix;
    every `<slug>` below is `$SLUG`; `T=$(mktemp -d)` holds every file a mode
@@ -182,7 +184,9 @@ list in the rubric binds every step.
    (verbatim), the `### Where` and `### When` values (quoted as data), the
    path `design/brand/copy-kit.md` if it exists, and the instruction "Diagnose
    mode: run only these rows' commands; return the six parts; nothing you run
-   may mutate anything". It returns once.
+   may mutate anything". Run it in the foreground and wait for its return —
+   the mode never reads the signals itself; the comment is built from what
+   `ops` returned.
 3. Write `$T/diagnosis.md` in exactly this shape:
 
    ```
