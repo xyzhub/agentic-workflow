@@ -12,10 +12,10 @@ fresh agent resumes the mission from this file alone. Write-ahead — update it
 orchestrator has no session boundary to force a write; a compaction erases
 everything since the last one — §12 LA-6)._
 
-Status: planned
+Status: active
 
 Estimate: 1 session
-Sessions used: 0
+Sessions used: 1
 
 _The two budget lines above are read by the mission-budget hook every turn. The
 planner writes `Estimate:` (1 = one brief S1 + one checkpoint, inside which two
@@ -72,7 +72,7 @@ Target version **1.60.0** (Replan 2026-10-13; 1.53.0 was taken by pr-economy).
 _Glyphs: `[ ]` not started · `[~]` in-flight / deferred / awaiting owner · `[x]`
 done (verified, not merely written)._
 
-- [ ] S1 — `templates/support-channel-spec.md`, `templates/operate-triage.md`, `tools/operate-triage.mjs` + selftest + lint row 10.11, `/operate triage #N | diagnose #N | digest` modes with Boundaries, eval scenario `operate-triage` (fake-`gh` shim, `run.mjs` PATH rule), `ops.md` diagnose contract, WORKFLOW §4/§6/§9/§12 both copies, record (1.60.0, CHANGELOG, READMEs, evals/README) (branch `mission/operate-triage`; builder `backend`)
+- [~] S1 — `templates/support-channel-spec.md`, `templates/operate-triage.md`, `tools/operate-triage.mjs` + selftest + lint row 10.11, `/operate triage #N | diagnose #N | digest` modes with Boundaries, eval scenario `operate-triage` (fake-`gh` shim, `run.mjs` PATH rule), `ops.md` diagnose contract, WORKFLOW §4/§6/§9/§12 both copies, record (1.60.0, CHANGELOG, READMEs, evals/README) (branch `mission/operate-triage`; builder `backend`)
 - [ ] Checkpoint ckpt-p1 — TWO one-shot `reviewer` spawns on **Fable**: (a) six-lens diff review of `<base>..mission/operate-triage` incl. a re-run of `node evals/run.mjs operate-triage`; (b) the BUILDABLE read of the spec (brief text in the sessions file) → then lint + `claude --plugin-dir` load → one PR to `main`, human merges
 
 ## Open questions
@@ -119,6 +119,8 @@ Deviating is allowed; deviating silently is not (§4)._
 
 _≤10 lines per entry: what this session did, the verify signal, the branch, and
 what the next session needs. Newest on top; crash-safe by write-ahead._
+
+- 2026-10-13 S1 started on mission/operate-triage (from main 053db57): Sessions used 1/1, Status active; builder backend (claude, Opus default) spawned.
 
 - 2026-10-13 replan closed: owner answered OQ-1 = unset (locked 2026-10-13). Trio APPROVEd; no open questions. Resume with /agentic-workflow:mission operate-triage continue.
 
