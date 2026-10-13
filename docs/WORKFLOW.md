@@ -1,6 +1,6 @@
 # The Workflow — one agentic protocol from idea to viable product
 
-<!-- protocol-master: v1.59.0 -->
+<!-- protocol-master: v1.60.0 -->
 
 ## Quick reference — humans start here
 
@@ -300,7 +300,7 @@ per mission close (`end` reuses an open one); the agent may merge it under the
 feature, deferral, `/agentic-workflow:operate` finding, `/agentic-workflow:retro`
 action — is an issue in the §10 **Issue tracker** (GitHub Issues via `gh` when the
 remote is GitHub), labelled `type/{bug,feature,debt,ops}` and `size/{XS,S,M}`,
-optionally `epic/<id>` and `surface/<name>`. Markdown backlogs are **generated
+optionally `epic/<id>` and `surface/<name>`. A user report filed through the in-app support channel carries `source/user` (the only label the bug-loop modes read), moves through exactly one `loop/{fix,diagnose,diagnosed,escalate,ready}` at a time, and `needs-info` when the report contract is incomplete (`templates/support-channel-spec.md`). Markdown backlogs are **generated
 views** of that queue, never hand-appended; the roadmap
 (`docs/product/roadmap.md`, `templates/roadmap.md`) holds epics, the owner's
 ranking and pointers — **never per-item status**. A deferral is a decision doc
@@ -711,7 +711,7 @@ irreversible ones (see §11).
 impact, runbook truthfulness, postmortem drafts, and infra-cost review against
 the business model — each finding converted into a ranked, runnable mission or
 session candidate. It is read-only against production; restarts, rollbacks, and
-deploys are the human's to fire. Usually convened via `/agentic-workflow:operate`.
+deploys are the human's to fire. Usually convened via `/agentic-workflow:operate`. In `/agentic-workflow:operate diagnose #N` it reads the venture's signal table only, posts observed / not checked / cause / action / who / a draft client reply, and fires nothing.
 
 **Writer** (`writer`) is the optional copy & content craft specialist —
 convened when a slice is copy-heavy (landing-page pass, UI-string sweep,
@@ -931,7 +931,7 @@ drive the real flow, confirm monitoring is receiving, record the result).
   verification, §7), `/agentic-workflow:settle` (probe deferred obligations, fire the
   condition-met safe class — merged-branch + worktree reaping behind the
   deploy-green gate — surface the rest, and hold the mission-close gate),
-  `/agentic-workflow:operate` (the V6 loop), `/agentic-workflow:publish` (the §14 publishing
+  `/agentic-workflow:operate` (the V6 loop; `triage #N | diagnose #N | digest` modes for user reports from the support channel), `/agentic-workflow:publish` (the §14 publishing
   pipeline — connect channels, stage the queue, fire under the Publish policy),
   `/agentic-workflow:sync` (bring
   docs/WORKFLOW.md up to the installed protocol master), `/agentic-workflow:next` (recommends
@@ -1103,8 +1103,8 @@ pull surface):
 | Tier | When | Examples |
 |---|---|---|
 | **Gate** | Work is blocked on the human | approval ready, kill-stop, escalation after one-corrective-retry |
-| **Alert** | The owner would want to know now | `/agentic-workflow:verify` FAIL, user-impacting incident, budget ceiling near |
-| **Digest** | Rhythm | one message per `/agentic-workflow:operate` cycle: ≤3 lines + status-page link |
+| **Alert** | The owner would want to know now | `/agentic-workflow:verify` FAIL, user-impacting incident, budget ceiling near, an incident-class user report (impact ≥ 8), a single-venue device outage (per-venture default) |
+| **Digest** | Rhythm | one message per `/agentic-workflow:operate` cycle: ≤3 lines + status-page link; the bug-loop digest goes out on activity only plus one weekly alive line — no message means nothing happened, not that the loop is dead (liveness is a dead-man check, mission 2) |
 
 Messages carry summaries and links (PR, status page) — never secrets.
 
