@@ -75,6 +75,11 @@ const has10 = (label) => new RegExp(`^\\|\\s*\\*\\*${label}\\b`, 'm').test(secti
 // older plugin tree without the tool falls back to row presence.
 const CEREMONY = path.join(PLUGIN, 'tools/ceremony.mjs');
 const ceremony = existsSync(CEREMONY) ? await import(CEREMONY).catch(() => null) : null;
+// The §10 Attribution row and its `.claude/settings.json` mirror — checked by
+// attribution.mjs's own fs-only `check()`; guarded the same way, so an older
+// plugin tree without the tool falls back to row presence.
+const ATTRIBUTION = path.join(PLUGIN, 'tools/attribution.mjs');
+const attribution = existsSync(ATTRIBUTION) ? await import(ATTRIBUTION).catch(() => null) : null;
 
 // The conventions file (CLAUDE.md/AGENTS.md) is injected into EVERY session, so
 // a dead anchor there misleads more than anywhere else. Check only tokens that
@@ -171,6 +176,14 @@ const LADDER = [
       return f.length ? `ceremony profile: ${f[0]}` : true;
     },
     fix: 'run /agentic-workflow:sync — it proposes a ceremony profile; confirm it in §10' },
+  { id: 'attribution-settings', since: '1.62.0',
+    check: () => {
+      if (!has10('Attribution')) return '§10 has no **Attribution** row — commits and PRs fall back to the default credit and `.claude/settings.json` never carries it';
+      if (!attribution) return true;
+      const f = attribution.check(ROOT);
+      return f.length ? `attribution: ${f[0]}` : true;
+    },
+    fix: 'run /agentic-workflow:sync — it adds the §10 **Attribution** row (`tools/attribution.mjs import`, so an existing setting is kept) and mirrors it into `.claude/settings.json` (`attribution.mjs apply`)' },
   { id: 'ledger-budget-fields', since: '1.45.0',
     check: () => { const bad = activeLedgers().filter((l) => !/^Estimate:\s*\d+/m.test(l.text) || !/^Sessions used:\s*\d+/m.test(l.text)).map((l) => l.name); return bad.length ? `active ledger(s) without \`Estimate:\`/\`Sessions used:\` (the overrun stop cannot fire): ${bad.join(', ')}` : true; },
     fix: 'add `Estimate: N sessions` (the planner\'s honest count for what remains) and `Sessions used: k` to each active .plans/*.state.md header' },

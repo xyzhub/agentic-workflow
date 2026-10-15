@@ -1326,6 +1326,10 @@ const CLOSING_NONE_DUE = {
     let ren = { row: '', table: '' }; try { ren = JSON.parse(r.stdout).render; } catch { /* the conformant case then fails loudly */ }
     conformant['docs/WORKFLOW.md'] = { content: body(ren.row, ren.table) };
   }
+  // v1.62.0 attribution-settings: the §10 Attribution row + its matching
+  // .claude/settings.json mirror (what attribution.mjs apply writes).
+  conformant['docs/WORKFLOW.md'].content = conformant['docs/WORKFLOW.md'].content.replace('| **Default branch** | x |\n', '| **Default branch** | x |\n| **Attribution** | commit: default · pr: default |\n');
+  conformant['.claude/settings.json'] = { content: `${JSON.stringify({ attribution: { commit: 'Generated with The XYZ Protocol', pr: 'Generated with The XYZ Protocol' } }, null, 2)}\n` };
   const sid = (t) => `conf-${t}-${process.pid}-${Date.now()}`;
 
   { const r = runHook({ event: 'SessionStart', desc: CONF, input: { source: 'startup', session_id: sid('a') } });
@@ -1338,6 +1342,12 @@ const CLOSING_NONE_DUE = {
   { const files = { ...conformant, 'docs/WORKFLOW.md': { content: conformant['docs/WORKFLOW.md'].content.replace(/^(\| \*\*Ceremony profile\*\* \| ).*\|$/m, '$1proposed 2026-10-15 — full ceremony still applies until you confirm. |') } };
     const r = runHook({ event: 'SessionStart', desc: CONF, input: { source: 'startup', session_id: sid('cerp') }, files });
     check('conform-check: a `proposed` ceremony profile is conformant (confirming is the owner\'s call) → silent', r.code === 0 && r.stdout === '' && /proposed 2026-10-15/.test(files['docs/WORKFLOW.md'].content), r.stdout); }
+  { const files = { ...conformant, 'docs/WORKFLOW.md': { content: conformant['docs/WORKFLOW.md'].content.replace(/^\| \*\*Attribution\*\* .*\n/m, '') } };
+    const r = runHook({ event: 'SessionStart', desc: CONF, input: { source: 'startup', session_id: sid('att') }, files });
+    check('conform-check: no §10 Attribution row → attribution-settings gap', /attribution-settings/.test(ctxOf(r)) && /no \*\*Attribution\*\* row/.test(ctxOf(r)), JSON.stringify(ctxOf(r))); }
+  { const files = { ...conformant, '.claude/settings.json': { content: '{"attribution":{"commit":"Co-Authored-By: Someone <x@y>","pr":"Generated with The XYZ Protocol"}}\n' } };
+    const r = runHook({ event: 'SessionStart', desc: CONF, input: { source: 'startup', session_id: sid('atd') }, files });
+    check('conform-check: settings.json drifted from the row → attribution-settings gap naming the side', /attribution-settings/.test(ctxOf(r)) && /attribution\.commit/.test(ctxOf(r)), JSON.stringify(ctxOf(r))); }
   { const files = { ...conformant, 'docs/WORKFLOW.md': { content: wf('1.43.0', ['Default branch']) } };
     delete files['tools/catalog.mjs']; delete files['docs/product/roadmap.md'];
     const r = runHook({ event: 'SessionStart', desc: CONF, input: { source: 'startup', session_id: sid('c') }, files });
@@ -1590,6 +1600,35 @@ const CLOSING_NONE_DUE = {
   { const r = c('git commit -m "docs: describe how fixes propagate downstream"'); check('close-guard: prose mentioning "fixes" with no #ref → allowed', r.code === 0, `code=${r.code}`); }
   { const r = c('git commit -m "chore: refs #605 — partial, does not close"'); check('close-guard: "refs #605" → allowed', r.code === 0, `code=${r.code}`); }
   { const r = c('git status'); check('close-guard: non-commit command → allowed', r.code === 0, `code=${r.code}`); }
+}
+
+// ── git/gh guardrails (v1.62.0): the commit hint prints the TARGET repo's §10
+// Attribution commit text (POSIX, no jq for this part, exit 0 always), plus
+// regression pins for the push guard, which had no coverage before.
+{
+  const GR = 'git/gh guardrails';
+  const row = (cell) => ({ content: `# W\n\n## 10. Project profile\n\n| Key | Value |\n|---|---|\n| **Attribution** | ${cell} |\n` });
+  const g = (cmd, files, bin) => runHook({ event: 'PreToolUse', desc: GR, input: { tool_input: { command: cmd } }, files, bin });
+  { const r = g('git commit -m "feat: x"');
+    check('guardrails: commit, no docs/WORKFLOW.md → the default attribution text, exit 0', r.code === 0 && /Attribution line: Generated with The XYZ Protocol$/m.test(r.stdout) && !/Co-Authored-By/.test(r.stdout), r.stdout + r.stderr); }
+  { const r = g('git commit -m "feat: x"', { 'docs/WORKFLOW.md': row('_(`commit: <v> · pr: <v>` — placeholder)_') });
+    check('guardrails: commit, unfilled placeholder row → the default text', r.code === 0 && /Attribution line: Generated with The XYZ Protocol$/m.test(r.stdout), r.stdout); }
+  { const r = g('git commit -m "feat: x"', { 'docs/WORKFLOW.md': row('none') });
+    check('guardrails: commit, §10 Attribution `none` → "no attribution line", exit 0', r.code === 0 && /no attribution line \(§10 Attribution: none\)/.test(r.stdout) && !/Generated with/.test(r.stdout), r.stdout); }
+  { const r = g('git commit -m "feat: x"', { 'docs/WORKFLOW.md': row('commit: none · pr: default') });
+    check('guardrails: commit, `commit: none · pr: default` → no attribution line', r.code === 0 && /no attribution line/.test(r.stdout), r.stdout); }
+  { const r = g('git commit -m "feat: x"', { 'docs/WORKFLOW.md': row("commit: `Built by O'Brien $HOME \"q\"\\nsecond line` · pr: none") });
+    check('guardrails: custom text with \' $ " is printed literally (first line only), exit 0', r.code === 0 && r.stdout.includes('Attribution line: Built by O\'Brien $HOME "q"\n') && !/second line/.test(r.stdout), r.stdout + r.stderr); }
+  { const r = g('cd sub && git commit -m "feat: x"', { 'docs/WORKFLOW.md': row('none'), 'sub/docs/WORKFLOW.md': row('commit: `Sub repo credit` · pr: none') });
+    check('guardrails: `cd sub && git commit` reads the TARGET repo\'s row (sub/docs/WORKFLOW.md)', r.code === 0 && /Attribution line: Sub repo credit$/m.test(r.stdout), r.stdout); }
+  { const r = g('git commit -m "feat: x"', { 'docs/WORKFLOW.md': row('commit: `Custom, no jq` · pr: none') }, { jq: false });
+    check('guardrails: jq missing → the attribution lookup still works (grep/sed/head only), exit 0', r.code === 0 && /Attribution line: Custom, no jq$/m.test(r.stdout), r.stdout + r.stderr); }
+  { const r = g('git commit -m "feat: x"', { 'docs/WORKFLOW.md': row('none') }, { jq: false });
+    check('guardrails: jq missing + `none` → no attribution line', r.code === 0 && /no attribution line/.test(r.stdout), r.stdout + r.stderr); }
+  { const r = g(['git', 'push', 'origin', 'HEAD:main'].join(' '));
+    check('guardrails: push refspec HEAD:main → BLOCK (exit 2, "refspec targets main")', r.code === 2 && /refspec targets main/.test(r.stderr), `code=${r.code} ${r.stderr}`); }
+  { const r = g('git status');
+    check('guardrails: git status → exit 0, no commit hint', r.code === 0 && !/Commit format/.test(r.stdout), `code=${r.code}`); }
 }
 
 // ── pr-economy (v1.53.0): the §10 records-only merge scope — path-enforced, fail closed ──
