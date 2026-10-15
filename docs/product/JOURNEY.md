@@ -16,6 +16,22 @@ grades the protocol's own behavior the way a QA team would.
 
 ---
 
+## 2026-10-15 — adaptive-ceremony: each project now says which steps it needs, shipped as version 1.61.0
+
+The adaptive-ceremony mission is closed. The owner asked for it to ship in one pull request, so the work went out as PR #146 (version 1.61.0), which the owner merged as commit 1cef021 with the automated checks passing. The earlier planning PR, #144, was closed as superseded.
+
+What changed for the owner. Until now every project ran the same full set of steps, whether it was a large launch or a small fix. Each project now carries a "ceremony profile": a short table that marks every stage, document and review gate as required, optional or skipped. Skipping a step needs a clear reason that the system can see, and every skip, or every optional review that was not run, leaves one line in the mission record so nothing disappears quietly. There is one shared list of gate types (8 kinds of change and 9 kinds of action) used by the bug-triage work, the reviewer and the profile alike. Sixteen of those types cannot be undone once done, such as payments, secrets and production deploys. Those can never be skipped or made optional, and the guard that lets an agent merge refuses if one is. If a project drifts, it can only move toward more checking, never less. A new tool, `tools/ceremony.mjs`, works the profile out, shows the effective result and checks it. Six commands that sit at review gates, plus `/next` and intake, now read the profile. Bootstrap, adopt, sync and doctor propose a profile and ask the owner once.
+
+This repo's own profile is marked `proposed`. Full ceremony still applies here until the owner confirms it.
+
+How the reviews went. Three independent Fable reviews all approved. The first approved only after one fix: the check that keeps the gate list consistent could not see inside code blocks, so it would have missed a mistake there. A security scan also raised a worry about the merge guard. We confirmed it came from two parts of the system reading the same text differently, showed it was not a way around the guard, and tightened it anyway in the third phase. The lesson is that a worry worth raising is worth running down to a yes or no, and a "no" can still be worth a small fix.
+
+Cost. 8 work sessions against an estimate of 6, 7 reviewer runs and 1 corrective round.
+
+Still open. OB-29: try the profile live in Orderly or Missions. OB-30: raise the Missions plugin version pin to 1.61.0 or later. OB-31: measure the effect over 3 real changes. Issue #147: `/plan`'s own plan review does not read the profile yet, which is safe because it then applies full ceremony. The next mission follows the order in the goal statement (`docs/product/decisions/2026-10-12-goal-statement.md`).
+
+---
+
 ## 2026-10-13 — operate-triage: the bug-report triage slice shipped as version 1.60.0
 
 The operate-triage mission is closed. The owner merged PR #141 (version 1.60.0, merge 17f1cad) and the automated checks passed. Its planning record went in earlier as PR #140. This is the first half of the unattended bug loop the owner wants: a finished product watches the bug reports its own users file, sorts them, and diagnoses them, while a person still approves every fix and every reply.
