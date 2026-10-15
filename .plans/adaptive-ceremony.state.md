@@ -55,24 +55,19 @@ load), then a PR to `main` opens and the human merges. Recorded at planning,
 Standing agent authorized: _(none — every review is a one-shot spawn at a
 checkpoint, §12 LA-5.)_
 
-Branches: `mission/adaptive-ceremony-p1`, `-p2`, `-p3`, each cut from `main`
-after the previous phase's PR merged (else from the previous branch head, as a
-logged deviation). Two PRs per phase are NOT needed; the mission closes in its
-three feature PRs plus ONE `chore/adaptive-ceremony-bookkeeping` PR for the
-post-merge Closing rows (agent may merge, §10 `records-only`). Target version
-**1.61.0**.
+Branches: **one branch, `mission/adaptive-ceremony`, carries all three phases, and ONE PR to `main` ships the whole mission** (owner, 2026-10-15: "give me one PR to merge for the whole mission"). Each phase still ends in its own one-shot Fable checkpoint on that branch; an APPROVE advances to the next phase, it does not open a PR. The single PR opens as a draft now and is marked ready after ckpt-p3 APPROVEs; the human merges it once. Plan PR #144 is folded in (its commits are on this branch) and closed as superseded. Plus ONE `chore/adaptive-ceremony-bookkeeping` PR for the post-merge Closing rows (agent may merge, §10 `records-only`). Target version **1.61.0**.
 
 ## Checklist
 
 _Glyphs: `[ ]` not started · `[~]` in-flight / deferred / awaiting owner · `[x]`
 done (verified, not merely written)._
 
-- [~] S1 — preconditions (Missions-contract grep incl. `connections.test.ts:28`, WORKFLOW bytes), `templates/gate-classes.md` (L6: 8 change + 9 action classes, grammar defined once), three consumers point at it, `fable-boundary` rule + detector retuned, `checkClassListDedup`, §0 `stage-table` fence + columns, §5 `checkpoint-gates` fence + `ceremony-skip` rule, §10 `Ceremony profile` row + `### 10.2 Ceremony` placeholder, three relation lines, `Reviewer runs:` line + `ledger.mjs reviewer-runs` + ledger-test cases, sync preserve change in its own tested commit (branch `mission/adaptive-ceremony-p1`)
-- [ ] Checkpoint ckpt-p1 — one-shot `reviewer` on **Fable** (§5 rule + detector rewrite); APPROVE → PR to `main`, human merges
-- [ ] S2 — `tools/ceremony.mjs` (derive · effective --log --mission · check incl. the L6 action-firer and malformed-`+` rules) + `tools/ceremony-test.mjs` + `checkCeremonyHarness`, conform `ceremony-profile-row`, merge-guard §10.2 backstop with all 16 irreversible ids + hook-test cases (incl. an action id and `supply-chain`), derive dogfood read-only (branch `mission/adaptive-ceremony-p2`)
-- [ ] Checkpoint ckpt-p2 — one-shot `reviewer` on **Fable** (merge-guard + fail-closed resolver; includes the counsel's "stopped before the gate passes" probe); APPROVE → PR to `main`, human merges
-- [ ] S3 — rule-copies + resolver calls at every gate site, `checkCeremonyCopies`, `/next` + intake read points, bootstrap/adopt/sync/doctor prose (ask once, propose, drift warning, corrected J2 copy), inventories, `/sync` dogfood on this repo (`proposed` profile, stamp v1.61.0), CHANGELOG 1.61.0 + bump, pre-merge Closing rows fired (branch `mission/adaptive-ceremony-p3`)
-- [ ] Checkpoint ckpt-p3 — one-shot `reviewer` on **Fable** (resolver-call prose at every gate site) incl. plain-report read of every owner-facing string; APPROVE → PR to `main`, human merges
+- [~] S1 — preconditions (Missions-contract grep incl. `connections.test.ts:28`, WORKFLOW bytes), `templates/gate-classes.md` (L6: 8 change + 9 action classes, grammar defined once), three consumers point at it, `fable-boundary` rule + detector retuned, `checkClassListDedup`, §0 `stage-table` fence + columns, §5 `checkpoint-gates` fence + `ceremony-skip` rule, §10 `Ceremony profile` row + `### 10.2 Ceremony` placeholder, three relation lines, `Reviewer runs:` line + `ledger.mjs reviewer-runs` + ledger-test cases, sync preserve change in its own tested commit (branch `mission/adaptive-ceremony`)
+- [ ] Checkpoint ckpt-p1 — one-shot `reviewer` on **Fable** (§5 rule + detector rewrite); APPROVE → next phase on the same branch
+- [ ] S2 — `tools/ceremony.mjs` (derive · effective --log --mission · check incl. the L6 action-firer and malformed-`+` rules) + `tools/ceremony-test.mjs` + `checkCeremonyHarness`, conform `ceremony-profile-row`, merge-guard §10.2 backstop with all 16 irreversible ids + hook-test cases (incl. an action id and `supply-chain`), derive dogfood read-only (branch `mission/adaptive-ceremony`)
+- [ ] Checkpoint ckpt-p2 — one-shot `reviewer` on **Fable** (merge-guard + fail-closed resolver; includes the counsel's "stopped before the gate passes" probe); APPROVE → next phase on the same branch
+- [ ] S3 — rule-copies + resolver calls at every gate site, `checkCeremonyCopies`, `/next` + intake read points, bootstrap/adopt/sync/doctor prose (ask once, propose, drift warning, corrected J2 copy), inventories, `/sync` dogfood on this repo (`proposed` profile, stamp v1.61.0), CHANGELOG 1.61.0 + bump, pre-merge Closing rows fired (branch `mission/adaptive-ceremony`)
+- [ ] Checkpoint ckpt-p3 — one-shot `reviewer` on **Fable** (resolver-call prose at every gate site) incl. plain-report read of every owner-facing string, over the WHOLE mission diff `main..HEAD`; APPROVE → mark the one mission PR ready, human merges
 
 ## Open questions
 
@@ -98,11 +93,11 @@ never deleted: a fired row keeps its line and appends `· fired YYYY-MM-DD
 (<evidence>)`. A `[~]` row defers past this mission's close and MUST carry
 `→ OB-<n>`. `Closed: YYYY-MM-DD` is written only once every row is `[x]` or
 `[~] … → OB-<n>`; `/agentic-workflow:settle` enforces that. Pre-merge rows
-fire on the p3 branch before ckpt-p3 and ride that PR; post-merge rows fire at
+fire on `mission/adaptive-ceremony` before ckpt-p3 and ride that PR; post-merge rows fire at
 a later `/agentic-workflow:settle` from `chore/adaptive-ceremony-bookkeeping`._
 
-- [ ] branch + worktree cleanup · added 2026-10-13 (planner, post-merge) — do: delete `mission/adaptive-ceremony-p1`, `-p2`, `-p3` (local and remote) and prune their stale worktrees — when: the three PRs to `main` are merged AND the `lint.yml` run on the last merge commit concluded green — probe: `gh pr list --state merged --search adaptive-ceremony` + `gh run list --branch main --limit 3`
-- [ ] docs/record synced · added 2026-10-13 (planner, pre-merge) — do: confirm CHANGELOG `[1.61.0]`, both READMEs, `templates/WORKFLOW.md` §3/§5/§9/§10 and this repo's `docs/WORKFLOW.md` mirror (stamp + `proposed` profile) agree with what shipped; rewrite any line that drifted — when: S3's record step is committed on `mission/adaptive-ceremony-p3` — probe: `grep -n "1.61.0" CHANGELOG.md docs/WORKFLOW.md plugins/agentic-workflow/.claude-plugin/plugin.json`
+- [ ] branch + worktree cleanup · added 2026-10-13 (planner, post-merge) — do: delete `mission/adaptive-ceremony` and `plan/adaptive-ceremony` (local and remote) and prune stale worktrees — when: the one mission PR to `main` is merged AND the `lint.yml` run on the last merge commit concluded green — probe: `gh pr list --state merged --search adaptive-ceremony` + `gh run list --branch main --limit 3`
+- [ ] docs/record synced · added 2026-10-13 (planner, pre-merge) — do: confirm CHANGELOG `[1.61.0]`, both READMEs, `templates/WORKFLOW.md` §3/§5/§9/§10 and this repo's `docs/WORKFLOW.md` mirror (stamp + `proposed` profile) agree with what shipped; rewrite any line that drifted — when: S3's record step is committed on `mission/adaptive-ceremony` — probe: `grep -n "1.61.0" CHANGELOG.md docs/WORKFLOW.md plugins/agentic-workflow/.claude-plugin/plugin.json`
 - [ ] version bumped + stamped · added 2026-10-13 (planner, pre-merge) — do: `plugins/agentic-workflow/.claude-plugin/plugin.json` → 1.61.0 (the §10 Version pin), `docs/WORKFLOW.md` line 3 → `v1.61.0`, CHANGELOG entry stamped — when: this mission's CHANGELOG entry names a version — probe: `node -e "console.log(require('./plugins/agentic-workflow/.claude-plugin/plugin.json').version)"`
 - [ ] live-verify after reinstall · added 2026-10-13 (planner, post-merge) — do: in a real session after `/plugin update` + `/reload-plugins`, in an adopted repo other than this one (Orderly or Missions), run `/agentic-workflow:sync` and confirm: ONE batched ask (or none), a `proposed` row + 10.2 table with plain cells, `/agentic-workflow:doctor` reporting "full ceremony still applies", and `node $CLAUDE_PLUGIN_ROOT/tools/ceremony.mjs effective plan-judge` = `required (profile proposed)` — when: v1.61.0 is installed from `main` — probe: manual
 - [ ] Missions pin bump + contract tests · added 2026-10-13 (planner, post-merge) — do: in `xyzhub/missions`, bump `vendor/VERSION` and `vendor/agentic-workflow` to ≥ 1.61.0 (its own updater/verify-vendor flow), run `pnpm test` (contract-tests + recorded-session replays) and `scripts/verify-vendor.mjs`; record the command + exit code here — when: v1.61.0 is on `main` and a Missions session is open — probe: `grep version= /Users/baker/Playground/missions-app/vendor/VERSION`
@@ -114,7 +109,8 @@ a later `/agentic-workflow:settle` from `chore/adaptive-ceremony-bookkeeping`._
 _Any departure from a brief — logged here the moment it happens, with why.
 Deviating is allowed; deviating silently is not (§4)._
 
-- 2026-10-15 — `mission/adaptive-ceremony-p1` cut from `plan/adaptive-ceremony` (3ee40ea), not `main`: the plan PR #144 was still open when the owner started the mission, so the p1 PR carries the plan commits too (merging either first is safe).
+- 2026-10-15 — LOCKED (owner): one PR for the whole mission — "give me one PR to merge for the whole mission". Branch renamed `mission/adaptive-ceremony-p1` → `mission/adaptive-ceremony`; per-phase PRs dropped; checkpoints unchanged; PR #144 closed as superseded.
+- 2026-10-15 — the mission branch was cut from `plan/adaptive-ceremony` (3ee40ea), not `main`: the plan PR #144 was still open when the owner started the mission, so the p1 PR carries the plan commits too (merging either first is safe).
 - 2026-10-15 — `Reviewer runs: 3` set by hand (OQ-4): plan-judge REVISE, APPROVE, and the L6 re-check, all 2026-10-13/14.
 
 ## Handoff log (newest first)
