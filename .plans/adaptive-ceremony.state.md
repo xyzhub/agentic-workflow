@@ -15,7 +15,7 @@ everything since the last one — §12 LA-6)._
 Status: active
 
 Estimate: 6 sessions
-Sessions used: 2
+Sessions used: 3
 Reviewer runs: 4
 
 _The two budget lines above are read by the mission-budget hook every turn.
@@ -118,6 +118,8 @@ Deviating is allowed; deviating silently is not (§4)._
 _≤10 lines per entry: what this session did, the verify signal, the branch, and
 what the next session needs. Newest on top; crash-safe by write-ahead._
 
+- 2026-10-15 2026-10-15 ckpt-p1 (Fable) REQUEST CHANGES — 1 blocking: lint.mjs stripInline backtick regex swallows fenced code, so checkClassListDedup (and pre-existing checkRuleDedup) miss lists inside ``` fences; live miss commands/operate.md:155 (old class labels). Scorecard: Security 2, DX 2, QA 2, Architecture 3. AC-8 fail; AC-9/3/10/13 pass (17/17 gate cells parse). Missions profileRows verified. Advisory: grammar ' — ' tail rule stated outside gate-classes.md; mission-state.md:21 run-on; ceremony-skip la label form; reviewer.md description narrowed (intended); docs/WORKFLOW.md mirror stale until /sync (S3). Reviewer's CI NO-RUNS note was stale: PR #146 lint checks pass. Next: S1-fix (blocking + advisories 2–4), then narrow re-review.
+
 - 2026-10-15 2026-10-15 ckpt-p1 spawned: one-shot reviewer on Fable over 730ee3a..90e2223 (S1's three commits).
 
 - 2026-10-15 2026-10-15 S1 (builder, opus): done on mission/adaptive-ceremony, commits 2935827 (taxonomy + fences + §10 row + lint), 1f80377 (Reviewer runs counter), 90e2223 (sync preserve, last). Harness baseline counts BEFORE: lint-test 95, hook-test 286 ok, ledger-test 38, agents-test 30; AFTER: 103 / clean / 41 / 30; lint clean (warns: WORKFLOW 112,123/120,000; mission.md 21,703/24,000). Missions precondition: contract-test + plugin-contract.ts grep no hit; connections.ts profileRows slices ## 10. to next ##, keys bold cells; connections.test.ts:28 needs Owner channel/Remote executor/Runtimes/Publish policy, all present + Ceremony profile, no §10.2 rows leak. WORKFLOW bytes total 108,821→112,123; §0 12,042→13,134; §5 16,241→17,306; §10 8,202→9,058; §11 5,708→5,905. Builder deviations: detector keeps old class words too; security-pillar + mission.md rule-7 lines repointed at gate-classes.md (lint hits); delegable: never for commercial-commitment/outbound-contact/destructive-data/release-cut; multi-gate cells joined by '; '. For S3: commands/operate.md:155 still prints old class labels. Next: ckpt-p1 (Fable).
@@ -127,4 +129,4 @@ what the next session needs. Newest on top; crash-safe by write-ahead._
   9aa612c). Four open questions for the owner (OQ-2 blocks S2's rendering).
   Next: plan-judge, then owner answers, then S1.
 
-Next up: ckpt-p1
+Next up: S1-fix
