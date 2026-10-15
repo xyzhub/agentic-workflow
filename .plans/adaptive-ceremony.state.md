@@ -15,8 +15,8 @@ everything since the last one — §12 LA-6)._
 Status: active
 
 Estimate: 6 sessions
-Sessions used: 3
-Reviewer runs: 4
+Sessions used: 4
+Reviewer runs: 5
 
 _The two budget lines above are read by the mission-budget hook every turn.
 `Estimate: 6` = 3 builder briefs (S1, S2, S3) + 3 one-shot reviewer
@@ -118,6 +118,10 @@ Deviating is allowed; deviating silently is not (§4)._
 _≤10 lines per entry: what this session did, the verify signal, the branch, and
 what the next session needs. Newest on top; crash-safe by write-ahead._
 
+- 2026-10-15 2026-10-15 ckpt-p1 re-review spawned: one-shot Fable, narrowed to the blocking finding over d2fb7ca..fbd2da5.
+
+- 2026-10-15 2026-10-15 S1-fix (builder, opus): done, commit fbd2da5 — stripInline drops ```/~~~ fence lines and both dedup scanners treat a fence as a paragraph break (+1 lint-test case, 104); operate.md checklist + step 3 + Reason repointed to gate-classes ids; ' — ' tail rule now in gate-classes.md only; mission-state.md run-on fixed; ceremony-skip pointer '(§5 Ceremony skip)'. No other hidden restatements. Gates: lint clean, 104 / clean / 41 / 30. Next: narrow ckpt-p1 re-review (Fable).
+
 - 2026-10-15 2026-10-15 ckpt-p1 (Fable) REQUEST CHANGES — 1 blocking: lint.mjs stripInline backtick regex swallows fenced code, so checkClassListDedup (and pre-existing checkRuleDedup) miss lists inside ``` fences; live miss commands/operate.md:155 (old class labels). Scorecard: Security 2, DX 2, QA 2, Architecture 3. AC-8 fail; AC-9/3/10/13 pass (17/17 gate cells parse). Missions profileRows verified. Advisory: grammar ' — ' tail rule stated outside gate-classes.md; mission-state.md:21 run-on; ceremony-skip la label form; reviewer.md description narrowed (intended); docs/WORKFLOW.md mirror stale until /sync (S3). Reviewer's CI NO-RUNS note was stale: PR #146 lint checks pass. Next: S1-fix (blocking + advisories 2–4), then narrow re-review.
 
 - 2026-10-15 2026-10-15 ckpt-p1 spawned: one-shot reviewer on Fable over 730ee3a..90e2223 (S1's three commits).
@@ -129,4 +133,4 @@ what the next session needs. Newest on top; crash-safe by write-ahead._
   9aa612c). Four open questions for the owner (OQ-2 blocks S2's rendering).
   Next: plan-judge, then owner answers, then S1.
 
-Next up: S1-fix
+Next up: ckpt-p1
