@@ -20,6 +20,7 @@ import path from 'node:path';
 import { readFileSync, readdirSync, realpathSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { clockLeak, budgetVerdict, descriptionOver, ruleRestatement, RULES, tunePresetFindings, classListRestatement } from './lint.mjs';
+import { spawnSync } from 'node:child_process';
 
 // must: 'block' — a clock in some costume; the L3 rule rejects it.
 //       'pass'  — an observable state a probe can check.
@@ -219,6 +220,19 @@ export const CLASS_LIST_CASES = [
   ['3-key paragraph → pass', classListRestatement('Touches auth, payments and secrets only.'), false],
 ];
 
+// ── /sync preserve (adaptive-ceremony S1, D1-A) — the exact awk commands/sync.md
+// §2 runs keeps §10, §10.1 and §10.2 and stops at the next \`## \` heading.
+// Read from commands/sync.md itself, so the test runs the command's exact awk.
+const SYNC_AWK = (readFileSync(path.join(path.dirname(WORKFLOW), '../commands/sync.md'), 'utf8')
+  .match(/`awk '([^']+)' docs\/WORKFLOW\.md`/) ?? [])[1] ?? 'BEGIN{exit 1}';
+const SYNC_FIXTURE = ['# W', '', '## 9. Map', 'x', '', '## 10. Project profile', '| Key | Value |', '|---|---|', '| **Default branch** | main |', '', '### 10.1 Executors', '| name | ssh alias |', '', '### 10.2 Ceremony', '', '| id | kind | stage | derived | signal | effective |', '|---|---|---|---|---|---|', '| v0-go-no-go | gate | V0 | required | none | required |', '', '## 11. Autopilot mode', 'y', ''].join('\n');
+const syncOut = spawnSync('awk', [SYNC_AWK], { input: SYNC_FIXTURE, encoding: 'utf8' });
+const syncText = (syncOut.stdout ?? '').trimEnd();
+export const SYNC_CASES = [
+  ['sync §2 awk keeps §10 through 10.2 and stops before ## 11.', syncOut.status === 0
+    && syncText.startsWith('## 10. Project profile') && syncText.includes('### 10.1 Executors')
+    && syncText.endsWith('| v0-go-no-go | gate | V0 | required | none | required |') && !syncText.includes('## 11.'), true],
+];
 
 // ── Tune presets (AC-12) — tunePresetFindings decided directly on the real
 // file and on mutated copies (planner "Lint fixture mechanics": no tree copy).
@@ -271,13 +285,13 @@ for (const [must, when, source] of CASES) {
     console.error(`  FAIL  want=${must} got=${got}${hit ? ` (matched "${hit.clause}" as ${hit.kind})` : ''}  [${source}]\n        when: ${when}`);
   }
 }
-for (const [label, got, want] of [...BUDGET_CASES, ...CANON_CASES, ...RULE_CASES, ...CLASS_LIST_CASES, ...PRESET_CASES]) {
+for (const [label, got, want] of [...BUDGET_CASES, ...CANON_CASES, ...RULE_CASES, ...CLASS_LIST_CASES, ...SYNC_CASES, ...PRESET_CASES]) {
   if (got !== want) {
     bad++;
     console.error(`  FAIL  want=${JSON.stringify(want)} got=${JSON.stringify(got)}  [${label}]`);
   }
 }
-const total = CASES.length + BUDGET_CASES.length + CANON_CASES.length + RULE_CASES.length + CLASS_LIST_CASES.length + PRESET_CASES.length;
+const total = CASES.length + BUDGET_CASES.length + CANON_CASES.length + RULE_CASES.length + CLASS_LIST_CASES.length + SYNC_CASES.length + PRESET_CASES.length;
 if (bad) {
   console.error(`\nlint-test: ${bad} of ${total} wrong`);
   process.exit(1);

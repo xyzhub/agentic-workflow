@@ -1,5 +1,5 @@
 ---
-description: Conform the project to the installed plugin — re-copy docs/WORKFLOW.md (preserving §10 + Local amendments) AND apply the structure ladder (tools/conform.mjs) so a project adopted on an older version gains the rows, ledger fields, roadmap, catalog and queue view the current plugin expects.
+description: Conform the project to the installed plugin — re-copy docs/WORKFLOW.md (preserving §10 through 10.2 + Local amendments) AND apply the structure ladder (tools/conform.mjs) so a project adopted on an older version gains the rows, ledger fields, roadmap, catalog and queue view the current plugin expects.
 allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, AskUserQuestion, SlashCommand]
 ---
 
@@ -30,7 +30,9 @@ missing → the copy predates stamping; proceed, and say so.
 ## 2. Preserve the project-owned parts
 
 Extract verbatim from the current copy:
-- **§10 Project profile** (the filled table), and
+- **§10 Project profile through the next `## ` heading** — §10, §10.1 and
+  §10.2 verbatim, extracted with
+  `awk '/^## 10\. /{p=1} p && /^## / && !/^## 10\. /{p=0} p' docs/WORKFLOW.md`, and
 - the **Local amendments** section.
 
 Then diff the rest of the current copy against the OLD bundled master if
