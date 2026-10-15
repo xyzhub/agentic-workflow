@@ -67,7 +67,7 @@ done (verified, not merely written)._
 - [x] S2 — `tools/ceremony.mjs` (derive · effective --log --mission · check incl. the L6 action-firer and malformed-`+` rules) + `tools/ceremony-test.mjs` + `checkCeremonyHarness`, conform `ceremony-profile-row`, merge-guard §10.2 backstop with all 16 irreversible ids + hook-test cases (incl. an action id and `supply-chain`), derive dogfood read-only (branch `mission/adaptive-ceremony`)
 - [x] Checkpoint ckpt-p2 — one-shot `reviewer` on **Fable** (merge-guard + fail-closed resolver; includes the counsel's "stopped before the gate passes" probe); APPROVE → next phase on the same branch
 - [x] S3 — rule-copies + resolver calls at every gate site, `checkCeremonyCopies`, `/next` + intake read points, bootstrap/adopt/sync/doctor prose (ask once, propose, drift warning, corrected J2 copy), inventories, `/sync` dogfood on this repo (`proposed` profile, stamp v1.61.0), CHANGELOG 1.61.0 + bump, pre-merge Closing rows fired (branch `mission/adaptive-ceremony`)
-- [~] Checkpoint ckpt-p3 — one-shot `reviewer` on **Fable** (resolver-call prose at every gate site) incl. plain-report read of every owner-facing string, over the WHOLE mission diff `main..HEAD`; APPROVE → mark the one mission PR ready, human merges
+- [x] Checkpoint ckpt-p3 — one-shot `reviewer` on **Fable** (resolver-call prose at every gate site) incl. plain-report read of every owner-facing string, over the WHOLE mission diff `main..HEAD`; APPROVE → mark the one mission PR ready, human merges
 
 ## Open questions
 
@@ -118,6 +118,8 @@ Deviating is allowed; deviating silently is not (§4)._
 _≤10 lines per entry: what this session did, the verify signal, the branch, and
 what the next session needs. Newest on top; crash-safe by write-ahead._
 
+- 2026-10-15 2026-10-15 ckpt-p3 (Fable, whole mission origin/main..321a11f) APPROVE. Scorecard UX 3, DX 2, Security 3, Efficiency 3, QA 3, Architecture 3. AC-1..12 pass; AC-13 deferred by L4 to the Closing obligation row. Builder deviations 1/3/4/5 accepted. Dogfood: §10 rows + Local amendments unchanged vs main, only Ceremony profile added; Missions profileRows OK. Advisories: (1) /plan's plan-judge spawn lacks the resolver call — safe direction, filed #147; (2) 0a50a50 no own CI run, head 321a11f green; (3) confirming this repo's profile is a real change (v0-go-no-go optional). Final: Sessions used 8 vs Estimate 6 (1.33×; the overrun is S1-fix + its re-review); Reviewer runs 7. PR #146 marked ready; human merges.
+
 - 2026-10-15 2026-10-15 ckpt-p3 spawned: one-shot Fable over the whole mission diff origin/main..0a50a50.
 
 - 2026-10-15 2026-10-15 S3 (builder, opus): done, commits c48d6a2 (6 gate sites + next/intake + checkCeremonyCopies + --not-run), adc7b1d (merge-guard A1 tighten, 7 hook cases fail-old/pass-new; conform accepts proposed), b15490a (bootstrap/adopt/sync/doctor + READMEs), 0a50a50 (1.61.0 + /sync dogfood). Gates: lint clean / 106 / hook 306 ok / 41 / 30 / ceremony 43; plugin validate pass. Dogfood: docs/WORKFLOW.md fresh template copy stamped v1.61.0, §10 kept + 'Ceremony profile | proposed 2026-10-15', §10.2 26 rows all effective required; check = 1 finding (proposed); conform matches v1.61.0. 3 derive asks (auth/payments/schema) left unanswered — irreversible, stay required. A0 none left; A1 done; A2 'effective --log --not-run' writes 'gate <id> optional, not run'; A3 doctor copy truthful. Deviations: conform treats proposed as conformant; README tool-layout note; /counsel and /audit resolve only when run as a gate, owner-invoked always runs; /sync re-derives proposed rows, rewrites confirmed only on request; unattended bootstrap writes proposed. Pre-merge Closing rows fired. Next: ckpt-p3 (Fable, whole mission).
@@ -145,4 +147,4 @@ what the next session needs. Newest on top; crash-safe by write-ahead._
   9aa612c). Four open questions for the owner (OQ-2 blocks S2's rendering).
   Next: plan-judge, then owner answers, then S1.
 
-Next up: ckpt-p3
+Next up: owner merges PR #146, then /agentic-workflow:settle from chore/adaptive-ceremony-bookkeeping
