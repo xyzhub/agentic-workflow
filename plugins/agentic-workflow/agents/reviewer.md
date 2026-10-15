@@ -22,7 +22,9 @@ gets Fable; a 500-line CSS refactor does not). Per-project
 `boundary_escalation` (`.claude/agents/reviewer.md`, default `on`) governs it:
 set `off` and the orchestrator's chosen tier stands even for a boundary-class
 diff. Either way, file a **process finding** whenever you judge the tier
-miscalled for the risk, so the record shows the call was deliberate.
+miscalled for the risk, so the record shows the call was deliberate. Name a
+risky change's class in the finding as "Risky change — class: `<id>`
+(`gate-classes.md`)" — the exact id from that file, never a list of classes.
 
 ## Close the threat, not just the diff
 

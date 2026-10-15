@@ -19,7 +19,7 @@
 import path from 'node:path';
 import { readFileSync, readdirSync, realpathSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { clockLeak, budgetVerdict, descriptionOver, ruleRestatement, RULES, tunePresetFindings, classListRestatement } from './lint.mjs';
+import { clockLeak, budgetVerdict, descriptionOver, ruleRestatement, RULES, tunePresetFindings, classListRestatement, ceremonyOwnerFindings } from './lint.mjs';
 import { spawnSync } from 'node:child_process';
 
 // must: 'block' — a clock in some costume; the L3 rule rejects it.
@@ -222,6 +222,14 @@ export const CLASS_LIST_CASES = [
   ['fenced 4-key class list → fail', classListRestatement('```\nEscalation checklist — schema/migrations: no · auth: no · payments: no · secrets: no\n```'), true],
 ];
 
+// ── Ceremony gate-site owners (adaptive-ceremony S3, AC-6/AC-7) — the pure
+// owner-map predicate behind checkCeremonyCopies.
+const RC = '<!-- rule-copy: ceremony-skip -->x<!-- /rule-copy --> node ceremony.mjs effective';
+const CEREMONY_CASES = [
+  ['owner carries copy + call, stage gate in autopilot → no finding', ceremonyOwnerFindings([{ id: 'counsel', stage: false }, { id: 'v0-go-no-go', stage: true }], { 'counsel.md': `${RC} \`counsel\``, 'autopilot.md': RC }).length, 0],
+  ['owner without the copy, and a fence id with no owner → 2 findings', ceremonyOwnerFindings([{ id: 'counsel', stage: false }, { id: 'new-gate', stage: false }], { 'counsel.md': 'node ceremony.mjs effective counsel --log' }).map((m) => /no deviation line/.test(m) ? 'copy' : /no owning command/.test(m) ? 'owner' : m).join(','), 'copy,owner'],
+];
+
 // ── /sync preserve (adaptive-ceremony S1, D1-A) — the exact awk commands/sync.md
 // §2 runs keeps §10, §10.1 and §10.2 and stops at the next \`## \` heading.
 // Read from commands/sync.md itself, so the test runs the command's exact awk.
@@ -287,13 +295,13 @@ for (const [must, when, source] of CASES) {
     console.error(`  FAIL  want=${must} got=${got}${hit ? ` (matched "${hit.clause}" as ${hit.kind})` : ''}  [${source}]\n        when: ${when}`);
   }
 }
-for (const [label, got, want] of [...BUDGET_CASES, ...CANON_CASES, ...RULE_CASES, ...CLASS_LIST_CASES, ...SYNC_CASES, ...PRESET_CASES]) {
+for (const [label, got, want] of [...BUDGET_CASES, ...CANON_CASES, ...RULE_CASES, ...CLASS_LIST_CASES, ...SYNC_CASES, ...PRESET_CASES, ...CEREMONY_CASES]) {
   if (got !== want) {
     bad++;
     console.error(`  FAIL  want=${JSON.stringify(want)} got=${JSON.stringify(got)}  [${label}]`);
   }
 }
-const total = CASES.length + BUDGET_CASES.length + CANON_CASES.length + RULE_CASES.length + CLASS_LIST_CASES.length + SYNC_CASES.length + PRESET_CASES.length;
+const total = CASES.length + BUDGET_CASES.length + CANON_CASES.length + RULE_CASES.length + CLASS_LIST_CASES.length + SYNC_CASES.length + PRESET_CASES.length + CEREMONY_CASES.length;
 if (bad) {
   console.error(`\nlint-test: ${bad} of ${total} wrong`);
   process.exit(1);

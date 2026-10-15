@@ -187,6 +187,20 @@ step's.
 
 ## 5. The mission-close gate
 
+<!-- rule-copy: ceremony-skip -->
+A gate whose effective §10.2 cell is `skipped` writes exactly one ledger
+Deviations line `gate <id> skipped — ceremony (<signal|override YYYY-MM-DD>)`
+via `ceremony.mjs effective <id> --log`; an `optional` gate the caller does
+not run writes `gate <id> optional, not run — ceremony (…)` via `--log
+--not-run`; any other cell runs the gate; a gate with no §10.2 row runs.
+<!-- /rule-copy -->
+
+Before this gate, run `node ${CLAUDE_PLUGIN_ROOT}/tools/ceremony.mjs effective
+mission-close --log --mission <name>`. Its class, `release-cut`, is irreversible
+(`templates/gate-classes.md`), so it resolves `required` and the gate below
+always runs; a refused override shows in the output and is reported, never
+obeyed.
+
 When the active mission is finishing — the run that would report the mission
 done (the session-close fall-through in `end.md`, the close step in
 `mission.md`) — this command is the close step. Read the active ledger's

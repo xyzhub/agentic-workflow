@@ -94,8 +94,24 @@ the PR body then carries one `Closes #N` line per issue (GitHub closes only
 the first number after a keyword, so never `Closes #91, #92`) so the merge closes them, and the reviewer
 reads the issue as the acceptance criteria.
 
+**Ceremony profile (§10.2) — before each gate here** (`plan-judge`,
+`phase-reviewer`, `staging-verify`, `chronicler`): run `node
+${CLAUDE_PLUGIN_ROOT}/tools/ceremony.mjs effective <id> --log --mission <name>`.
+`skipped` → the line is logged; do not run the gate; report "skipped by the
+ceremony profile (deviation logged)". `optional` → run it, or re-run with
+`--not-run` to log not running it. Anything else → run it.
+
+<!-- rule-copy: ceremony-skip -->
+A gate whose effective §10.2 cell is `skipped` writes exactly one ledger
+Deviations line `gate <id> skipped — ceremony (<signal|override YYYY-MM-DD>)`
+via `ceremony.mjs effective <id> --log`; an `optional` gate the caller does
+not run writes `gate <id> optional, not run — ceremony (…)` via `--log
+--not-run`; any other cell runs the gate; a gate with no §10.2 row runs.
+<!-- /rule-copy -->
+
 **Plan-judge (automatic, before any brief spends a session).** As soon as the
-planner returns the trio — in `plan` mode and on every `replan` — spawn a
+planner returns the trio — in `plan` mode and on every `replan` — resolve
+`plan-judge`, then spawn a
 **fresh, read-only, one-shot `reviewer` in plan-judge mode** (§5) over the trio.
 It returns **APPROVE** or
 **REVISE** with per-brief findings (≤ one page). APPROVE → carry on and surface
@@ -206,7 +222,8 @@ single **Remote executor** row needs no change — it resolves as `default`.
 re-verifies them. A pre-merge row whose probe fails is surfaced as a REQUEST
 CHANGES-class finding — never silently reclassified as post-merge.
 
-Spawn the **reviewer** agent (fresh context, one-shot): it re-runs all gates,
+Resolve `phase-reviewer`, then spawn the **reviewer** agent (fresh context,
+one-shot): it re-runs all gates,
 diff-reviews `<base>..<head>`, performs deferred manual/live items, runs the
 design detector once if the diff touches UI (§0.2) and classifies its findings
 blocking/advisory, and returns APPROVE or REQUEST CHANGES plus a scorecard
@@ -241,7 +258,7 @@ inferences.
      (`run_in_background` — zero tokens while waiting; exit 0 = every run for
      the diff-bearing commit concluded green, and NO-RUNS/EXPECT-MISSING are
      failures, never green — §12 LA-8; a PR-level check summary is not
-     evidence), then run
+     evidence), then resolve `staging-verify` and run
      `/agentic-workflow:verify` against the **staging URL** from §10. Record the
      verify result in the ledger. A red verify is a REQUEST CHANGES: one
      corrective session, then re-review.
@@ -267,7 +284,7 @@ inferences.
 After each brief/checkpoint — and, per rule 5, at every merge and gate result in
 between — the ledger is written first. **No between-phase record pass**: the
 chronicler runs ONCE at mission close and the main session republishes the
-status page then (subagents cannot publish); the ledger, PR body and owner
+status page then (subagents cannot publish; resolve `chronicler` first); the ledger, PR body and owner
 report carry the state in between (#133). Republish earlier only with no owner
 channel (§12) AND a mission spanning more than a day. The ledger is ground truth — and the ledger **at origin** is the state when
 more than one machine can drive (§5 hand-off): `continue` mode pulls first,

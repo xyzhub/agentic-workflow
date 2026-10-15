@@ -4,7 +4,7 @@
 // deps; Node >= 18; filesystem only, so conform.mjs may import it in a hook.
 //
 //   node ceremony.mjs derive [--confirm "<who>"] [--json]
-//   node ceremony.mjs effective <id> [--log --mission <name>] [--json]
+//   node ceremony.mjs effective <id> [--log --mission <name> [--not-run]] [--json]
 //   node ceremony.mjs check [--brief] [--strict] [--json]
 //   flags: --root <dir> (default cwd) · --fences <file> (default <root>/docs/WORKFLOW.md)
 //          --plugin <dir> (gate-classes.md; default this tool's plugin) · --plans <dir>
@@ -18,12 +18,15 @@
 // and anything not `confirmed` (absent, proposed, unreadable) is `required`.
 // `--log` needs `--mission <name>` (`.plans/<name>.state.md`) and appends ONE
 // `## Deviations` line per id — `- YYYY-MM-DD — gate <id> skipped — ceremony
-// (<signal|override YYYY-MM-DD>)` — only when the cell is `skipped`;
-// `--mission JOURNEY` prints the line for docs/product/JOURNEY.md instead.
+// (<signal|override YYYY-MM-DD>)` — only when the cell is `skipped`. `--not-run`
+// is the caller saying it will NOT run an `optional` gate: it logs `gate <id>
+// optional, not run — ceremony (…)` (one per id); on a `required` gate it is
+// refused (exit 2 — run the gate). `--mission JOURNEY` prints the line instead.
 // Override and owner-answer lines in §10.2 (an answer's <who> is `asked`):
 //   - <id>: <required|optional|skipped> — <who> YYYY-MM-DD — "<why | no answer>"
 // Exit codes: 0 done · 1 usage or I/O error · 2 refused (ledger has no
-// `## Deviations`) or `check --strict` with findings. `check` is otherwise advisory.
+// `## Deviations`, or `--not-run` on a required gate) or `check --strict` with
+// findings. `check` is otherwise advisory.
 
 import { readFileSync, writeFileSync, existsSync, readdirSync } from 'node:fs';
 import path from 'node:path';
@@ -252,15 +255,17 @@ export function render(c, confirm) {
 }
 function logLine(o, e, c) {
   if (!o.mission) throw new Usage('--log requires --mission <name> (the ledger is named, never guessed; --mission JOURNEY prints the line)');
-  if (e.value !== 'skipped' || e.kind !== 'gate') return `${e.id}: ${e.cell} — the gate runs; nothing logged`;
-  const line = `- ${c.date} — gate ${e.id} skipped — ceremony (${e.reason})`;
+  if (o['not-run'] && e.value === 'required') throw new Refusal(`${e.id} is ${e.cell} — run the gate; --not-run applies only to an optional gate, nothing logged`);
+  const what = e.value === 'skipped' ? 'skipped' : e.value === 'optional' && o['not-run'] ? 'optional, not run' : null;
+  if (!what || e.kind !== 'gate') return `${e.id}: ${e.cell} — the gate runs; nothing logged`;
+  const line = `- ${c.date} — gate ${e.id} ${what} — ceremony (${e.reason})`;
   if (o.mission === 'JOURNEY') return line;
   const p = path.join(o.plans || path.join(c.root, '.plans'), `${o.mission}.state.md`), t = read(p);
   if (t === null) throw new Usage(`no ledger at ${p}`);
   const L = t.split('\n'), s = L.findIndex((l) => /^## Deviations/.test(l));
   if (s < 0) throw new Refusal(`${p} has no \`## Deviations\` section`);
   let end = L.findIndex((l, i) => i > s && /^## /.test(l)); if (end < 0) end = L.length;
-  if (L.slice(s, end).some((l) => l.includes(`gate ${e.id} skipped — ceremony (`))) return `already logged: gate ${e.id} skipped (one line per id per ledger)`;
+  if (L.slice(s, end).some((l) => l.includes(`gate ${e.id} ${what} — ceremony (`))) return `already logged: gate ${e.id} ${what} (one line per id per ledger)`;
   const none = L.findIndex((l, i) => i > s && i < end && l.trim() === '(none)');
   if (none >= 0) L[none] = line; else { let at = end; while (at > s + 1 && !L[at - 1].trim()) at--; L.splice(at, 0, line); }
   writeFileSync(p, L.join('\n')); return `logged in ${path.relative(c.root, p) || p}: ${line}`;
@@ -271,11 +276,11 @@ export function main(argv = process.argv.slice(2)) {
     for (let i = 0; i < argv.length; i++) {
       const a = argv[i], val = () => { if (!argv[i + 1] || argv[i + 1].startsWith('--')) throw new Usage(`${a} needs a value`); return argv[++i]; };
       if (['--root', '--fences', '--plugin', '--plans', '--date', '--mission', '--confirm'].includes(a)) o[a.slice(2)] = val();
-      else if (['--json', '--log', '--brief', '--strict'].includes(a)) o[a.slice(2)] = true;
+      else if (['--json', '--log', '--brief', '--strict', '--not-run'].includes(a)) o[a.slice(2)] = true;
       else if (a === '--help' || a === '-h') o.help = true;
       else if (a.startsWith('--')) throw new Usage(`unknown flag ${a}`); else o.pos.push(a);
     }
-    if (o.help) { console.log(readFileSync(fileURLToPath(import.meta.url), 'utf8').split('\n').slice(1, 26).map((l) => l.replace(/^\/\/ ?/, '')).join('\n')); return 0; }
+    if (o.help) { console.log(readFileSync(fileURLToPath(import.meta.url), 'utf8').split('\n').slice(1, 29).map((l) => l.replace(/^\/\/ ?/, '')).join('\n')); return 0; }
     const [verb, id] = o.pos;
     if (o.date && !/^\d{4}-\d{2}-\d{2}$/.test(o.date)) throw new Usage('--date needs YYYY-MM-DD');
     if (verb === 'derive') {
@@ -283,7 +288,8 @@ export function main(argv = process.argv.slice(2)) {
       console.log(o.json ? JSON.stringify({ unreadable: !!d.unreadable, why: d.why, signals: d.signals, rows: d.rows, asks: d.asks, findings: d.findings, render: r }, null, 2) : `Ceremony profile: ${r.row}\n\n${r.table}\n\nasks (${d.asks.length}):${d.asks.map((a) => `\n  - ${a.question}`).join('') || ' none'}`); return 0;
     }
     if (verb === 'effective') {
-      if (!id) throw new Usage('usage: ceremony.mjs effective <id> [--log --mission <name>]');
+      if (!id) throw new Usage('usage: ceremony.mjs effective <id> [--log --mission <name> [--not-run]]');
+      if (o['not-run'] && !o.log) throw new Usage('--not-run needs --log (it records the decision not to run an optional gate)');
       const c = ctx(o), e = resolve(id, c), msg = o.log ? logLine(o, e, c) : null;
       console.log(o.json ? JSON.stringify({ ...e, logged: msg }, null, 2) : msg ?? `${e.id}: ${e.cell} — ${e.reason}`); return 0;
     }

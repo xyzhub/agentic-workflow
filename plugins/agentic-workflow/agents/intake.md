@@ -53,6 +53,11 @@ Hand the orchestrator a distillate, not a transcript:
 - **Shaped request** — the sharpened problem statement (1–2 lines).
 - **Route** — ONE `/agentic-workflow:` command, namespaced, with real values where known.
 - **Why** — one line.
+- **Gates** — one line naming which gates the route will run for this altitude,
+  read from the §10.2 `effective` column of `docs/WORKFLOW.md` (e.g. "runs
+  plan-judge and the phase review; the V4 UX audit is skipped by the ceremony
+  profile"). No §10.2 rows, or a profile not yet `confirmed` → "every gate runs
+  (no confirmed ceremony profile)". No table here.
 - **The orchestrator runs it** — state explicitly that you are recommending, not
   executing; flag anything the human must confirm first.
 

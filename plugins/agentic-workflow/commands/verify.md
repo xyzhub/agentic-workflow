@@ -17,6 +17,21 @@ verification, not at "PR merged"). Two moments run it:
   auto-deploys. `$ARGUMENTS` is the deployed URL; otherwise use the §10
   **Deploy + live-verify** row.
 
+**Ceremony profile (§10.2).** The staging run is the mission's `staging-verify`
+gate: first run `node ${CLAUDE_PLUGIN_ROOT}/tools/ceremony.mjs effective
+staging-verify --log --mission <name>`. `skipped` → do not run it; the line is
+logged and the report says "skipped by the ceremony profile (deviation logged)".
+`optional` → run it, or re-run with `--not-run` to log not running it. Anything
+else → run it. The production run is not a §10.2 gate and always runs.
+
+<!-- rule-copy: ceremony-skip -->
+A gate whose effective §10.2 cell is `skipped` writes exactly one ledger
+Deviations line `gate <id> skipped — ceremony (<signal|override YYYY-MM-DD>)`
+via `ceremony.mjs effective <id> --log`; an `optional` gate the caller does
+not run writes `gate <id> optional, not run — ceremony (…)` via `--log
+--not-run`; any other cell runs the gate; a gate with no §10.2 row runs.
+<!-- /rule-copy -->
+
 Before either: confirm the deploy that carried the diff is green **on the
 diff-bearing commit** — `node tools/ci-wait.mjs <full-sha>` (exit 0 = green;
 run it in the background and do other work while it polls) — never a PR-level

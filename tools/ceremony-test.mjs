@@ -147,6 +147,24 @@ console.log('(g) effective --log');
   ok('(g) a required gate logs nothing', /the gate runs; nothing logged/.test(run(d, 'effective', 'plan-judge', '--log', '--mission', 'demo').out));
 }
 
+console.log('(h) an optional gate the caller does not run (--not-run)');
+{
+  const d = confirmed('- v4-dx-audit: optional — Baker 2026-10-14 — "solo maintainer"'); dirs.push(d);
+  const led = () => readFileSync(path.join(d, '.plans/demo.state.md'), 'utf8');
+  const plain = run(d, 'effective', 'v4-dx-audit', '--log', '--mission', 'demo');
+  ok('(h) optional without --not-run → the gate runs, nothing logged', plain.code === 0 && /the gate runs; nothing logged/.test(plain.out) && /\(none\)/.test(led()), plain.out);
+  const once = run(d, 'effective', 'v4-dx-audit', '--log', '--not-run', '--mission', 'demo');
+  const twice = run(d, 'effective', 'v4-dx-audit', '--log', '--not-run', '--mission', 'demo');
+  const lines = led().split('\n').filter((l) => /gate v4-dx-audit optional, not run — ceremony \(/.test(l));
+  ok('(h) --not-run on optional writes exactly one `optional, not run` line; twice-run still one', once.code === 0 && twice.code === 0 && lines.length === 1 && /already logged/.test(twice.out), led());
+  ok('(h) the line follows the grammar and names the override', /^- 2026-10-15 — gate v4-dx-audit optional, not run — ceremony \(override 2026-10-14\)$/.test(lines[0] || ''), lines[0]);
+  const req = run(d, 'effective', 'plan-judge', '--log', '--not-run', '--mission', 'demo');
+  ok('(h) --not-run on a required gate → refused, exit 2, nothing logged', req.code === 2 && /run the gate/.test(req.out) && !/plan-judge/.test(led()), req.out);
+  ok('(h) --not-run without --log → usage error, exit 1', run(d, 'effective', 'v4-dx-audit', '--not-run').code === 1);
+  const sk = run(d, 'effective', 'v4-ux-audit', '--log', '--not-run', '--mission', 'demo');
+  ok('(h) --not-run on a skipped gate logs the ordinary `skipped` line', sk.code === 0 && /gate v4-ux-audit skipped — ceremony \(/.test(led()), sk.out);
+}
+
 for (const d of dirs) rmSync(d, { recursive: true, force: true });
 console.log('');
 if (fails.length) {

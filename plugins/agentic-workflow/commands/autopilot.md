@@ -101,6 +101,26 @@ Run V0→V5, making the reviewer-verified gates yourself and surfacing only the
 human-owned ones. At each stage, the `chronicler` updates the status page so the
 owner can watch live.
 
+**Every stage gate reads the ceremony profile (§10.2) first.** Each bullet below
+ends in a gate from the §0 stage table (`v0-go-no-go`, `v1-scope-approval`,
+`v2-deploy-pipeline`, `v3-mvp-criteria`, the four `v4-*-audit` ids,
+`v5-launch`). Before making or surfacing one, run `node
+${CLAUDE_PLUGIN_ROOT}/tools/ceremony.mjs effective <id> --log --mission <name>`
+(no mission ledger yet → `--mission JOURNEY`, and append the printed line to
+`docs/product/JOURNEY.md`). `skipped` → do not run the gate; the line is the
+record, and the stage report says "skipped by the ceremony profile (deviation
+logged)". `optional` → run it, or re-run with `--not-run` to log not running it.
+Anything else → run it. The check-in level never re-enables a skipped gate or
+removes a required one.
+
+<!-- rule-copy: ceremony-skip -->
+A gate whose effective §10.2 cell is `skipped` writes exactly one ledger
+Deviations line `gate <id> skipped — ceremony (<signal|override YYYY-MM-DD>)`
+via `ceremony.mjs effective <id> --log`; an `optional` gate the caller does
+not run writes `gate <id> optional, not run — ceremony (…)` via `--log
+--not-run`; any other cell runs the gate; a gate with no §10.2 row runs.
+<!-- /rule-copy -->
+
 - **V0 Validate** — spawn `researcher`; write `idea.md`. Evaluate against kill
   criteria. If the evidence says stop, **stop and report** (do not build a thing
   the research killed). If it clearly passes, note "proceeding because …" and
@@ -198,6 +218,7 @@ for a single confirmation, rather than nagging along the way.
 _Owner-facing — write it under the `plain-report` skill (§6.0): the action or the state first, every id defined, plain words, no internal shorthand._
 
 Between stages, a short status: stage reached, key decisions (linked to the log),
-next gate. At the launch boundary, the consolidated confirmation. If you stop
-early (kill criteria, blocked, budget, or a needed human decision), say exactly
-why and what you need to continue.
+next gate, and one gates line in this shape: "Passed 3 gates, skipped 2
+(ceremony profile; each logged as a deviation)." At the launch boundary, the
+consolidated confirmation. If you stop early (kill criteria, blocked, budget,
+or a needed human decision), say exactly why and what you need to continue.

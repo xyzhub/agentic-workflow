@@ -1283,11 +1283,63 @@ function checkClassListDedup() {
   }
 }
 
+// ── Ceremony gate-site copies (adaptive-ceremony AC-6, AC-7) ──────────────
+// Every gate id in the template's §0 `stage-table` and §5 `checkpoint-gates`
+// fences has an OWNING command — the prose that runs that gate. Each owner must
+// carry the `ceremony-skip` rule-copy (checkRuleDedup proves it byte-identical
+// to §5) and call `ceremony.mjs effective`; a §5 id must also be named in its
+// owner. Otherwise a `required` gate could pass with no deviation line. Stage
+// gates (any id from the stage table) belong to autopilot.md. A fence id with
+// no owner here fails — extend the map when a fence gains a gate. Fixture (d)'s
+// refusal string (`required (override refused: …)`) is asserted inside
+// tools/ceremony-test.mjs, so checkCeremonyHarness carries that check.
+const CEREMONY_OWNERS = {
+  'plan-judge': ['mission.md'],
+  'phase-reviewer': ['mission.md'],
+  'staging-verify': ['mission.md', 'verify.md'],
+  counsel: ['counsel.md'],
+  'multi-vote-audit': ['audit.md'],
+  chronicler: ['mission.md'],
+  'mission-close': ['settle.md'],
+};
+const STAGE_GATE_OWNER = 'autopilot.md';
+const GATE_CELL = /([a-z0-9][a-z0-9-]*) · (?:human|reviewer|record) · /g;
+const fenceIds = (text, name) => {
+  const a = text.indexOf(`<!-- ${name} -->`), b = text.indexOf(`<!-- /${name} -->`);
+  return a < 0 || b < a ? null : [...text.slice(a, b).matchAll(GATE_CELL)].map((m) => m[1]);
+};
+
+// Findings for the owner map. `gates` = [{ id, stage: true|false }]; `files`
+// maps a command basename to its text (absent = no such file). Pure.
+function ceremonyOwnerFindings(gates, files) {
+  const out = [];
+  for (const { id, stage } of gates) {
+    const owners = stage ? [STAGE_GATE_OWNER] : CEREMONY_OWNERS[id];
+    if (!owners) { out.push(`gate \`${id}\` is in the fences but has no owning command in lint's CEREMONY_OWNERS map — add one`); continue; }
+    for (const f of owners) {
+      const t = files[f];
+      const ok = t != null && /<!-- rule-copy: ceremony-skip -->/.test(t) && /ceremony\.mjs\s+effective/.test(t) && (stage || t.includes(`\`${id}\``) || new RegExp(`effective\\s+${id}\\b`).test(t));
+      if (!ok) out.push(`\`${id}\` is \`required\`, but \`commands/${f}\` can pass it with no deviation line. Make that path write the line: add the \`ceremony-skip\` rule-copy and the \`ceremony.mjs effective ${stage ? '<id>' : id} --log\` call.`);
+    }
+  }
+  return out;
+}
+
+function checkCeremonyCopies() {
+  const wf = read(WORKFLOW);
+  const stage = fenceIds(wf, 'stage-table'), five = fenceIds(wf, 'checkpoint-gates');
+  if (!stage || !five) { fail(WORKFLOW, 1, 'checkCeremonyCopies: the `stage-table` or `checkpoint-gates` fence is missing'); return; }
+  const gates = [...stage.map((id) => ({ id, stage: true })), ...five.map((id) => ({ id, stage: false }))];
+  const files = {};
+  for (const f of mdFiles(path.join(PLUGIN, 'commands'))) files[path.basename(f)] = read(f);
+  for (const msg of ceremonyOwnerFindings(gates, files)) fail(WORKFLOW, 1, msg);
+}
+
 // `clockLeak` and the budget/dedup pure functions are exported so
 // `tools/lint-test.mjs` can decide them directly. The run below is guarded on
 // being the entry point: importing this file for the harness must not execute
 // the whole gate (and must not `process.exit`).
-export { clockLeak, budgetVerdict, descriptionOver, ruleRestatement, RULES, tunePresetFindings, classListRestatement };
+export { clockLeak, budgetVerdict, descriptionOver, ruleRestatement, RULES, tunePresetFindings, classListRestatement, ceremonyOwnerFindings };
 
 // realpath BOTH sides: `import.meta.url` is already symlink-resolved, so a
 // plain `path.resolve(argv[1])` comparison fails when this file is invoked
@@ -1306,7 +1358,7 @@ const isEntryPoint = () => {
 };
 
 if (isEntryPoint()) {
-  for (const check of [checkManifests, checkAgents, checkCommands, checkCrossRefs, checkTemplateRefs, checkPluginRootBraced, checkSections, checkFrontmatterYaml, checkTemplateFrontmatter, checkHooks, checkObfuscation, checkHookBehavior, checkClockGuard, checkMarkerMutation, checkContextAttrib, checkCatalogSelftest, checkCiWaitSelftest, checkPublishGateSelftest, checkRunCodexHarness, checkRunClaudeHarness, checkLedgerHarness, checkCeremonyHarness, checkAgentsRegistryHarness, checkOperateTriageSelftest, checkStandingSteers, checkNextUpAgreement, checkClosing, checkObligationsRegister, checkBudgets, checkRuleDedup, checkClassListDedup, checkTunePresets]) {
+  for (const check of [checkManifests, checkAgents, checkCommands, checkCrossRefs, checkTemplateRefs, checkPluginRootBraced, checkSections, checkFrontmatterYaml, checkTemplateFrontmatter, checkHooks, checkObfuscation, checkHookBehavior, checkClockGuard, checkMarkerMutation, checkContextAttrib, checkCatalogSelftest, checkCiWaitSelftest, checkPublishGateSelftest, checkRunCodexHarness, checkRunClaudeHarness, checkLedgerHarness, checkCeremonyHarness, checkAgentsRegistryHarness, checkOperateTriageSelftest, checkStandingSteers, checkNextUpAgreement, checkClosing, checkObligationsRegister, checkBudgets, checkRuleDedup, checkClassListDedup, checkCeremonyCopies, checkTunePresets]) {
     check();
   }
 
