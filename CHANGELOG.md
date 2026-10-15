@@ -8,6 +8,33 @@ has no tags — each version-stamped commit on `main` IS the release.
 
 _(empty)_
 
+## [1.62.0] — 2026-10-15
+### Added — configurable attribution: one §10 row sets the credit on commits and PRs
+- **§10 `Attribution` row** — `commit: <v> · pr: <v>`, each `default`
+  (`Generated with The XYZ Protocol`), `none` (no line) or a backticked custom
+  text; a bare `default`/`none` sets both; an absent or unfilled row reads as
+  `default`.
+- **`tools/attribution.mjs`** — `resolve` (the texts every writer uses),
+  `apply` (mirrors the row into `.claude/settings.json` `attribution.commit` /
+  `.pr` only — other keys and `sessionUrl` kept; refuses invalid JSON without
+  touching it), `check` (in sync or names the drift), `import` (the row an
+  existing setting implies, so a project's own choice is adopted). Harness
+  cases in `tools/ledger-test.mjs`.
+- **Conform ladder entry `attribution-settings`** (since 1.62.0) — a gap when
+  the row is absent or `.claude/settings.json` disagrees with it.
+### Changed
+- `end`, `fix`, `pr`, `release` and the mission foreign-runtime commit line
+  follow the §10 Attribution row instead of a hardcoded Co-Authored-By
+  trailer; `bootstrap`, `adopt` and `sync` write the row (`import`) and the
+  settings mirror (`apply`, every sync).
+- The `git/gh guardrails` commit hint prints the target repo's resolved
+  commit text (no jq needed for it); hook-test now also pins the push-refspec
+  guard.
+- `ledger.mjs --commit` ends its commit with the resolved commit text
+  (nothing when the row says `none`).
+- This repo: `docs/WORKFLOW.md` synced to v1.62.0 with `commit: default · pr:
+  default`, and a tracked `.claude/settings.json` carries the mirror.
+
 ## [1.61.0] — 2026-10-15
 ### Added — adaptive ceremony: each project runs only the gates it needs
 - **`templates/gate-classes.md`** — the ONE list of gate classes: 8 change
