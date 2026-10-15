@@ -16,6 +16,20 @@ grades the protocol's own behavior the way a QA team would.
 
 ---
 
+## 2026-10-16 — configurable-attribution: each project chooses the line added to its commits and pull requests, shipped as version 1.62.0
+
+The configurable-attribution mission is closed. PR #149 was merged on 2026-10-15 as commit 423e2e8 with the automated checks passing.
+
+What changed for the owner. Every commit and pull request the workflow makes ends with an attribution line. Until now that line was fixed. Each project now has an Attribution row in its settings table (section 10 of its workflow file). It can be `default`, `none` or custom text, and commits and pull requests are set separately. A new tool, `tools/attribution.mjs`, writes the choice into Claude Code's own `.claude/settings.json` file, so Claude Code does the stamping itself. The commit guard, the /end, /fix, /pr and /release commands, the ledger tool, and bootstrap, adopt and sync all follow the same row. The default line is "Generated with The XYZ Protocol". The owner ratified that wording on 2026-10-16. Adding the model name was declined, because fixed text cannot tell which model made a given commit.
+
+How the reviews went. Two independent Fable reviews, one of the plan and one at the checkpoint, both approved. They left six advisory notes and no required fixes. After the plugin was reinstalled, we checked it live: a version 1.62.0 ledger commit ends with the line.
+
+Cost. 1 work session against an estimate of 1, and 2 reviewer runs.
+
+Still open from before: three follow-up items (OB-29, OB-30, OB-31) and issues #143 and #147.
+
+---
+
 ## 2026-10-15 — adaptive-ceremony: each project now says which steps it needs, shipped as version 1.61.0
 
 The adaptive-ceremony mission is closed. The owner asked for it to ship in one pull request, so the work went out as PR #146 (version 1.61.0), which the owner merged as commit 1cef021 with the automated checks passing. The earlier planning PR, #144, was closed as superseded.
