@@ -60,7 +60,7 @@ _Glyphs: `[ ]` not started · `[~]` in-flight / deferred / awaiting owner · `[x
 done (verified, not merely written)._
 
 - [x] S1 — §10 Attribution row + `tools/attribution.mjs` (resolve · apply · check · import) + harness cases, four commands + commit hook + `ledger.mjs --commit` + foreign-runtime commit line read the row, bootstrap/adopt/sync write it, conform ladder `attribution-settings`, dogfood sync (stamp v1.62.0, `.claude/settings.json`), CHANGELOG 1.62.0 + bump, pre-merge Closing rows fired (branch `mission/configurable-attribution`)
-- [~] Checkpoint ckpt-s1 — one-shot `reviewer` on **Fable** (boundary-class: `hooks.json` + `tools/`) over `main..HEAD`, incl. plain-report read of owner-facing strings; APPROVE → staging verify → PR ready, human merges
+- [x] Checkpoint ckpt-s1 — one-shot `reviewer` on **Fable** (boundary-class: `hooks.json` + `tools/`) over `main..HEAD`, incl. plain-report read of owner-facing strings; APPROVE → staging verify → PR ready, human merges
 
 ## Open questions
 
@@ -87,6 +87,10 @@ before execution starts._
 ## Handoff log (newest first)
 
 
+- 2026-10-15 staging-verify PASS 2026-10-16: claude -p --plugin-dir plugins/agentic-workflow loaded the branch plugin ('Plugin agentic-workflow from --plugin-dir overrides installed version'); PreToolUse hint on git commit printed 'end the message with the §10 Attribution line: Generated with The XYZ Protocol' (debug log); CI lint green on 2cc7cef.
+
+- 2026-10-15 ckpt-s1 APPROVE (Fable): security 3, QA 3, DX 2, arch 3, eff 3; 6 advisory (hook hint vs resolver on malformed cells; no-jq D=. pre-existing; git -C no hint pre-existing; resolve --root --json argv nit). Staging-verify next: --plugin-dir load.
+
 - 2026-10-15 ckpt-s1 spawned (Fable, one-shot) over origin/main..2cc7cef — 2026-10-16 00:03
 
 - 2026-10-15 S1 done (devops, 5 commits d85c208..2cc7cef): AC-1..11 pass; lint clean, ledger-test 68, hook-test 318, run-codex-test 253, ceremony-test 43, lint-test 106; plugin validate passed; --plugin-dir load deferred to checkpoint. Live proof: the session's own attribution switched to 'Generated with The XYZ Protocol' after apply.
@@ -95,4 +99,4 @@ before execution starts._
 
 - 2026-10-15 plan-judge spawned (Fable, one-shot) over the trio — 2026-10-15 23:45
 
-Next up: ckpt-s1 — Fable review in flight; APPROVE → PR to main for owner merge
+Next up: owner merges the PR to main; then /agentic-workflow:settle on chore/configurable-attribution-bookkeeping
