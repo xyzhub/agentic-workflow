@@ -191,6 +191,7 @@ docs/WORKFLOW.md            # the protocol copy: Quick reference, §0–§13,
                             # YOUR §10 profile, Local amendments (survive /sync);
                             # §10.2 = the ceremony profile, written by the
                             # plugin's tools/ceremony.mjs (not copied in)
+.claude/settings.json       # attribution key, mirrored from §10 Attribution by bootstrap/adopt/sync
 docs/product/               # idea.md · prd.md · ux-brief.md · architecture.md ·
                             # interface-contract.md · JOURNEY.md · overview.html
                             # (live status page) · business/ · launch/

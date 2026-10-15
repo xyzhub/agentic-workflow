@@ -111,6 +111,19 @@ never writes; you do:
 Then `ceremony.mjs check` must print "profile consistent" (a `proposed`
 profile: only its `proposed` finding).
 
+**Attribution (§10 row + `.claude/settings.json`).** Run `node
+${CLAUDE_PLUGIN_ROOT}/tools/attribution.mjs import` in the project root and
+write its output as the **Attribution** row's cell — an attribution the
+project already set in `.claude/settings.json` is adopted, never overwritten;
+nothing set → `commit: default · pr: default`. Then run `attribution.mjs
+apply`: it writes only the `attribution` key of `.claude/settings.json`
+(creating the file if absent; every other key kept). Exit 2 (the file is not
+valid JSON) or a refused permission prompt → leave the file alone and report
+"settings not written" — never report the step done. Report line: "Commits
+and PRs credit The XYZ Protocol — set §10 Attribution to `none` or your own
+text to change it; takes effect next session." (for a non-default row, name
+its value instead of The XYZ Protocol).
+
 ## 3. Seed the record artifacts (§6.1)
 
 - `CHANGELOG.md` — Keep-a-Changelog skeleton with an `## [Unreleased]` section;
@@ -192,6 +205,7 @@ created/updated, the ceremony line — "Ceremony profile written: <n> required,
 <n> optional, <n> skipped. It is in force now — edit any row in §10.2 to change
 it." (counted from the `effective` column; a `proposed` profile says "proposed —
 every gate still runs until you say "confirm ceremony profile"" instead) — the
+attribution line from step 2 — the
 status-page URL, and the recommended next action for the
 current stage (e.g. at V0: fill idea.md and get a go/no-go; at V3: `/agentic-workflow:start`;
 at V6: plan a growth mission). Then **offer to run that next command** for them

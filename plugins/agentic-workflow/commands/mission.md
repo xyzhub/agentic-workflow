@@ -187,7 +187,7 @@ Read `.plans/<mission>.state.md` → `Next up:`. For each pending brief:
 **Foreign runtimes (`codex`, `claude-p`) — you own the ledger and git.** The
 run touches **neither `.plans/` nor git history**. On return: mark the row from
 the distillate's `status` (exit `0` done · `3` blocked · `1` failed) and
-**commit its `changed_paths` yourself** (`type(scope): …`). The corrective
+**commit its `changed_paths` yourself** (`type(scope): …`, ending with the §10 Attribution commit text). The corrective
 retry re-spawns the adapter with `--resume <thread_id> --note "<corrective>"`,
 then stop and surface; no other vendor fallback. A `blocked_reason` starting
 `deviation:` takes step 3's `deviation` route. `changed_paths` **empty on

@@ -32,9 +32,9 @@ commit lands on a branch — **never commit on the default branch**.
 ## 3. PR & release notes
 
 ```bash
-git commit -m "release: <version>"     # include the Co-Authored-By trailer
+git commit -m "release: <version>"     # end with the §10 Attribution commit text (none → no line)
 git push -u origin release/<version>
-gh pr create --fill
+gh pr create --fill                    # body ends with the §10 Attribution PR text
 ```
 
 Draft the GitHub release notes from the changelog section. The tag is created
