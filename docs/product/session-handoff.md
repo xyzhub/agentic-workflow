@@ -1,4 +1,4 @@
-# Session handoff — 2026-10-13 (written at the end of the "Agentic workflow goal statement" session, 2026-10-12)
+# Session handoff — 2026-10-16 (refreshed mid-mission, configurable-attribution)
 
 _A re-read manifest, not a summary (WORKFLOW.md §6.2). A fresh session reads
 the files named here; it does not inherit this session's transcript._
@@ -33,35 +33,26 @@ rollup). Read those two before anything else.
 
 ## State
 
-- **Done**: north star + goal statement merged (PR #138). missions-server
-  created, bootstrapped by hand from plugin 1.59.0 (its PR #1), Paperclip
-  `v2026.1012.0` merged into its `main` with `distribution` cut from it,
-  gates recorded green (its PRs #26, #28), Dependabot removed (its #27),
-  Actions disabled in settings. Nothing in Paperclip's tree changed.
-- **In-flight**: nothing. No branch of this session carries unmerged work.
-- **Next** (the single next action): in THIS repo, on `main`, after
-  `/plugin update agentic-workflow@xyz` + `/reload-plugins` + a clean
-  `/agentic-workflow:doctor`:
-  `/agentic-workflow:mission "operate-triage" replan` — its trio targets
-  1.53.0 (taken 2026-10-07) and its pre-resolved facts are six releases old;
-  locked decisions stay locked. Then `run`.
-
-## After operate-triage (in order)
-
-1. `/agentic-workflow:plan "adaptive ceremony …"` (E1 of the goal statement;
-   reuse operate-triage's escalation classes as the gate taxonomy). Two
-   answers the interview will need, owner's recommendation in brackets:
-   fallback posture when signals are ambiguous [full ceremony; light only on
-   clear signals and for a founder's first mission in Missions]; public name of
-   the method ["The XYZ Protocol", slug `agentic-workflow` unchanged].
-2. E2 structured owner surfaces · E7 explainer · E5 runtime-agnostic brakes +
-   runner adapter contract · E6 marketing fork · E3 public front · E4 revenue
-   tests — each its own `/agentic-workflow:plan`.
-3. The missions-server build only after E0 and E1 ship; the one-session spike
-   (runner hired through Paperclip's process adapter; hooks fire; push
-   blocked) any time.
+- **adaptive-ceremony (goal statement E1): CLOSED 2026-10-15**, v1.61.0 on
+  `main` (PR #146, bookkeeping #148). Open: OB-29, OB-30, OB-31 in
+  `.plans/OBLIGATIONS.md`; #147 (`/plan` judge skips the ceremony resolver);
+  #143 (`ledger.mjs promote` paren names fail lint, hit twice).
+- **configurable-attribution: IN FLIGHT** on branch
+  `mission/configurable-attribution` (one session, estimate 1). Ledger:
+  `.plans/configurable-attribution.state.md` — read its `Next up:` first.
+  S1 built and green (v1.62.0: §10 **Attribution** row,
+  `tools/attribution.mjs`, hook/commands/ledger read it, default
+  `Generated with The XYZ Protocol`). The Fable checkpoint ckpt-s1 was
+  spawned 2026-10-16; on APPROVE → open the PR to `main` for the owner's
+  merge (human-merge), then one bookkeeping PR at close.
+- Verify signal: `node tools/lint.mjs` clean; `cat .claude/settings.json`
+  shows the XYZ Protocol attribution.
 
 ## Owner-only items still open
+
+- Ratify or change the Assumed wording `Generated with The XYZ Protocol`
+  (configurable-attribution L3).
+- Confirm this repo's `proposed` ceremony profile (§10.2) — optional.
 
 - Portfolio registry (xyzhub/registry, unreachable from cloud sessions):
   append a ledger pointer to the goal statement, the north star and
