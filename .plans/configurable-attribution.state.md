@@ -77,8 +77,10 @@ before execution starts._
 
 - [x] branch + worktree cleanup · added 2026-10-15 (planner, post-merge) — do: delete `mission/configurable-attribution` (local and remote) and prune any stale worktree — when: the feature PR is merged into `main` — probe: `gh pr list --state merged --head mission/configurable-attribution` · fired 2026-10-15 (PR #149 merged as 423e2e8, CI lint green (run 38817856056, rung 2: CI, no separate deploy); remote branch auto-deleted on merge, local deleted with -d, worktree prune clean)
 - [x] docs/record synced · added 2026-10-15 (planner, pre-merge) — do: CHANGELOG `[1.62.0]` entry, README tree line, `docs/WORKFLOW.md` synced to the template at stamp v1.62.0 with the §10 Attribution row, `.claude/settings.json` written — when: those four are on the branch and `node tools/lint.mjs` is clean — probe: `grep -n "1.62.0" CHANGELOG.md docs/WORKFLOW.md` + `node plugins/agentic-workflow/tools/attribution.mjs check` · fired 2026-10-15 (CHANGELOG [1.62.0], README tree line, docs/WORKFLOW.md stamped v1.62.0 (534c8a1); lint clean)
-- [ ] live-verify after reinstall · added 2026-10-15 (planner, post-merge) — do: in a fresh session on this repo, a commit made by Claude ends with `Generated with The XYZ Protocol` and carries no `Co-Authored-By` trailer, and `ledger.mjs --commit` writes the same line in its body — when: v1.62.0 is installed (plugin update + reload, after the merge) — probe: manual (`git log -1 --format=%B`)
+- [x] live-verify after reinstall · added 2026-10-15 (planner, post-merge) — do: in a fresh session on this repo, a commit made by Claude ends with `Generated with The XYZ Protocol` and carries no `Co-Authored-By` trailer, and `ledger.mjs --commit` writes the same line in its body — when: v1.62.0 is installed (plugin update + reload, after the merge) — probe: manual (`git log -1 --format=%B`) · fired 2026-10-15 (plugin 1.62.0 installed; ledger.mjs --commit f096e31 body ends 'Generated with The XYZ Protocol'; Claude Code harness attribution for this session reads the same line from .claude/settings.json; attribution.mjs check exit 0)
 - [x] version bumped + stamped · added 2026-10-15 (planner, pre-merge) — do: bump `plugins/agentic-workflow/.claude-plugin/plugin.json` `version` to 1.62.0 (§10 Version pin) and stamp this mission's CHANGELOG entry with it — when: this mission's CHANGELOG entry names a version — probe: `grep '"version"' plugins/agentic-workflow/.claude-plugin/plugin.json` · fired 2026-10-15 (plugin.json 1.62.0 + CHANGELOG [1.62.0] at 2cc7cef)
+
+Closed: 2026-10-15
 
 ## Deviations
 
@@ -86,6 +88,8 @@ before execution starts._
 
 ## Handoff log (newest first)
 
+
+- 2026-10-15 CLOSE: Sessions used 1 / Estimate 1; Reviewer runs 2; 0 correctives. All Closing rows fired; chronicler updated JOURNEY + overview.
 
 - 2026-10-15 post-merge: #149 merged 423e2e8 (CI green); plugin reinstalled at 1.62.0; attribution.mjs check in sync
 
@@ -103,4 +107,4 @@ before execution starts._
 
 - 2026-10-15 plan-judge spawned (Fable, one-shot) over the trio — 2026-10-15 23:45
 
-Next up: owner merges the PR to main; then /agentic-workflow:settle on chore/configurable-attribution-bookkeeping
+Next up: none — mission closed
