@@ -67,7 +67,7 @@ done (verified, not merely written)._
 _Mirrored from the master plan with their recommendations; the human answers
 before execution starts._
 
-- Assumed 2026-10-15 → master plan Locked decisions (L3: default wording `Generated with The XYZ Protocol` for commit and PR)
+- Assumed 2026-10-15 → master plan Locked decisions (L3: default wording `Generated with The XYZ Protocol` for commit and PR) — ratified 2026-10-16
 
 ## Standing steers
 
@@ -86,6 +86,8 @@ before execution starts._
 
 ## Handoff log (newest first)
 
+
+- 2026-10-15 L3 ratified 2026-10-16: owner keeps the single line 'Generated with The XYZ Protocol' (declined adding the model name — a fixed model name would be false for Fable/Sonnet/Haiku/Codex commits).
 
 - 2026-10-15 staging-verify PASS 2026-10-16: claude -p --plugin-dir plugins/agentic-workflow loaded the branch plugin ('Plugin agentic-workflow from --plugin-dir overrides installed version'); PreToolUse hint on git commit printed 'end the message with the §10 Attribution line: Generated with The XYZ Protocol' (debug log); CI lint green on 2cc7cef.
 

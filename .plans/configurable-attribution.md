@@ -155,7 +155,7 @@ pre-resolved reads total ~950 lines, inside the 1,500-line budget.
 - 2026-10-15 (owner, L2 — "set the default to The XYZ Protocol") — `default`
   credits **The XYZ Protocol** (it replaces Claude Code's built-in
   Co-Authored-By trailer wherever settings.json is written).
-- Assumed 2026-10-15 (L3) — owes the exact default wording; built on commit
+- Assumed 2026-10-15 (L3), ratified 2026-10-16 (owner: "ok keep the current single line Generated with The XYZ Protocol") — exact default wording; built on commit
   default `Generated with The XYZ Protocol` and PR default `Generated with The
   XYZ Protocol`, plain lines, no invented email address and no URL;
   authorized by the owner via the orchestrator's mission brief. Ratify or
