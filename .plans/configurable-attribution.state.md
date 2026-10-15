@@ -60,7 +60,7 @@ _Glyphs: `[ ]` not started · `[~]` in-flight / deferred / awaiting owner · `[x
 done (verified, not merely written)._
 
 - [x] S1 — §10 Attribution row + `tools/attribution.mjs` (resolve · apply · check · import) + harness cases, four commands + commit hook + `ledger.mjs --commit` + foreign-runtime commit line read the row, bootstrap/adopt/sync write it, conform ladder `attribution-settings`, dogfood sync (stamp v1.62.0, `.claude/settings.json`), CHANGELOG 1.62.0 + bump, pre-merge Closing rows fired (branch `mission/configurable-attribution`)
-- [ ] Checkpoint ckpt-s1 — one-shot `reviewer` on **Fable** (boundary-class: `hooks.json` + `tools/`) over `main..HEAD`, incl. plain-report read of owner-facing strings; APPROVE → staging verify → PR ready, human merges
+- [~] Checkpoint ckpt-s1 — one-shot `reviewer` on **Fable** (boundary-class: `hooks.json` + `tools/`) over `main..HEAD`, incl. plain-report read of owner-facing strings; APPROVE → staging verify → PR ready, human merges
 
 ## Open questions
 
