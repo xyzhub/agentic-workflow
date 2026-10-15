@@ -15,8 +15,8 @@ everything since the last one — §12 LA-6)._
 Status: active
 
 Estimate: 6 sessions
-Sessions used: 1
-Reviewer runs: 3
+Sessions used: 2
+Reviewer runs: 4
 
 _The two budget lines above are read by the mission-budget hook every turn.
 `Estimate: 6` = 3 builder briefs (S1, S2, S3) + 3 one-shot reviewer
@@ -62,8 +62,8 @@ Branches: **one branch, `mission/adaptive-ceremony`, carries all three phases, a
 _Glyphs: `[ ]` not started · `[~]` in-flight / deferred / awaiting owner · `[x]`
 done (verified, not merely written)._
 
-- [~] S1 — preconditions (Missions-contract grep incl. `connections.test.ts:28`, WORKFLOW bytes), `templates/gate-classes.md` (L6: 8 change + 9 action classes, grammar defined once), three consumers point at it, `fable-boundary` rule + detector retuned, `checkClassListDedup`, §0 `stage-table` fence + columns, §5 `checkpoint-gates` fence + `ceremony-skip` rule, §10 `Ceremony profile` row + `### 10.2 Ceremony` placeholder, three relation lines, `Reviewer runs:` line + `ledger.mjs reviewer-runs` + ledger-test cases, sync preserve change in its own tested commit (branch `mission/adaptive-ceremony`)
-- [ ] Checkpoint ckpt-p1 — one-shot `reviewer` on **Fable** (§5 rule + detector rewrite); APPROVE → next phase on the same branch
+- [x] S1 — preconditions (Missions-contract grep incl. `connections.test.ts:28`, WORKFLOW bytes), `templates/gate-classes.md` (L6: 8 change + 9 action classes, grammar defined once), three consumers point at it, `fable-boundary` rule + detector retuned, `checkClassListDedup`, §0 `stage-table` fence + columns, §5 `checkpoint-gates` fence + `ceremony-skip` rule, §10 `Ceremony profile` row + `### 10.2 Ceremony` placeholder, three relation lines, `Reviewer runs:` line + `ledger.mjs reviewer-runs` + ledger-test cases, sync preserve change in its own tested commit (branch `mission/adaptive-ceremony`)
+- [~] Checkpoint ckpt-p1 — one-shot `reviewer` on **Fable** (§5 rule + detector rewrite); APPROVE → next phase on the same branch
 - [ ] S2 — `tools/ceremony.mjs` (derive · effective --log --mission · check incl. the L6 action-firer and malformed-`+` rules) + `tools/ceremony-test.mjs` + `checkCeremonyHarness`, conform `ceremony-profile-row`, merge-guard §10.2 backstop with all 16 irreversible ids + hook-test cases (incl. an action id and `supply-chain`), derive dogfood read-only (branch `mission/adaptive-ceremony`)
 - [ ] Checkpoint ckpt-p2 — one-shot `reviewer` on **Fable** (merge-guard + fail-closed resolver; includes the counsel's "stopped before the gate passes" probe); APPROVE → next phase on the same branch
 - [ ] S3 — rule-copies + resolver calls at every gate site, `checkCeremonyCopies`, `/next` + intake read points, bootstrap/adopt/sync/doctor prose (ask once, propose, drift warning, corrected J2 copy), inventories, `/sync` dogfood on this repo (`proposed` profile, stamp v1.61.0), CHANGELOG 1.61.0 + bump, pre-merge Closing rows fired (branch `mission/adaptive-ceremony`)
@@ -102,7 +102,7 @@ a later `/agentic-workflow:settle` from `chore/adaptive-ceremony-bookkeeping`._
 - [ ] live-verify after reinstall · added 2026-10-13 (planner, post-merge) — do: in a real session after `/plugin update` + `/reload-plugins`, in an adopted repo other than this one (Orderly or Missions), run `/agentic-workflow:sync` and confirm: ONE batched ask (or none), a `proposed` row + 10.2 table with plain cells, `/agentic-workflow:doctor` reporting "full ceremony still applies", and `node $CLAUDE_PLUGIN_ROOT/tools/ceremony.mjs effective plan-judge` = `required (profile proposed)` — when: v1.61.0 is installed from `main` — probe: manual
 - [ ] Missions pin bump + contract tests · added 2026-10-13 (planner, post-merge) — do: in `xyzhub/missions`, bump `vendor/VERSION` and `vendor/agentic-workflow` to ≥ 1.61.0 (its own updater/verify-vendor flow), run `pnpm test` (contract-tests + recorded-session replays) and `scripts/verify-vendor.mjs`; record the command + exit code here — when: v1.61.0 is on `main` and a Missions session is open — probe: `grep version= /Users/baker/Playground/missions-app/vendor/VERSION`
 - [ ] AC-13 measurement (L4) · added 2026-10-13 (planner, post-merge) — do: promote at close as the obligation row, verbatim: "on 3 real changes across Orderly and Missions, each with a confirmed ceremony profile, record per change in a `## Ceremony cost` block of its ledger: `Sessions used:`, `Reviewer runs:`, correctives (`S<n>-fix` count), `Gates skipped:` (each with its deviation line). **Cost sub-metrics are scored on the low-ceremony changes (Missions) only**: baseline = the last 3 comparable (same size class, same gate-class set) shipped Missions changes, pulled read-only with commit/PR cited; pass = sessions and reviewer runs below the baseline median on ≥ 2 of 3 and none above max, correctives not higher on any. **Orderly is scored on safety only** (metrics §4): its irreversible-class gates all still `required` with the same reviewer tier — diff of the before/after lists cited; one deviation line per skipped cell; `node tools/lint.mjs`, `lint-test`, `hook-test`, `agents-test` case counts ≥ pre-change counts recorded at mission start; zero regressions. Missions contract tests green on every change touching Missions; owner prompts and token spend reported as 'unmeasured, no claim'; n=3 is a go/no-go for continued dogfooding, not proof (metrics §5)" — when: three such changes have shipped with a `## Ceremony cost` block — probe: `grep -l "## Ceremony cost" /Users/baker/Playground/*/.plans/*.state.md`
-- [ ] harness baseline counts recorded · added 2026-10-13 (planner, pre-merge) — do: before S1's first edit, run `node tools/lint-test.mjs`, `node tools/hook-test.mjs`, `node tools/ledger-test.mjs`, `node tools/agents-test.mjs` and write their pass counts into this ledger's first handoff entry (metrics §4 check 2 and §6 — the AC-13 row needs them) — when: S1 starts — probe: `grep -n "baseline counts" .plans/adaptive-ceremony.state.md`
+- [x] harness baseline counts recorded · added 2026-10-13 (planner, pre-merge) — do: before S1's first edit, run `node tools/lint-test.mjs`, `node tools/hook-test.mjs`, `node tools/ledger-test.mjs`, `node tools/agents-test.mjs` and write their pass counts into this ledger's first handoff entry (metrics §4 check 2 and §6 — the AC-13 row needs them) — when: S1 starts — probe: `grep -n "baseline counts" .plans/adaptive-ceremony.state.md` · fired 2026-10-15 (baseline counts in the 2026-10-15 S1 handoff: lint-test 95, hook-test 286 ok, ledger-test 38, agents-test 30)
 
 ## Deviations
 
@@ -118,9 +118,13 @@ Deviating is allowed; deviating silently is not (§4)._
 _≤10 lines per entry: what this session did, the verify signal, the branch, and
 what the next session needs. Newest on top; crash-safe by write-ahead._
 
+- 2026-10-15 2026-10-15 ckpt-p1 spawned: one-shot reviewer on Fable over 730ee3a..90e2223 (S1's three commits).
+
+- 2026-10-15 2026-10-15 S1 (builder, opus): done on mission/adaptive-ceremony, commits 2935827 (taxonomy + fences + §10 row + lint), 1f80377 (Reviewer runs counter), 90e2223 (sync preserve, last). Harness baseline counts BEFORE: lint-test 95, hook-test 286 ok, ledger-test 38, agents-test 30; AFTER: 103 / clean / 41 / 30; lint clean (warns: WORKFLOW 112,123/120,000; mission.md 21,703/24,000). Missions precondition: contract-test + plugin-contract.ts grep no hit; connections.ts profileRows slices ## 10. to next ##, keys bold cells; connections.test.ts:28 needs Owner channel/Remote executor/Runtimes/Publish policy, all present + Ceremony profile, no §10.2 rows leak. WORKFLOW bytes total 108,821→112,123; §0 12,042→13,134; §5 16,241→17,306; §10 8,202→9,058; §11 5,708→5,905. Builder deviations: detector keeps old class words too; security-pillar + mission.md rule-7 lines repointed at gate-classes.md (lint hits); delegable: never for commercial-commitment/outbound-contact/destructive-data/release-cut; multi-gate cells joined by '; '. For S3: commands/operate.md:155 still prints old class labels. Next: ckpt-p1 (Fable).
+
 - 2026-10-13 planner: trio authored on `plan/adaptive-ceremony` from the four
   locked decision docs; exploration done once (tree dc9bf34, v1.60.0; Missions
   9aa612c). Four open questions for the owner (OQ-2 blocks S2's rendering).
   Next: plan-judge, then owner answers, then S1.
 
-Next up: S1
+Next up: ckpt-p1
