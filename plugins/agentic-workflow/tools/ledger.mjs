@@ -15,7 +15,8 @@
 //   node ledger.mjs <mission> reviewer-runs +1 | =N
 //   node ledger.mjs <mission> close
 //   flags: --plans <dir> (default .plans) · --date YYYY-MM-DD (default today)
-//          --commit (git add + conventional commit + push) · --no-push
+//          --commit (git add + conventional commit + push; the commit ends with
+//          the cwd's §10 Attribution text, none → nothing) · --no-push
 //
 // `<mission>` is the ledger's basename (`tune-presets` → `.plans/tune-presets.state.md`).
 // `<row-prefix>` matches the row text AFTER the glyph (`Checkpoint p2`,
@@ -33,6 +34,7 @@ import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { resolveAttribution } from './attribution.mjs';
 
 // Same row grammar tools/lint.mjs checks 13/14 enforce — kept byte-identical so
 // a row this tool writes is a row the gate accepts.
@@ -248,7 +250,10 @@ export function commit({ touched, message }, push = true, cwd = process.cwd()) {
     return r.stdout;
   };
   git('add', '--', ...touched);
-  git('commit', '-q', '-m', message);
+  // The §10 Attribution commit text of the repo being committed to, as the
+  // second message paragraph; `none` ('') adds nothing.
+  const att = resolveAttribution(cwd).commit;
+  git('commit', '-q', '-m', message, ...(att ? ['-m', att] : []));
   if (push) git('push', '-q');
   return git('rev-parse', '--short', 'HEAD').trim();
 }
@@ -256,7 +261,7 @@ export function commit({ touched, message }, push = true, cwd = process.cwd()) {
 export function main(argv = process.argv.slice(2)) {
   try {
     const o = parseArgs(argv);
-    if (o.help) { console.log(readFileSync(fileURLToPath(import.meta.url), 'utf8').split('\n').slice(1, 28).map((l) => l.replace(/^\/\/ ?/, '')).join('\n')); return 0; }
+    if (o.help) { console.log(readFileSync(fileURLToPath(import.meta.url), 'utf8').split('\n').slice(1, 29).map((l) => l.replace(/^\/\/ ?/, '')).join('\n')); return 0; }
     const res = apply(o);
     let line = `ledger: ${res.summary}`;
     if (o.commit) line += ` · committed ${commit(res, o.push)}${o.push ? ' + pushed' : ''}`;

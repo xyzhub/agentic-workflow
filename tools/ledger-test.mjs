@@ -214,7 +214,100 @@ console.log('--commit');
   const status = git('status', '--porcelain').stdout.trim();
   ok('--commit stages the ledger AND the register and commits a conventional message', r.status === 0 && /committed [0-9a-f]{7}/.test(r.stdout) && /^plan\(demo\): promote — \[~\] live-verify/.test(log) && status === '', `${r.stdout}${r.stderr} log=${log} status=${status}`);
   ok('--no-push skips the push (no remote exists, and the run still succeeded)', r.status === 0 && !/pushed/.test(r.stdout));
+  const body = () => git('log', '-1', '--format=%b').stdout.trim();
+  ok('--commit body: no docs/WORKFLOW.md → the default attribution paragraph', body() === 'Generated with The XYZ Protocol', JSON.stringify(body()));
+  // Same fixture re-written between runs: each run needs a fresh beat to commit.
+  const again = (cell, beat) => {
+    mkdirSync(path.join(d, 'docs'), { recursive: true });
+    writeFileSync(path.join(d, 'docs/WORKFLOW.md'), `## 10. Project profile\n\n| Key | Value |\n|---|---|\n| **Attribution** | ${cell} |\n`);
+    git('add', '-A'); git('commit', '-q', '-m', `fixture ${beat}`);
+    return spawnSync('node', [TOOL, 'demo', 'next-up', beat, '--commit', '--no-push'], { cwd: d, encoding: 'utf8', env: { ...process.env, GIT_AUTHOR_NAME: 't', GIT_AUTHOR_EMAIL: 't@t', GIT_COMMITTER_NAME: 't', GIT_COMMITTER_EMAIL: 't@t' } });
+  };
+  { const r2 = again('none', 'S9 none'); ok('--commit body: §10 Attribution `none` → no body at all', r2.status === 0 && body() === '' && /^plan\(demo\): next-up/.test(git('log', '-1', '--format=%s').stdout), `${r2.stderr} body=${JSON.stringify(body())}`); }
+  { const r3 = again("commit: `Built by Acme\\nTeam: O'Brien` · pr: none", 'S9 custom'); ok('--commit body: custom text (with `\\n` → newline) is the body verbatim', r3.status === 0 && body() === "Built by Acme\nTeam: O'Brien", `${r3.stderr} body=${JSON.stringify(body())}`); }
   rmSync(d, { recursive: true, force: true });
+}
+
+console.log('attribution');
+{
+  const att = await import(path.join(PLUGIN, 'tools/attribution.mjs'));
+  const ATOOL = path.join(PLUGIN, 'tools/attribution.mjs');
+  const D = att.DEFAULT_TEXT;
+  const wf = (cell) => `# W\n\n## 10. Project profile\n\n| Key | Value |\n|---|---|\n| **Default branch** | main |\n${cell === null ? '' : `| **Attribution** | ${cell} |\n`}\n## 11. Autopilot\n\n| **Attribution** | none |\n`;
+  const p = (cell) => att.parseAttribution(wf(cell));
+  const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+  ok('default text is the L3 wording', D === 'Generated with The XYZ Protocol');
+  ok('parse `commit: default · pr: default` → default both, source row', eq(p('commit: default · pr: default'), { commit: D, pr: D, source: 'row' }));
+  ok('parse `commit: none · pr: none` → empty both', eq(p('commit: none · pr: none'), { commit: '', pr: '', source: 'row' }));
+  ok('parse custom with a literal \\n → a newline; other side none', eq(p('commit: `Made by Acme\\nCo-Author: X` · pr: none'), { commit: 'Made by Acme\nCo-Author: X', pr: '', source: 'row' }));
+  ok('parse bare `none` sets both', eq(p('none'), { commit: '', pr: '', source: 'row' }));
+  ok('parse bare `default` sets both', eq(p('default'), { commit: D, pr: D, source: 'row' }));
+  ok('parse a left-out side reads default (`commit: none`)', eq(p('commit: none'), { commit: '', pr: D, source: 'row' }));
+  ok('parse the unfilled `_(…)_` placeholder → default, source absent', eq(p('_(`commit: <v> · pr: <v>` — …)_'), { commit: D, pr: D, source: 'absent' }));
+  ok('parse an absent row → default, source absent (a row outside §10 is ignored)', eq(p(null), { commit: D, pr: D, source: 'absent' }));
+  ok('parse a malformed cell → default, source malformed', eq(p('commit: maybe · pr: none'), { commit: D, pr: D, source: 'malformed' }) && p('yes please').source === 'malformed' && p('commit: `` · pr: none').source === 'malformed');
+  ok('mergeSettings sets commit/pr only, keeps sessionUrl and unrelated keys', eq(att.mergeSettings({ model: 'x', attribution: { sessionUrl: false, commit: 'old' } }, { commit: 'c', pr: '' }), { model: 'x', attribution: { sessionUrl: false, commit: 'c', pr: '' } }));
+
+  const tmp = (cell, settings) => {
+    const d = mkdtempSync(path.join(tmpdir(), 'attr-test-'));
+    mkdirSync(path.join(d, 'docs'));
+    if (cell !== undefined) writeFileSync(path.join(d, 'docs/WORKFLOW.md'), wf(cell));
+    if (settings !== undefined) { mkdirSync(path.join(d, '.claude')); writeFileSync(path.join(d, '.claude/settings.json'), settings); }
+    return d;
+  };
+  const cli = (d, ...a) => { const r = spawnSync('node', [ATOOL, ...a, '--root', d], { encoding: 'utf8' }); return { code: r.status, out: (r.stdout + r.stderr).trim() }; };
+  const settings = (d) => readFileSync(path.join(d, '.claude/settings.json'), 'utf8');
+  {
+    const d = tmp('commit: default · pr: none');
+    const c0 = cli(d, 'check');
+    const r = cli(d, 'apply');
+    ok('apply creates .claude/settings.json (2-space JSON + newline); check goes 1 → 0', c0.code === 1 && /absent/.test(c0.out) && r.code === 0 && settings(d) === `{\n  "attribution": {\n    "commit": "${D}",\n    "pr": ""\n  }\n}\n` && cli(d, 'check').code === 0, `${c0.out} | ${r.out} | ${settings(d)}`);
+    const before = settings(d); const r2 = cli(d, 'apply');
+    ok('apply twice is a no-op (byte-identical, says so)', r2.code === 0 && /already in sync/.test(r2.out) && settings(d) === before, r2.out);
+    rmSync(d, { recursive: true, force: true });
+  }
+  {
+    const d = tmp("commit: `Built by O'Brien` · pr: default", '{"model":"opus","permissions":{"allow":["Bash(ls)"]},"attribution":{"sessionUrl":false,"commit":"x"}}');
+    const r = cli(d, 'apply');
+    let j = {}; try { j = JSON.parse(settings(d)); } catch { /* fails below */ }
+    ok('apply preserves unrelated keys and attribution.sessionUrl', r.code === 0 && eq(j, { model: 'opus', permissions: { allow: ['Bash(ls)'] }, attribution: { sessionUrl: false, commit: "Built by O'Brien", pr: D } }), settings(d));
+    writeFileSync(path.join(d, '.claude/settings.json'), JSON.stringify({ ...j, attribution: { ...j.attribution, pr: 'drifted' } }));
+    const c = cli(d, 'check');
+    ok('check names the drifted side, exit 1', c.code === 1 && /attribution\.pr/.test(c.out) && !/attribution\.commit/.test(c.out), c.out);
+    rmSync(d, { recursive: true, force: true });
+  }
+  {
+    const bad = '{ "model": "opus", // a comment\n}';
+    const d = tmp('none', bad);
+    const r = cli(d, 'apply');
+    ok('apply refuses unparseable settings.json: exit 2, file byte-identical', r.code === 2 && /not a JSON object/.test(r.out) && settings(d) === bad, r.out);
+    rmSync(d, { recursive: true, force: true });
+    const d2 = tmp('none', '[1,2]');
+    const r2 = cli(d2, 'apply');
+    ok('apply refuses a non-object settings.json (array): exit 2, untouched', r2.code === 2 && settings(d2) === '[1,2]', r2.out);
+    rmSync(d2, { recursive: true, force: true });
+  }
+  {
+    const imp = (s) => { const d = tmp(undefined, s); const r = cli(d, 'import'); rmSync(d, { recursive: true, force: true }); return r; };
+    const a = imp('{"attribution":{"commit":"Made by Acme\\nline 2","pr":""}}');
+    ok('import: an existing `attribution` → its custom / none cell', a.code === 0 && a.out === 'commit: `Made by Acme\\nline 2` · pr: none', a.out);
+    const b = imp('{"includeCoAuthoredBy":false}');
+    ok('import: legacy includeCoAuthoredBy:false → none', b.code === 0 && b.out === 'commit: none · pr: none', b.out);
+    const c = imp(undefined);
+    ok('import: no settings.json → default', c.code === 0 && c.out === 'commit: default · pr: default', c.out);
+    const e = imp('{"attribution":{"commit":"has a | pipe"}}');
+    ok('import refuses a text a §10 cell cannot carry (exit 2)', e.code === 2, e.out);
+    const rt = (() => { const d = tmp(a.out); const x = att.resolveAttribution(d); rmSync(d, { recursive: true, force: true }); return x; })();
+    ok('import → row → resolve round-trips the custom text', rt.commit === 'Made by Acme\nline 2' && rt.pr === '', JSON.stringify(rt));
+  }
+  {
+    const d = tmp('none');
+    const r = cli(d, 'resolve', '--json');
+    ok('resolve --json prints { commit, pr, source }', r.code === 0 && r.out === '{"commit":"","pr":"","source":"row"}', r.out);
+    const side = spawnSync('node', ['--input-type=module', '-e', `await import(${JSON.stringify(ATOOL)}); console.log('still-here');`], { cwd: d, encoding: 'utf8' });
+    ok('importing attribution.mjs has no side effects (no output, no exit, no file)', side.status === 0 && side.stdout === 'still-here\n' && side.stderr === '' && !existsSync(path.join(d, '.claude')), side.stdout + side.stderr);
+    rmSync(d, { recursive: true, force: true });
+  }
 }
 
 console.log('usage');
