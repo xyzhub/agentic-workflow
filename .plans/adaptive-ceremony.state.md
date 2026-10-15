@@ -12,11 +12,11 @@ fresh agent resumes the mission from this file alone. Write-ahead — update it
 orchestrator has no session boundary to force a write; a compaction erases
 everything since the last one — §12 LA-6)._
 
-Status: planned
+Status: active
 
 Estimate: 6 sessions
-Sessions used: 0
-Reviewer runs: 0
+Sessions used: 1
+Reviewer runs: 3
 
 _The two budget lines above are read by the mission-budget hook every turn.
 `Estimate: 6` = 3 builder briefs (S1, S2, S3) + 3 one-shot reviewer
@@ -67,7 +67,7 @@ post-merge Closing rows (agent may merge, §10 `records-only`). Target version
 _Glyphs: `[ ]` not started · `[~]` in-flight / deferred / awaiting owner · `[x]`
 done (verified, not merely written)._
 
-- [ ] S1 — preconditions (Missions-contract grep incl. `connections.test.ts:28`, WORKFLOW bytes), `templates/gate-classes.md` (L6: 8 change + 9 action classes, grammar defined once), three consumers point at it, `fable-boundary` rule + detector retuned, `checkClassListDedup`, §0 `stage-table` fence + columns, §5 `checkpoint-gates` fence + `ceremony-skip` rule, §10 `Ceremony profile` row + `### 10.2 Ceremony` placeholder, three relation lines, `Reviewer runs:` line + `ledger.mjs reviewer-runs` + ledger-test cases, sync preserve change in its own tested commit (branch `mission/adaptive-ceremony-p1`)
+- [~] S1 — preconditions (Missions-contract grep incl. `connections.test.ts:28`, WORKFLOW bytes), `templates/gate-classes.md` (L6: 8 change + 9 action classes, grammar defined once), three consumers point at it, `fable-boundary` rule + detector retuned, `checkClassListDedup`, §0 `stage-table` fence + columns, §5 `checkpoint-gates` fence + `ceremony-skip` rule, §10 `Ceremony profile` row + `### 10.2 Ceremony` placeholder, three relation lines, `Reviewer runs:` line + `ledger.mjs reviewer-runs` + ledger-test cases, sync preserve change in its own tested commit (branch `mission/adaptive-ceremony-p1`)
 - [ ] Checkpoint ckpt-p1 — one-shot `reviewer` on **Fable** (§5 rule + detector rewrite); APPROVE → PR to `main`, human merges
 - [ ] S2 — `tools/ceremony.mjs` (derive · effective --log --mission · check incl. the L6 action-firer and malformed-`+` rules) + `tools/ceremony-test.mjs` + `checkCeremonyHarness`, conform `ceremony-profile-row`, merge-guard §10.2 backstop with all 16 irreversible ids + hook-test cases (incl. an action id and `supply-chain`), derive dogfood read-only (branch `mission/adaptive-ceremony-p2`)
 - [ ] Checkpoint ckpt-p2 — one-shot `reviewer` on **Fable** (merge-guard + fail-closed resolver; includes the counsel's "stopped before the gate passes" probe); APPROVE → PR to `main`, human merges
@@ -79,11 +79,11 @@ done (verified, not merely written)._
 _Mirrored from the master plan with their recommendations; the human answers
 before execution starts._
 
-- OQ-1 — conform ladder: run `ceremony.mjs check` (recommended: yes, fs-only, first finding as the gap detail) or row-presence only?
+- ~~OQ-1~~ **answered 2026-10-15 by the owner ("Run the full check")** — conform ladder: run `ceremony.mjs check` (recommended: yes, fs-only, first finding as the gap detail) or row-presence only?
 - ~~OQ-2~~ **answered 2026-10-13 by the owner (L5, "Yes, allow the tag")**: the `· class:<id>[+<id>]*` token rendered into the `signal` cell by the tool (joined at read time; `check` fails a mismatch); the guard's one regex spells **all 16 irreversible ids** (L6 2026-10-14: 7 change classes + 9 action classes; `third-party` alone passes). The guard regex is never dropped; if the list cannot be extended in S2, stop and surface.
 - Locked 2026-10-14 (owner, L6 — brief lines 267–311): taxonomy = **8 change classes + 9 action classes**; gate-cell grammar `<id> · human|reviewer|record · <class>[+<class>]*` defined once in `gate-classes.md`; action-class gates are `human` and never `optional`/`skipped`; triage `n/a` for actions; `v5-launch` = `production-deploy+publish-outward+release-cut`; `mission-close` carries `release-cut`; V0/V1 `none` stays fail-closed. Mirrored in the master plan's Locked decisions; S1/S2/S3 briefs patched 2026-10-14.
-- OQ-3 — S3 writes the `proposed` profile into this repo's `docs/WORKFLOW.md` (recommended: yes; AC-11 live, no behaviour change).
-- OQ-4 — `Reviewer runs:` bumped for the plan-judge too (recommended: yes — every one-shot reviewer spawn).
+- ~~OQ-3~~ **answered 2026-10-15 by the owner ("Yes, write proposed")** — S3 writes the `proposed` profile into this repo's `docs/WORKFLOW.md` (recommended: yes; AC-11 live, no behaviour change).
+- ~~OQ-4~~ **answered 2026-10-15 by the owner ("Count every review")** — `Reviewer runs:` bumped for the plan-judge too (recommended: yes — every one-shot reviewer spawn).
 
 ## Standing steers
 
@@ -114,7 +114,8 @@ a later `/agentic-workflow:settle` from `chore/adaptive-ceremony-bookkeeping`._
 _Any departure from a brief — logged here the moment it happens, with why.
 Deviating is allowed; deviating silently is not (§4)._
 
-(none)
+- 2026-10-15 — `mission/adaptive-ceremony-p1` cut from `plan/adaptive-ceremony` (3ee40ea), not `main`: the plan PR #144 was still open when the owner started the mission, so the p1 PR carries the plan commits too (merging either first is safe).
+- 2026-10-15 — `Reviewer runs: 3` set by hand (OQ-4): plan-judge REVISE, APPROVE, and the L6 re-check, all 2026-10-13/14.
 
 ## Handoff log (newest first)
 
