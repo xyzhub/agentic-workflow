@@ -165,7 +165,9 @@ const LADDER = [
   { id: 'ceremony-profile-row', since: '1.61.0',
     check: () => {
       if (!ceremony) return has10('Ceremony profile') ? true : '§10 has no **Ceremony profile** row — every gate runs until one is proposed and confirmed';
-      const f = ceremony.check({ root: ROOT, plugin: PLUGIN });
+      // A `proposed` profile is structurally complete — confirming it is the
+      // owner's decision, which /doctor and /next surface; it is not a gap.
+      const f = ceremony.check({ root: ROOT, plugin: PLUGIN }).filter((x) => !x.startsWith('proposed:'));
       return f.length ? `ceremony profile: ${f[0]}` : true;
     },
     fix: 'run /agentic-workflow:sync — it proposes a ceremony profile; confirm it in §10' },

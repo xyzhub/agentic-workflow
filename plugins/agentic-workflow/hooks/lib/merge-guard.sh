@@ -85,15 +85,17 @@ HITL="❌ BLOCKED: the human (HITL) merges PRs. Delegating needs Merge policy = 
 # row whose signal carries `class:` with ANY irreversible id (+-separated, whole token; every change
 # class but third-party, every action class — 16, spelled here) and an effective cell of skipped or
 # optional → 2, under EVERY policy. `required (override refused: …)` passes; no §10.2 → no-op.
+# Tolerant of hand edits (ckpt-p2 A1): a `###`/`####` 10.2 heading with a space or tab, rows with
+# leading whitespace, tab-padded cells, and any letter case (`Skipped`, `Gate`) — grep -Ei.
 if [ -n "$TOP" ]; then
-  CER=$(git -C "$TOP" show "origin/$DEF:docs/WORKFLOW.md" 2>/dev/null | sed -n '/^### 10\.2 /,/^## /p')
+  CER=$(git -C "$TOP" show "origin/$DEF:docs/WORKFLOW.md" 2>/dev/null | sed -En '/^#{3,4}[[:space:]]+10\.2([[:space:]]|$)/,/^##[[:space:]]/p')
 else
-  CER=$(sed -n '/^### 10\.2 /,/^## /p' "$D/docs/WORKFLOW.md" 2>/dev/null)
+  CER=$(sed -En '/^#{3,4}[[:space:]]+10\.2([[:space:]]|$)/,/^##[[:space:]]/p' "$D/docs/WORKFLOW.md" 2>/dev/null)
 fi
-CERRX='^\| *[^|]+ *\| *gate *\|[^|]*\|[^|]*\|[^|]*class:([a-z-]+\+)*(schema-migrations|auth|payments|ci-deploy|secrets|security-boundary|supply-chain|production-deploy|merge-to-default|publish-outward|spend|commercial-commitment|outbound-contact|destructive-data|release-cut|user-experiment)(\+[a-z-]+)*([^a-z+|-][^|]*)?\| *(skipped|optional)[^|]*\|'
-CERROW=$(printf '%s\n' "$CER" | grep -E "$CERRX" | head -1)
+CERRX='^[[:space:]]*\|[[:space:]]*[^|]+[[:space:]]*\|[[:space:]]*gate[[:space:]]*\|[^|]*\|[^|]*\|[^|]*class:([a-z-]+\+)*(schema-migrations|auth|payments|ci-deploy|secrets|security-boundary|supply-chain|production-deploy|merge-to-default|publish-outward|spend|commercial-commitment|outbound-contact|destructive-data|release-cut|user-experiment)(\+[a-z-]+)*([^a-z+|-][^|]*)?\|[[:space:]]*(skipped|optional)[^|]*\|'
+CERROW=$(printf '%s\n' "$CER" | grep -Ei "$CERRX" | head -1)
 if [ -n "$CERROW" ]; then
-  CERID=$(printf '%s' "$CERROW" | cut -d'|' -f2 | tr -d ' '); CERCELL=$(printf '%s' "$CERROW" | cut -d'|' -f7 | tr -d ' ')
+  CERID=$(printf '%s' "$CERROW" | cut -d'|' -f2 | tr -d ' \t'); CERCELL=$(printf '%s' "$CERROW" | cut -d'|' -f7 | tr -d ' \t')
   block "❌ BLOCKED: §10.2 Ceremony marks an irreversible-class gate \`$CERID\` as $CERCELL — set it back to \`required\` (an override cannot remove the safety boundary; \`/agentic-workflow:doctor\` explains)"
 fi
 RECRX='^\| *\*\*Merge policy\*\* *\| *agent-may-merge \(records-only, delegated [0-9]{4}-[0-9]{2}-[0-9]{2}\) *\|'

@@ -1335,6 +1335,9 @@ const CLOSING_NONE_DUE = {
   { const files = { ...conformant, 'docs/WORKFLOW.md': { content: conformant['docs/WORKFLOW.md'].content.replace(/^\| \*\*Ceremony profile\*\* .*\n/m, '') } };
     const r = runHook({ event: 'SessionStart', desc: CONF, input: { source: 'startup', session_id: sid('cer') }, files });
     check('conform-check: no Ceremony profile row → ceremony-profile-row gap with ceremony.mjs check\'s first finding', /ceremony-profile-row/.test(ctxOf(r)) && /No ceremony profile/.test(ctxOf(r)), JSON.stringify(ctxOf(r))); }
+  { const files = { ...conformant, 'docs/WORKFLOW.md': { content: conformant['docs/WORKFLOW.md'].content.replace(/^(\| \*\*Ceremony profile\*\* \| ).*\|$/m, '$1proposed 2026-10-15 — full ceremony still applies until you confirm. |') } };
+    const r = runHook({ event: 'SessionStart', desc: CONF, input: { source: 'startup', session_id: sid('cerp') }, files });
+    check('conform-check: a `proposed` ceremony profile is conformant (confirming is the owner\'s call) → silent', r.code === 0 && r.stdout === '' && /proposed 2026-10-15/.test(files['docs/WORKFLOW.md'].content), r.stdout); }
   { const files = { ...conformant, 'docs/WORKFLOW.md': { content: wf('1.43.0', ['Default branch']) } };
     delete files['tools/catalog.mjs']; delete files['docs/product/roadmap.md'];
     const r = runHook({ event: 'SessionStart', desc: CONF, input: { source: 'startup', session_id: sid('c') }, files });
@@ -1683,10 +1686,20 @@ const CLOSING_NONE_DUE = {
       ['optional release-cut on mission-close', gr('mission-close', 'default · class:release-cut', 'optional'), 'mission-close'],
       ['class:third-party+auth skipped (the id anywhere in the list)', gr('x-hook', 'default · class:third-party+auth', 'skipped'), 'x-hook'],
       ['a hand-edited `skipped (x)` cell', gr('x-sec', 'default · class:secrets', 'skipped (hand edit)'), 'x-sec'],
+      // ckpt-p2 A1: hand-edit shapes the first regex missed
+      ['a row with leading spaces', `   ${gr('x-lead', 'default · class:auth', 'skipped')}`, 'x-lead'],
+      ['a row with a leading tab and tab-padded cells', `\t${gr('x-tab', 'default · class:payments', 'skipped')}`.replace(/ \| /g, '\t|\t'), 'x-tab'],
+      ['a mis-cased `Skipped` cell', gr('x-case', 'default · class:secrets', 'Skipped'), 'x-case'],
+      ['a mis-cased `Optional` cell and `Gate` kind', gr('x-case2', 'default · class:ci-deploy', 'Optional').replace('| gate |', '| Gate |'), 'x-case2'],
     ];
     for (const [name, row, id] of cer) {
       const r = mg(OK101, { ceremony: `${gr('v4-ux-audit', 'ui: none · class:none', 'skipped')}\n${row}` });
       check(`merge-guard: §10.2 ${name} → BLOCK naming \`${id}\`, gh NOT run`, blocks(r, CB) && r.stderr.includes(`\`${id}\``) && !ghRan(r), why(r));
+    }
+    for (const [name, head] of [['a `#### 10.2` heading', '#### 10.2 Ceremony'], ['a tab after `### 10.2`', '###\t10.2\tCeremony'], ['a bare `### 10.2` heading', '### 10.2']]) {
+      const content = `${wfMerge(REC, gr('x-head', 'default · class:auth', 'skipped'))}`.replace('### 10.2 Ceremony', head);
+      const r = mg(OK101, { files: { 'docs/WORKFLOW.md': { content } } });
+      check(`merge-guard: §10.2 under ${name} → BLOCK naming \`x-head\``, content.includes(head) && blocks(r, CB) && r.stderr.includes('`x-head`') && !ghRan(r), why(r));
     }
     { const r = mg(OK101, { cell: 'agent-may-merge (delegated 2026-01-01)', ceremony: gr('x-auth', 'class:auth', 'skipped') });
       check('merge-guard: §10.2 backstop holds under full delegation too → BLOCK', blocks(r, CB), why(r)); }
