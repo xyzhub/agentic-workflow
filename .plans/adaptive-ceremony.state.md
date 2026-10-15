@@ -15,8 +15,8 @@ everything since the last one — §12 LA-6)._
 Status: active
 
 Estimate: 6 sessions
-Sessions used: 7
-Reviewer runs: 6
+Sessions used: 8
+Reviewer runs: 7
 
 _The two budget lines above are read by the mission-budget hook every turn.
 `Estimate: 6` = 3 builder briefs (S1, S2, S3) + 3 one-shot reviewer
@@ -66,8 +66,8 @@ done (verified, not merely written)._
 - [x] Checkpoint ckpt-p1 — one-shot `reviewer` on **Fable** (§5 rule + detector rewrite); APPROVE → next phase on the same branch
 - [x] S2 — `tools/ceremony.mjs` (derive · effective --log --mission · check incl. the L6 action-firer and malformed-`+` rules) + `tools/ceremony-test.mjs` + `checkCeremonyHarness`, conform `ceremony-profile-row`, merge-guard §10.2 backstop with all 16 irreversible ids + hook-test cases (incl. an action id and `supply-chain`), derive dogfood read-only (branch `mission/adaptive-ceremony`)
 - [x] Checkpoint ckpt-p2 — one-shot `reviewer` on **Fable** (merge-guard + fail-closed resolver; includes the counsel's "stopped before the gate passes" probe); APPROVE → next phase on the same branch
-- [~] S3 — rule-copies + resolver calls at every gate site, `checkCeremonyCopies`, `/next` + intake read points, bootstrap/adopt/sync/doctor prose (ask once, propose, drift warning, corrected J2 copy), inventories, `/sync` dogfood on this repo (`proposed` profile, stamp v1.61.0), CHANGELOG 1.61.0 + bump, pre-merge Closing rows fired (branch `mission/adaptive-ceremony`)
-- [ ] Checkpoint ckpt-p3 — one-shot `reviewer` on **Fable** (resolver-call prose at every gate site) incl. plain-report read of every owner-facing string, over the WHOLE mission diff `main..HEAD`; APPROVE → mark the one mission PR ready, human merges
+- [x] S3 — rule-copies + resolver calls at every gate site, `checkCeremonyCopies`, `/next` + intake read points, bootstrap/adopt/sync/doctor prose (ask once, propose, drift warning, corrected J2 copy), inventories, `/sync` dogfood on this repo (`proposed` profile, stamp v1.61.0), CHANGELOG 1.61.0 + bump, pre-merge Closing rows fired (branch `mission/adaptive-ceremony`)
+- [~] Checkpoint ckpt-p3 — one-shot `reviewer` on **Fable** (resolver-call prose at every gate site) incl. plain-report read of every owner-facing string, over the WHOLE mission diff `main..HEAD`; APPROVE → mark the one mission PR ready, human merges
 
 ## Open questions
 
@@ -97,8 +97,8 @@ fire on `mission/adaptive-ceremony` before ckpt-p3 and ride that PR; post-merge 
 a later `/agentic-workflow:settle` from `chore/adaptive-ceremony-bookkeeping`._
 
 - [ ] branch + worktree cleanup · added 2026-10-13 (planner, post-merge) — do: delete `mission/adaptive-ceremony` and `plan/adaptive-ceremony` (local and remote) and prune stale worktrees — when: the one mission PR to `main` is merged AND the `lint.yml` run on the last merge commit concluded green — probe: `gh pr list --state merged --search adaptive-ceremony` + `gh run list --branch main --limit 3`
-- [ ] docs/record synced · added 2026-10-13 (planner, pre-merge) — do: confirm CHANGELOG `[1.61.0]`, both READMEs, `templates/WORKFLOW.md` §3/§5/§9/§10 and this repo's `docs/WORKFLOW.md` mirror (stamp + `proposed` profile) agree with what shipped; rewrite any line that drifted — when: S3's record step is committed on `mission/adaptive-ceremony` — probe: `grep -n "1.61.0" CHANGELOG.md docs/WORKFLOW.md plugins/agentic-workflow/.claude-plugin/plugin.json`
-- [ ] version bumped + stamped · added 2026-10-13 (planner, pre-merge) — do: `plugins/agentic-workflow/.claude-plugin/plugin.json` → 1.61.0 (the §10 Version pin), `docs/WORKFLOW.md` line 3 → `v1.61.0`, CHANGELOG entry stamped — when: this mission's CHANGELOG entry names a version — probe: `node -e "console.log(require('./plugins/agentic-workflow/.claude-plugin/plugin.json').version)"`
+- [x] docs/record synced · added 2026-10-13 (planner, pre-merge) — do: confirm CHANGELOG `[1.61.0]`, both READMEs, `templates/WORKFLOW.md` §3/§5/§9/§10 and this repo's `docs/WORKFLOW.md` mirror (stamp + `proposed` profile) agree with what shipped; rewrite any line that drifted — when: S3's record step is committed on `mission/adaptive-ceremony` — probe: `grep -n "1.61.0" CHANGELOG.md docs/WORKFLOW.md plugins/agentic-workflow/.claude-plugin/plugin.json` · fired 2026-10-15 (1.61.0 in plugin.json:4, CHANGELOG.md:11, docs/WORKFLOW.md:3; READMEs list ceremony.mjs + gate-classes.md (commit 0a50a50))
+- [x] version bumped + stamped · added 2026-10-13 (planner, pre-merge) — do: `plugins/agentic-workflow/.claude-plugin/plugin.json` → 1.61.0 (the §10 Version pin), `docs/WORKFLOW.md` line 3 → `v1.61.0`, CHANGELOG entry stamped — when: this mission's CHANGELOG entry names a version — probe: `node -e "console.log(require('./plugins/agentic-workflow/.claude-plugin/plugin.json').version)"` · fired 2026-10-15 (node probe prints 1.61.0; docs/WORKFLOW.md stamp v1.61.0 (commit 0a50a50))
 - [ ] live-verify after reinstall · added 2026-10-13 (planner, post-merge) — do: in a real session after `/plugin update` + `/reload-plugins`, in an adopted repo other than this one (Orderly or Missions), run `/agentic-workflow:sync` and confirm: ONE batched ask (or none), a `proposed` row + 10.2 table with plain cells, `/agentic-workflow:doctor` reporting "full ceremony still applies", and `node $CLAUDE_PLUGIN_ROOT/tools/ceremony.mjs effective plan-judge` = `required (profile proposed)` — when: v1.61.0 is installed from `main` — probe: manual
 - [ ] Missions pin bump + contract tests · added 2026-10-13 (planner, post-merge) — do: in `xyzhub/missions`, bump `vendor/VERSION` and `vendor/agentic-workflow` to ≥ 1.61.0 (its own updater/verify-vendor flow), run `pnpm test` (contract-tests + recorded-session replays) and `scripts/verify-vendor.mjs`; record the command + exit code here — when: v1.61.0 is on `main` and a Missions session is open — probe: `grep version= /Users/baker/Playground/missions-app/vendor/VERSION`
 - [ ] AC-13 measurement (L4) · added 2026-10-13 (planner, post-merge) — do: promote at close as the obligation row, verbatim: "on 3 real changes across Orderly and Missions, each with a confirmed ceremony profile, record per change in a `## Ceremony cost` block of its ledger: `Sessions used:`, `Reviewer runs:`, correctives (`S<n>-fix` count), `Gates skipped:` (each with its deviation line). **Cost sub-metrics are scored on the low-ceremony changes (Missions) only**: baseline = the last 3 comparable (same size class, same gate-class set) shipped Missions changes, pulled read-only with commit/PR cited; pass = sessions and reviewer runs below the baseline median on ≥ 2 of 3 and none above max, correctives not higher on any. **Orderly is scored on safety only** (metrics §4): its irreversible-class gates all still `required` with the same reviewer tier — diff of the before/after lists cited; one deviation line per skipped cell; `node tools/lint.mjs`, `lint-test`, `hook-test`, `agents-test` case counts ≥ pre-change counts recorded at mission start; zero regressions. Missions contract tests green on every change touching Missions; owner prompts and token spend reported as 'unmeasured, no claim'; n=3 is a go/no-go for continued dogfooding, not proof (metrics §5)" — when: three such changes have shipped with a `## Ceremony cost` block — probe: `grep -l "## Ceremony cost" /Users/baker/Playground/*/.plans/*.state.md`
@@ -117,6 +117,10 @@ Deviating is allowed; deviating silently is not (§4)._
 
 _≤10 lines per entry: what this session did, the verify signal, the branch, and
 what the next session needs. Newest on top; crash-safe by write-ahead._
+
+- 2026-10-15 2026-10-15 ckpt-p3 spawned: one-shot Fable over the whole mission diff origin/main..0a50a50.
+
+- 2026-10-15 2026-10-15 S3 (builder, opus): done, commits c48d6a2 (6 gate sites + next/intake + checkCeremonyCopies + --not-run), adc7b1d (merge-guard A1 tighten, 7 hook cases fail-old/pass-new; conform accepts proposed), b15490a (bootstrap/adopt/sync/doctor + READMEs), 0a50a50 (1.61.0 + /sync dogfood). Gates: lint clean / 106 / hook 306 ok / 41 / 30 / ceremony 43; plugin validate pass. Dogfood: docs/WORKFLOW.md fresh template copy stamped v1.61.0, §10 kept + 'Ceremony profile | proposed 2026-10-15', §10.2 26 rows all effective required; check = 1 finding (proposed); conform matches v1.61.0. 3 derive asks (auth/payments/schema) left unanswered — irreversible, stay required. A0 none left; A1 done; A2 'effective --log --not-run' writes 'gate <id> optional, not run'; A3 doctor copy truthful. Deviations: conform treats proposed as conformant; README tool-layout note; /counsel and /audit resolve only when run as a gate, owner-invoked always runs; /sync re-derives proposed rows, rewrites confirmed only on request; unattended bootstrap writes proposed. Pre-merge Closing rows fired. Next: ckpt-p3 (Fable, whole mission).
 
 - 2026-10-15 2026-10-15 ckpt-p2 (Fable) APPROVE over 60b2060..faf415e. 36 probes: no path resolves an irreversible gate to skipped/optional; the automated security-review lead (parser differential in merge-guard.sh) CONFIRMED as a differential, REFUTED as fail-open — the guard misses leading-whitespace/tab rows, mis-cased 'Skipped', non-'gate' kind cell, 4-hash heading, but ceremony.mjs returns required for all. Scorecard: Security 2, QA 3, Architecture 3, DX 2. AC-1..6, 11, 12 pass. Gates lint clean / 104 / clean / 41 / 30 / 37; CI green on head. Advisories folded into S3 (single-mission rule): A1 guard tighten (leading space/tab, -i); A2 an optional gate not run must log a deviation line (today only skipped does); A3 /doctor copy says UI drift warns, does not tighten. A4: faf415e no own CI run, head covers it. Next: S3.
 
@@ -141,4 +145,4 @@ what the next session needs. Newest on top; crash-safe by write-ahead._
   9aa612c). Four open questions for the owner (OQ-2 blocks S2's rendering).
   Next: plan-judge, then owner answers, then S1.
 
-Next up: S3
+Next up: ckpt-p3
