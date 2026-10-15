@@ -20,7 +20,8 @@ Report ✅ PASS / ⚠️ WARNING / ❌ BLOCKER for each step.
    be behind), and note the PR steps below don't apply yet either.
 6. **Commit hygiene** — `git log <default>..HEAD --oneline` (against
    `origin/<default>` when a remote exists): all conventional
-   (`type(scope): description`), ending with the Co-Authored-By trailer.
+   (`type(scope): description`), each ending with the §10 **Attribution**
+   commit text (`none` → no attribution line).
 7. **Docs current** — the conventions file and any architecture/data-model docs
    updated if behavior/config changed (stale-doc rule); the catalog regenerated
    + feature rows rewritten if the diff touched a route, the schema, or a
@@ -49,6 +50,7 @@ Report ✅ PASS / ⚠️ WARNING / ❌ BLOCKER for each step.
 ```bash
 git push -u origin <branch>
 gh pr create --fill    # or a summary + test plan; body carries Closes #N / Part of #N (step 7.5)
+                       # and ends with the §10 Attribution PR text (none → no line)
 ```
 
 Report the final status and any remaining blockers. Do not merge — the human

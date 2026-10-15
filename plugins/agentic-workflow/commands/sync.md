@@ -104,7 +104,12 @@ edit, never a rewrite of project prose:
 - **§10 rows** — append any missing row the new master's §10 template
   carries (`Staging`, `Issue tracker`, …) with a detected value where cheap
   (`git branch -r` for `staging`; `gh repo view` → `GitHub Issues via gh`),
-  else `TBD — confirm`. Existing values are never touched.
+  else `TBD — confirm`. Existing values are never touched. A missing
+  **Attribution** row takes the cell `node
+  ${CLAUDE_PLUGIN_ROOT}/tools/attribution.mjs import` prints (never `TBD —
+  confirm`); then run `attribution.mjs apply` on EVERY sync, so a hand-edited
+  row reaches `.claude/settings.json` (exit 2 or a refused prompt → report
+  "settings not written").
 - **Active ledgers** (`.plans/*.state.md` with an open `[ ]`/`[~]` beat) —
   add `Estimate: N sessions` and `Sessions used: k` to the header when
   missing: `k` = the count of `[x]` session rows so far; `N` = `k` + the open

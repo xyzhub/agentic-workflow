@@ -27,8 +27,9 @@ escalate to a full session.
 3. **Verify** — the regression test went red then green; run the project test
    gate (and typecheck if the fix could affect types); for a runtime-surface
    fix, confirm it in a real client.
-4. **Commit + PR** — `type(scope): description` with the Co-Authored-By trailer;
-   push; `gh pr create --fill`.
+4. **Commit + PR** — `type(scope): description`, ending with the §10
+   **Attribution** commit text (`none` → no attribution line); push; `gh pr
+   create --fill` — the body ends with the §10 **Attribution** PR text.
 5. **Record** — a Task-altitude change updates `CHANGELOG.md` only (spawn the
    chronicler or add the line directly); JOURNEY and the status page move on
    sessions/checkpoints, not quick fixes.

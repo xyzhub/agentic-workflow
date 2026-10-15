@@ -27,7 +27,9 @@ from an explicit human answer). The **Tune preset** row is added if absent
 the same way: ONE question (`balanced` recommended; `rigorous` when payments,
 auth or PII are named), row `<name> (applied YYYY-MM-DD)`, applied per
 `/agentic-workflow:tune preset <name>`; unanswered →
-`balanced (default, applied YYYY-MM-DD)`.
+`balanced (default, applied YYYY-MM-DD)`. The **Attribution** row is added
+if absent the same way — the bootstrap Attribution step (`attribution.mjs
+import` → the row, then `apply` → `.claude/settings.json`).
 
 **Ceremony profile** — the bootstrap procedure's ceremony step (ONE batched
 ask, answers recorded the same way), with one difference: an existing repo gets
