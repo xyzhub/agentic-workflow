@@ -1311,12 +1311,30 @@ const CLOSING_NONE_DUE = {
     'docs/product/catalog/data-model.md': { content: '# Data model\n' },
     'docs/product/catalog/features.md': { content: '# Features\n' },
   };
+  // v1.61.0 ceremony-profile-row: a conformant project carries a CONFIRMED,
+  // consistent §10.2 — rendered by ceremony.mjs itself from the template fences
+  // against a copy of the fixture tree, so the hook's re-check finds no drift.
+  {
+    const tpl = readFileSync(path.join(PLUGIN, 'templates/WORKFLOW.md'), 'utf8');
+    const fence = (n) => tpl.slice(tpl.indexOf(`<!-- ${n} -->`), tpl.indexOf(`<!-- /${n} -->`) + n.length + 10);
+    const body = (cell, table) => wf(pv, FULL10).replace('## 10. Project profile', `## 0. Lifecycle\n\n${fence('stage-table')}\n\n## 5. Missions\n\n${fence('checkpoint-gates')}\n\n## 10. Project profile`)
+      .replace('\n\n## 11. Autopilot mode', `${cell ? `\n| **Ceremony profile** | ${cell} |` : ''}\n\n### 10.2 Ceremony\n\n${table}\n\n## 11. Autopilot mode`);
+    const d = mkdtempSync(path.join(tmpdir(), 'hooktest-cer-'));
+    for (const [f, { content }] of Object.entries({ ...conformant, 'docs/WORKFLOW.md': { content: body('', '') } })) { mkdirSync(path.dirname(path.join(d, f)), { recursive: true }); writeFileSync(path.join(d, f), content); }
+    const r = spawnSync('node', [path.join(PLUGIN, 'tools/ceremony.mjs'), 'derive', '--confirm', 'Owner', '--json', '--root', d], { encoding: 'utf8' });
+    rmSync(d, { recursive: true, force: true });
+    let ren = { row: '', table: '' }; try { ren = JSON.parse(r.stdout).render; } catch { /* the conformant case then fails loudly */ }
+    conformant['docs/WORKFLOW.md'] = { content: body(ren.row, ren.table) };
+  }
   const sid = (t) => `conf-${t}-${process.pid}-${Date.now()}`;
 
   { const r = runHook({ event: 'SessionStart', desc: CONF, input: { source: 'startup', session_id: sid('a') } });
     check('conform-check: not an adopted project (no docs/WORKFLOW.md) → silent', r.code === 0 && r.stdout === '', r.stdout); }
   { const r = runHook({ event: 'SessionStart', desc: CONF, input: { source: 'startup', session_id: sid('b') }, files: conformant });
     check('conform-check: fully conformant project → silent', r.code === 0 && r.stdout === '', r.stdout); }
+  { const files = { ...conformant, 'docs/WORKFLOW.md': { content: conformant['docs/WORKFLOW.md'].content.replace(/^\| \*\*Ceremony profile\*\* .*\n/m, '') } };
+    const r = runHook({ event: 'SessionStart', desc: CONF, input: { source: 'startup', session_id: sid('cer') }, files });
+    check('conform-check: no Ceremony profile row → ceremony-profile-row gap with ceremony.mjs check\'s first finding', /ceremony-profile-row/.test(ctxOf(r)) && /No ceremony profile/.test(ctxOf(r)), JSON.stringify(ctxOf(r))); }
   { const files = { ...conformant, 'docs/WORKFLOW.md': { content: wf('1.43.0', ['Default branch']) } };
     delete files['tools/catalog.mjs']; delete files['docs/product/roadmap.md'];
     const r = runHook({ event: 'SessionStart', desc: CONF, input: { source: 'startup', session_id: sid('c') }, files });
@@ -1591,7 +1609,7 @@ const CLOSING_NONE_DUE = {
   const run = (conclusion) => ({ __typename: 'CheckRun', status: 'COMPLETED', conclusion, name: 'lint' });
   const ctx = (state) => ({ __typename: 'StatusContext', state, context: 'ci' });
   const GREEN = [run('SUCCESS'), run('SKIPPED'), ctx('SUCCESS')];
-  const wfMerge = (cell) => `## 10. Project profile\n\n| Key | Value |\n|---|---|\n| **Merge policy** | ${cell} |\n`;
+  const wfMerge = (cell, ceremony = '') => `## 10. Project profile\n\n| Key | Value |\n|---|---|\n| **Merge policy** | ${cell} |\n${ceremony ? `\n### 10.2 Ceremony\n\n| id | kind | stage | derived | signal | effective |\n|---|---|---|---|---|---|\n${ceremony}\n\n## 11. Autopilot mode\n` : ''}`;
   const prJson = ({ state = 'OPEN', files = FOUR, checks = GREEN, head = HEAD } = {}) => ({
     state, statusCheckRollup: checks, headRefOid: head,
     files: files.map((f) => (typeof f === 'string' ? { path: f, changeType: 'MODIFIED' } : f)),
@@ -1599,10 +1617,10 @@ const CLOSING_NONE_DUE = {
   const shq = (s) => `'${s.replace(/'/g, `'\\''`)}'`;
   const ghStub = (json, { exit = 0 } = {}) => ['#!/bin/bash', 'echo "gh-stub-called $*" >&2',
     `case "$*" in *"pr view"*) printf '%s' ${shq(JSON.stringify(json))}; exit ${exit};; esac`, 'exit 1', ''].join('\n');
-  const mg = (cmd, { cell = REC, wf = true, pr = {}, exit = 0, gh, jq = true, files = {}, input = {}, env } = {}) =>
+  const mg = (cmd, { cell = REC, wf = true, pr = {}, exit = 0, gh, jq = true, files = {}, input = {}, env, ceremony = '' } = {}) =>
     runHook({
       event: 'PreToolUse', desc: GUARD, input: { tool_input: { command: cmd }, ...input },
-      files: { ...(wf ? { 'docs/WORKFLOW.md': { content: wfMerge(cell) } } : {}), ...files },
+      files: { ...(wf ? { 'docs/WORKFLOW.md': { content: wfMerge(cell, ceremony) } } : {}), ...files },
       bin: { gh: gh === undefined ? ghStub(prJson(pr), { exit }) : gh, jq }, env,
     });
   const blocks = (r, text) => r.code === 2 && r.stderr.includes(text);
@@ -1652,6 +1670,33 @@ const CLOSING_NONE_DUE = {
   { const r = mg(OK101, { cell: `x ${REC}` }); check('merge-guard: records-only not at the start of the cell → BLOCK', blocks(r, 'human (HITL) merges'), why(r)); }
   { const r = mg(OK101, { input: { cwd: '/nonexistent-merge-guard-dir' } });
     check('merge-guard: a session cwd that is not a directory → BLOCK', blocks(r, 'not a directory'), why(r)); }
+
+  // §10.2 ceremony backstop (L3/L5/L6) — every irreversible id, change and action alike
+  {
+    const gr = (id, sig, eff) => `| ${id} | gate | v2 | required | ${sig} | ${eff} |`;
+    const CB = 'irreversible-class gate';
+    const cer = [
+      ['skipped ci-deploy', gr('v2-deploy-pipeline', 'deploy: none · class:ci-deploy', 'skipped'), 'v2-deploy-pipeline'],
+      ['optional auth', gr('x-auth', 'auth: none-found · class:auth', 'optional'), 'x-auth'],
+      ['skipped supply-chain', gr('x-deps', 'default · class:supply-chain', 'skipped'), 'x-deps'],
+      ['skipped v5-launch with an action id inside a + list', gr('v5-launch', 'action class · class:production-deploy+publish-outward+release-cut', 'skipped'), 'v5-launch'],
+      ['optional release-cut on mission-close', gr('mission-close', 'default · class:release-cut', 'optional'), 'mission-close'],
+      ['class:third-party+auth skipped (the id anywhere in the list)', gr('x-hook', 'default · class:third-party+auth', 'skipped'), 'x-hook'],
+      ['a hand-edited `skipped (x)` cell', gr('x-sec', 'default · class:secrets', 'skipped (hand edit)'), 'x-sec'],
+    ];
+    for (const [name, row, id] of cer) {
+      const r = mg(OK101, { ceremony: `${gr('v4-ux-audit', 'ui: none · class:none', 'skipped')}\n${row}` });
+      check(`merge-guard: §10.2 ${name} → BLOCK naming \`${id}\`, gh NOT run`, blocks(r, CB) && r.stderr.includes(`\`${id}\``) && !ghRan(r), why(r));
+    }
+    { const r = mg(OK101, { cell: 'agent-may-merge (delegated 2026-01-01)', ceremony: gr('x-auth', 'class:auth', 'skipped') });
+      check('merge-guard: §10.2 backstop holds under full delegation too → BLOCK', blocks(r, CB), why(r)); }
+    { const r = mg(OK101, { ceremony: gr('x-vendor', 'default · class:third-party', 'skipped') });
+      check('merge-guard: §10.2 skipped third-party (the one reversible class) → allowed, records-only path continues', r.code === 0 && sawView(r, 101), why(r)); }
+    { const r = mg(OK101, { ceremony: gr('v2-deploy-pipeline', 'deploy: none · class:ci-deploy', 'required (override refused: ci-deploy is irreversible)') });
+      check('merge-guard: §10.2 `required (override refused: …)` cell → allowed', r.code === 0 && sawView(r, 101), why(r)); }
+    { const r = mg(OK101, { ceremony: `${gr('v4-ux-audit', 'ui: none · class:none', 'skipped')}\n${gr('x-auth', 'class:auth', 'required')}` });
+      check('merge-guard: §10.2 with only class:none skipped and irreversible rows required → allowed', r.code === 0 && sawView(r, 101), why(r)); }
+  }
 
   // block — command shape
   const shape = [

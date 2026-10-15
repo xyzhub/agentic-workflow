@@ -8,6 +8,9 @@
 #      COMMITTED on origin/<default> of that dir (else the session cwd); working tree only
 #      outside a git tree (the publish-guard contract). Anchored records-only value → 4; other
 #      `agent-may-merge…` without `records-only` → reminder, exit 0, gh not run; else → 2.
+#   3a. Under EVERY policy, before the policy branch: the committed §10.2 Ceremony block has a gate
+#      row whose `class:` token carries an irreversible id and whose effective cell is skipped or
+#      optional → 2 (L3/L5/L6 backstop; the id list is spelled inline, third-party alone passes).
 #   4. Records-only, first failure BLOCKS: gh missing; --auto; non-canonical spacing;
 #      ; & | newline after the merge; a flag beyond
 #      --squash/--merge/--rebase/--delete-branch/--match-head-commit; not one numeric ref; gh pr
@@ -78,6 +81,21 @@ else
 fi
 HITL="❌ BLOCKED: the human (HITL) merges PRs. Delegating needs Merge policy = agent-may-merge in the TARGET repo docs/WORKFLOW.md §10 as committed on origin/$DEF (an unset origin/HEAD on a non-main default also lands here — git remote set-head origin -a) — run as cd <repo> && $M … (fail closed)."
 [ -n "$ROW" ] || block "$HITL"
+# 3a. Ceremony backstop (L3/L5/L6): the same committed text, §10.2 only (sed, not awk). A gate
+# row whose signal carries `class:` with ANY irreversible id (+-separated, whole token; every change
+# class but third-party, every action class — 16, spelled here) and an effective cell of skipped or
+# optional → 2, under EVERY policy. `required (override refused: …)` passes; no §10.2 → no-op.
+if [ -n "$TOP" ]; then
+  CER=$(git -C "$TOP" show "origin/$DEF:docs/WORKFLOW.md" 2>/dev/null | sed -n '/^### 10\.2 /,/^## /p')
+else
+  CER=$(sed -n '/^### 10\.2 /,/^## /p' "$D/docs/WORKFLOW.md" 2>/dev/null)
+fi
+CERRX='^\| *[^|]+ *\| *gate *\|[^|]*\|[^|]*\|[^|]*class:([a-z-]+\+)*(schema-migrations|auth|payments|ci-deploy|secrets|security-boundary|supply-chain|production-deploy|merge-to-default|publish-outward|spend|commercial-commitment|outbound-contact|destructive-data|release-cut|user-experiment)(\+[a-z-]+)*([^a-z+|-][^|]*)?\| *(skipped|optional)[^|]*\|'
+CERROW=$(printf '%s\n' "$CER" | grep -E "$CERRX" | head -1)
+if [ -n "$CERROW" ]; then
+  CERID=$(printf '%s' "$CERROW" | cut -d'|' -f2 | tr -d ' '); CERCELL=$(printf '%s' "$CERROW" | cut -d'|' -f7 | tr -d ' ')
+  block "❌ BLOCKED: §10.2 Ceremony marks an irreversible-class gate \`$CERID\` as $CERCELL — set it back to \`required\` (an override cannot remove the safety boundary; \`/agentic-workflow:doctor\` explains)"
+fi
 RECRX='^\| *\*\*Merge policy\*\* *\| *agent-may-merge \(records-only, delegated [0-9]{4}-[0-9]{2}-[0-9]{2}\) *\|'
 if ! printf '%s' "$ROW" | grep -qE "$RECRX"; then
   if printf '%s' "$ROW" | grep -qE '\| *\*\*Merge policy\*\* *\| *agent-may-merge' && ! printf '%s' "$ROW" | grep -q 'records-only'; then
