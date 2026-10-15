@@ -15,6 +15,7 @@ everything since the last one — §12 LA-6). Deploys to
 
 Estimate: 1 session
 Sessions used: 0
+Reviewer runs: 0
 
 _The two budget lines above are read by the mission-budget hook every turn. The
 planner writes `Estimate:` (default `1 session`; more only with the `phases`
@@ -24,7 +25,9 @@ mode and a justification in the master plan). The orchestrator increments
 lines, same `Key: <int>` grammar: `Tick budget:` (planner, from the preset's
 `unattended.tick_budget`), `Tick tokens:` (orchestrator: reset at tick start,
 written after every brief), `Mission budget:` (orchestrator: Σ tick tokens) —
-the hook prints 🛑 TICK BUDGET / 🛑 MISSION BUDGET (WORKFLOW.md §5 Loop mode)._
+the hook prints 🛑 TICK BUDGET / 🛑 MISSION BUDGET (WORKFLOW.md §5 Loop mode) `Reviewer runs:` is bumped by the orchestrator at every one-shot reviewer
+spawn, plan-judge included (`tools/ledger.mjs <mission> reviewer-runs +1`),
+and read at the measurement obligation (AC-13)._
 
 <!-- rule-copy: overrun-1.5x -->
 At **k ≥ 1.5 × N** the hook prints 🛑 OVERRUN on every prompt and the

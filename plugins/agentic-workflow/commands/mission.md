@@ -274,7 +274,9 @@ more than one machine can drive (§5 hand-off): `continue` mode pulls first,
 then re-reads
 `Next up:` **and the `## Standing steers` block** (steers bind every session
 that follows the checkpoint that captured them), increments `Sessions used:`,
-and proceeds, losing nothing across interruptions.
+and proceeds, losing nothing across interruptions. Each one-shot reviewer
+spawn (plan-judge too) bumps `Reviewer runs:` first
+(`ledger.mjs <mission> reviewer-runs +1`).
 
 **Loop mode**: long missions run well as a recurring loop —
 `/loop /mission "<name>" continue`, or a scheduled agent. When invoked as a

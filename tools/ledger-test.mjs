@@ -30,6 +30,7 @@ status: living
 
 Estimate: 2 sessions
 Sessions used: 1
+Reviewer runs: 0
 
 ## Checklist
 
@@ -165,6 +166,14 @@ console.log('handoff / next-up / sessions');
   ok('sessions =N sets it', s2.code === 0 && /^Sessions used: 5$/m.test(s2.ledger), s2.out);
   const s3 = run(d, 'sessions', '5');
   ok('sessions without +/= is a usage error', s3.code === 1, s3.out);
+  const rv = run(d, 'reviewer-runs', '+1');
+  ok('reviewer-runs +1 increments the `Reviewer runs:` line', rv.code === 0 && /^Reviewer runs: 1$/m.test(rv.ledger) && /ledger: Reviewer runs: 1/.test(rv.out), rv.out);
+  const rv2 = run(d, 'reviewer-runs', '=4');
+  ok('reviewer-runs =N sets it', rv2.code === 0 && /^Reviewer runs: 4$/m.test(rv2.ledger), rv2.out);
+  const noRv = rv2.ledger.replace(/^Reviewer runs: 4\n/m, '');
+  writeFileSync(path.join(d, '.plans/demo.state.md'), noRv);
+  const rv3 = run(d, 'reviewer-runs', '+1');
+  ok('reviewer-runs refuses when the line is absent, says where to add it, file byte-identical', rv3.code === 2 && /add `Reviewer runs: 0` under `Sessions used:`/.test(rv3.out) && rv3.ledger === noRv, rv3.out);
   // a ledger with no handoff entries yet: the entry goes above `Next up:`
   writeFileSync(path.join(d, '.plans/demo.state.md'), LEDGER.replace('- 2026-10-10 planner: trio authored.\n\n', ''));
   const h0 = run(d, 'handoff', 'first entry');
@@ -219,7 +228,7 @@ console.log('usage');
   ok('--help prints the verb table, exit 0', h.status === 0 && /mark "<row-prefix>"/.test(h.stdout));
   ok('the template ledger exposes every section the verbs need', (() => {
     const t = readFileSync(path.join(PLUGIN, 'templates/mission-state.md'), 'utf8').split('\n');
-    return ['Checklist', 'Closing', 'Handoff log'].every((s) => mod.section(t, s)) && t.some((l) => /^Next up:/.test(l)) && t.some((l) => /^Sessions used: \d+/.test(l));
+    return ['Checklist', 'Closing', 'Handoff log'].every((s) => mod.section(t, s)) && t.some((l) => /^Next up:/.test(l)) && t.some((l) => /^Sessions used: \d+/.test(l)) && t.some((l) => /^Reviewer runs: \d+/.test(l));
   })());
   rmSync(d, { recursive: true, force: true });
 }
