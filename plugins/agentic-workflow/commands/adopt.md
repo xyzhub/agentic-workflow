@@ -29,6 +29,23 @@ auth or PII are named), row `<name> (applied YYYY-MM-DD)`, applied per
 `/agentic-workflow:tune preset <name>`; unanswered →
 `balanced (default, applied YYYY-MM-DD)`.
 
+**Ceremony profile** — the bootstrap procedure's ceremony step (ONE batched
+ask, answers recorded the same way), with one difference: an existing repo gets
+the row written **`proposed`** (`derive --json`, never `--confirm`), so nothing
+changes until the owner says so. An existing `confirmed` row is never
+rewritten. The report carries this paragraph verbatim:
+
+> **Ceremony profile proposed — nothing changed yet.** Every gate still runs.
+> Review the table in §10.2 and say "confirm ceremony profile" to apply it;
+> until then this repo keeps full ceremony.
+
+**"confirm ceremony profile"** (the owner's words, in this or any later
+session) → run `node ${CLAUDE_PLUGIN_ROOT}/tools/ceremony.mjs derive --confirm
+"<who said it>" --json` and write `render.row` and `render.table` into §10 and
+§10.2, keeping the `Overrides:` lines. The command edits the cell for the
+owner; say so in one line ("I set the ceremony profile to confirmed — it is in
+force now."), then run `check` and quote it.
+
 ## 1.5 Portfolio registration (§13) — ALWAYS runs
 
 This step is exempt from step 1's idempotency skip: an already-adopted

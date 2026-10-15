@@ -134,9 +134,30 @@ edit, never a rewrite of project prose:
   first non-blank line. Report the move **line by line, never silently** — this
   is a one-time content migration, not a rewrite of project prose.
 - **Engineering folder** — step 3.5 above.
+- **Ceremony profile** (`ceremony-profile-row` gap) — run `node
+  ${CLAUDE_PLUGIN_ROOT}/tools/ceremony.mjs derive --json`. No row, or the row
+  is `absent` or `proposed` → write `render.row` (a `proposed` cell) into the
+  **Ceremony profile** row and `render.table` under `### 10.2 Ceremony`, keeping
+  any `Overrides:` lines; the derive `asks` join step 3.8's questions as ONE
+  numbered message (the bootstrap ceremony step's wording). Then put this in
+  the report verbatim:
 
-Re-run `node "${CLAUDE_PLUGIN_ROOT}/tools/conform.mjs"` and paste its output
-into the report: it must read "matches plugin vX" or list only the gaps whose
+  > **Ceremony profile proposed — nothing changed yet.** Every gate still runs.
+  > Review the table in §10.2 and say "confirm ceremony profile" to apply it;
+  > until then this repo keeps full ceremony.
+
+  A `confirmed` row is **never rewritten** here unless the owner asks for a
+  fresh proposal (then it is rewritten `proposed`, `Overrides:` kept): run
+  `ceremony.mjs check` instead and put its drift line, if any, in the report as
+  ONE warning with a count — the `/agentic-workflow:doctor` drift copy.
+  `unreadable` (no stage table) → write the "could not read the stage table"
+  cell and say so on the report's first line. "confirm ceremony profile" is
+  handled as in `/agentic-workflow:adopt`.
+
+Re-run `node "${CLAUDE_PLUGIN_ROOT}/tools/conform.mjs"` and `node
+"${CLAUDE_PLUGIN_ROOT}/tools/ceremony.mjs" check` and paste both outputs
+into the report (a `proposed` profile is conformant — `check` still names it,
+because confirming it is the owner's call): it must read "matches plugin vX" or list only the gaps whose
 fix is another command (`groom`, `adopt`) — those are the hand-off.
 
 ## 3.8 Close the loop with the human (don't leave a to-do list)

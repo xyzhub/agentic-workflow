@@ -86,6 +86,31 @@ writes no files). Keep the empty **Local
 amendments** section at the end. This project-local copy now wins over the
 bundled one.
 
+**Ceremony profile (§10 row + §10.2).** After §10 is written, run `node
+${CLAUDE_PLUGIN_ROOT}/tools/ceremony.mjs derive --json` in the project root. It
+never writes; you do:
+
+1. **`asks` non-empty and a human is present** → ONE AskUserQuestion message,
+   numbered, headed "Answer N questions so I can set how much ceremony this
+   project needs (or skip — unanswered items stay `required`)." Each item is
+   the ask's `question` plus what happens on no answer. Never one question per
+   ask. A stage answer fills the **Current stage** row. Any other answer that
+   changes a row goes under §10.2 `Overrides:` as `- <id>: <value> — asked
+   YYYY-MM-DD — "question N: <answer>"`; no answer → the row stays `required`
+   (`"no answer"`). An answer on a row whose class is irreversible changes
+   nothing — that row stays `required` — and the report says so.
+2. Run `derive --confirm "<owner>" --json` and write `render.row` into the
+   **Ceremony profile** row and `render.table` under `### 10.2 Ceremony` (keep
+   the `Overrides:` lines). Bootstrap writes `confirmed`: this is a fresh
+   project and the owner just answered. Unattended (no human) → run `derive
+   --json` instead and write the `proposed` row and table — never confirm on
+   the owner's behalf.
+3. `unreadable: true` → write `render.row` (the "could not read the stage
+   table" cell), no table, and make that the report's first line.
+
+Then `ceremony.mjs check` must print "profile consistent" (a `proposed`
+profile: only its `proposed` finding).
+
 ## 3. Seed the record artifacts (§6.1)
 
 - `CHANGELOG.md` — Keep-a-Changelog skeleton with an `## [Unreleased]` section;
@@ -163,7 +188,11 @@ Codex read it); `CLAUDE.md` imports it and holds only Claude-specific notes.
 ## 5. Report
 
 Summarize: detected stage, the filled profile (gates, deploy, HITL), the files
-created/updated, the status-page URL, and the recommended next action for the
+created/updated, the ceremony line — "Ceremony profile written: <n> required,
+<n> optional, <n> skipped. It is in force now — edit any row in §10.2 to change
+it." (counted from the `effective` column; a `proposed` profile says "proposed —
+every gate still runs until you say "confirm ceremony profile"" instead) — the
+status-page URL, and the recommended next action for the
 current stage (e.g. at V0: fill idea.md and get a go/no-go; at V3: `/agentic-workflow:start`;
 at V6: plan a growth mission). Then **offer to run that next command** for them
 (AskUserQuestion → SlashCommand), unless it's a human-only gate (merge/deploy/

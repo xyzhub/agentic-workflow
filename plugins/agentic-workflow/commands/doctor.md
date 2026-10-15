@@ -89,6 +89,29 @@ The profile is load-bearing and written once — verify it still tells the truth
   lacks `Closed:` with `Sessions used:` > 0 → 🔴 "preset switched mid-mission
   (out of v1): revert or close the mission first". Clean state → no finding.
 - Any `TBD — confirm` leftovers → 🟡 with the row named.
+- **Ceremony profile** — run `node ${CLAUDE_PLUGIN_ROOT}/tools/ceremony.mjs
+  check`; each finding is 🟡, in these words:
+  - *absent* → "No ceremony profile. Every gate runs. Run
+    `/agentic-workflow:sync` to propose one."
+  - *proposed* → "Ceremony profile proposed — full ceremony still applies.
+    Review §10.2 and say "confirm ceremony profile" to apply it."
+  - *refused override* → "**Override refused: `<id>` is `required`.** It
+    carries the gate class `<class>`, an irreversible class in
+    `templates/gate-classes.md` — the override has no effect at resolution and
+    the merge guard blocks an agent merge while the row stands. Set it back to
+    `required`; if the signal is wrong, fix the repo and run
+    `/agentic-workflow:sync`."
+  - *drift* → ONE warning with a count, never one per signal: "**Ceremony
+    profile is out of date: <each changed signal, was → now> since it was
+    made (<n> rows affected).** A changed signal behind an irreversible class
+    (`templates/gate-classes.md`) already tightens every row it touches to
+    `required`. Other drift only warns: a UI surface that appeared
+    (`ui: none → present`) does not turn the UX gates back on — edit those rows
+    to `required`, or ask `/agentic-workflow:sync` for a fresh proposal."
+  - anything else (unreadable, token or effective mismatch) → the finding's own
+    text, with "every gate runs until it is fixed".
+  `fix` mode never re-derives the profile — that is `/agentic-workflow:sync`'s
+  proposal and the owner's confirm.
 
 ## 3. Records & plans
 
