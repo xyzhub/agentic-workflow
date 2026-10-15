@@ -1108,13 +1108,18 @@ const RULES = {
     mechanics: [/reads the first/i, /warns on duplicates/i, /supersed/i, /renaming the old/i],
   },
   'ceremony-skip': {
-    la: 'ceremony-skip',
+    la: 'Ceremony skip',
     name: /ceremony-skip|effective .*cell/i,
     mechanics: [/exactly one/i, /Deviations line/i, /any other cell runs/i, /no §?10\.2 row runs/i],
   },
 };
 
-const stripInline = (text) => text.replace(/<!--[\s\S]*?-->/g, ' ').replace(/`[^`]*`/g, ' ');
+// A ``` fence line is a paragraph break, never an inline span: drop fence
+// lines BEFORE pairing backticks, or a fence's backticks pair with later ones
+// and the fenced body (where a class list or rule restatement can hide) is
+// swallowed. The scanners below also flush a paragraph at every fence line.
+const FENCE_LINE = /^\s*(?:`{3,}|~{3,})/;
+const stripInline = (text) => text.replace(/<!--[\s\S]*?-->/g, ' ').replace(/^\s*(?:`{3,}|~{3,}).*$/gm, ' ').replace(/`[^`]*`/g, ' ');
 
 // True when `paragraph` restates `rule`: its NAME key matches on the RAW
 // paragraph (a rule's name is backticked in every real mention — `Next up:`,
@@ -1189,7 +1194,7 @@ function checkRuleDedup() {
       cur = [];
     };
     lines.forEach((line, i) => {
-      if (excluded[i] || !line.trim()) { flush(); return; }
+      if (excluded[i] || !line.trim() || FENCE_LINE.test(line)) { flush(); return; }
       if (/^\s*(?:[-*+]|\d+[.)]|\|)/.test(line)) flush();
       if (!cur.length) startLine = i + 1;
       cur.push(line);
@@ -1250,7 +1255,7 @@ function checkClassListDedup() {
       cur = [];
     };
     lines.forEach((line, i) => {
-      if (!line.trim()) { flush(); return; }
+      if (!line.trim() || FENCE_LINE.test(line)) { flush(); return; }
       if (!cur.length) startLine = i + 1;
       cur.push(line);
     });

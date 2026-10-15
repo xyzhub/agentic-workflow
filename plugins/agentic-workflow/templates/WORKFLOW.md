@@ -76,7 +76,7 @@ Every project is at exactly one stage; name it before routing work. Stage exits
 are GATES: human go/no-go where marked, reviewer-verified otherwise. Skipping a
 gate is a logged deviation, not a shortcut.
 
-<!-- The Gate cell uses the grammar in `templates/gate-classes.md`; its grammar part ends at the first " — ". `none` on a decision gate is fail-closed (AC-2), not skippable. `tools/ceremony.mjs` reads the fenced table by header name (Stage, Artifacts, Gate): rename or add rows freely, keep the fence and the headers. -->
+<!-- The Gate cell uses the gate-cell grammar in `templates/gate-classes.md` (its tail rule included). `none` on a decision gate is fail-closed (AC-2), not skippable. `tools/ceremony.mjs` reads the fenced table by header name (Stage, Artifacts, Gate): rename or add rows freely, keep the fence and the headers. -->
 <!-- stage-table -->
 | Stage | Produces | Artifacts | Gate |
 |---|---|---|---|
@@ -378,8 +378,8 @@ dedicated planning session:
 | `.plans/<mission>.sessions.md` | One brief per session: pre-resolved reads (file → measured line count → anchors), do/verify steps, read budget; phases with named branches |
 | `.plans/<mission>.state.md` | Ledger: checklist, open questions, **standing steers** (human steers quoted verbatim, captured at checkpoints only), deviations log, handoff log (≤10 lines each, newest first), `Next up:` — which must name the same next beat wherever it appears in the file. Checklist glyphs: `[ ]` not started · `[~]` in-flight / deferred / awaiting owner · `[x]` done — the beat-enforcer nudges only on a not-started `[ ]` checkpoint/reviewer/chronicler row, so set `[~]` when a beat is picked up or parked. Every ledger also carries a `## Closing` block — deferred obligations in the OB grammar (`do:` / an observable `when:` / `probe: <command | manual>`), read by the mission-close gate below |
 
-The per-change gates a mission runs, in the same gate-cell grammar
-(`templates/gate-classes.md`; the grammar part ends at the first " — "):
+The per-change gates a mission runs, in the gate-cell grammar of
+`templates/gate-classes.md`:
 
 <!-- checkpoint-gates -->
 - plan-judge · reviewer · none — the trio review before any brief spends a session

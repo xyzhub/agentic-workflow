@@ -25,7 +25,7 @@ mode and a justification in the master plan). The orchestrator increments
 lines, same `Key: <int>` grammar: `Tick budget:` (planner, from the preset's
 `unattended.tick_budget`), `Tick tokens:` (orchestrator: reset at tick start,
 written after every brief), `Mission budget:` (orchestrator: Σ tick tokens) —
-the hook prints 🛑 TICK BUDGET / 🛑 MISSION BUDGET (WORKFLOW.md §5 Loop mode) `Reviewer runs:` is bumped by the orchestrator at every one-shot reviewer
+the hook prints 🛑 TICK BUDGET / 🛑 MISSION BUDGET (WORKFLOW.md §5 Loop mode). `Reviewer runs:` is bumped by the orchestrator at every one-shot reviewer
 spawn, plan-judge included (`tools/ledger.mjs <mission> reviewer-runs +1`),
 and read at the measurement obligation (AC-13)._
 

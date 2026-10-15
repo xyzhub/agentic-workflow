@@ -218,6 +218,8 @@ export const CLASS_LIST_CASES = [
   ['§11 safety-boundary action paragraph (live) → pass', SAFETY_PARA.length > 500 ? classListRestatement(SAFETY_PARA) : 'paragraph not found', false],
   ['§10 Merge-policy row prose (live) → pass', MERGE_ROW.length > 200 ? classListRestatement(MERGE_ROW) : 'row not found', false],
   ['3-key paragraph → pass', classListRestatement('Touches auth, payments and secrets only.'), false],
+  // ckpt-p1 finding: a ``` fence's backticks paired with later ones and hid the body.
+  ['fenced 4-key class list → fail', classListRestatement('```\nEscalation checklist — schema/migrations: no · auth: no · payments: no · secrets: no\n```'), true],
 ];
 
 // ── /sync preserve (adaptive-ceremony S1, D1-A) — the exact awk commands/sync.md

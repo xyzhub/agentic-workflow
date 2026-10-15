@@ -79,6 +79,9 @@ This is the single definition; the fenced tables in `templates/WORKFLOW.md`
 - A class is a change-class or action-class `id` from this file. An action
   class on a gate whose firer is not `human` fails `ceremony.mjs check`.
 - One cell may hold several gates separated by `; `.
+- A cell may end in a human-readable tail after ` — ` (space, U+2014, space).
+  A reader splits on the FIRST ` — ` (the tail may itself contain `;`), then
+  splits the grammar part on `; `.
 - `none` on a decision gate (V0, V1) is fail-closed under AC-2: the gate still
   needs its answer. `none` never means "skippable without an answer".
 
