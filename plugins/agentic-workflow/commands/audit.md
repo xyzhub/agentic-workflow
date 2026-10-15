@@ -9,6 +9,24 @@ outside the V4 flow — typically because `/agentic-workflow:adopt`'s gap report
 hardening as unverified, before a risky launch-adjacent change, or on request.
 `$ARGUMENTS` scopes it; default `all`.
 
+**Ceremony profile (§10.2).** As a gate (V4 or the pre-launch review), first run
+`node ${CLAUDE_PLUGIN_ROOT}/tools/ceremony.mjs effective multi-vote-audit --log
+--mission <name>` (no ledger → `--mission JOURNEY`, and append the printed line
+to `docs/product/JOURNEY.md`). Its class, `security-boundary`, is irreversible
+(`templates/gate-classes.md`), so it resolves `required` and the audit runs; the
+call is still the record. `skipped` → do not run it; the line is logged and the
+report says "skipped by the ceremony profile (deviation logged)". `optional` →
+run it, or re-run with `--not-run` to log not running it. Anything else → run
+it. When the owner asks for an audit directly, it always runs.
+
+<!-- rule-copy: ceremony-skip -->
+A gate whose effective §10.2 cell is `skipped` writes exactly one ledger
+Deviations line `gate <id> skipped — ceremony (<signal|override YYYY-MM-DD>)`
+via `ceremony.mjs effective <id> --log`; an `optional` gate the caller does
+not run writes `gate <id> optional, not run — ceremony (…)` via `--log
+--not-run`; any other cell runs the gate; a gate with no §10.2 row runs.
+<!-- /rule-copy -->
+
 ## 1. Scope
 
 - `all` — the full audit: 2–3 fresh `reviewer` instances, lens-partitioned per

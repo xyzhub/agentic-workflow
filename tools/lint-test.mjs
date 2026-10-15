@@ -19,7 +19,8 @@
 import path from 'node:path';
 import { readFileSync, readdirSync, realpathSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { clockLeak, budgetVerdict, descriptionOver, ruleRestatement, RULES, tunePresetFindings } from './lint.mjs';
+import { clockLeak, budgetVerdict, descriptionOver, ruleRestatement, RULES, tunePresetFindings, classListRestatement, ceremonyOwnerFindings } from './lint.mjs';
+import { spawnSync } from 'node:child_process';
 
 // must: 'block' — a clock in some costume; the L3 rule rejects it.
 //       'pass'  — an observable state a probe can check.
@@ -183,6 +184,64 @@ export const RULE_CASES = [
   ['backticked `Next up:` restatement → restatement', ruleRestatement('Keep exactly one `Next up:` line. The hook reads the first and warns on duplicates.', RULES['one-next-up']), true],
   // reviewer's fresh one-corrective paraphrase (no literal term) → caught.
   ['one-corrective paraphrase → restatement', ruleRestatement('A failed session is re-spawned once with a corrective note; a second failure escalates to the human.', RULES['one-corrective-retry']), true],
+  // post-swap pointer (adaptive-ceremony S1): names the file, the tier column, no class words.
+  ['gate-classes pointer → pass', ruleRestatement('Fable for boundary-class reviews — the set lives in `templates/gate-classes.md` (§5 LA-5).', RULES['fable-boundary']), false],
+];
+
+// ── Class-list dedup (adaptive-ceremony S1, AC-8) — classListRestatement over
+// the old triage list, a reworded restatement, and the two real paragraphs
+// that must pass (§11's action list and the §10 Merge-policy row, read live).
+const TRIAGE_OLD_LIST = `1. **schema/migrations** — the cause or the fix touches the database schema, a
+   migration, or data backfills.
+2. **auth** — sign-in, sessions, tokens, roles, permissions.
+3. **payments** — charging, refunds, payouts, invoices, a payment provider.
+4. **CI/deploy config** — \`.github/**\`, build, deploy or infrastructure config.
+5. **secrets** — credentials, keys, env values, anything that would need one
+   rotated or read.
+6. **third-party contracts** — an external API's behaviour, a webhook from a
+   provider, a vendor SDK.
+7. **not reproducible** — the reported code behaviour cannot be reproduced
+   from the report's steps.
+8. **size above S** — the change would be \`size/M\` or larger.`;
+const WF_TEXT = readFileSync(WORKFLOW, 'utf8');
+const paraStarting = (text, head) => {
+  const i = text.indexOf(head);
+  if (i === -1) return '';
+  const end = text.indexOf('\n\n', i);
+  return text.slice(i, end === -1 ? text.length : end);
+};
+const SAFETY_PARA = paraStarting(WF_TEXT, '**The safety boundary is never crossed autonomously**');
+const MERGE_ROW = paraStarting(WF_TEXT, '| **Merge policy** |').split('\n')[0];
+export const CLASS_LIST_CASES = [
+  ['old triage 8-item list → fail', classListRestatement(TRIAGE_OLD_LIST), true],
+  ['reworded 4-key change-class list → fail', classListRestatement('Escalate anything near payments, auth, a secret, or a supply chain bump.'), true],
+  ['§11 safety-boundary action paragraph (live) → pass', SAFETY_PARA.length > 500 ? classListRestatement(SAFETY_PARA) : 'paragraph not found', false],
+  ['§10 Merge-policy row prose (live) → pass', MERGE_ROW.length > 200 ? classListRestatement(MERGE_ROW) : 'row not found', false],
+  ['3-key paragraph → pass', classListRestatement('Touches auth, payments and secrets only.'), false],
+  // ckpt-p1 finding: a ``` fence's backticks paired with later ones and hid the body.
+  ['fenced 4-key class list → fail', classListRestatement('```\nEscalation checklist — schema/migrations: no · auth: no · payments: no · secrets: no\n```'), true],
+];
+
+// ── Ceremony gate-site owners (adaptive-ceremony S3, AC-6/AC-7) — the pure
+// owner-map predicate behind checkCeremonyCopies.
+const RC = '<!-- rule-copy: ceremony-skip -->x<!-- /rule-copy --> node ceremony.mjs effective';
+const CEREMONY_CASES = [
+  ['owner carries copy + call, stage gate in autopilot → no finding', ceremonyOwnerFindings([{ id: 'counsel', stage: false }, { id: 'v0-go-no-go', stage: true }], { 'counsel.md': `${RC} \`counsel\``, 'autopilot.md': RC }).length, 0],
+  ['owner without the copy, and a fence id with no owner → 2 findings', ceremonyOwnerFindings([{ id: 'counsel', stage: false }, { id: 'new-gate', stage: false }], { 'counsel.md': 'node ceremony.mjs effective counsel --log' }).map((m) => /no deviation line/.test(m) ? 'copy' : /no owning command/.test(m) ? 'owner' : m).join(','), 'copy,owner'],
+];
+
+// ── /sync preserve (adaptive-ceremony S1, D1-A) — the exact awk commands/sync.md
+// §2 runs keeps §10, §10.1 and §10.2 and stops at the next \`## \` heading.
+// Read from commands/sync.md itself, so the test runs the command's exact awk.
+const SYNC_AWK = (readFileSync(path.join(path.dirname(WORKFLOW), '../commands/sync.md'), 'utf8')
+  .match(/`awk '([^']+)' docs\/WORKFLOW\.md`/) ?? [])[1] ?? 'BEGIN{exit 1}';
+const SYNC_FIXTURE = ['# W', '', '## 9. Map', 'x', '', '## 10. Project profile', '| Key | Value |', '|---|---|', '| **Default branch** | main |', '', '### 10.1 Executors', '| name | ssh alias |', '', '### 10.2 Ceremony', '', '| id | kind | stage | derived | signal | effective |', '|---|---|---|---|---|---|', '| v0-go-no-go | gate | V0 | required | none | required |', '', '## 11. Autopilot mode', 'y', ''].join('\n');
+const syncOut = spawnSync('awk', [SYNC_AWK], { input: SYNC_FIXTURE, encoding: 'utf8' });
+const syncText = (syncOut.stdout ?? '').trimEnd();
+export const SYNC_CASES = [
+  ['sync §2 awk keeps §10 through 10.2 and stops before ## 11.', syncOut.status === 0
+    && syncText.startsWith('## 10. Project profile') && syncText.includes('### 10.1 Executors')
+    && syncText.endsWith('| v0-go-no-go | gate | V0 | required | none | required |') && !syncText.includes('## 11.'), true],
 ];
 
 // ── Tune presets (AC-12) — tunePresetFindings decided directly on the real
@@ -236,13 +295,13 @@ for (const [must, when, source] of CASES) {
     console.error(`  FAIL  want=${must} got=${got}${hit ? ` (matched "${hit.clause}" as ${hit.kind})` : ''}  [${source}]\n        when: ${when}`);
   }
 }
-for (const [label, got, want] of [...BUDGET_CASES, ...CANON_CASES, ...RULE_CASES, ...PRESET_CASES]) {
+for (const [label, got, want] of [...BUDGET_CASES, ...CANON_CASES, ...RULE_CASES, ...CLASS_LIST_CASES, ...SYNC_CASES, ...PRESET_CASES, ...CEREMONY_CASES]) {
   if (got !== want) {
     bad++;
     console.error(`  FAIL  want=${JSON.stringify(want)} got=${JSON.stringify(got)}  [${label}]`);
   }
 }
-const total = CASES.length + BUDGET_CASES.length + CANON_CASES.length + RULE_CASES.length + PRESET_CASES.length;
+const total = CASES.length + BUDGET_CASES.length + CANON_CASES.length + RULE_CASES.length + CLASS_LIST_CASES.length + SYNC_CASES.length + PRESET_CASES.length + CEREMONY_CASES.length;
 if (bad) {
   console.error(`\nlint-test: ${bad} of ${total} wrong`);
   process.exit(1);

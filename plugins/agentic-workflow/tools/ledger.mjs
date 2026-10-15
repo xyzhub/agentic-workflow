@@ -12,6 +12,7 @@
 //   node ledger.mjs <mission> handoff "<text>"
 //   node ledger.mjs <mission> next-up "<text>"
 //   node ledger.mjs <mission> sessions +1 | =N
+//   node ledger.mjs <mission> reviewer-runs +1 | =N
 //   node ledger.mjs <mission> close
 //   flags: --plans <dir> (default .plans) · --date YYYY-MM-DD (default today)
 //          --commit (git add + conventional commit + push) · --no-push
@@ -40,7 +41,7 @@ export const OB_ROW = new RegExp(
   `^- \\[([ x~])\\] ([^·]+?) · added ${OB_DATE} \\(([^)]+)\\) — do: (.+?) — when: (.+?) — probe: (.+)$`
 );
 export const GLYPHS = ['[ ]', '[~]', '[x]'];
-export const VERBS = ['mark', 'fire', 'promote', 'handoff', 'next-up', 'sessions', 'close'];
+export const VERBS = ['mark', 'fire', 'promote', 'handoff', 'next-up', 'sessions', 'reviewer-runs', 'close'];
 
 export class Refusal extends Error { constructor(msg) { super(msg); this.exit = 2; } }
 export class Usage extends Error { constructor(msg) { super(msg); this.exit = 1; } }
@@ -166,6 +167,20 @@ export function sessions(lines, arg) {
   return `Sessions used: ${next}${est ? ` (${est.replace(/^Estimate:\s*/, 'Estimate ')})` : ''}`;
 }
 
+// `Reviewer runs: <int>` sits under `Sessions used:`; bumped at every one-shot
+// reviewer spawn, plan-judge included (adaptive-ceremony OQ-4, AC-13).
+export function reviewerRuns(lines, arg) {
+  const i = lines.findIndex((l) => /^Reviewer runs:\s*\d+/.test(l));
+  if (i === -1) throw new Refusal('the ledger has no `Reviewer runs: <int>` line — add `Reviewer runs: 0` under `Sessions used:`');
+  const cur = +lines[i].match(/\d+/)[0];
+  let next;
+  if (/^\+\d+$/.test(arg ?? '')) next = cur + +arg.slice(1);
+  else if (/^=\d+$/.test(arg ?? '')) next = +arg.slice(1);
+  else throw new Usage('reviewer-runs takes +N or =N');
+  lines[i] = `Reviewer runs: ${next}`;
+  return `Reviewer runs: ${next}`;
+}
+
 export function close(lines, date) {
   const sec = closing(lines);
   const open = rows(lines).filter((r) => r.start > sec.start && r.start < sec.end)
@@ -220,6 +235,7 @@ export function apply(o) {
   } else if (verb === 'handoff') summary = handoff(lines, args[0], o.date);
   else if (verb === 'next-up') summary = nextUp(lines, args[0]);
   else if (verb === 'sessions') summary = sessions(lines, args[0]);
+  else if (verb === 'reviewer-runs') summary = reviewerRuns(lines, args[0]);
   else if (verb === 'close') summary = close(lines, o.date);
   writeFileSync(ledgerPath, lines.join('\n'));
   return { touched, summary, message: `plan(${path.basename(ledgerPath, '.state.md')}): ${verb} — ${summary.replace(/\s+/g, ' ').slice(0, 60)}` };
@@ -240,7 +256,7 @@ export function commit({ touched, message }, push = true, cwd = process.cwd()) {
 export function main(argv = process.argv.slice(2)) {
   try {
     const o = parseArgs(argv);
-    if (o.help) { console.log(readFileSync(fileURLToPath(import.meta.url), 'utf8').split('\n').slice(1, 27).map((l) => l.replace(/^\/\/ ?/, '')).join('\n')); return 0; }
+    if (o.help) { console.log(readFileSync(fileURLToPath(import.meta.url), 'utf8').split('\n').slice(1, 28).map((l) => l.replace(/^\/\/ ?/, '')).join('\n')); return 0; }
     const res = apply(o);
     let line = `ledger: ${res.summary}`;
     if (o.commit) line += ` · committed ${commit(res, o.push)}${o.push ? ' + pushed' : ''}`;

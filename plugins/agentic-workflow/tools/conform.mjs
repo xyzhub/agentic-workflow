@@ -69,6 +69,12 @@ const catalogOptOut = () => /^\|\s*\*\*Catalog\*\*\s*\|\s*none\b/mi.test(section
 // exact-bold match made a verbatim template copy fail its own ladder
 // (found by orderly's /sync, 2026-08-19).
 const has10 = (label) => new RegExp(`^\\|\\s*\\*\\*${label}\\b`, 'm').test(section10());
+// The ceremony profile (§10 row + §10.2) is checked by ceremony.mjs itself — the
+// same fs-only `check()` /doctor and /sync run (adaptive-ceremony OQ-1, owner
+// 2026-10-15); its first finding is the gap detail. Guarded by existsSync so an
+// older plugin tree without the tool falls back to row presence.
+const CEREMONY = path.join(PLUGIN, 'tools/ceremony.mjs');
+const ceremony = existsSync(CEREMONY) ? await import(CEREMONY).catch(() => null) : null;
 
 // The conventions file (CLAUDE.md/AGENTS.md) is injected into EVERY session, so
 // a dead anchor there misleads more than anywhere else. Check only tokens that
@@ -156,6 +162,15 @@ const LADDER = [
   { id: 'profile-staging-row', since: '1.45.0',
     check: () => has10('Staging') ? true : '§10 has no **Staging** row (every mission phase lands on staging and is verified there before its PR)',
     fix: 'add the §10 **Staging** row — branch + URL, or `none` (the first mission creates `staging`); /agentic-workflow:sync appends it' },
+  { id: 'ceremony-profile-row', since: '1.61.0',
+    check: () => {
+      if (!ceremony) return has10('Ceremony profile') ? true : '§10 has no **Ceremony profile** row — every gate runs until one is proposed and confirmed';
+      // A `proposed` profile is structurally complete — confirming it is the
+      // owner's decision, which /doctor and /next surface; it is not a gap.
+      const f = ceremony.check({ root: ROOT, plugin: PLUGIN }).filter((x) => !x.startsWith('proposed:'));
+      return f.length ? `ceremony profile: ${f[0]}` : true;
+    },
+    fix: 'run /agentic-workflow:sync — it proposes a ceremony profile; confirm it in §10' },
   { id: 'ledger-budget-fields', since: '1.45.0',
     check: () => { const bad = activeLedgers().filter((l) => !/^Estimate:\s*\d+/m.test(l.text) || !/^Sessions used:\s*\d+/m.test(l.text)).map((l) => l.name); return bad.length ? `active ledger(s) without \`Estimate:\`/\`Sessions used:\` (the overrun stop cannot fire): ${bad.join(', ')}` : true; },
     fix: 'add `Estimate: N sessions` (the planner\'s honest count for what remains) and `Sessions used: k` to each active .plans/*.state.md header' },

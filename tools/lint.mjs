@@ -531,6 +531,26 @@ function checkLedgerHarness() {
   }
 }
 
+// ── 10.11 ceremony harness (tier-1.5, adaptive-ceremony) ─────────────────
+// `tools/ceremony.mjs` resolves which gates run (§10.2) and refuses a skip on
+// an irreversible class; a resolver that failed open would remove a safety
+// boundary silently. The harness runs derive/effective/check against fixture
+// projects (renamed stage table, no fence, refused overrides, L6 grammar,
+// drift, --log idempotence). Fail-closed on a missing runner — same shape as 10.10.
+function checkCeremonyHarness() {
+  const runner = path.join(ROOT, 'tools/ceremony-test.mjs');
+  if (!existsSync(runner)) {
+    fail(runner, null, 'ceremony harness missing — tools/ceremony-test.mjs must exist so the gate proves the ceremony resolver fails closed and refuses irreversible skips (do not silently drop the check)');
+    return;
+  }
+  const res = spawnSync('node', [runner], { encoding: 'utf8' });
+  if (res.status !== 0) {
+    const detail = `${res.stdout ?? ''}${res.stderr ?? ''}`
+      .split('\n').filter((l) => /FAIL|failure|Error/.test(l)).join(' | ');
+    fail(runner, null, `ceremony harness failed — run \`node tools/ceremony-test.mjs\`: ${detail || '(no detail)'}`);
+  }
+}
+
 // ── 10.9 agents registry harness (tier-1.5) ─────────────────────────────
 // The agent registry (tools/agents.mjs) is a public interface a wrapper reads
 // instead of parsing frontmatter and banner wording, and /tune's no-arg table
@@ -1096,16 +1116,30 @@ const RULES = {
   'fable-boundary': {
     la: 'LA-5',
     name: /Fable/,
-    mechanics: [/\bauth\b/i, /\bcredential/i, /\btenancy\b/i, /\bmoney\b/i, /\bschema\b/i, /\bmigration/i, /security boundary/i],
+    // The pointer keys (the canonical block names gate-classes.md, the tier
+    // column and the two-line clause) plus the pre-swap class words, so a
+    // paragraph restating the OLD inline class list still reads as a
+    // restatement of this rule.
+    mechanics: [/gate-classes/, /reviewer[- ]tier/, /two-line/, /\bauth\b/i, /\bcredential/i, /\btenancy\b/i, /\bmoney\b/i, /\bschema\b/i, /\bmigration/i, /security boundary/i],
   },
   'one-next-up': {
     la: 'LA-7',
     name: /Next up:/,
     mechanics: [/reads the first/i, /warns on duplicates/i, /supersed/i, /renaming the old/i],
   },
+  'ceremony-skip': {
+    la: 'Ceremony skip',
+    name: /ceremony-skip|effective .*cell/i,
+    mechanics: [/exactly one/i, /Deviations line/i, /any other cell runs/i, /no §?10\.2 row runs/i],
+  },
 };
 
-const stripInline = (text) => text.replace(/<!--[\s\S]*?-->/g, ' ').replace(/`[^`]*`/g, ' ');
+// A ``` fence line is a paragraph break, never an inline span: drop fence
+// lines BEFORE pairing backticks, or a fence's backticks pair with later ones
+// and the fenced body (where a class list or rule restatement can hide) is
+// swallowed. The scanners below also flush a paragraph at every fence line.
+const FENCE_LINE = /^\s*(?:`{3,}|~{3,})/;
+const stripInline = (text) => text.replace(/<!--[\s\S]*?-->/g, ' ').replace(/^\s*(?:`{3,}|~{3,}).*$/gm, ' ').replace(/`[^`]*`/g, ' ');
 
 // True when `paragraph` restates `rule`: its NAME key matches on the RAW
 // paragraph (a rule's name is backticked in every real mention — `Next up:`,
@@ -1180,7 +1214,7 @@ function checkRuleDedup() {
       cur = [];
     };
     lines.forEach((line, i) => {
-      if (excluded[i] || !line.trim()) { flush(); return; }
+      if (excluded[i] || !line.trim() || FENCE_LINE.test(line)) { flush(); return; }
       if (/^\s*(?:[-*+]|\d+[.)]|\|)/.test(line)) flush();
       if (!cur.length) startLine = i + 1;
       cur.push(line);
@@ -1197,11 +1231,115 @@ function checkRuleDedup() {
   }
 }
 
+// ── Class-list dedup (adaptive-ceremony AC-8) ─────────────────────────────
+// `templates/gate-classes.md` is the ONE list of gate classes. A paragraph
+// elsewhere in the prompt tree that names ≥4 of the CHANGE-class keys is a
+// second inline list and a finding. Action names (deploy, merge, publish,
+// spend, release, …) are never keys: §11's safety-boundary paragraph names
+// every action on purpose (L6). Paragraphs are blank-line delimited; HTML
+// comments and backticked spans are stripped first (`stripInline`), so a
+// pointer that names ids in backticks is not a hit.
+const CLASS_KEYS = [
+  /schema\/migrations|schema-migrations/i,
+  /\bauth\b/i,
+  /\bpayments?\b/i,
+  /ci\/deploy|ci-deploy/i,
+  /\bsecrets?\b/i,
+  /third-party/i,
+  /security[- ]boundary/i,
+  /supply[- ]chain/i,
+];
+const CLASS_LIST_MIN = 4;
+
+// True when `paragraph` restates the change-class list. Pure.
+function classListRestatement(paragraph) {
+  const t = stripInline(paragraph);
+  let hits = 0;
+  for (const k of CLASS_KEYS) if (k.test(t)) hits++;
+  return hits >= CLASS_LIST_MIN;
+}
+
+function checkClassListDedup() {
+  const files = [
+    ...mdFiles(path.join(PLUGIN, 'agents')),
+    ...mdFiles(path.join(PLUGIN, 'commands')),
+    ...skillFiles(),
+    ...mdFiles(path.join(PLUGIN, 'templates')).filter((f) => path.basename(f) !== 'gate-classes.md'),
+  ];
+  for (const file of files) {
+    const lines = read(file).split('\n');
+    let cur = [], startLine = 0;
+    const flush = () => {
+      if (cur.length && classListRestatement(cur.join('\n')))
+        fail(file, startLine, `Found an inline list of gate classes in \`${rel(file)}\` line ${startLine}. Link \`templates/gate-classes.md\` instead.`);
+      cur = [];
+    };
+    lines.forEach((line, i) => {
+      if (!line.trim() || FENCE_LINE.test(line)) { flush(); return; }
+      if (!cur.length) startLine = i + 1;
+      cur.push(line);
+    });
+    flush();
+  }
+}
+
+// ── Ceremony gate-site copies (adaptive-ceremony AC-6, AC-7) ──────────────
+// Every gate id in the template's §0 `stage-table` and §5 `checkpoint-gates`
+// fences has an OWNING command — the prose that runs that gate. Each owner must
+// carry the `ceremony-skip` rule-copy (checkRuleDedup proves it byte-identical
+// to §5) and call `ceremony.mjs effective`; a §5 id must also be named in its
+// owner. Otherwise a `required` gate could pass with no deviation line. Stage
+// gates (any id from the stage table) belong to autopilot.md. A fence id with
+// no owner here fails — extend the map when a fence gains a gate. Fixture (d)'s
+// refusal string (`required (override refused: …)`) is asserted inside
+// tools/ceremony-test.mjs, so checkCeremonyHarness carries that check.
+const CEREMONY_OWNERS = {
+  'plan-judge': ['mission.md'],
+  'phase-reviewer': ['mission.md'],
+  'staging-verify': ['mission.md', 'verify.md'],
+  counsel: ['counsel.md'],
+  'multi-vote-audit': ['audit.md'],
+  chronicler: ['mission.md'],
+  'mission-close': ['settle.md'],
+};
+const STAGE_GATE_OWNER = 'autopilot.md';
+const GATE_CELL = /([a-z0-9][a-z0-9-]*) · (?:human|reviewer|record) · /g;
+const fenceIds = (text, name) => {
+  const a = text.indexOf(`<!-- ${name} -->`), b = text.indexOf(`<!-- /${name} -->`);
+  return a < 0 || b < a ? null : [...text.slice(a, b).matchAll(GATE_CELL)].map((m) => m[1]);
+};
+
+// Findings for the owner map. `gates` = [{ id, stage: true|false }]; `files`
+// maps a command basename to its text (absent = no such file). Pure.
+function ceremonyOwnerFindings(gates, files) {
+  const out = [];
+  for (const { id, stage } of gates) {
+    const owners = stage ? [STAGE_GATE_OWNER] : CEREMONY_OWNERS[id];
+    if (!owners) { out.push(`gate \`${id}\` is in the fences but has no owning command in lint's CEREMONY_OWNERS map — add one`); continue; }
+    for (const f of owners) {
+      const t = files[f];
+      const ok = t != null && /<!-- rule-copy: ceremony-skip -->/.test(t) && /ceremony\.mjs\s+effective/.test(t) && (stage || t.includes(`\`${id}\``) || new RegExp(`effective\\s+${id}\\b`).test(t));
+      if (!ok) out.push(`\`${id}\` is \`required\`, but \`commands/${f}\` can pass it with no deviation line. Make that path write the line: add the \`ceremony-skip\` rule-copy and the \`ceremony.mjs effective ${stage ? '<id>' : id} --log\` call.`);
+    }
+  }
+  return out;
+}
+
+function checkCeremonyCopies() {
+  const wf = read(WORKFLOW);
+  const stage = fenceIds(wf, 'stage-table'), five = fenceIds(wf, 'checkpoint-gates');
+  if (!stage || !five) { fail(WORKFLOW, 1, 'checkCeremonyCopies: the `stage-table` or `checkpoint-gates` fence is missing'); return; }
+  const gates = [...stage.map((id) => ({ id, stage: true })), ...five.map((id) => ({ id, stage: false }))];
+  const files = {};
+  for (const f of mdFiles(path.join(PLUGIN, 'commands'))) files[path.basename(f)] = read(f);
+  for (const msg of ceremonyOwnerFindings(gates, files)) fail(WORKFLOW, 1, msg);
+}
+
 // `clockLeak` and the budget/dedup pure functions are exported so
 // `tools/lint-test.mjs` can decide them directly. The run below is guarded on
 // being the entry point: importing this file for the harness must not execute
 // the whole gate (and must not `process.exit`).
-export { clockLeak, budgetVerdict, descriptionOver, ruleRestatement, RULES, tunePresetFindings };
+export { clockLeak, budgetVerdict, descriptionOver, ruleRestatement, RULES, tunePresetFindings, classListRestatement, ceremonyOwnerFindings };
 
 // realpath BOTH sides: `import.meta.url` is already symlink-resolved, so a
 // plain `path.resolve(argv[1])` comparison fails when this file is invoked
@@ -1220,7 +1358,7 @@ const isEntryPoint = () => {
 };
 
 if (isEntryPoint()) {
-  for (const check of [checkManifests, checkAgents, checkCommands, checkCrossRefs, checkTemplateRefs, checkPluginRootBraced, checkSections, checkFrontmatterYaml, checkTemplateFrontmatter, checkHooks, checkObfuscation, checkHookBehavior, checkClockGuard, checkMarkerMutation, checkContextAttrib, checkCatalogSelftest, checkCiWaitSelftest, checkPublishGateSelftest, checkRunCodexHarness, checkRunClaudeHarness, checkLedgerHarness, checkAgentsRegistryHarness, checkOperateTriageSelftest, checkStandingSteers, checkNextUpAgreement, checkClosing, checkObligationsRegister, checkBudgets, checkRuleDedup, checkTunePresets]) {
+  for (const check of [checkManifests, checkAgents, checkCommands, checkCrossRefs, checkTemplateRefs, checkPluginRootBraced, checkSections, checkFrontmatterYaml, checkTemplateFrontmatter, checkHooks, checkObfuscation, checkHookBehavior, checkClockGuard, checkMarkerMutation, checkContextAttrib, checkCatalogSelftest, checkCiWaitSelftest, checkPublishGateSelftest, checkRunCodexHarness, checkRunClaudeHarness, checkLedgerHarness, checkCeremonyHarness, checkAgentsRegistryHarness, checkOperateTriageSelftest, checkStandingSteers, checkNextUpAgreement, checkClosing, checkObligationsRegister, checkBudgets, checkRuleDedup, checkClassListDedup, checkCeremonyCopies, checkTunePresets]) {
     check();
   }
 

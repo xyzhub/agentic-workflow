@@ -8,6 +8,61 @@ has no tags — each version-stamped commit on `main` IS the release.
 
 _(empty)_
 
+## [1.61.0] — 2026-10-15
+### Added — adaptive ceremony: each project runs only the gates it needs
+- **`templates/gate-classes.md`** — the ONE list of gate classes: 8 change
+  classes and 9 action classes, each with its reviewer tier, triage use and
+  whether it is irreversible, plus the one gate grammar
+  (`<id> · human|reviewer|record · <class>[+<class>]`). An irreversible class
+  can never be skipped.
+- **Fenced gate tables** — the §0 stage table (`<!-- stage-table -->`) and the
+  §5 checkpoint gates (`<!-- checkpoint-gates -->`) now carry a gate id and
+  class per gate, so tools read them by header, never by a fixed stage list.
+- **`tools/ceremony.mjs` + `tools/ceremony-test.mjs`** — `derive` proposes a
+  profile from the fences and observable repo signals (never writes);
+  `effective <id> --log` resolves one gate and writes the deviation line when
+  it is skipped (`--not-run` logs an optional gate the caller chose not to
+  run); `check` reports absent, proposed, refused overrides, mismatches and
+  drift. Anything not `confirmed` resolves `required` (fails closed). Lint runs
+  the harness (`checkCeremonyHarness`).
+- **§10 `Ceremony profile` row + `### 10.2 Ceremony` table** — one row per
+  artifact and gate with its derived value, the signal behind it and the
+  effective value; overrides are dated lines under the table. The §5
+  `ceremony-skip` rule says a skip always leaves exactly one deviation line.
+- **Conform ladder entry `ceremony-profile-row`** (since 1.61.0) — the
+  session-start check runs `ceremony.mjs check`; a `proposed` profile passes.
+- **Merge-guard backstop** — an agent merge is blocked while §10.2 marks any
+  irreversible-class gate `skipped` or `optional`, under every merge policy;
+  tolerant of hand edits (leading whitespace, tabs, mixed case, `####` heading).
+- **`Reviewer runs:`** ledger counter (`ledger.mjs <mission> reviewer-runs +1`),
+  bumped before every one-shot reviewer spawn, plan-judge included.
+- **Lint**: `checkClassListDedup` (a second inline class list fails) and
+  `checkCeremonyCopies` (every gate id has an owning command that carries the
+  `ceremony-skip` rule-copy and calls `ceremony.mjs effective`).
+
+### Changed
+- Every gate site resolves the profile before running: `/mission`
+  (plan-judge, phase review, staging verify, chronicler), `/autopilot` (stage
+  gates; its stage report counts passed and skipped gates), `/verify`,
+  `/counsel`, `/audit`, `/settle` (mission-close).
+- `/bootstrap` derives the profile, asks at most ONE batched question and
+  writes it `confirmed`; `/adopt` and `/sync` write it `proposed` ("nothing
+  changed yet") until the owner says "confirm ceremony profile"; `/doctor`
+  reports absent, proposed, refused overrides and drift (UI drift warns only;
+  irreversible-class drift tightens on its own). `/next` and the `intake` agent
+  name the profile when it changes their answer.
+- The `reviewer`, operate triage and the §5 Fable-boundary rule (LA-5) point at
+  `templates/gate-classes.md` instead of keeping their own class lists.
+- `/sync` preserves §10 through §10.2 verbatim.
+- This repo's `docs/WORKFLOW.md` is synced to v1.61.0 with a `proposed`
+  ceremony profile — full ceremony still applies here until the owner confirms.
+
+### Deferred
+- The AC-13 measurement (three real changes with a confirmed profile, cost and
+  safety scored) is promoted to an obligation row at mission close.
+- No automatic re-derive on drift (a warning only); no Missions app UI for the
+  profile.
+
 ## [1.60.0] — 2026-10-13
 ### Added — in-app support channel spec + bug triage/diagnose/digest modes (operate-triage, mission 1 of 2)
 - **`templates/support-channel-spec.md`** — the venture build spec for a two-way

@@ -33,6 +33,8 @@ Inspect fast, decide, recommend — total output under 12 lines. No lectures;
   older than the last 20 commits), or a hand-written `BACKLOG.md` exists, the
   recommendation is `/agentic-workflow:groom` first (it detects and imports
   the file itself).
+- Ceremony profile: `node ${CLAUDE_PLUGIN_ROOT}/tools/ceremony.mjs check --brief`
+  (one line) — which gates this project runs comes from §10.2.
 - Red flags: protocol stamp older than the plugin, ledger contradicting git.
 
 ## Decide (priority order — first match wins)
@@ -44,6 +46,10 @@ Inspect fast, decide, recommend — total output under 12 lines. No lectures;
    (no idea.md at V0 → `/agentic-workflow:brainstorm "<idea>"` if it's still a raw notion, else
    fill idea.md and validate; no CI at V2+ → `/agentic-workflow:mission "foundation"`; no
    audit at V4 → `/agentic-workflow:audit`; deployed but unverified → `/agentic-workflow:verify`).
+   A gate or artifact whose §10.2 effective value is `skipped` is not unmet
+   (`ceremony.mjs effective <id>` answers it). When the profile changed the
+   answer, say so in one line, e.g. "Next: `/agentic-workflow:release` — the V4
+   audits are skipped by this project's ceremony profile."
 3. **Nothing in flight, queue has items** → ONE item from the groomed queue,
    highest leverage per size: `size/XS` bug → `/agentic-workflow:fix #N`;
    `size/S`/`M` → `/agentic-workflow:mission "<title> (#N)"` (one session by

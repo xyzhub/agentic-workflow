@@ -15,23 +15,12 @@ in the modes: the classes, weights, signals and alert tiers are data.
 
 ## Escalation classes (fixed)
 
-A report — or the files its reproduction would touch — matching any class
-below is the owner's, not the loop's:
-
-1. **schema/migrations** — the cause or the fix touches the database schema, a
-   migration, or data backfills.
-2. **auth** — sign-in, sessions, tokens, roles, permissions.
-3. **payments** — charging, refunds, payouts, invoices, a payment provider.
-4. **CI/deploy config** — `.github/**`, build, deploy or infrastructure config.
-5. **secrets** — credentials, keys, env values, anything that would need one
-   rotated or read.
-6. **third-party contracts** — an external API's behaviour, a webhook from a
-   provider, a vendor SDK.
-7. **not reproducible** — the reported code behaviour cannot be reproduced
-   from the report's steps.
-8. **size above S** — the change would be `size/M` or larger.
-
-Matching any class → `loop/escalate`; the comment names the class verbatim. `not reproducible` and `size above S` apply to CODE reports; an operational symptom (device, network, queue) is `loop/diagnose`, not an escalation.
+A report — or the files its reproduction would touch — matching any of the
+eight change classes and two qualifiers in `templates/gate-classes.md` (column
+`triage`; action classes are `n/a` for triage) is the owner's, not the loop's:
+matching any → `loop/escalate`, naming the class id verbatim. The two
+qualifiers apply to CODE reports; an operational symptom (device, network,
+queue) is `loop/diagnose`, not an escalation.
 
 Code vs operational: a symptom the venture's code path explains (wrong
 output, a crash, a rejected valid input) is code → `loop/fix`; a symptom of a

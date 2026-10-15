@@ -10,6 +10,23 @@ the V1 scope+brand+model approval, V4 accept-findings-in-writing, the V5 launch
 confirmation, growth-mission selection — or whenever the human asks. Not
 ambient: counsel is convened, never volunteered at every step.
 
+**Ceremony profile (§10.2).** When counsel runs as a gate inside another flow (a
+mission, autopilot's V1 or launch pause), first run `node
+${CLAUDE_PLUGIN_ROOT}/tools/ceremony.mjs effective counsel --log --mission
+<name>` (no ledger → `--mission JOURNEY`, and append the printed line to
+`docs/product/JOURNEY.md`). `skipped` → do not run it; the line is logged and
+the report says "skipped by the ceremony profile (deviation logged)". `optional`
+→ run it, or re-run with `--not-run` to log not running it. Anything else → run
+it. When the owner asks for counsel directly, it always runs.
+
+<!-- rule-copy: ceremony-skip -->
+A gate whose effective §10.2 cell is `skipped` writes exactly one ledger
+Deviations line `gate <id> skipped — ceremony (<signal|override YYYY-MM-DD>)`
+via `ceremony.mjs effective <id> --log`; an `optional` gate the caller does
+not run writes `gate <id> optional, not run — ceremony (…)` via `--log
+--not-run`; any other cell runs the gate; a gate with no §10.2 row runs.
+<!-- /rule-copy -->
+
 ## 1. Frame the decision
 
 State in one paragraph: the decision as pending, the current recommendation

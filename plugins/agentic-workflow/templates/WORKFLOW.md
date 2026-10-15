@@ -76,15 +76,18 @@ Every project is at exactly one stage; name it before routing work. Stage exits
 are GATES: human go/no-go where marked, reviewer-verified otherwise. Skipping a
 gate is a logged deviation, not a shortcut.
 
-| Stage | Produces | Exit gate |
-|---|---|---|
-| **V0 Idea & validation** | `docs/product/idea.md`: problem, who pays, why now, riskiest assumption, kill criteria, cheapest test of the assumption. When the idea is still raw, the `brainstormer` agent shapes it first — 2–3 distinct framings for the human to choose between (`/agentic-workflow:brainstorm`) — then the `researcher` agent validates the chosen one (evidence for AND against) | **Human go/no-go.** No code before this exists — an unvalidated idea is cheapest to kill in prose |
-| **V1 Definition** | PRD + MVP scope (what's deliberately OUT); the **UX brief** (personas, user journeys with acceptance criteria, IA) and brand/UX directions from the `designer` agent (`docs/product/ux-brief.md`) for the owner to choose; data-model sketch + stack decision as option memos from the `architect` agent (`docs/product/decisions/`), consolidated into the living **system architecture** doc and the frontend/backend **interface contract** the implementers build from; business model + pricing proposal from the `business` agent (`docs/product/business/`) — the model shapes scope and the data model | Stop-the-line: no implementation without acceptance criteria. **Human approves scope** (with the business model and the brand direction; `/agentic-workflow:counsel` convenes the advisor red-team on the approval first) |
-| **V2 Foundation** | Deployable skeleton (`devops` lays CI + deploy): repo + CI gates (test/typecheck), deploy pipeline + health/ready checks, validated env with a **fail-closed production guard**, auth decision wired, error-monitoring hook, seed/reset path, README quickstart, chosen design system as tokens | "Hello world" **deployed and live-verified**; CI green. Security and DX are laid here — retrofitting costs 10× |
-| **V3 Build (MVP)** | The product, feature by feature, via the execution machinery (§1–§5). Every checkpoint applies the pillar lenses | All MVP acceptance criteria met; behavioral/eval suite exists for AI-driven products |
-| **V4 Hardening** | Four explicit audits (§0.2): security review, UX pass (incl. the `designer`'s heuristic usability evaluation), DX pass, efficiency pass — plus ops readiness (backups, monitoring, runbook, guard coverage). Audits run as an **adversarial multi-vote** (§5): lens-partitioned parallel reviewers, conservative merge — standalone via `/agentic-workflow:audit` at any stage | Reviewer-verified production-readiness checklist (full six-lens scorecard); findings fixed or accepted in writing |
-| **V5 Launch** | Production deploy (`devops` prepares, `/agentic-workflow:release` cuts the version), first-user onboarding, **live end-to-end verification on the deployed instance**, monitoring confirmed receiving events, rollback tested; launch assets from the `marketing` agent under `docs/product/launch/` (one file per deliverable: positioning, landing copy, per-channel announcements, post-launch content plan, indexed by `launch-plan.md` with the channel plan) — **the human publishes**; pricing finalized against measured costs and the executive summary refreshed (`business`) | Pre-launch **multi-vote review** (§5) green; first real user/business served. **Human owns the launch decision** |
-| **V6 Operate & evolve** | Growth is *users and features*: the `/agentic-workflow:operate` loop — measured numbers from the `analyst`, error/cost triage from `ops`, funnel/channel review against the launch metrics (`marketing`), economics drift (`business`) — beside feedback → ranked feature ideas → user-reviewed → growth missions (phased trio with locked decisions); retros that amend THIS document | Continuous — each growth mission re-cycles V3–V5 gates |
+<!-- The Gate cell uses the gate-cell grammar in `templates/gate-classes.md` (its tail rule included). `none` on a decision gate is fail-closed (AC-2), not skippable. `tools/ceremony.mjs` reads the fenced table by header name (Stage, Artifacts, Gate): rename or add rows freely, keep the fence and the headers. -->
+<!-- stage-table -->
+| Stage | Produces | Artifacts | Gate |
+|---|---|---|---|
+| **V0 Idea & validation** | `docs/product/idea.md`: problem, who pays, why now, riskiest assumption, kill criteria, cheapest test of the assumption. When the idea is still raw, the `brainstormer` agent shapes it first — 2–3 distinct framings for the human to choose between (`/agentic-workflow:brainstorm`) — then the `researcher` agent validates the chosen one (evidence for AND against) | `docs/product/idea.md` | v0-go-no-go · human · none — **Human go/no-go.** No code before this exists — an unvalidated idea is cheapest to kill in prose |
+| **V1 Definition** | PRD + MVP scope (what's deliberately OUT); the **UX brief** (personas, user journeys with acceptance criteria, IA) and brand/UX directions from the `designer` agent (`docs/product/ux-brief.md`) for the owner to choose; data-model sketch + stack decision as option memos from the `architect` agent (`docs/product/decisions/`), consolidated into the living **system architecture** doc and the frontend/backend **interface contract** the implementers build from; business model + pricing proposal from the `business` agent (`docs/product/business/`) — the model shapes scope and the data model | `docs/product/prd.md`, `docs/product/ux-brief.md`, `docs/product/decisions/`, `docs/product/business/` | v1-scope-approval · human · none — Stop-the-line: no implementation without acceptance criteria. **Human approves scope** (with the business model and the brand direction; `/agentic-workflow:counsel` convenes the advisor red-team on the approval first) |
+| **V2 Foundation** | Deployable skeleton (`devops` lays CI + deploy): repo + CI gates (test/typecheck), deploy pipeline + health/ready checks, validated env with a **fail-closed production guard**, auth decision wired, error-monitoring hook, seed/reset path, README quickstart, chosen design system as tokens | `.github/workflows/`, `README.md` | v2-deploy-pipeline · reviewer · ci-deploy — "Hello world" **deployed and live-verified**; CI green. Security and DX are laid here — retrofitting costs 10× |
+| **V3 Build (MVP)** | The product, feature by feature, via the execution machinery (§1–§5). Every checkpoint applies the pillar lenses | `none` | v3-mvp-criteria · reviewer · none — All MVP acceptance criteria met; behavioral/eval suite exists for AI-driven products |
+| **V4 Hardening** | Four explicit audits (§0.2): security review, UX pass (incl. the `designer`'s heuristic usability evaluation), DX pass, efficiency pass — plus ops readiness (backups, monitoring, runbook, guard coverage). Audits run as an **adversarial multi-vote** (§5): lens-partitioned parallel reviewers, conservative merge — standalone via `/agentic-workflow:audit` at any stage | `docs/product/engineering/runbook.md` | v4-security-audit · reviewer · security-boundary; v4-ux-audit · reviewer · none; v4-dx-audit · reviewer · none; v4-efficiency-audit · reviewer · none — Reviewer-verified production-readiness checklist (full six-lens scorecard); findings fixed or accepted in writing |
+| **V5 Launch** | Production deploy (`devops` prepares, `/agentic-workflow:release` cuts the version), first-user onboarding, **live end-to-end verification on the deployed instance**, monitoring confirmed receiving events, rollback tested; launch assets from the `marketing` agent under `docs/product/launch/` (one file per deliverable: positioning, landing copy, per-channel announcements, post-launch content plan, indexed by `launch-plan.md` with the channel plan) — **the human publishes**; pricing finalized against measured costs and the executive summary refreshed (`business`) | `docs/product/launch/launch-plan.md` | v5-launch · human · production-deploy+publish-outward+release-cut — Pre-launch **multi-vote review** (§5) green; first real user/business served. **Human owns the launch decision** |
+| **V6 Operate & evolve** | Growth is *users and features*: the `/agentic-workflow:operate` loop — measured numbers from the `analyst`, error/cost triage from `ops`, funnel/channel review against the launch metrics (`marketing`), economics drift (`business`) — beside feedback → ranked feature ideas → user-reviewed → growth missions (phased trio with locked decisions); retros that amend THIS document | `none` | v6-operate · reviewer · none — Continuous — each growth mission re-cycles V3–V5 gates |
+<!-- /stage-table -->
 
 A stage may be revisited (a pivot reopens V0/V1; a big growth mission re-runs V4
 before its launch). The stages sequence the *product*; the altitudes (§1)
@@ -198,7 +201,7 @@ reviewer's DX lens gates it exactly like a catalog row.
 - Rate-limit every public/credential surface; close self-serve sign-up unless
   the product needs it; audit trail on privileged state changes.
 - Independent security lens at every checkpoint; full review at V4 and for any
-  auth/payment/webhook/CI-touching change.
+  change touching a change class in `templates/gate-classes.md`.
 
 **Efficiency** — *measure first; spend where users feel it; don't overbuild.*
 - MVP scope discipline: a written "NOT in this version" list (deferred ≠ denied);
@@ -221,6 +224,8 @@ reviewer's DX lens gates it exactly like a catalog row.
 Name the stage (§0), then route. When unsure between Session and Mission: if you
 cannot pre-resolve all file targets in one exploration pass, it's a Mission.
 Escalating mid-flight is fine (log it); silently sprawling is not.
+The altitude sizes the work; the §10.2 ceremony profile decides which gates
+inside it run.
 
 ## 2. Principles
 
@@ -270,7 +275,7 @@ Shipped by this plugin as hooks. Advisory except where marked:
 | turn end | **Beat-enforcer backstop** (governance, `Stop`) — nudges a not-started ledger beat (`chronicler` at close, `reviewer` at a checkpoint) at the overdue moment; it scans the open beats top-down and nudges the **first due** one — a beat whose own row is held is stepped over, not treated as a wall — and stays silent when nothing is due, i.e. when unfinished work, an unreleased ⛔/HARD PAUSE row, or an unreleased `[~]` **HELD** row sits above every candidate (a `[ ]` HELD row is parked, not a barrier: the scan steps over it); advisory, never blocks |
 | `git commit` / `gh pr create` / `gh pr merge` | **Beat-enforcer** (governance, `PreToolUse`) — the same nudge at the closing action, but with **no due-ness scan yet**: it reports the **first** not-started beat outright, so it can name one that is held or behind unfinished work (the due-ness port is pending); advisory, never blocks |
 | After a compaction | **Compact-resume** (governance) — on `SessionStart` with matcher `compact` only, injects a directive (≤6 lines) and is **never silent** (OQ6): active mission ledger → re-read the ledger and the last handoff **verbatim**; no ledger but `docs/product/session-handoff.md` exists → re-read it verbatim with freshness stated — its `_Written:` provenance stamp preferred over file mtime; **CURRENT** only if provably newer than the transcript's last append, else **SUSPECT** (older than the transcript's last append, or the transcript is missing/unreadable — fail closed): treat the handoff as a lead, not the truth, and verify against `git log`/`git status` before trusting its **Next**; neither record exists → names `git log -5`, `git status`, `.remember/now.md` and tells the agent to report the gap to the human, never to author a handoff on the spot; never blocks |
-| Session start | **Conform-check** (governance, `SessionStart` matcher `startup|resume` — never `compact`) — runs the plugin's `tools/conform.mjs --brief` against the cwd: a versioned ladder of structural expectations (protocol stamp vs installed plugin; §10 **Staging** / **Issue tracker** rows; active ledgers carrying `Estimate:` / `Sessions used:` and exactly one `Next up:`; `docs/product/roadmap.md` as the epic view; a generated (not hand-written) backlog view; `tools/catalog.mjs` present and current; the `docs/product/catalog/` files). Gaps → a ≤3-line advisory naming the count, the first gap, and `/agentic-workflow:sync`, which applies the SAME ladder; silent when the cwd is not adopted, when conformant, when node/the script is missing; once per session; filesystem-only; never blocks. *Incident (2026-08-19):* a project adopted on v1.43 ran on v1.46 with ledgers that lacked the budget fields — the overrun stop could not fire — and nothing said so |
+| Session start | **Conform-check** (governance, `SessionStart` matcher `startup|resume` — never `compact`) — runs the plugin's `tools/conform.mjs --brief` against the cwd: a versioned ladder of structural expectations (protocol stamp vs installed plugin; §10 **Staging** / **Issue tracker** rows; active ledgers carrying `Estimate:` / `Sessions used:` and exactly one `Next up:`; `docs/product/roadmap.md` as the epic view; a generated (not hand-written) backlog view; `tools/catalog.mjs` present and current; the `docs/product/catalog/` files; the §10 **Ceremony profile** row and §10.2 table, checked by `tools/ceremony.mjs check` — a `proposed` profile passes). Gaps → a ≤3-line advisory naming the count, the first gap, and `/agentic-workflow:sync`, which applies the SAME ladder; silent when the cwd is not adopted, when conformant, when node/the script is missing; once per session; filesystem-only; never blocks. *Incident (2026-08-19):* a project adopted on v1.43 ran on v1.46 with ledgers that lacked the budget fields — the overrun stop could not fire — and nothing said so |
 | Session start | **Obligations-due** (governance, `SessionStart` matcher `startup|resume` — never `compact`: compact-resume owns that beat, and the two directives must not compete) — grep-counts unticked `- [ ] OB-` rows in `.plans/OBLIGATIONS.md` plus unticked `- [ ]` rows inside any mission ledger's `## Closing` section, and injects a ≤3-line advisory naming both counts, the oldest unticked row (register first — it is append-only, so its first unticked row waited longest; bounded to 140 characters), and `/agentic-workflow:settle`; **grep-only, no network** — it never runs `gh` and probes no row's condition (the real probes live in `/agentic-workflow:settle`, `/agentic-workflow:end`, and `/agentic-workflow:check`); four silencers exactly: no register and no `## Closing` block anywhere → silent, zero unticked rows → silent, once per session (a silent dispatch does not consume the session's one advisory), always exit 0 on every path; advisory, never blocks |
 | Foreign runtime (`codex`, `claude-p`) | A `claude-p` child is Claude Code bounded by `--restricted` + an allowlist (§9). Inside a `codex` run **none of the rows above fire** (Claude hooks fire only on Claude tool calls). Codex parity is two things: the **execpolicy rules file** (`templates/codex.rules`, deployed to `<repo>/.codex/rules/agentic-workflow.rules` — inert until `/agentic-workflow:connect codex` trusts the repo in `~/.codex/config.toml`) whose literal `prefix_rule` tokens forbid push / commit / tag / `gh pr create` / `gh pr merge` / `git -C`, the wrapper/prefix bypasses (`sh|bash|zsh -c`, `env`, `command`, `nohup`, `xargs`, `timeout`, `git -c …`, `gh api`), and the **sandbox mode** the adapter derives from the role's `tools:` (read-only / workspace-write; network for builders only); the distillate's `high_impact_touched` replaces the docs-reminder. **NOT replicated:** the §14 publish-host guards — inside Codex, `tools/publish-gate.mjs claim`'s refusal is the ONLY mechanical publish check; a networked builder is a named gap (OB-17, #81) |
 
@@ -373,6 +378,19 @@ dedicated planning session:
 | `.plans/<mission>.sessions.md` | One brief per session: pre-resolved reads (file → measured line count → anchors), do/verify steps, read budget; phases with named branches |
 | `.plans/<mission>.state.md` | Ledger: checklist, open questions, **standing steers** (human steers quoted verbatim, captured at checkpoints only), deviations log, handoff log (≤10 lines each, newest first), `Next up:` — which must name the same next beat wherever it appears in the file. Checklist glyphs: `[ ]` not started · `[~]` in-flight / deferred / awaiting owner · `[x]` done — the beat-enforcer nudges only on a not-started `[ ]` checkpoint/reviewer/chronicler row, so set `[~]` when a beat is picked up or parked. Every ledger also carries a `## Closing` block — deferred obligations in the OB grammar (`do:` / an observable `when:` / `probe: <command | manual>`), read by the mission-close gate below |
 
+The per-change gates a mission runs, in the gate-cell grammar of
+`templates/gate-classes.md`:
+
+<!-- checkpoint-gates -->
+- plan-judge · reviewer · none — the trio review before any brief spends a session
+- phase-reviewer · reviewer · none — the tier escalates by the diff's class (LA-5)
+- staging-verify · reviewer · none — `/agentic-workflow:verify` on staging before the PR
+- counsel · human · none — the advisor red-team before a human gate
+- multi-vote-audit · reviewer · security-boundary — the lens-partitioned V4/V5 audit
+- chronicler · record · none — a record beat, not a review
+- mission-close · human · release-cut — the close gate over `## Closing`
+<!-- /checkpoint-gates -->
+
 Rules: briefs pre-resolve targets so execution sessions never explore; one branch
 per phase, merged at checkpoint per the **gate policy** below; migrations and
 CI/deploy-touching changes get extra checkpoint scrutiny.
@@ -422,9 +440,9 @@ mechanical half):
   Model tiering is unchanged in principle (opus builders) but the **reviewer
   tier keys on the change's RISK CLASS, not its diff size**:
   <!-- rule: fable-boundary -->
-  Fable is required for any review whose diff touches auth, a session/entry
-  credential, authorization/tenancy, money, schema/migrations, or a security
-  boundary — a two-line auth diff included.
+  Fable is required for any review whose diff touches a class whose
+  reviewer tier is `top` in `templates/gate-classes.md` — a two-line diff
+  included.
   <!-- /rule -->
   The saving is in shape (one-shot, at decision
   points), not tier. And a security/auth/money review must **close the threat,
@@ -449,8 +467,16 @@ mechanical half):
   (`SUPERSEDED next-up (historical):`); the hook reads the first and warns on
   duplicates; the lint backstop fails on disagreement.
   <!-- /rule -->
+- **Ceremony skip (§10.2).**
+  <!-- rule: ceremony-skip -->
+  A gate whose effective §10.2 cell is `skipped` writes exactly one ledger
+  Deviations line `gate <id> skipped — ceremony (<signal|override YYYY-MM-DD>)`
+  via `ceremony.mjs effective <id> --log`; an `optional` gate the caller does
+  not run writes `gate <id> optional, not run — ceremony (…)` via `--log
+  --not-run`; any other cell runs the gate; a gate with no §10.2 row runs.
+  <!-- /rule -->
 
-  These four rules have ONE prose home — this §5, each fenced
+  These five rules have ONE prose home — this §5, each fenced
   `<!-- rule: <id> -->`; everywhere else in the plugin is a one-line pointer
   (`(§5 LA-n)`) or a byte-identical `<!-- rule-copy: <id> -->` block, and
   `tools/lint.mjs` (`checkRuleDedup`) fails a second prose statement outside the
@@ -980,6 +1006,11 @@ drive the real flow, confirm monitoring is receiving, record the result).
   `/agentic-workflow:doctor` probes the available runtimes. The **plan-judge** (a
   `reviewer` mode, §5) is the one-shot read-only check over the plan trio before
   any brief runs.
+- **Structure and ceremony tools.** `tools/conform.mjs` is the structure ladder
+  (`/agentic-workflow:sync`, the conform-check hook); beside it
+  `tools/ceremony.mjs` derives, resolves and checks the §10.2 ceremony profile
+  (`derive` · `effective <id> --log` · `check`), reading the gate classes from
+  `templates/gate-classes.md`.
 
 ## 10. Project profile (filled by `/agentic-workflow:bootstrap`)
 
@@ -1013,6 +1044,7 @@ concrete values.
 | **Portfolio** (§13, optional) | _(path or remote of the registry repo this venture is registered in; `none` if standalone)_ |
 | **Catalog** | _(`docs/product/catalog/` — the default: derived `api.md` + `data-model.md` via `tools/catalog.mjs`, curated `features.md` (§6.1). `none — <why>` ONLY for a repo with nothing to derive and no marketable surface (a markdown-only plugin, a pure library); the conform ladder then skips the catalog gaps)_ |
 | **Issue tracker** | _(the queue's system of record — e.g. `GitHub Issues via gh`; `/agentic-workflow:groom` probes it, `/agentic-workflow:next` reads it, `/agentic-workflow:mission`/`fix` close items on merge. `none` → the markdown backlog is groomed in place and adopting a tracker is recommended)_ |
+| **Ceremony profile** | _(`absent` until `/agentic-workflow:sync` proposes one · `proposed YYYY-MM-DD` · `confirmed YYYY-MM-DD by <who> · derived YYYY-MM-DD from N signals · N overrides` · `unreadable (YYYY-MM-DD)`; drift appends `· drift YYYY-MM-DD: <signal> — not re-derived`. Written by `tools/ceremony.mjs`; see §10.2)_ |
 
 ### 10.1 Executors (optional)
 
@@ -1039,6 +1071,18 @@ appends a row (migrating a legacy row in as `default`), `connect server remove
   checks out its own worktree `<path>/.worktrees/<mission>` so two missions can
   run remote gates on different executors at once without sharing a tree.
 
+### 10.2 Ceremony
+
+Derived by `tools/ceremony.mjs`: one row per artifact and per gate, read from
+the §0 `stage-table` and §5 `checkpoint-gates` fences; the class is joined at
+read time from those fences and never stored here. First-column cells are
+never bold — the Missions app's profile parser keys on bold cells.
+
+| id | kind | stage | derived | signal | effective |
+|---|---|---|---|---|---|
+
+Overrides: _(none — one line per override, `- <id>: <required|optional|skipped> — <who> YYYY-MM-DD — "<why>"`)_
+
 ## 11. Autopilot mode
 
 `/agentic-workflow:autopilot "<idea>"` drives the whole lifecycle (V0→V5, then a V6 handoff) with
@@ -1061,6 +1105,9 @@ the default `human-merge` at every phase; "only hard gates" authorizes `batch` �
 phases land autonomously on `staging` (verified there, never the default
 branch) and the human merges staging → default once, at the consolidated
 launch confirmation.
+The check-in level sets *when* the human merges (gate policy); §10.2 sets
+*which* gates exist. A skipped gate is never re-enabled by the check-in level,
+and a required one is never removed by it.
 
 **Autopilot inherits the §5 convergence rules unchanged.** The flight plan
 carries an `Estimate:` for the whole flight (sessions per stage, written by the
@@ -1098,7 +1145,8 @@ the flight-plan ceiling, publishing outward or messaging on the owner's behalf
 dated, revocable, §14; paid promotion and individual outreach to real users stay
 never delegable), launching behavioral experiments on real users (propose the
 hypothesis and measurement plan; the human launches), and
-destructive/irreversible actions. Two authorities are delegable — **merge**
+destructive/irreversible actions (the action classes in
+`templates/gate-classes.md`). Two authorities are delegable — **merge**
 (§10 Merge policy) and **scoped organic publishing** (§10 Publish policy) — each
 an explicit, dated, revocable human act; everything else here (deploys, spending
 including paid promotion, individual outreach, behavioral experiments,
