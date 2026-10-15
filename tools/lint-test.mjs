@@ -19,7 +19,7 @@
 import path from 'node:path';
 import { readFileSync, readdirSync, realpathSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { clockLeak, budgetVerdict, descriptionOver, ruleRestatement, RULES, tunePresetFindings } from './lint.mjs';
+import { clockLeak, budgetVerdict, descriptionOver, ruleRestatement, RULES, tunePresetFindings, classListRestatement } from './lint.mjs';
 
 // must: 'block' — a clock in some costume; the L3 rule rejects it.
 //       'pass'  — an observable state a probe can check.
@@ -183,7 +183,42 @@ export const RULE_CASES = [
   ['backticked `Next up:` restatement → restatement', ruleRestatement('Keep exactly one `Next up:` line. The hook reads the first and warns on duplicates.', RULES['one-next-up']), true],
   // reviewer's fresh one-corrective paraphrase (no literal term) → caught.
   ['one-corrective paraphrase → restatement', ruleRestatement('A failed session is re-spawned once with a corrective note; a second failure escalates to the human.', RULES['one-corrective-retry']), true],
+  // post-swap pointer (adaptive-ceremony S1): names the file, the tier column, no class words.
+  ['gate-classes pointer → pass', ruleRestatement('Fable for boundary-class reviews — the set lives in `templates/gate-classes.md` (§5 LA-5).', RULES['fable-boundary']), false],
 ];
+
+// ── Class-list dedup (adaptive-ceremony S1, AC-8) — classListRestatement over
+// the old triage list, a reworded restatement, and the two real paragraphs
+// that must pass (§11's action list and the §10 Merge-policy row, read live).
+const TRIAGE_OLD_LIST = `1. **schema/migrations** — the cause or the fix touches the database schema, a
+   migration, or data backfills.
+2. **auth** — sign-in, sessions, tokens, roles, permissions.
+3. **payments** — charging, refunds, payouts, invoices, a payment provider.
+4. **CI/deploy config** — \`.github/**\`, build, deploy or infrastructure config.
+5. **secrets** — credentials, keys, env values, anything that would need one
+   rotated or read.
+6. **third-party contracts** — an external API's behaviour, a webhook from a
+   provider, a vendor SDK.
+7. **not reproducible** — the reported code behaviour cannot be reproduced
+   from the report's steps.
+8. **size above S** — the change would be \`size/M\` or larger.`;
+const WF_TEXT = readFileSync(WORKFLOW, 'utf8');
+const paraStarting = (text, head) => {
+  const i = text.indexOf(head);
+  if (i === -1) return '';
+  const end = text.indexOf('\n\n', i);
+  return text.slice(i, end === -1 ? text.length : end);
+};
+const SAFETY_PARA = paraStarting(WF_TEXT, '**The safety boundary is never crossed autonomously**');
+const MERGE_ROW = paraStarting(WF_TEXT, '| **Merge policy** |').split('\n')[0];
+export const CLASS_LIST_CASES = [
+  ['old triage 8-item list → fail', classListRestatement(TRIAGE_OLD_LIST), true],
+  ['reworded 4-key change-class list → fail', classListRestatement('Escalate anything near payments, auth, a secret, or a supply chain bump.'), true],
+  ['§11 safety-boundary action paragraph (live) → pass', SAFETY_PARA.length > 500 ? classListRestatement(SAFETY_PARA) : 'paragraph not found', false],
+  ['§10 Merge-policy row prose (live) → pass', MERGE_ROW.length > 200 ? classListRestatement(MERGE_ROW) : 'row not found', false],
+  ['3-key paragraph → pass', classListRestatement('Touches auth, payments and secrets only.'), false],
+];
+
 
 // ── Tune presets (AC-12) — tunePresetFindings decided directly on the real
 // file and on mutated copies (planner "Lint fixture mechanics": no tree copy).
@@ -236,13 +271,13 @@ for (const [must, when, source] of CASES) {
     console.error(`  FAIL  want=${must} got=${got}${hit ? ` (matched "${hit.clause}" as ${hit.kind})` : ''}  [${source}]\n        when: ${when}`);
   }
 }
-for (const [label, got, want] of [...BUDGET_CASES, ...CANON_CASES, ...RULE_CASES, ...PRESET_CASES]) {
+for (const [label, got, want] of [...BUDGET_CASES, ...CANON_CASES, ...RULE_CASES, ...CLASS_LIST_CASES, ...PRESET_CASES]) {
   if (got !== want) {
     bad++;
     console.error(`  FAIL  want=${JSON.stringify(want)} got=${JSON.stringify(got)}  [${label}]`);
   }
 }
-const total = CASES.length + BUDGET_CASES.length + CANON_CASES.length + RULE_CASES.length + PRESET_CASES.length;
+const total = CASES.length + BUDGET_CASES.length + CANON_CASES.length + RULE_CASES.length + CLASS_LIST_CASES.length + PRESET_CASES.length;
 if (bad) {
   console.error(`\nlint-test: ${bad} of ${total} wrong`);
   process.exit(1);

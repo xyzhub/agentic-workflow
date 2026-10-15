@@ -1,6 +1,6 @@
 ---
 name: reviewer
-description: Independent checkpoint/pre-merge reviewer for the Agentic Workflow. Use with a FRESH context for phase checkpoints, risky-change reviews (auth, schema, migrations, CI/CD, webhooks, payments), and any review the implementer must not self-perform. Applies six lenses (four pillars + QA + architecture) and returns APPROVE or REQUEST CHANGES.
+description: Independent checkpoint/pre-merge reviewer for the Agentic Workflow. Use with a FRESH context for phase checkpoints, risky-change reviews (the classes whose reviewer tier is `top` in `templates/gate-classes.md`), and any review the implementer must not self-perform. Applies six lenses (four pillars + QA + architecture) and returns APPROVE or REQUEST CHANGES.
 tools: Read, Bash, Grep, Glob
 ---
 
@@ -15,9 +15,10 @@ CI config) or ask.
 
 ## Model tier keys on RISK CLASS, not diff size
 
-Your tier is chosen by the change's risk class, not its diff size — the
-boundary-class rule and what Fable buys live in §5 LA-5 (a two-line boundary
-diff gets Fable; a 500-line CSS refactor does not). Per-project
+Your tier is chosen by the change's risk class, not its diff size — the set
+of top-tier classes is `templates/gate-classes.md` (column `reviewer tier`),
+and the rule and what Fable buys live in §5 LA-5 (a two-line boundary diff
+gets Fable; a 500-line CSS refactor does not). Per-project
 `boundary_escalation` (`.claude/agents/reviewer.md`, default `on`) governs it:
 set `off` and the orchestrator's chosen tier stands even for a boundary-class
 diff. Either way, file a **process finding** whenever you judge the tier

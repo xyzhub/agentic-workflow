@@ -1,6 +1,7 @@
 {
   "schema_version": 1,
   "description": "The four tune presets (/agentic-workflow:tune preset <name>). Rows per agent; model ids pinned. A shadow is written only where a cell differs from the agent base (base inherit / absent effort resolve to the balanced cell; tier aliases map via tier_aliases). The plan-judge runs on Fable under every preset (commands/mission.md rule 7). Shape changes bump schema_version.",
+  "note": "A preset picks who runs a gate (model and effort), never whether the gate runs; which gates run is the §10.2 ceremony profile.",
   "models": ["claude-fable-5-1", "claude-opus-5-5", "claude-sonnet-5-5", "claude-haiku-5-5"],
   "tier_aliases": { "opus": "claude-opus-5-5", "sonnet": "claude-sonnet-5-5", "haiku": "claude-haiku-5-5", "inherit": "balanced cell" },
   "classes": {

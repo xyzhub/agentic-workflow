@@ -76,15 +76,18 @@ Every project is at exactly one stage; name it before routing work. Stage exits
 are GATES: human go/no-go where marked, reviewer-verified otherwise. Skipping a
 gate is a logged deviation, not a shortcut.
 
-| Stage | Produces | Exit gate |
-|---|---|---|
-| **V0 Idea & validation** | `docs/product/idea.md`: problem, who pays, why now, riskiest assumption, kill criteria, cheapest test of the assumption. When the idea is still raw, the `brainstormer` agent shapes it first — 2–3 distinct framings for the human to choose between (`/agentic-workflow:brainstorm`) — then the `researcher` agent validates the chosen one (evidence for AND against) | **Human go/no-go.** No code before this exists — an unvalidated idea is cheapest to kill in prose |
-| **V1 Definition** | PRD + MVP scope (what's deliberately OUT); the **UX brief** (personas, user journeys with acceptance criteria, IA) and brand/UX directions from the `designer` agent (`docs/product/ux-brief.md`) for the owner to choose; data-model sketch + stack decision as option memos from the `architect` agent (`docs/product/decisions/`), consolidated into the living **system architecture** doc and the frontend/backend **interface contract** the implementers build from; business model + pricing proposal from the `business` agent (`docs/product/business/`) — the model shapes scope and the data model | Stop-the-line: no implementation without acceptance criteria. **Human approves scope** (with the business model and the brand direction; `/agentic-workflow:counsel` convenes the advisor red-team on the approval first) |
-| **V2 Foundation** | Deployable skeleton (`devops` lays CI + deploy): repo + CI gates (test/typecheck), deploy pipeline + health/ready checks, validated env with a **fail-closed production guard**, auth decision wired, error-monitoring hook, seed/reset path, README quickstart, chosen design system as tokens | "Hello world" **deployed and live-verified**; CI green. Security and DX are laid here — retrofitting costs 10× |
-| **V3 Build (MVP)** | The product, feature by feature, via the execution machinery (§1–§5). Every checkpoint applies the pillar lenses | All MVP acceptance criteria met; behavioral/eval suite exists for AI-driven products |
-| **V4 Hardening** | Four explicit audits (§0.2): security review, UX pass (incl. the `designer`'s heuristic usability evaluation), DX pass, efficiency pass — plus ops readiness (backups, monitoring, runbook, guard coverage). Audits run as an **adversarial multi-vote** (§5): lens-partitioned parallel reviewers, conservative merge — standalone via `/agentic-workflow:audit` at any stage | Reviewer-verified production-readiness checklist (full six-lens scorecard); findings fixed or accepted in writing |
-| **V5 Launch** | Production deploy (`devops` prepares, `/agentic-workflow:release` cuts the version), first-user onboarding, **live end-to-end verification on the deployed instance**, monitoring confirmed receiving events, rollback tested; launch assets from the `marketing` agent under `docs/product/launch/` (one file per deliverable: positioning, landing copy, per-channel announcements, post-launch content plan, indexed by `launch-plan.md` with the channel plan) — **the human publishes**; pricing finalized against measured costs and the executive summary refreshed (`business`) | Pre-launch **multi-vote review** (§5) green; first real user/business served. **Human owns the launch decision** |
-| **V6 Operate & evolve** | Growth is *users and features*: the `/agentic-workflow:operate` loop — measured numbers from the `analyst`, error/cost triage from `ops`, funnel/channel review against the launch metrics (`marketing`), economics drift (`business`) — beside feedback → ranked feature ideas → user-reviewed → growth missions (phased trio with locked decisions); retros that amend THIS document | Continuous — each growth mission re-cycles V3–V5 gates |
+<!-- The Gate cell uses the grammar in `templates/gate-classes.md`; its grammar part ends at the first " — ". `none` on a decision gate is fail-closed (AC-2), not skippable. `tools/ceremony.mjs` reads the fenced table by header name (Stage, Artifacts, Gate): rename or add rows freely, keep the fence and the headers. -->
+<!-- stage-table -->
+| Stage | Produces | Artifacts | Gate |
+|---|---|---|---|
+| **V0 Idea & validation** | `docs/product/idea.md`: problem, who pays, why now, riskiest assumption, kill criteria, cheapest test of the assumption. When the idea is still raw, the `brainstormer` agent shapes it first — 2–3 distinct framings for the human to choose between (`/agentic-workflow:brainstorm`) — then the `researcher` agent validates the chosen one (evidence for AND against) | `docs/product/idea.md` | v0-go-no-go · human · none — **Human go/no-go.** No code before this exists — an unvalidated idea is cheapest to kill in prose |
+| **V1 Definition** | PRD + MVP scope (what's deliberately OUT); the **UX brief** (personas, user journeys with acceptance criteria, IA) and brand/UX directions from the `designer` agent (`docs/product/ux-brief.md`) for the owner to choose; data-model sketch + stack decision as option memos from the `architect` agent (`docs/product/decisions/`), consolidated into the living **system architecture** doc and the frontend/backend **interface contract** the implementers build from; business model + pricing proposal from the `business` agent (`docs/product/business/`) — the model shapes scope and the data model | `docs/product/prd.md`, `docs/product/ux-brief.md`, `docs/product/decisions/`, `docs/product/business/` | v1-scope-approval · human · none — Stop-the-line: no implementation without acceptance criteria. **Human approves scope** (with the business model and the brand direction; `/agentic-workflow:counsel` convenes the advisor red-team on the approval first) |
+| **V2 Foundation** | Deployable skeleton (`devops` lays CI + deploy): repo + CI gates (test/typecheck), deploy pipeline + health/ready checks, validated env with a **fail-closed production guard**, auth decision wired, error-monitoring hook, seed/reset path, README quickstart, chosen design system as tokens | `.github/workflows/`, `README.md` | v2-deploy-pipeline · reviewer · ci-deploy — "Hello world" **deployed and live-verified**; CI green. Security and DX are laid here — retrofitting costs 10× |
+| **V3 Build (MVP)** | The product, feature by feature, via the execution machinery (§1–§5). Every checkpoint applies the pillar lenses | `none` | v3-mvp-criteria · reviewer · none — All MVP acceptance criteria met; behavioral/eval suite exists for AI-driven products |
+| **V4 Hardening** | Four explicit audits (§0.2): security review, UX pass (incl. the `designer`'s heuristic usability evaluation), DX pass, efficiency pass — plus ops readiness (backups, monitoring, runbook, guard coverage). Audits run as an **adversarial multi-vote** (§5): lens-partitioned parallel reviewers, conservative merge — standalone via `/agentic-workflow:audit` at any stage | `docs/product/engineering/runbook.md` | v4-security-audit · reviewer · security-boundary; v4-ux-audit · reviewer · none; v4-dx-audit · reviewer · none; v4-efficiency-audit · reviewer · none — Reviewer-verified production-readiness checklist (full six-lens scorecard); findings fixed or accepted in writing |
+| **V5 Launch** | Production deploy (`devops` prepares, `/agentic-workflow:release` cuts the version), first-user onboarding, **live end-to-end verification on the deployed instance**, monitoring confirmed receiving events, rollback tested; launch assets from the `marketing` agent under `docs/product/launch/` (one file per deliverable: positioning, landing copy, per-channel announcements, post-launch content plan, indexed by `launch-plan.md` with the channel plan) — **the human publishes**; pricing finalized against measured costs and the executive summary refreshed (`business`) | `docs/product/launch/launch-plan.md` | v5-launch · human · production-deploy+publish-outward+release-cut — Pre-launch **multi-vote review** (§5) green; first real user/business served. **Human owns the launch decision** |
+| **V6 Operate & evolve** | Growth is *users and features*: the `/agentic-workflow:operate` loop — measured numbers from the `analyst`, error/cost triage from `ops`, funnel/channel review against the launch metrics (`marketing`), economics drift (`business`) — beside feedback → ranked feature ideas → user-reviewed → growth missions (phased trio with locked decisions); retros that amend THIS document | `none` | v6-operate · reviewer · none — Continuous — each growth mission re-cycles V3–V5 gates |
+<!-- /stage-table -->
 
 A stage may be revisited (a pivot reopens V0/V1; a big growth mission re-runs V4
 before its launch). The stages sequence the *product*; the altitudes (§1)
@@ -198,7 +201,7 @@ reviewer's DX lens gates it exactly like a catalog row.
 - Rate-limit every public/credential surface; close self-serve sign-up unless
   the product needs it; audit trail on privileged state changes.
 - Independent security lens at every checkpoint; full review at V4 and for any
-  auth/payment/webhook/CI-touching change.
+  change touching a change class in `templates/gate-classes.md`.
 
 **Efficiency** — *measure first; spend where users feel it; don't overbuild.*
 - MVP scope discipline: a written "NOT in this version" list (deferred ≠ denied);
@@ -221,6 +224,8 @@ reviewer's DX lens gates it exactly like a catalog row.
 Name the stage (§0), then route. When unsure between Session and Mission: if you
 cannot pre-resolve all file targets in one exploration pass, it's a Mission.
 Escalating mid-flight is fine (log it); silently sprawling is not.
+The altitude sizes the work; the §10.2 ceremony profile decides which gates
+inside it run.
 
 ## 2. Principles
 
@@ -373,6 +378,19 @@ dedicated planning session:
 | `.plans/<mission>.sessions.md` | One brief per session: pre-resolved reads (file → measured line count → anchors), do/verify steps, read budget; phases with named branches |
 | `.plans/<mission>.state.md` | Ledger: checklist, open questions, **standing steers** (human steers quoted verbatim, captured at checkpoints only), deviations log, handoff log (≤10 lines each, newest first), `Next up:` — which must name the same next beat wherever it appears in the file. Checklist glyphs: `[ ]` not started · `[~]` in-flight / deferred / awaiting owner · `[x]` done — the beat-enforcer nudges only on a not-started `[ ]` checkpoint/reviewer/chronicler row, so set `[~]` when a beat is picked up or parked. Every ledger also carries a `## Closing` block — deferred obligations in the OB grammar (`do:` / an observable `when:` / `probe: <command | manual>`), read by the mission-close gate below |
 
+The per-change gates a mission runs, in the same gate-cell grammar
+(`templates/gate-classes.md`; the grammar part ends at the first " — "):
+
+<!-- checkpoint-gates -->
+- plan-judge · reviewer · none — the trio review before any brief spends a session
+- phase-reviewer · reviewer · none — the tier escalates by the diff's class (LA-5)
+- staging-verify · reviewer · none — `/agentic-workflow:verify` on staging before the PR
+- counsel · human · none — the advisor red-team before a human gate
+- multi-vote-audit · reviewer · security-boundary — the lens-partitioned V4/V5 audit
+- chronicler · record · none — a record beat, not a review
+- mission-close · human · release-cut — the close gate over `## Closing`
+<!-- /checkpoint-gates -->
+
 Rules: briefs pre-resolve targets so execution sessions never explore; one branch
 per phase, merged at checkpoint per the **gate policy** below; migrations and
 CI/deploy-touching changes get extra checkpoint scrutiny.
@@ -422,9 +440,9 @@ mechanical half):
   Model tiering is unchanged in principle (opus builders) but the **reviewer
   tier keys on the change's RISK CLASS, not its diff size**:
   <!-- rule: fable-boundary -->
-  Fable is required for any review whose diff touches auth, a session/entry
-  credential, authorization/tenancy, money, schema/migrations, or a security
-  boundary — a two-line auth diff included.
+  Fable is required for any review whose diff touches a class whose
+  reviewer tier is `top` in `templates/gate-classes.md` — a two-line diff
+  included.
   <!-- /rule -->
   The saving is in shape (one-shot, at decision
   points), not tier. And a security/auth/money review must **close the threat,
@@ -449,8 +467,15 @@ mechanical half):
   (`SUPERSEDED next-up (historical):`); the hook reads the first and warns on
   duplicates; the lint backstop fails on disagreement.
   <!-- /rule -->
+- **Ceremony skip (§10.2).**
+  <!-- rule: ceremony-skip -->
+  A gate whose effective §10.2 cell is `skipped` writes exactly one ledger
+  Deviations line `gate <id> skipped — ceremony (<signal|override YYYY-MM-DD>)`
+  via `ceremony.mjs effective <id> --log`; any other cell runs the gate; a
+  gate with no §10.2 row runs.
+  <!-- /rule -->
 
-  These four rules have ONE prose home — this §5, each fenced
+  These five rules have ONE prose home — this §5, each fenced
   `<!-- rule: <id> -->`; everywhere else in the plugin is a one-line pointer
   (`(§5 LA-n)`) or a byte-identical `<!-- rule-copy: <id> -->` block, and
   `tools/lint.mjs` (`checkRuleDedup`) fails a second prose statement outside the
@@ -1013,6 +1038,7 @@ concrete values.
 | **Portfolio** (§13, optional) | _(path or remote of the registry repo this venture is registered in; `none` if standalone)_ |
 | **Catalog** | _(`docs/product/catalog/` — the default: derived `api.md` + `data-model.md` via `tools/catalog.mjs`, curated `features.md` (§6.1). `none — <why>` ONLY for a repo with nothing to derive and no marketable surface (a markdown-only plugin, a pure library); the conform ladder then skips the catalog gaps)_ |
 | **Issue tracker** | _(the queue's system of record — e.g. `GitHub Issues via gh`; `/agentic-workflow:groom` probes it, `/agentic-workflow:next` reads it, `/agentic-workflow:mission`/`fix` close items on merge. `none` → the markdown backlog is groomed in place and adopting a tracker is recommended)_ |
+| **Ceremony profile** | _(`absent` until `/agentic-workflow:sync` proposes one · `proposed YYYY-MM-DD` · `confirmed YYYY-MM-DD by <who> · derived YYYY-MM-DD from N signals · N overrides` · `unreadable (YYYY-MM-DD)`; drift appends `· drift YYYY-MM-DD: <signal> — not re-derived`. Written by `tools/ceremony.mjs`; see §10.2)_ |
 
 ### 10.1 Executors (optional)
 
@@ -1039,6 +1065,18 @@ appends a row (migrating a legacy row in as `default`), `connect server remove
   checks out its own worktree `<path>/.worktrees/<mission>` so two missions can
   run remote gates on different executors at once without sharing a tree.
 
+### 10.2 Ceremony
+
+Derived by `tools/ceremony.mjs`: one row per artifact and per gate, read from
+the §0 `stage-table` and §5 `checkpoint-gates` fences; the class is joined at
+read time from those fences and never stored here. First-column cells are
+never bold — the Missions app's profile parser keys on bold cells.
+
+| id | kind | stage | derived | signal | effective |
+|---|---|---|---|---|---|
+
+Overrides: _(none — one line per override, `- <id>: <required|optional|skipped> — <who> YYYY-MM-DD — "<why>"`)_
+
 ## 11. Autopilot mode
 
 `/agentic-workflow:autopilot "<idea>"` drives the whole lifecycle (V0→V5, then a V6 handoff) with
@@ -1061,6 +1099,9 @@ the default `human-merge` at every phase; "only hard gates" authorizes `batch` �
 phases land autonomously on `staging` (verified there, never the default
 branch) and the human merges staging → default once, at the consolidated
 launch confirmation.
+The check-in level sets *when* the human merges (gate policy); §10.2 sets
+*which* gates exist. A skipped gate is never re-enabled by the check-in level,
+and a required one is never removed by it.
 
 **Autopilot inherits the §5 convergence rules unchanged.** The flight plan
 carries an `Estimate:` for the whole flight (sessions per stage, written by the

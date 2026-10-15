@@ -78,7 +78,7 @@ defects; three merges and a gate went unrecorded and a compaction erased them.
 7. **Model tiering stays; the reviewer tier keys on RISK CLASS, not diff size**
    (opus builders; Fable for boundary-class reviews — §5 LA-5; the plan-judge
    runs on Fable under every preset). The saving is in *shape* (one-shot, at
-   decision points), not the tier; a two-line boundary diff still gets Fable
+   decision points), not the tier; diff size never lowers the tier
    (orderly #605→#730) — unless `.claude/agents/reviewer.md` carries
    `boundary_escalation: off` (#91): then any non-Fable reviewer tune takes
    boundary diffs and flags a miscalled tier as a process finding.

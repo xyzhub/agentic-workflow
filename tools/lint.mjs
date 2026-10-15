@@ -1096,12 +1096,21 @@ const RULES = {
   'fable-boundary': {
     la: 'LA-5',
     name: /Fable/,
-    mechanics: [/\bauth\b/i, /\bcredential/i, /\btenancy\b/i, /\bmoney\b/i, /\bschema\b/i, /\bmigration/i, /security boundary/i],
+    // The pointer keys (the canonical block names gate-classes.md, the tier
+    // column and the two-line clause) plus the pre-swap class words, so a
+    // paragraph restating the OLD inline class list still reads as a
+    // restatement of this rule.
+    mechanics: [/gate-classes/, /reviewer[- ]tier/, /two-line/, /\bauth\b/i, /\bcredential/i, /\btenancy\b/i, /\bmoney\b/i, /\bschema\b/i, /\bmigration/i, /security boundary/i],
   },
   'one-next-up': {
     la: 'LA-7',
     name: /Next up:/,
     mechanics: [/reads the first/i, /warns on duplicates/i, /supersed/i, /renaming the old/i],
+  },
+  'ceremony-skip': {
+    la: 'ceremony-skip',
+    name: /ceremony-skip|effective .*cell/i,
+    mechanics: [/exactly one/i, /Deviations line/i, /any other cell runs/i, /no §?10\.2 row runs/i],
   },
 };
 
@@ -1197,11 +1206,63 @@ function checkRuleDedup() {
   }
 }
 
+// ── Class-list dedup (adaptive-ceremony AC-8) ─────────────────────────────
+// `templates/gate-classes.md` is the ONE list of gate classes. A paragraph
+// elsewhere in the prompt tree that names ≥4 of the CHANGE-class keys is a
+// second inline list and a finding. Action names (deploy, merge, publish,
+// spend, release, …) are never keys: §11's safety-boundary paragraph names
+// every action on purpose (L6). Paragraphs are blank-line delimited; HTML
+// comments and backticked spans are stripped first (`stripInline`), so a
+// pointer that names ids in backticks is not a hit.
+const CLASS_KEYS = [
+  /schema\/migrations|schema-migrations/i,
+  /\bauth\b/i,
+  /\bpayments?\b/i,
+  /ci\/deploy|ci-deploy/i,
+  /\bsecrets?\b/i,
+  /third-party/i,
+  /security[- ]boundary/i,
+  /supply[- ]chain/i,
+];
+const CLASS_LIST_MIN = 4;
+
+// True when `paragraph` restates the change-class list. Pure.
+function classListRestatement(paragraph) {
+  const t = stripInline(paragraph);
+  let hits = 0;
+  for (const k of CLASS_KEYS) if (k.test(t)) hits++;
+  return hits >= CLASS_LIST_MIN;
+}
+
+function checkClassListDedup() {
+  const files = [
+    ...mdFiles(path.join(PLUGIN, 'agents')),
+    ...mdFiles(path.join(PLUGIN, 'commands')),
+    ...skillFiles(),
+    ...mdFiles(path.join(PLUGIN, 'templates')).filter((f) => path.basename(f) !== 'gate-classes.md'),
+  ];
+  for (const file of files) {
+    const lines = read(file).split('\n');
+    let cur = [], startLine = 0;
+    const flush = () => {
+      if (cur.length && classListRestatement(cur.join('\n')))
+        fail(file, startLine, `Found an inline list of gate classes in \`${rel(file)}\` line ${startLine}. Link \`templates/gate-classes.md\` instead.`);
+      cur = [];
+    };
+    lines.forEach((line, i) => {
+      if (!line.trim()) { flush(); return; }
+      if (!cur.length) startLine = i + 1;
+      cur.push(line);
+    });
+    flush();
+  }
+}
+
 // `clockLeak` and the budget/dedup pure functions are exported so
 // `tools/lint-test.mjs` can decide them directly. The run below is guarded on
 // being the entry point: importing this file for the harness must not execute
 // the whole gate (and must not `process.exit`).
-export { clockLeak, budgetVerdict, descriptionOver, ruleRestatement, RULES, tunePresetFindings };
+export { clockLeak, budgetVerdict, descriptionOver, ruleRestatement, RULES, tunePresetFindings, classListRestatement };
 
 // realpath BOTH sides: `import.meta.url` is already symlink-resolved, so a
 // plain `path.resolve(argv[1])` comparison fails when this file is invoked
@@ -1220,7 +1281,7 @@ const isEntryPoint = () => {
 };
 
 if (isEntryPoint()) {
-  for (const check of [checkManifests, checkAgents, checkCommands, checkCrossRefs, checkTemplateRefs, checkPluginRootBraced, checkSections, checkFrontmatterYaml, checkTemplateFrontmatter, checkHooks, checkObfuscation, checkHookBehavior, checkClockGuard, checkMarkerMutation, checkContextAttrib, checkCatalogSelftest, checkCiWaitSelftest, checkPublishGateSelftest, checkRunCodexHarness, checkRunClaudeHarness, checkLedgerHarness, checkAgentsRegistryHarness, checkOperateTriageSelftest, checkStandingSteers, checkNextUpAgreement, checkClosing, checkObligationsRegister, checkBudgets, checkRuleDedup, checkTunePresets]) {
+  for (const check of [checkManifests, checkAgents, checkCommands, checkCrossRefs, checkTemplateRefs, checkPluginRootBraced, checkSections, checkFrontmatterYaml, checkTemplateFrontmatter, checkHooks, checkObfuscation, checkHookBehavior, checkClockGuard, checkMarkerMutation, checkContextAttrib, checkCatalogSelftest, checkCiWaitSelftest, checkPublishGateSelftest, checkRunCodexHarness, checkRunClaudeHarness, checkLedgerHarness, checkAgentsRegistryHarness, checkOperateTriageSelftest, checkStandingSteers, checkNextUpAgreement, checkClosing, checkObligationsRegister, checkBudgets, checkRuleDedup, checkClassListDedup, checkTunePresets]) {
     check();
   }
 

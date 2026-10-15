@@ -213,7 +213,8 @@ the human decide.
 A preset sets one model + effort per agent for the whole project from
 `${CLAUDE_PLUGIN_ROOT}/templates/tune-presets.json` (4 presets × every plugin
 agent, pinned ids, lint-checked). It is the baseline; a later per-agent tune
-wins for that agent.
+wins for that agent. A preset picks who runs a gate (model and effort), never
+whether the gate runs; which gates run is the §10.2 ceremony profile.
 
 **Comparator.** A cell *differs from the base* when its model, effort, or a
 Haiku row's `runtime`/`maxTurns` differs from the base frontmatter, where a base
