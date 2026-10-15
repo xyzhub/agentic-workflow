@@ -531,6 +531,26 @@ function checkLedgerHarness() {
   }
 }
 
+// ── 10.11 ceremony harness (tier-1.5, adaptive-ceremony) ─────────────────
+// `tools/ceremony.mjs` resolves which gates run (§10.2) and refuses a skip on
+// an irreversible class; a resolver that failed open would remove a safety
+// boundary silently. The harness runs derive/effective/check against fixture
+// projects (renamed stage table, no fence, refused overrides, L6 grammar,
+// drift, --log idempotence). Fail-closed on a missing runner — same shape as 10.10.
+function checkCeremonyHarness() {
+  const runner = path.join(ROOT, 'tools/ceremony-test.mjs');
+  if (!existsSync(runner)) {
+    fail(runner, null, 'ceremony harness missing — tools/ceremony-test.mjs must exist so the gate proves the ceremony resolver fails closed and refuses irreversible skips (do not silently drop the check)');
+    return;
+  }
+  const res = spawnSync('node', [runner], { encoding: 'utf8' });
+  if (res.status !== 0) {
+    const detail = `${res.stdout ?? ''}${res.stderr ?? ''}`
+      .split('\n').filter((l) => /FAIL|failure|Error/.test(l)).join(' | ');
+    fail(runner, null, `ceremony harness failed — run \`node tools/ceremony-test.mjs\`: ${detail || '(no detail)'}`);
+  }
+}
+
 // ── 10.9 agents registry harness (tier-1.5) ─────────────────────────────
 // The agent registry (tools/agents.mjs) is a public interface a wrapper reads
 // instead of parsing frontmatter and banner wording, and /tune's no-arg table
@@ -1286,7 +1306,7 @@ const isEntryPoint = () => {
 };
 
 if (isEntryPoint()) {
-  for (const check of [checkManifests, checkAgents, checkCommands, checkCrossRefs, checkTemplateRefs, checkPluginRootBraced, checkSections, checkFrontmatterYaml, checkTemplateFrontmatter, checkHooks, checkObfuscation, checkHookBehavior, checkClockGuard, checkMarkerMutation, checkContextAttrib, checkCatalogSelftest, checkCiWaitSelftest, checkPublishGateSelftest, checkRunCodexHarness, checkRunClaudeHarness, checkLedgerHarness, checkAgentsRegistryHarness, checkOperateTriageSelftest, checkStandingSteers, checkNextUpAgreement, checkClosing, checkObligationsRegister, checkBudgets, checkRuleDedup, checkClassListDedup, checkTunePresets]) {
+  for (const check of [checkManifests, checkAgents, checkCommands, checkCrossRefs, checkTemplateRefs, checkPluginRootBraced, checkSections, checkFrontmatterYaml, checkTemplateFrontmatter, checkHooks, checkObfuscation, checkHookBehavior, checkClockGuard, checkMarkerMutation, checkContextAttrib, checkCatalogSelftest, checkCiWaitSelftest, checkPublishGateSelftest, checkRunCodexHarness, checkRunClaudeHarness, checkLedgerHarness, checkCeremonyHarness, checkAgentsRegistryHarness, checkOperateTriageSelftest, checkStandingSteers, checkNextUpAgreement, checkClosing, checkObligationsRegister, checkBudgets, checkRuleDedup, checkClassListDedup, checkTunePresets]) {
     check();
   }
 
