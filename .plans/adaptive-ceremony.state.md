@@ -15,7 +15,7 @@ everything since the last one — §12 LA-6)._
 Status: active
 
 Estimate: 6 sessions
-Sessions used: 6
+Sessions used: 7
 Reviewer runs: 6
 
 _The two budget lines above are read by the mission-budget hook every turn.
@@ -65,8 +65,8 @@ done (verified, not merely written)._
 - [x] S1 — preconditions (Missions-contract grep incl. `connections.test.ts:28`, WORKFLOW bytes), `templates/gate-classes.md` (L6: 8 change + 9 action classes, grammar defined once), three consumers point at it, `fable-boundary` rule + detector retuned, `checkClassListDedup`, §0 `stage-table` fence + columns, §5 `checkpoint-gates` fence + `ceremony-skip` rule, §10 `Ceremony profile` row + `### 10.2 Ceremony` placeholder, three relation lines, `Reviewer runs:` line + `ledger.mjs reviewer-runs` + ledger-test cases, sync preserve change in its own tested commit (branch `mission/adaptive-ceremony`)
 - [x] Checkpoint ckpt-p1 — one-shot `reviewer` on **Fable** (§5 rule + detector rewrite); APPROVE → next phase on the same branch
 - [x] S2 — `tools/ceremony.mjs` (derive · effective --log --mission · check incl. the L6 action-firer and malformed-`+` rules) + `tools/ceremony-test.mjs` + `checkCeremonyHarness`, conform `ceremony-profile-row`, merge-guard §10.2 backstop with all 16 irreversible ids + hook-test cases (incl. an action id and `supply-chain`), derive dogfood read-only (branch `mission/adaptive-ceremony`)
-- [~] Checkpoint ckpt-p2 — one-shot `reviewer` on **Fable** (merge-guard + fail-closed resolver; includes the counsel's "stopped before the gate passes" probe); APPROVE → next phase on the same branch
-- [ ] S3 — rule-copies + resolver calls at every gate site, `checkCeremonyCopies`, `/next` + intake read points, bootstrap/adopt/sync/doctor prose (ask once, propose, drift warning, corrected J2 copy), inventories, `/sync` dogfood on this repo (`proposed` profile, stamp v1.61.0), CHANGELOG 1.61.0 + bump, pre-merge Closing rows fired (branch `mission/adaptive-ceremony`)
+- [x] Checkpoint ckpt-p2 — one-shot `reviewer` on **Fable** (merge-guard + fail-closed resolver; includes the counsel's "stopped before the gate passes" probe); APPROVE → next phase on the same branch
+- [~] S3 — rule-copies + resolver calls at every gate site, `checkCeremonyCopies`, `/next` + intake read points, bootstrap/adopt/sync/doctor prose (ask once, propose, drift warning, corrected J2 copy), inventories, `/sync` dogfood on this repo (`proposed` profile, stamp v1.61.0), CHANGELOG 1.61.0 + bump, pre-merge Closing rows fired (branch `mission/adaptive-ceremony`)
 - [ ] Checkpoint ckpt-p3 — one-shot `reviewer` on **Fable** (resolver-call prose at every gate site) incl. plain-report read of every owner-facing string, over the WHOLE mission diff `main..HEAD`; APPROVE → mark the one mission PR ready, human merges
 
 ## Open questions
@@ -118,6 +118,8 @@ Deviating is allowed; deviating silently is not (§4)._
 _≤10 lines per entry: what this session did, the verify signal, the branch, and
 what the next session needs. Newest on top; crash-safe by write-ahead._
 
+- 2026-10-15 2026-10-15 ckpt-p2 (Fable) APPROVE over 60b2060..faf415e. 36 probes: no path resolves an irreversible gate to skipped/optional; the automated security-review lead (parser differential in merge-guard.sh) CONFIRMED as a differential, REFUTED as fail-open — the guard misses leading-whitespace/tab rows, mis-cased 'Skipped', non-'gate' kind cell, 4-hash heading, but ceremony.mjs returns required for all. Scorecard: Security 2, QA 3, Architecture 3, DX 2. AC-1..6, 11, 12 pass. Gates lint clean / 104 / clean / 41 / 30 / 37; CI green on head. Advisories folded into S3 (single-mission rule): A1 guard tighten (leading space/tab, -i); A2 an optional gate not run must log a deviation line (today only skipped does); A3 /doctor copy says UI drift warns, does not tighten. A4: faf415e no own CI run, head covers it. Next: S3.
+
 - 2026-10-15 2026-10-15 ckpt-p2 spawned: one-shot Fable over 60b2060..faf415e.
 
 - 2026-10-15 2026-10-15 S2 (builder, opus): done, commits 3daf34d (ceremony.mjs 300 lines + ceremony-test 37 cases + checkCeremonyHarness) and faf415e (conform ceremony-profile-row runs check, first finding = gap; merge-guard §10.2 backstop, 16 irreversible ids, runs under every merge policy). Gates: lint clean / 104 / hook-test clean (merge-guard cases 114→125) / 41 / 30 / ceremony 37. Reviewer runs counter was already S1's — not rebuilt. CLI: derive [--confirm who] [--json] · effective <id> [--log --mission <n>] [--json] · check [--brief] [--strict] [--json]; --root --fences --plugin --plans --date; exit 0/1 usage-IO/2 deviations-missing or strict finding. Deviation line: '- DATE — gate <id> skipped — ceremony (<signal|override DATE|owner answer DATE>)'. Dogfood (template fences): 26 rows, v0-go-no-go optional (repo had commits), v1-ux-brief + v4-ux-audit skipped (no UI), 3 asks (auth/payments/schema). This repo: derive unreadable until S3 /sync; conform shows one gap until then. Deviations: regex whole-token suffix + '(skipped|optional)[^|]*' effective; hook-test conform fixture now carries a tool-rendered profile; extra flags --fences/--confirm; owner answers reuse override grammar (who=asked); check --strict exits 2; dup id / unknown id → required; orchestrator committed in 2 groups not 3 (hook-test hunks span conform+merge-guard; git add -p unavailable). Next: ckpt-p2 (Fable).
@@ -139,4 +141,4 @@ what the next session needs. Newest on top; crash-safe by write-ahead._
   9aa612c). Four open questions for the owner (OQ-2 blocks S2's rendering).
   Next: plan-judge, then owner answers, then S1.
 
-Next up: ckpt-p2
+Next up: S3
