@@ -77,7 +77,7 @@ done (verified, not merely written)._
 _Mirrored from the master plan with their recommendations; the human answers
 before execution starts._
 
-- Assumed 2026-10-16 → master plan Locked decisions (OQ-1: lease authority on remote branch `lease/<mission>`, token kept on the machine, only `key8` in the ledger — recommendation: ratify)
+- Assumed 2026-10-16 → master plan Locked decisions (OQ-1: lease authority on remote branch `lease/<mission>`, token kept on the machine, only `key8` in the ledger — recommendation: ratify) — ratified 2026-10-16
 
 ## Standing steers
 
@@ -99,6 +99,8 @@ before execution starts._
 (none)
 
 ## Handoff log (newest first)
+
+- 2026-10-16 owner 2026-10-16: Estimate 7 accepted (L5); OQ-1 lease shape ratified (L6); start later — plan PR to main for owner merge
 
 - 2026-10-16 plan-judge REVISE (Fable): 6 text fixes (lease commit-tree -p + plain push; race rounds cleared; 3 value-sourcing rows; +290 B; metrics row 5 as Closing row) — planner applied all in one pass; judge ruled 7 honest, owner ack needed before S1; OQ-1 lease shape recommended for ratify
 

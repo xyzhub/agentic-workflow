@@ -88,3 +88,11 @@ question.
 - **Posture (interview):** next mission, careful — Fable plan-judge and
   checkpoints; the human merges to `main`. Byte deltas for WORKFLOW.md and
   mission.md are computed in the plan (counsel condition 5).
+- **L5 Estimate (owner, 2026-10-16) — "Accept 7":** 4 builds + 3 Fable
+  checkpoints; overrun stop at 11. Fallback subsets: P1+P2 (5) without the
+  lease; P1 alone (3).
+- **L6 Lease shape (owner, 2026-10-16) — "Approve":** OQ-1 ratified — the
+  lease authority is the shared remote branch `lease/<mission>`; the token
+  stays on the machine; the ledger shows only `key8`.
+- **Start:** "Later" — the plan lands on `main` first; `/agentic-workflow:next`
+  points at it.

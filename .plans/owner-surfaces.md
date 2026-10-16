@@ -329,7 +329,7 @@ pre-booked. Justification per phase below (Locked decisions → Estimate).
   schema's `answer` and `notice` defs land with E2b too (additive, no
   `schemaVersion` bump); the E2a `event` def carries `asked`, `answered`,
   `expired`.
-- Assumed 2026-10-16 — owes OQ-1 (lease shape); built on: authority =
+- Assumed 2026-10-16, ratified 2026-10-16 (owner: "Approve") — OQ-1 (lease shape); built on: authority =
   remote branch `lease/<mission>` (one ref per mission, so two sessions on
   different branches still collide — the only reading of "binds the mission,
   not a branch" that a git push can enforce); token kept in the worktree's
