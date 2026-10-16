@@ -1705,3 +1705,5 @@ figures. **Every P0.5 headline reproduces byte-for-byte** and was re-verified by
 Run each Phase 4 session in a **FRESH session** (deliberate: starting a context-economy
 session inside a 400k-token window is the anti-pattern it exists to fix). Ten sessions died
 on usage limits on 2026-08-03 — that is why P4 is six small briefs and not two.
+
+Closed: 2026-08-03 · stamped 2026-10-16 by the orchestrator (PR #31 merged as 2c8487f on 2026-08-03; the ledger never got its stamp)
