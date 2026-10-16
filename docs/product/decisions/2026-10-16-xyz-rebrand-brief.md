@@ -50,3 +50,33 @@ prints a clear one-time notice at session start: uninstall
 - Rewriting history: old ledgers, CHANGELOG entries, JOURNEY, decision
   records keep the old name.
 - An old-name alias / compatibility shim plugin.
+
+## Locked decisions (owner, 2026-10-16, at the single approval)
+
+- **L1 Old installs:** "Yes, all mine" — every install is on an
+  owner-controlled machine. Use Claude Code's native `renames` marketplace
+  entry (memo D2-A); no frozen old build, no J4 session-start notice from the
+  old plugin. J4 becomes: after `renames` moves the setting, the owner
+  reinstalls once per machine and the new plugin's conform check tells the
+  project to run `/xyz:sync`. The frozen-build design stays in the memo as
+  the fallback if installs outside owner machines ever appear.
+- **L2 Scope:** "Full rename to xyz" — plugin name and prefix `xyz`, folder
+  `plugins/xyz/` (D1), migrator `tools/rename.mjs` in `/xyz:sync` (D3),
+  rename every identifier with read-both where old data outlives code (D4),
+  product name **The XYZ Protocol** (D5), version **2.0.0** (D6) — with the
+  technical counsel conditions that still apply under D2-A: new hooks read
+  `XYZ_CHILD || AGENTIC_WORKFLOW_CHILD`; `rename.mjs` rewrites
+  `enabledPlugins` and `pluginConfigs` and reports (never rewrites)
+  `permissions.allow` rules naming the old plugin; line-level `legacy-name`
+  allowlist markers; no new `xyz:` hook-message prefix; the Missions change
+  list is a P1 deliverable; one scratch-marketplace probe that `renames`
+  validates and moves the setting, before the marketplace change ships.
+- **L3 Repo name:** "Keep it out, note it" — `xyzhub/agentic-workflow` keeps
+  its name; the rename is knowingly partial (the repo slug stays on the J2
+  allowlist).
+- **L4 Timing:** "Queue behind current goal item" — normal queue, careful
+  posture: Fable plan-judge and checkpoints, human merges to `main`. The
+  Orderly and Missions moves are obligation rows with estimates.
+- **L5 Notice cadence:** superseded by L1 (no old-plugin notice).
+- **Why the cheaper "public name only" option lost:** the owner chose the
+  full rename at the approval with the counsel brief in hand (2026-10-16).
