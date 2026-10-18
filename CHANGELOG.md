@@ -11,8 +11,9 @@ has no tags — each version-stamped commit on `main` IS the release.
   `claude -p` (rows: `runtime: claude-p`, `compact_window` 200000, `maxTurns`
   40–150 by class, scoped `allowed_tools`, fallback = same model in-session).
   Use: spend `claude -p`-only credit (API / Agent SDK) instead of the
-  subscription. Scoped Bash only (git read commands, gh view/list, package
-  managers, `make`); `node`/`python` count as bare shells — widen a role with
+  subscription. Scoped Bash only (git read commands, gh view/list, and the
+  `test`/`run` verbs of npm, pnpm, bun and yarn); `npx`, `bunx`, `make`,
+  `node` and `python` run arbitrary code, so they are left out — widen a role with
   `tune <agent> tools`.
 - Lint: `isolated` joins the preset list; every `claude-p` row (not only
   Haiku) must carry maxTurns, read_budget, compact_window, scoped
