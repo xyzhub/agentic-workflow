@@ -1038,7 +1038,7 @@ function checkBudgets() {
 // templates/tune-presets.json drives `/tune preset`. A bad id, a missing agent
 // or a Haiku row without its 100K window would ship silently (it is data), so
 // the shape is decided here. Pure function + gate wrapper, like the budgets.
-const PRESET_NAMES = ['lean', 'balanced', 'rigorous', 'unattended'];
+const PRESET_NAMES = ['lean', 'balanced', 'rigorous', 'unattended', 'isolated'];
 const PRESET_MODELS = new Set(['claude-fable-5-1', 'claude-opus-5-5', 'claude-sonnet-5-5', 'claude-haiku-5-5']);
 const PRESET_HAIKU = 'claude-haiku-5-5';
 const PRESET_EFFORTS = new Set(['low', 'medium', 'high']);
@@ -1065,17 +1065,22 @@ function tunePresetFindings(json, agentNames) {
       if (!PRESET_MODELS.has(row.model)) out.push(`${at}: unknown model id "${row.model}"`);
       if (/haiku/.test(row.model ?? '') && row.model !== PRESET_HAIKU) out.push(`${at}: Haiku below 5.5 ("${row.model}")`);
       if (!PRESET_EFFORTS.has(row.effort)) out.push(`${at}: effort "${row.effort}" not low|medium|high`);
-      if (row.model !== PRESET_HAIKU) continue;
-      if (row.runtime !== 'claude-p') out.push(`${at}: Haiku row needs runtime "claude-p"`);
-      if (row.compact_window !== 100000) out.push(`${at}: Haiku row needs compact_window 100000`);
-      if (!posInt(row.maxTurns)) out.push(`${at}: Haiku row needs an integer maxTurns`);
-      if (!posInt(row.read_budget)) out.push(`${at}: Haiku row needs an integer read_budget`);
-      if (!Array.isArray(row.allowed_tools) || !row.allowed_tools.length) out.push(`${at}: Haiku row needs an allowed_tools list`);
+      const haiku = row.model === PRESET_HAIKU;
+      if (haiku && row.runtime !== 'claude-p') out.push(`${at}: Haiku row needs runtime "claude-p"`);
+      if (row.runtime !== 'claude-p') continue;
+      // Every claude-p row (Haiku or the isolated preset) runs through tools/run-claude.mjs.
+      const kind = haiku ? 'Haiku row' : 'claude-p row';
+      if (haiku && row.compact_window !== 100000) out.push(`${at}: Haiku row needs compact_window 100000`);
+      if (!haiku && !(posInt(row.compact_window) && row.compact_window >= 100000 && row.compact_window <= 1000000))
+        out.push(`${at}: claude-p row needs compact_window 100000–1000000`);
+      if (!posInt(row.maxTurns)) out.push(`${at}: ${kind} needs an integer maxTurns`);
+      if (!posInt(row.read_budget)) out.push(`${at}: ${kind} needs an integer read_budget`);
+      if (!Array.isArray(row.allowed_tools) || !row.allowed_tools.length) out.push(`${at}: ${kind} needs an allowed_tools list`);
       // Same semantic rule the adapter enforces: Bash(*), Bash(:*), Bash(* *) are bare too.
-      else if (row.allowed_tools.some((t) => isBareBash(String(t)))) out.push(`${at}: Haiku allowed_tools carries bare Bash — scope it (Bash(<cmd>:*))`);
+      else if (row.allowed_tools.some((t) => isBareBash(String(t)))) out.push(`${at}: ${kind} allowed_tools carries bare Bash — scope it (Bash(<cmd>:*))`);
       const fb = row.fallback;
-      if (!fb || !PRESET_MODELS.has(fb.model) || fb.model === PRESET_HAIKU || !PRESET_EFFORTS.has(fb.effort))
-        out.push(`${at}: Haiku row needs a non-Haiku fallback {model, effort, runtime}`);
+      if (!fb || !PRESET_MODELS.has(fb.model) || (haiku && fb.model === PRESET_HAIKU) || !PRESET_EFFORTS.has(fb.effort))
+        out.push(`${at}: ${kind} needs a ${haiku ? 'non-Haiku ' : ''}fallback {model, effort, runtime}`);
     }
   }
   if (!posInt(json.presets?.unattended?.tick_budget)) out.push('unattended.tick_budget must be a positive integer');
