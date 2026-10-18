@@ -8,6 +8,18 @@ has no tags — each version-stamped commit on `main` IS the release.
 
 _(empty)_
 
+## [1.66.0] — 2026-10-18
+### Added — `ccp` looks like a proper terminal app
+- `ccp` turns now stream through `claude -p --output-format stream-json`:
+  a framed header, a spinner while Claude works, one dim line per tool call
+  (with ✗ on a failed one), styled markdown, and a footer per turn with
+  duration · tool calls · turn cost · session total. Ctrl-C stops the turn,
+  not `ccp`. Same rendering for `ccp run <mission>` ticks.
+- Optional richer markdown: `ccp setup --tui` installs `@earendil-works/pi-tui`
+  1.3.0 (exact pin, `--ignore-scripts`) into `~/.local/share/ccp` — never
+  bundled with the plugin. Absent, broken, `NO_COLOR`, `CCP_PLAIN` or not a
+  terminal → the zero-dependency ANSI renderer (`tools/ccp-ui.mjs`).
+
 ## [1.65.2] — 2026-10-18
 ### Fixed — machine-wide presets are honoured
 - `run-codex.mjs` `roleFile()` (used by `run-claude.mjs` too) and

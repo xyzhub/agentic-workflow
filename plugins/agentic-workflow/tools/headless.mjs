@@ -15,6 +15,9 @@
 //       Write .claude/headless.json and print the commands; --shell-alias also
 //       installs `ccp` (a POSIX sh executable in ~/.local/bin, any shell) and
 //       puts ~/.local/bin on PATH in your shell's startup file if needed.
+//   node tools/headless.mjs setup --tui
+//       Optional prettier output: install pi-tui (pinned, no install scripts)
+//       into ~/.local/share/ccp — never bundled with the plugin (tools/ccp-ui.mjs).
 //   node tools/headless.mjs session [--cwd <dir>]
 //       Print the session id `chat` would resume.
 //
@@ -22,7 +25,7 @@
 // the classifier, closest to an interactive auto-mode session), or
 // --permission-mode. Never bypassPermissions. Zero deps, Node >= 18.
 
-import { spawnSync } from 'node:child_process';
+import { spawn } from 'node:child_process';
 import { appendFileSync, chmodSync, existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import path from 'node:path';
@@ -38,6 +41,7 @@ export function parseArgs(argv) {
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === '--shell-alias') o.shellAlias = true;
+    else if (a === '--tui') o.tui = true;
     else if (a.startsWith('--')) o[a.slice(2).replace(/-([a-z])/g, (_, c) => c.toUpperCase())] = argv[++i];
     else o._.push(a);
   }
@@ -79,16 +83,32 @@ export function claudeArgs({ prompt, session = null, mode, note = null }) {
   const a = ['-p'];
   if (session) a.push('--resume', session);
   if (note) a.push('--append-system-prompt', note);
-  a.push('--permission-mode', mode, prompt);
+  a.push('--output-format', 'stream-json', '--verbose', '--permission-mode', mode, prompt);
   return a;
 }
 
 const bin = () => process.env.CLAUDE_BIN || 'claude';
 
-function turn(args, cwd) {
-  const r = spawnSync(bin(), args, { cwd, stdio: ['ignore', 'inherit', 'inherit'] });
-  if (r.error) throw new Error(`could not start ${bin()}: ${r.error.message}`);
-  return r.status ?? 1;
+let current = null; // the running turn's child, so Ctrl-C stops the turn, not ccp
+
+// One `claude -p` turn, rendered through tools/ccp-ui.mjs; resolves the exit code.
+async function turn(args, cwd, ui, totals = {}) {
+  const { onEvent } = await import('./ccp-ui.mjs');
+  const st = { tools: 0 };
+  const t0 = Date.now();
+  ui.spinner();
+  const child = spawn(bin(), args, { cwd, stdio: ['ignore', 'pipe', 'inherit'] });
+  current = child;
+  const lines = readline.createInterface({ input: child.stdout });
+  lines.on('line', (l) => onEvent(l, ui, st));
+  const rc = await new Promise((res, rej) => {
+    child.on('error', (e) => rej(new Error(`could not start ${bin()}: ${e.message}`)));
+    child.on('close', (code, sig) => res(sig ? 130 : code ?? 1));
+  }).finally(() => { current = null; ui.stopSpin(); });
+  if (st.cost != null) totals.cost = (totals.cost || 0) + st.cost;
+  if (!totals.model && st.model) totals.model = st.model;
+  ui.footer({ secs: Math.round((st.ms ?? Date.now() - t0) / 1000), tools: st.tools, cost: st.cost, total: totals.cost });
+  return rc;
 }
 
 // Ledger probe for `run`: Closed stamp and the single `Next up:` line.
@@ -103,12 +123,17 @@ async function chat(o, cwd, cfg) {
   const session = o.session || latestInteractiveSession(cwd);
   if (!session) throw new Error(`no interactive session found under ${projectDir(cwd)} — start one with \`claude\` first, or pass --session <id>`);
   const mode = permissionMode(o, cfg);
-  console.error(`resuming ${session} headless (claude -p, permission mode ${mode}). Ctrl-D to quit.`);
-  const rl = readline.createInterface({ input: process.stdin, output: process.stderr, prompt: 'you> ' });
+  const ui = await (await import('./ccp-ui.mjs')).makeUi();
+  ui.header({ session, mode, model: cfg.model });
+  const totals = {};
+  const rl = readline.createInterface({ input: process.stdin, output: process.stderr, prompt: ui.promptText() });
+  let open = true;
+  rl.on('close', () => { open = false; });
+  rl.on('SIGINT', () => (current ? current.kill('SIGINT') : rl.close()));
   rl.prompt();
   for await (const line of rl) {
-    if (line.trim()) turn(claudeArgs({ prompt: line, session, mode }), cwd);
-    rl.prompt();
+    if (line.trim()) await turn(claudeArgs({ prompt: line, session, mode }), cwd, ui, totals);
+    if (open) rl.prompt();
   }
 }
 
@@ -132,13 +157,15 @@ async function run(o, cwd, cfg) {
   const ticks = Number(o.ticks || cfg.ticks || 10);
   const mode = permissionMode(o, cfg);
   const { HEADLESS_ASK_NOTE } = await import('./ask.mjs');
+  const ui = await (await import('./ccp-ui.mjs')).makeUi();
+  const totals = {};
   for (let i = 1; i <= ticks; i++) {
     const before = ledgerState(cwd, mission);
     if (!before) throw new Error(`no ledger .plans/${mission}.state.md`);
     if (before.closed) { console.error(`mission ${mission} is closed — done.`); return 0; }
     if (await answerPending(cwd, mission, cfg)) continue; // answers in → next tick reads them
     console.error(`tick ${i}/${ticks}: ${before.nextUp.trim()}`);
-    const rc = turn(claudeArgs({ prompt: `/agentic-workflow:mission ${mission} continue`, mode, note: HEADLESS_ASK_NOTE }), cwd);
+    const rc = await turn(claudeArgs({ prompt: `/agentic-workflow:mission ${mission} continue`, mode, note: HEADLESS_ASK_NOTE }), cwd, ui, totals);
     const after = ledgerState(cwd, mission);
     if (rc !== 0) { console.error(`tick ${i} exited ${rc} — stopping.`); return rc; }
     if (after.closed) { console.error(`mission ${mission} closed.`); return 0; }
@@ -215,7 +242,20 @@ export function installCcp(home = homedir(), { shell = process.env.SHELL, pathEn
   return target;
 }
 
+// `setup --tui`: pi-tui into ccp's own folder, exact version, no install scripts.
+async function installTui() {
+  const { PI_TUI, PI_TUI_VERSION, tuiDir, loadPiTui } = await import('./ccp-ui.mjs');
+  const dir = tuiDir();
+  mkdirSync(dir, { recursive: true });
+  if (!existsSync(path.join(dir, 'package.json'))) writeFileSync(path.join(dir, 'package.json'), '{"private":true}\n');
+  const r = await new Promise((res) => spawn('npm', ['install', '--ignore-scripts', '--no-audit', '--no-fund', '--save-exact', `${PI_TUI}@${PI_TUI_VERSION}`], { cwd: dir, stdio: 'inherit' }).on('close', res).on('error', () => res(1)));
+  const ok = r === 0 && (await loadPiTui(dir));
+  console.log(ok ? `pi-tui ${PI_TUI_VERSION} ready in ${dir} — ccp now renders markdown` : `pi-tui install failed (needs Node >= 22.19); ccp keeps the plain renderer`);
+  return ok ? 0 : 1;
+}
+
 function setup(o, cwd, cfg) {
+  if (o.tui) return installTui();
   const file = path.join(cwd, '.claude', 'headless.json');
   const next = { permission_mode: cfg.permission_mode || 'auto', ticks: cfg.ticks || 10, preset: 'isolated' };
   mkdirSync(path.dirname(file), { recursive: true });
@@ -233,10 +273,10 @@ export async function main(argv = process.argv.slice(2)) {
   switch (o._[0]) {
     case 'chat': await chat(o, cwd, cfg); return 0;
     case 'run': return await run(o, cwd, cfg);
-    case 'setup': return setup(o, cwd, cfg);
+    case 'setup': return await setup(o, cwd, cfg);
     case 'session': console.log(latestInteractiveSession(cwd) || ''); return 0;
     default:
-      console.error('usage: headless.mjs chat [--session id] | run <mission> [--ticks N] | setup [--shell-alias] | session   [--cwd dir] [--permission-mode m]');
+      console.error('usage: headless.mjs chat [--session id] | run <mission> [--ticks N] | setup [--shell-alias] [--tui] | session   [--cwd dir] [--permission-mode m]');
       return 2;
   }
 }
