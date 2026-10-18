@@ -149,7 +149,13 @@ export function runHook(hook, payload, cwd) {
 const CLAUDE_TOOL = { shell: "Bash", bash: "Bash", read: "Read", write: "Write", edit: "Edit", patch: "Edit" }
 
 export function claudeInput(tool, input = {}) {
-  if (tool === "Bash") return { command: input.command ?? input.cmd ?? "" }
+  if (tool === "Bash") {
+    // The Claude guards find the target repo from a leading `cd <dir>`; a
+    // shell tool with its own working-directory field must not dodge that.
+    const command = input.command ?? input.cmd ?? ""
+    const dir = input.workdir ?? input.cwd ?? input.directory
+    return { command: dir ? `cd ${shQuote(dir)} && ${command}` : command }
+  }
   return { file_path: input.filePath ?? input.file_path ?? input.path ?? "" }
 }
 
