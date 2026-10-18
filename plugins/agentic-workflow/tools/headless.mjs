@@ -74,9 +74,10 @@ export function permissionMode(o, cfg) {
   return m;
 }
 
-export function claudeArgs({ prompt, session = null, mode }) {
+export function claudeArgs({ prompt, session = null, mode, note = null }) {
   const a = ['-p'];
   if (session) a.push('--resume', session);
+  if (note) a.push('--append-system-prompt', note);
   a.push('--permission-mode', mode, prompt);
   return a;
 }
@@ -110,22 +111,39 @@ async function chat(o, cwd, cfg) {
   }
 }
 
-function run(o, cwd, cfg) {
+// Questions the headless orchestrator asked (tools/ask.mjs): open the answer
+// page, wait until every one is answered, then let the loop continue.
+async function answerPending(cwd, mission, cfg) {
+  const ask = await import('./ask.mjs');
+  const o = { root: cwd, mission, port: cfg.ask_port || 0, open: cfg.open_page !== false };
+  const pend = ask.pendingOf(ask.readLog(path.join(cwd, '.plans', 'questions.jsonl')), mission);
+  if (!pend.length) return false;
+  const { url, server } = await ask.serve(o, { onAnswer: (l) => console.error(`  ${l}`) });
+  console.error(`${pend.length} question(s) waiting — answer here: ${url}`);
+  await ask.waitNone(o);
+  server.close();
+  return true;
+}
+
+async function run(o, cwd, cfg) {
   const mission = o._[1];
   if (!mission) throw new Error('usage: headless.mjs run <mission> [--ticks N]');
   const ticks = Number(o.ticks || cfg.ticks || 10);
   const mode = permissionMode(o, cfg);
+  const { HEADLESS_ASK_NOTE } = await import('./ask.mjs');
   for (let i = 1; i <= ticks; i++) {
     const before = ledgerState(cwd, mission);
     if (!before) throw new Error(`no ledger .plans/${mission}.state.md`);
     if (before.closed) { console.error(`mission ${mission} is closed — done.`); return 0; }
+    if (await answerPending(cwd, mission, cfg)) continue; // answers in → next tick reads them
     console.error(`tick ${i}/${ticks}: ${before.nextUp.trim()}`);
-    const rc = turn(claudeArgs({ prompt: `/agentic-workflow:mission ${mission} continue`, mode }), cwd);
+    const rc = turn(claudeArgs({ prompt: `/agentic-workflow:mission ${mission} continue`, mode, note: HEADLESS_ASK_NOTE }), cwd);
     const after = ledgerState(cwd, mission);
     if (rc !== 0) { console.error(`tick ${i} exited ${rc} — stopping.`); return rc; }
     if (after.closed) { console.error(`mission ${mission} closed.`); return 0; }
+    if (await answerPending(cwd, mission, cfg)) continue;
     if (after.nextUp === before.nextUp && after.sessions === before.sessions) {
-      console.error('no progress this tick — the mission is waiting on you (check the owner channel / ledger). Stopping.');
+      console.error('no progress and no question asked — the mission is waiting on something else (check the ledger / owner channel). Stopping.');
       return 3;
     }
   }
@@ -168,7 +186,7 @@ export async function main(argv = process.argv.slice(2)) {
   const cfg = readConfig(cwd);
   switch (o._[0]) {
     case 'chat': await chat(o, cwd, cfg); return 0;
-    case 'run': return run(o, cwd, cfg);
+    case 'run': return await run(o, cwd, cfg);
     case 'setup': return setup(o, cwd, cfg);
     case 'session': console.log(latestInteractiveSession(cwd) || ''); return 0;
     default:

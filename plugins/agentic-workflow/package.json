@@ -1,6 +1,6 @@
 {
   "name": "opencode-agentic-workflow",
-  "version": "1.63.0",
+  "version": "1.64.0",
   "description": "The Agentic Workflow for OpenCode V2 — the same commands, skills, agents and guard hooks as the Claude Code plugin in this directory.",
   "type": "module",
   "exports": {
