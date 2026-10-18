@@ -313,6 +313,9 @@ ok('the shared denylist is the one the adapter uses (shell-wrappers.mjs)',
 ok('isBareBash is semantic: empty or glob-first command parts are bare; literal-first rules are scoped',
   ['Bash', 'Bash()', 'Bash(*)', 'Bash(:*)', 'Bash(* *)', 'Bash(*:*)', 'Bash( * )', 'Bash(?it *)', 'bash'].every(mod.isBareBash)
   && !['Bash(git log:*)', 'Bash(gh pr list:*)', 'Read', 'Grep'].some(mod.isBareBash));
+ok('an interpreter + one literal relative script path is scoped; inline, absolute, .., glob and bare forms are not',
+  ['Bash(node tools/lint.mjs:*)', 'Bash(python3 tools/x.py:*)'].every((r) => !mod.isBareBash(r))
+  && ['Bash(node:*)', 'Bash(node -e:*)', 'Bash(python3 -c:*)', 'Bash(node /etc/x.js:*)', 'Bash(node ../x.mjs:*)', 'Bash(node tools/*.mjs:*)', 'Bash(node x:*)', 'Bash(sh tools/x.sh:*)'].every(mod.isBareBash));
 
 group('EXIT map');
 {

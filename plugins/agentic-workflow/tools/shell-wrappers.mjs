@@ -15,7 +15,9 @@
 //     drift apart silently.
 //
 // Two threat models, one list. The claude-p allowlist refuses EVERY wrapper
-// (a rule is a prefix grant, so `Bash(node:*)` grants `node -e <anything>`).
+// (a rule is a prefix grant, so `Bash(node:*)` grants `node -e <anything>`),
+// except an interpreter + ONE literal relative script path
+// (`Bash(node tools/lint.mjs:*)`) — see SCRIPT_PATH below.
 // Codex execpolicy matches literal argv prefixes AFTER unwrapping its own
 // `zsh -lc`, so only the INLINE forms matter there (`sh -c '<cmd>'`,
 // `node -e '<code>'`): `node tools/lint.mjs` is legitimate and stays allowed.
@@ -69,6 +71,14 @@ const basename = (p) => {
   return parts[parts.length - 1] || p;
 };
 
+// An interpreter followed by ONE literal script path (`node tools/lint.mjs`)
+// runs that file, never inline code: whatever follows the script is the
+// script's argv, not the interpreter's. Relative, no `..`, no leading `-`,
+// no glob or metacharacter, a script extension. The inline forms
+// (`node -e`, `python3 -c`) and the bare `node:*` stay unscoped.
+const INTERPRETERS = new Set(['node', 'python', 'python3', 'perl', 'ruby']);
+const SCRIPT_PATH = /^(?![-/])(?!.*\.\.)[a-z0-9_./-]+\.(?:mjs|cjs|js|py|pl|rb)$/;
+
 // The command part of a `Bash(<cmd>)` rule → why it is unscoped, or null when
 // it names one literal, non-wrapper executable first. Pure; case-insensitive.
 export function unscopedReason(cmd) {
@@ -76,7 +86,8 @@ export function unscopedReason(cmd) {
   const first = tokens[0];
   if (first === '' || /[*?[\]{}]/.test(first)) return 'glob or empty first token';
   if (FIRST_TOKEN_META.test(first)) return `shell metacharacter in first token "${first}"`;
-  if (WRAPPERS.has(basename(first)) || WRAPPERS.has(first)) return `wrapper/interpreter "${first}"`;
+  const scriptForm = INTERPRETERS.has(first) && SCRIPT_PATH.test(tokens[1] || '');
+  if (!scriptForm && (WRAPPERS.has(basename(first)) || WRAPPERS.has(first))) return `wrapper/interpreter "${first}"`;
   if (tokens.some((t) => EXEC_FLAGS.includes(t))) return 'find -exec/-execdir';
   return null;
 }
