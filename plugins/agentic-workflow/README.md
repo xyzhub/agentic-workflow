@@ -325,6 +325,27 @@ Then in any project: `/agentic-workflow:adopt` (existing), `/agentic-workflow:bo
 claude --plugin-dir ./plugins/agentic-workflow
 ```
 
+### OpenCode (V2)
+
+The same directory is also an OpenCode V2 plugin (`package.json` → `index.js`
+→ `opencode/index.js`). Install it globally:
+
+```
+opencode plugin add 'github:xyzhub/agentic-workflow#main::path:plugins/agentic-workflow'
+```
+
+or list the folder in a project's `.opencode/opencode.jsonc`
+(`"plugins": ["/path/to/plugins/agentic-workflow"]`). On load it registers the
+28 commands (`/agentic-workflow:<cmd>`) and both skills, writes the 20 agents
+to `~/.config/opencode/agents/agentic-workflow-<role>.md` (only files it owns;
+pass the option `"agents": false` to skip, or `"agentsDir"` to redirect), and
+runs the `hooks/hooks.json` guards: prompt hooks append to the prompt,
+PreToolUse `Bash`/`Read` guards deny through OpenCode's permission hook,
+PostToolUse `Write|Edit` runs after edits. **Not mapped:** `Stop`,
+`SessionStart` and `SessionEnd` hooks (no V2 equivalent), agent `model`/`tools`
+frontmatter (agents inherit the session model). Requires `bash`, `git` and `jq`
+like the Claude hooks.
+
 ## Development
 
 Two test tiers: `node tools/lint.mjs` (free, deterministic — manifests,
