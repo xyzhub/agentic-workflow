@@ -36,6 +36,11 @@ _(empty)_
   waits until every question is answered (buttons or ≤280-char "something
   else"), and continues the mission. Also `answer`, `pending`, `serve`, `wait`
   verbs; port 4747 falls back to a free port.
+- **`tools/preset.mjs`** — `apply <name>` / `reset` / `show` run the
+  `/tune preset` steps as a plain script (no model, works with the
+  subscription out): same skip rules (hand and composed tunes win), same
+  banner + base sha, same §10 row; `apply isolated` also runs headless setup
+  (`--shell-alias` adds `ccp`). `ccp preset …` routes to it.
 - Lint: `isolated` joins the preset list; every `claude-p` row (not only
   Haiku) must carry maxTurns, read_budget, compact_window, scoped
   allowed_tools and a fallback.
