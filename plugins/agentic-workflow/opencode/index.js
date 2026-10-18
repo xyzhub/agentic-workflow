@@ -159,14 +159,23 @@ export function claudeInput(tool, input = {}) {
   return { file_path: input.filePath ?? input.file_path ?? input.path ?? "" }
 }
 
+// The command classes the blocking guards exist for. A guard that cannot run
+// fails CLOSED for these; anything else fails open (Claude Code's default), so
+// one hung guard cannot stop every shell command. Deliberately a loose
+// substring match, not a parse: it only decides fail-closed vs fail-open AFTER
+// a guard has failed, so a false positive costs one blocked command, while a
+// tight pattern would let quoting/eval/alias spellings slip through.
+export const GUARDED = /push|merge|publish|release|pulls\/|graphql/i
+
 // Runs the PreToolUse guards; returns the first block reason or null. Exit 2
-// blocks (Claude semantics); a guard that failed to run also blocks — these
-// are the push/merge/publish guards, so a missing verdict fails closed.
+// blocks (Claude semantics); a guard that failed to run blocks a GUARDED
+// command and is skipped for any other.
 export function preToolBlock(tool, toolInput, cwd) {
+  const guarded = tool === "Bash" && GUARDED.test(toolInput.command || "")
   for (const h of hookCommands("PreToolUse", tool)) {
     const r = runHook(h, { hook_event_name: "PreToolUse", tool_name: tool, tool_input: toolInput, cwd }, cwd)
     if (r.code === 2) return r.stderr || r.stdout || `${PREFIX} guard blocked this ${tool} call`
-    if (r.failed) return `${PREFIX} guard could not run (${r.stderr || "no verdict"}) — blocked; fix the guard or its dependencies (bash, git, jq)`
+    if (r.failed && guarded) return `${PREFIX} guard could not run (${r.stderr || "no verdict"}) — blocked this push/merge/publish; fix the guard or its dependencies (bash, git, jq)`
   }
   return null
 }
