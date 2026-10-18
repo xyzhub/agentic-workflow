@@ -421,6 +421,18 @@ budget. Overrun stop: k ≥ 8 (1.5 × 5, rounded up).
   orchestrator runs `rename.mjs apply` for `.plans` after S2 (Q3) and logs it.
 - **Lint's long-line guard** (`checkObfuscation`, over 1,000 chars per `.mjs`
   line). → Keep the hash table and fixtures one entry per line.
+- **The OpenCode package (PR #154, v1.63.0) postdates this plan** (added
+  2026-10-18). If #154 is on `main` when the mission starts, its surfaces need
+  the rename too, and pattern (a) does not cover all of them:
+  `opencode/index.js` `PREFIX` and the `managed-by:` marker; the agent file
+  names `agentic-workflow-<role>.md` (hyphen, not colon); <!-- legacy-name -->
+  `package.json` `name` (`opencode-agentic-workflow`); and the README install <!-- legacy-name -->
+  spec `::path:plugins/agentic-workflow`, which moves with the folder in S2. <!-- legacy-name -->
+  Agent files already synced to `~/.config/opencode/agents/` under the old
+  name are left orphaned; the sync must delete its own old-name files (they
+  carry the marker) and write the new names. → S1 adds these to AC-1's pattern
+  set or AC-2's scope; S2 re-runs the OpenCode live-load check (all 28
+  commands, 2 skills and 20 agents listed under `xyz`).
 
 ## Open questions
 
