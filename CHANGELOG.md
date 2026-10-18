@@ -8,6 +8,12 @@ has no tags — each version-stamped commit on `main` IS the release.
 
 _(empty)_
 
+## [1.66.1] — 2026-10-18
+### Security — ccp strips terminal control characters
+- Model text, tool names and arguments, error results and the model id are
+  stripped of C0/C1 control characters (ESC included; `\n` and `\t` kept)
+  before `ccp` renders them, so a file or reply can't inject terminal escapes.
+
 ## [1.66.0] — 2026-10-18
 ### Added — `ccp` looks like a proper terminal app
 - `ccp` turns now stream through `claude -p --output-format stream-json`:
