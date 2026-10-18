@@ -20,10 +20,14 @@ const color = (on) => {
   return { dim: w(2, 22), bold: w(1, 22), cyan: w(36, 39), green: w(32, 39), red: w(31, 39), yellow: w(33, 39), mag: w(35, 39) };
 };
 
+// Model/tool-derived strings never reach the terminal raw: drop C0/C1 controls
+// (ESC included) except \n and \t, so a file or reply can't inject escapes.
+export const clean = (s) => String(s ?? '').replace(/[\x00-\x08\x0b-\x1f\x7f-\x9f]/g, '');
+
 // The one argument worth showing for a tool call.
 export function toolSummary(name, input = {}) {
   const v = input.command ?? input.file_path ?? input.path ?? input.pattern ?? input.url ?? input.description ?? input.prompt ?? '';
-  return String(v).replace(/\s+/g, ' ').trim();
+  return clean(v).replace(/\s+/g, ' ').trim();
 }
 
 const cut = (s, n) => (s.length > n ? `${s.slice(0, Math.max(0, n - 1))}…` : s);
@@ -40,7 +44,7 @@ export function plainUi({ out = process.stdout, err = process.stderr, styled = !
       .replace(/\*\*([^*\n]+)\*\*/g, (_, b) => c.bold(b))
       .replace(/`([^`\n]+)`/g, (_, k) => c.yellow(k)),
     header({ session, mode, model }) {
-      const title = ` ccp · ${String(session).slice(0, 8)} · ${mode}${model ? ` · ${model}` : ''} `;
+      const title = clean(` ccp · ${String(session).slice(0, 8)} · ${mode}${model ? ` · ${model}` : ''} `);
       const sub = ' headless on claude -p · Ctrl-D quit · Ctrl-C stop turn ';
       const n = Math.max(title.length, sub.length) + 2;
       out.write(`${c.dim('╭─')}${c.bold(title)}${c.dim('─'.repeat(n - title.length) + '╮')}\n`);
@@ -98,16 +102,16 @@ export async function makeUi(opts = {}) {
 // Feed one stream-json line; `st` carries per-turn counters across lines.
 export function onEvent(line, ui, st) {
   let e; try { e = JSON.parse(line); } catch { return; }
-  if (e.type === 'system' && e.subtype === 'init') st.model = e.model;
+  if (e.type === 'system' && e.subtype === 'init') st.model = clean(e.model);
   else if (e.type === 'assistant') {
     for (const b of e.message?.content || []) {
-      if (b.type === 'text' && b.text.trim()) ui.text(b.text.trim());
-      else if (b.type === 'tool_use') { st.tools++; ui.tool(b.name, toolSummary(b.name, b.input)); }
+      if (b.type === 'text' && clean(b.text).trim()) ui.text(clean(b.text).trim());
+      else if (b.type === 'tool_use') { st.tools++; ui.tool(clean(b.name), toolSummary(b.name, b.input)); }
     }
   } else if (e.type === 'user') {
     for (const b of e.message?.content || []) if (b.type === 'tool_result') ui.toolDone(!b.is_error);
   } else if (e.type === 'result') {
     st.cost = e.total_cost_usd; st.ms = e.duration_ms;
-    if (e.is_error && e.result) ui.text(ui.c.red(e.result));
+    if (e.is_error && e.result) ui.text(ui.c.red(clean(e.result)));
   }
 }
