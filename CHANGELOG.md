@@ -15,6 +15,14 @@ has no tags — each version-stamped commit on `main` IS the release.
   `test`/`run` verbs of npm, pnpm, bun and yarn); `npx`, `bunx`, `make`,
   `node` and `python` run arbitrary code, so they are left out — widen a role with
   `tune <agent> tools`.
+- **`tools/headless.mjs`** — the orchestrator side. `chat` resumes your last
+  interactive session (newest transcript whose first entrypoint is `cli`, so
+  agent children are never picked) as a `claude -p --resume` prompt loop;
+  `run <mission>` drives fresh `claude -p` mission ticks until the ledger is
+  Closed, a tick makes no progress (owner wait → exit 3) or `--ticks`;
+  `setup [--shell-alias]` writes `.claude/headless.json` (permission mode
+  `auto` by default, never bypass) and an idempotent `ccp` zsh function.
+  `tune preset isolated` runs setup automatically and offers the alias.
 - Lint: `isolated` joins the preset list; every `claude-p` row (not only
   Haiku) must carry maxTurns, read_budget, compact_window, scoped
   allowed_tools and a fallback.
