@@ -8,6 +8,22 @@ has no tags — each version-stamped commit on `main` IS the release.
 
 _(empty)_
 
+## [1.65.0] — 2026-10-18
+### Added
+- **`tools/preset.mjs`** — `apply <name>` / `reset` / `show` run the
+  `/tune preset` steps as a plain script (no model, works with the
+  subscription out): same skip rules (hand and composed tunes win), same
+  banner + base sha, same §10 row; `apply isolated` also runs headless setup
+  (`--shell-alias` adds `ccp`). `ccp preset …` routes to it.
+
+### Fixed — isolated agents can run the repo lint
+- `shell-wrappers.mjs`: an interpreter followed by ONE literal relative
+  script path (`Bash(node tools/lint.mjs:*)`) is a scoped rule — the script
+  runs, never inline code. `node:*`, `node -e`, `python3 -c`, absolute or
+  `..` paths, globs and other shells stay refused.
+- `isolated` preset: gate and builder rows allow `node tools/lint.mjs`, so
+  the reviewer and builders can run this repo's gate.
+
 ## [1.64.0] — 2026-10-18
 ### Added — `isolated` tune preset: every agent as a child `claude -p`
 - **`/agentic-workflow:tune preset isolated`** — all 20 agents keep their
@@ -36,11 +52,6 @@ _(empty)_
   waits until every question is answered (buttons or ≤280-char "something
   else"), and continues the mission. Also `answer`, `pending`, `serve`, `wait`
   verbs; port 4747 falls back to a free port.
-- **`tools/preset.mjs`** — `apply <name>` / `reset` / `show` run the
-  `/tune preset` steps as a plain script (no model, works with the
-  subscription out): same skip rules (hand and composed tunes win), same
-  banner + base sha, same §10 row; `apply isolated` also runs headless setup
-  (`--shell-alias` adds `ccp`). `ccp preset …` routes to it.
 - Lint: `isolated` joins the preset list; every `claude-p` row (not only
   Haiku) must carry maxTurns, read_budget, compact_window, scoped
   allowed_tools and a fallback.
