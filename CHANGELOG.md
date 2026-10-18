@@ -8,6 +8,28 @@ has no tags — each version-stamped commit on `main` IS the release.
 
 _(empty)_
 
+## [1.63.0] — 2026-10-18
+### Added — OpenCode V2 packaging: one directory, two runtimes
+- **`plugins/agentic-workflow/` is now also an OpenCode V2 plugin** —
+  `package.json` + root `index.js` (OpenCode loads a local package directory
+  from its root `index.js`, not `exports`) → `opencode/index.js`, plain ESM, no
+  dependencies. Installs with `opencode plugin add
+  'github:xyzhub/agentic-workflow#main::path:plugins/agentic-workflow'`.
+- **What it registers, from the shared markdown (no second copy):** the 28
+  commands via `command.transform` (body expanded, `${CLAUDE_PLUGIN_ROOT}` and
+  `$ARGUMENTS` resolved, a runtime note maps Claude spellings to OpenCode's);
+  both skills via `skill.transform`; the 20 agents written as owned files to
+  `~/.config/opencode/agents/` (the V2 agent editor has no `add`).
+- **Guards:** `hooks/hooks.json` runs unchanged — `UserPromptSubmit` →
+  `session.hook("prompt")` (stdout appended), `PreToolUse Bash|Read` →
+  `permission.hook("evaluate")` (exit 2 → deny), `PostToolUse Write|Edit` →
+  `tool.hook("execute.after")`. `Stop`/`SessionStart`/`SessionEnd` are not
+  mapped (no V2 hook).
+- **Verified:** live load on OpenCode 2.0.32 lists all 28 commands, both
+  skills and all 20 agents; the push-to-default guard denies through a stubbed
+  permission event. Not yet verified live: a guard firing on a real model's
+  shell call.
+
 ## [1.62.0] — 2026-10-15
 ### Added — configurable attribution: one §10 row sets the credit on commits and PRs
 - **§10 `Attribution` row** — `commit: <v> · pr: <v>`, each `default`
