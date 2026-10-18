@@ -5,6 +5,10 @@ here, in [Keep a Changelog](https://keepachangelog.com/) format. This repo
 has no tags — each version-stamped commit on `main` IS the release.
 
 ## [Unreleased]
+
+_(empty)_
+
+## [1.64.0] — 2026-10-18
 ### Added — `isolated` tune preset: every agent as a child `claude -p`
 - **`/agentic-workflow:tune preset isolated`** — all 20 agents keep their
   `balanced` model and effort but run through `tools/run-claude.mjs` as a child
@@ -23,6 +27,15 @@ has no tags — each version-stamped commit on `main` IS the release.
   `setup [--shell-alias]` writes `.claude/headless.json` (permission mode
   `auto` by default, never bypass) and an idempotent `ccp` zsh function.
   `tune preset isolated` runs setup automatically and offers the alias.
+- **`tools/ask.mjs` — the owner-question page** (lean E2a slice). A headless
+  orchestrator gets an appended instruction instead of AskUserQuestion:
+  `ask.mjs ask --headline … --option "Label::meaning" …` writes an `asked`
+  event to `.plans/questions.jsonl` (E2a's log and id/option formats, a field
+  subset; E2a's `state.mjs` supersedes it). `headless.mjs run` then opens a
+  local page (127.0.0.1, per-run token, loopback Host check, no-store, CSP),
+  waits until every question is answered (buttons or ≤280-char "something
+  else"), and continues the mission. Also `answer`, `pending`, `serve`, `wait`
+  verbs; port 4747 falls back to a free port.
 - Lint: `isolated` joins the preset list; every `claude-p` row (not only
   Haiku) must carry maxTurns, read_budget, compact_window, scoped
   allowed_tools and a fallback.
