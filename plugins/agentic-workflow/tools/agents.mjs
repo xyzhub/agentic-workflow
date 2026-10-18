@@ -126,8 +126,14 @@ export function registry(projectDir = process.cwd()) {
     const baseDescription = fmValue(baseText, 'description') || '';
     const baseTools = toList(fmValue(baseText, 'tools'));
 
-    const shadowPath = path.join(projectDir, '.claude/agents', `${name}.md`);
-    const hasShadow = existsSync(shadowPath);
+    // Project shadow first, else a machine-wide tune in ~/.claude/agents/
+    // (banner-carrying only — the same rule as run-codex.mjs roleFile()).
+    const projectShadow = path.join(projectDir, '.claude/agents', `${name}.md`);
+    const userShadowPath = path.join(process.env.HOME || '', '.claude/agents', `${name}.md`);
+    const userTuned = !existsSync(projectShadow) && process.env.HOME && existsSync(userShadowPath)
+      && /^> Tuned from agentic-workflow v/m.test(readFileSync(userShadowPath, 'utf8'));
+    const shadowPath = userTuned ? userShadowPath : projectShadow;
+    const hasShadow = existsSync(shadowPath) && (userTuned || shadowPath === projectShadow);
     const shadowText = hasShadow ? readFileSync(shadowPath, 'utf8') : null;
     const src = hasShadow ? shadowText : baseText;
 
@@ -144,7 +150,7 @@ export function registry(projectDir = process.cwd()) {
     if (hasShadow) {
       const banner = shadowText.match(BANNER_RE);
       override = {
-        path: path.join('.claude/agents', `${name}.md`),
+        path: userTuned ? path.join('~/.claude/agents', `${name}.md`) : path.join('.claude/agents', `${name}.md`),
         kind: overrideKind(baseText, shadowText),
         base_version: banner ? banner[1] : null,
         base_sha: banner && banner[2] ? banner[2] : null,

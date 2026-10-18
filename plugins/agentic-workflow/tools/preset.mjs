@@ -3,9 +3,10 @@
 // subscription is out (the `/agentic-workflow:tune preset` command needs a
 // live session). Same rules as commands/tune.md "Apply" / "Reset":
 //
-//   node tools/preset.mjs apply <lean|balanced|rigorous|unattended|isolated> [--project <repo>] [--shell-alias]
-//   node tools/preset.mjs reset  [--project <repo>]
-//   node tools/preset.mjs show   [--project <repo>]
+//   node tools/preset.mjs apply <lean|balanced|rigorous|unattended|isolated> [--project <repo> | --user] [--shell-alias]
+//   node tools/preset.mjs reset  [--project <repo> | --user]
+//   node tools/preset.mjs show   [--project <repo> | --user]
+//   --user: machine-wide — shadows in ~/.claude/agents/ (a project's own copy still wins).
 //
 // apply: per plugin agent — a hand-tuned shadow (banner without `preset:`) or a
 // composed one (`preset:x, model` …) is SKIPPED (the hand tune wins); a cell
@@ -161,7 +162,16 @@ export function show(project, { log = console.log } = {}) {
 
 export async function main(argv = process.argv.slice(2)) {
   const pi = argv.indexOf('--project');
-  const project = path.resolve(pi >= 0 ? argv[pi + 1] : process.cwd());
+  const home = path.resolve(process.env.HOME || '/');
+  const user = argv.includes('--user');
+  // --user = machine-wide: shadows go to ~/.claude/agents/ (every project on
+  // this machine; a project's own .claude/agents/ still wins). Without it, the
+  // home folder is refused as a project — that is where a stray run lands.
+  const project = user ? home : path.resolve(pi >= 0 ? argv[pi + 1] : process.cwd());
+  if (!user && project === home) {
+    console.error('preset: refusing to treat your home folder as a project — cd into the repo (or pass --project <repo>), or pass --user to apply machine-wide (~/.claude/agents/)');
+    return 2;
+  }
   const [verb, name] = argv.filter((a, i) => !a.startsWith('--') && argv[i - 1] !== '--project');
   if (verb === 'apply' && name) {
     const rc = apply(project, name);
@@ -173,7 +183,7 @@ export async function main(argv = process.argv.slice(2)) {
   }
   if (verb === 'reset') return reset(project);
   if (verb === 'show') return show(project);
-  console.error('usage: preset.mjs apply <name> [--shell-alias] | reset | show   [--project <repo>]');
+  console.error('usage: preset.mjs apply <name> [--shell-alias] | reset | show   [--project <repo> | --user]');
   return 1;
 }
 

@@ -145,7 +145,7 @@ Read `.plans/<mission>.state.md` → `Next up:`. For each pending brief:
 
 1. **Write-ahead**: increment `Sessions used:` and mark the row `[~]`.
 2. **Resolve the runtime, then spawn.** Precedence (locked): the brief's
-   `runtime:` header field → a `.claude/agents/<role>.md` tune override
+   `runtime:` header field → a `.claude/agents/<role>.md` tune override (project, else a machine-wide `~/.claude/agents/` one)
    (`runtime: codex[:<model>]` or `claude-p`, `effort:`) → the default `claude`. Route to the
    right agent from the brief (`backend`/`frontend`/`security`/`devops`, or the
    main session for cross-cutting work) and spawn it on the resolved runtime:
