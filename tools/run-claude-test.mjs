@@ -307,7 +307,8 @@ ok('the shared denylist is the one the adapter uses (shell-wrappers.mjs)',
 {
   const j = JSON.parse(readFileSync(path.join(PLUGIN, 'templates/tune-presets.json'), 'utf8'));
   const haiku = Object.values(j.presets).flatMap((p) => Object.values(p.agents)).filter((r) => r.runtime === 'claude-p');
-  ok(`the ${haiku.length} shipped Haiku rows carry no rule the check refuses`, haiku.length === 8 && haiku.every((r) => !r.allowed_tools.some(mod.isBareBash)));
+  // 8 Haiku rows (lean + unattended record class) + 20 isolated rows.
+  ok(`the ${haiku.length} shipped claude-p rows carry no rule the check refuses`, haiku.length === 28 && haiku.every((r) => !r.allowed_tools.some(mod.isBareBash)));
 }
 ok('isBareBash is semantic: empty or glob-first command parts are bare; literal-first rules are scoped',
   ['Bash', 'Bash()', 'Bash(*)', 'Bash(:*)', 'Bash(* *)', 'Bash(*:*)', 'Bash( * )', 'Bash(?it *)', 'bash'].every(mod.isBareBash)

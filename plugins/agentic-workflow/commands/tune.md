@@ -1,6 +1,6 @@
 ---
 description: Retune an agent for THIS project via a reviewable, reversible shadow in .claude/agents/ — a Claude model tier, a second runtime (codex), per-agent effort, its tool list, its skills, the reviewer's boundary-escalation, or a prompt edit — or a whole-project preset (lean/balanced/rigorous/unattended) — each stamped with the plugin base version and a base hash, with diff, rebase and reset.
-argument-hint: '[agent] [<model> | codex[:<model>] | effort <level> | tools <a,b,…> | skills <a,b,…> | prompt | boundary-escalation on|off | diff | rebase | reset] | preset <lean|balanced|rigorous|unattended> | preset show | preset reset'
+argument-hint: '[agent] [<model> | codex[:<model>] | effort <level> | tools <a,b,…> | skills <a,b,…> | prompt | boundary-escalation on|off | diff | rebase | reset] | preset <lean|balanced|rigorous|unattended|isolated> | preset show | preset reset'
 allowed-tools: [Read, Write, Edit, Bash, Grep, Glob]
 ---
 
@@ -37,7 +37,7 @@ agent), `base version` from `override.base_version`. Close with the one-liners:
 - `/agentic-workflow:tune <agent> tools <a,b,…>` · `skills <a,b,…>`
 - `/agentic-workflow:tune reviewer boundary-escalation on|off`
 - `/agentic-workflow:tune <agent> prompt` · `diff` · `rebase` · `reset`
-- `/agentic-workflow:tune preset <lean|balanced|rigorous|unattended>` · `preset show` · `preset reset` — the whole-project posture (§10 **Tune preset**)
+- `/agentic-workflow:tune preset <lean|balanced|rigorous|unattended|isolated>` · `preset show` · `preset reset` — the whole-project posture (§10 **Tune preset**)
 
 ## How every tune writes the shadow
 
@@ -222,7 +222,7 @@ tier maps through the JSON's `tier_aliases` (`opus`/`sonnet`/`haiku` → pinned
 id) and a base `inherit` (or no `model:`) and an absent `effort:` resolve to
 the agent's **balanced** cell. So `balanced` writes zero files in any project.
 
-**Apply — `tune preset <lean|balanced|rigorous|unattended>`.**
+**Apply — `tune preset <lean|balanced|rigorous|unattended|isolated>`.**
 1. Validate the name against the JSON's `presets`. Read the §10 **Tune
    preset** row of `docs/WORKFLOW.md` (the name is its first token).
 2. If the name changes the row and any `.plans/*.state.md` lacks `Closed:`
@@ -235,7 +235,7 @@ the agent's **balanced** cell. So `balanced` writes zero files in any project.
      (`/agentic-workflow:tune <agent> reset` drops it);
    - cell equals the base → delete an existing preset-only shadow, else nothing;
    - cell differs → a **fresh copy** of the base, `model: <pinned id>`,
-     `effort: <level>`, and on a Haiku row `runtime: claude-p` + `maxTurns:
+     `effort: <level>`, and on a claude-p row (Haiku, or every `isolated` row) `runtime: claude-p` + `maxTurns:
      <n>` (the row's `compact_window`, `read_budget`, `allowed_tools` and
      `fallback` stay in the JSON — never invented into frontmatter); banner kind
      `preset:<name>` with details `(model: …, effort: …[, runtime: …, maxTurns:
@@ -245,10 +245,13 @@ the agent's **balanced** cell. So `balanced` writes zero files in any project.
    `.claude/agents/` with `docs/WORKFLOW.md`. Re-running is idempotent (same
    files, fresh bodies — after a plugin upgrade it doubles as a bulk refresh).
 
-A Haiku row's `runtime: claude-p` is a child `claude -p` process carrying the
-row's 100K window — Haiku never runs in the shared session; the orchestrator
+A claude-p row (Haiku, or every `isolated` row) is a child `claude -p` process carrying the
+row's `compact_window` (100K on Haiku) — it never runs in the shared session; the orchestrator
 runs it through `tools/run-claude.mjs --preset <name>` (mission.md step 2) and
-re-routes a `budget:` block once to the row's `fallback`.
+re-routes a `budget:` block once to the row's `fallback`. `isolated` keeps every
+agent's `balanced` model and effort and only moves it out of the session (the
+child bills where `claude -p` bills, e.g. API credit); its Bash is scoped —
+widen a role with `tune <agent> tools`.
 
 **Show — `tune preset show`.** From `agents.mjs --json` + the JSON (never
 re-parsed by hand): a header with the §10 preset (`balanced` when the row is

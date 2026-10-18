@@ -153,7 +153,7 @@ Read `.plans/<mission>.state.md` → `Next up:`. For each pending brief:
      pass the Agent tool's effort parameter where the harness exposes one; where
      it does not, prepend `Effort: <level>.` as the first line of the spawn
      prompt. The tune's report says which applied.
-   - **`codex`** / **`claude-p`** (a preset's Haiku row): `node
+   - **`codex`** / **`claude-p`** (a preset's claude-p row: Haiku, or `isolated`): `node
      ${CLAUDE_PLUGIN_ROOT}/tools/run-codex.mjs` / `run-claude.mjs` `--role <role>
      --brief <file>#<anchor> --cwd <repo> --out <distillate.json> [--model <m>]
      [--effort <level>]` (`claude-p` adds `--preset <name>`) via the **Bash tool
