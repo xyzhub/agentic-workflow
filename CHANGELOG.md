@@ -8,6 +8,18 @@ has no tags — each version-stamped commit on `main` IS the release.
 
 _(empty)_
 
+## [1.65.2] — 2026-10-18
+### Fixed — machine-wide presets are honoured
+- `run-codex.mjs` `roleFile()` (used by `run-claude.mjs` too) and
+  `agents.mjs` `registry()` fall back to `~/.claude/agents/<role>.md` when the
+  project has no copy — only a file carrying this plugin's tune banner, so a
+  personal agent of the same name is never picked up. A project's own copy
+  still wins. Before this, machine-wide copies were silently ignored and
+  agents ran in-session.
+- `preset.mjs --user` applies/resets/shows machine-wide (`~/.claude/agents/`).
+  Without it, the home folder is refused as a project (exit 2) — a run from
+  `~` used to write machine-wide copies by accident.
+
 ## [1.65.1] — 2026-10-18
 ### Changed — `ccp` works in every shell
 - `headless.mjs setup --shell-alias` now installs `ccp` as a POSIX `sh`

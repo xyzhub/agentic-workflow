@@ -109,10 +109,20 @@ export function frontmatterValue(text, key) {
   return hit ? hit.slice(key.length + 1).trim() : null;
 }
 
-// A tune override in the project wins over the shipped role prompt.
+// A tune override wins over the shipped role prompt: the project's
+// .claude/agents/ first, else a machine-wide one in ~/.claude/agents/ — the
+// latter only when it carries this plugin's tune banner (preset.mjs --user),
+// so an unrelated personal agent of the same name is never picked up.
+export const TUNE_BANNER = /^> Tuned from agentic-workflow v/m;
+export function userShadow(role, home = process.env.HOME || '') {
+  const f = path.join(home, '.claude/agents', `${role}.md`);
+  return home && existsSync(f) && TUNE_BANNER.test(readFileSync(f, 'utf8')) ? f : null;
+}
 export function roleFile(role, cwd) {
   const override = path.join(cwd, '.claude/agents', `${role}.md`);
   if (existsSync(override)) return override;
+  const user = userShadow(role);
+  if (user) return user;
   const shipped = path.join(PLUGIN_ROOT, 'agents', `${role}.md`);
   return existsSync(shipped) ? shipped : null;
 }
