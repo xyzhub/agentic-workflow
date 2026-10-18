@@ -222,7 +222,10 @@ tier maps through the JSON's `tier_aliases` (`opus`/`sonnet`/`haiku` → pinned
 id) and a base `inherit` (or no `model:`) and an absent `effort:` resolve to
 the agent's **balanced** cell. So `balanced` writes zero files in any project.
 
-**Apply — `tune preset <lean|balanced|rigorous|unattended|isolated>`.**
+**Apply — `tune preset <lean|balanced|rigorous|unattended|isolated>`.** No live session
+(subscription out)? The same steps run as a script: `node
+"${CLAUDE_PLUGIN_ROOT}/tools/preset.mjs" apply <name>` (also `reset`, `show`;
+`ccp preset …` once the alias exists).
 1. Validate the name against the JSON's `presets`. Read the §10 **Tune
    preset** row of `docs/WORKFLOW.md` (the name is its first token).
 2. If the name changes the row and any `.plans/*.state.md` lacks `Closed:`

@@ -154,11 +154,17 @@ async function run(o, cwd, cfg) {
 export function aliasBlock(self = SELF) {
   return `${ALIAS_MARK}
 # ccp — continue your last Claude Code session headless (bills where claude -p bills).
-# ccp run <mission> — drive a mission unattended. Written by headless.mjs setup.
+# ccp run <mission> — drive a mission unattended. ccp preset apply|reset|show — tune presets, no session needed.
+# Written by headless.mjs setup.
 ccp() {
-  local t; t=$(ls -d "$HOME"/.claude/plugins/cache/*/agentic-workflow/*/tools/headless.mjs 2>/dev/null | sort -V | tail -1)
-  [ -z "$t" ] && t=${JSON.stringify(self)}
-  if [ "$1" = run ]; then node "$t" "$@"; else node "$t" chat "$@"; fi
+  # newest installed copy (zsh: N = no error when none, n = numeric version sort)
+  local c; c=( "$HOME"/.claude/plugins/cache/*/agentic-workflow/*/tools/headless.mjs(Nn) )
+  local t=\${c[-1]:-${JSON.stringify(self)}}
+  case "$1" in
+    run) node "$t" "$@" ;;
+    preset) shift; node "$(dirname "$t")/preset.mjs" "$@" ;;
+    *) node "$t" chat "$@" ;;
+  esac
 }
 # <<< agentic-workflow headless (ccp) <<<
 `;
