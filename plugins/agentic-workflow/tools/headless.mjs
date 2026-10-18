@@ -13,7 +13,8 @@
 //       (waiting on the owner — answer via the §12 owner channel), or N ticks.
 //   node tools/headless.mjs setup [--cwd <dir>] [--shell-alias]
 //       Write .claude/headless.json and print the commands; --shell-alias also
-//       adds a `ccp` function to ~/.zshrc (idempotent, marked block).
+//       installs `ccp` (a POSIX sh executable in ~/.local/bin, any shell) and
+//       puts ~/.local/bin on PATH in your shell's startup file if needed.
 //   node tools/headless.mjs session [--cwd <dir>]
 //       Print the session id `chat` would resume.
 //
@@ -22,7 +23,7 @@
 // --permission-mode. Never bypassPermissions. Zero deps, Node >= 18.
 
 import { spawnSync } from 'node:child_process';
-import { appendFileSync, existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
+import { appendFileSync, chmodSync, existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import path from 'node:path';
 import readline from 'node:readline';
@@ -151,23 +152,67 @@ async function run(o, cwd, cfg) {
   return 0;
 }
 
-export function aliasBlock(self = SELF) {
-  return `${ALIAS_MARK}
-# ccp — continue your last Claude Code session headless (bills where claude -p bills).
-# ccp run <mission> — drive a mission unattended. ccp preset apply|reset|show — tune presets, no session needed.
-# Written by headless.mjs setup.
-ccp() {
-  # newest installed copy (zsh: N = no error when none, n = numeric version sort)
-  local c; c=( "$HOME"/.claude/plugins/cache/*/agentic-workflow/*/tools/headless.mjs(Nn) )
-  local t=\${c[-1]:-${JSON.stringify(self)}}
-  case "$1" in
-    run) node "$t" "$@" ;;
-    preset) shift; node "$(dirname "$t")/preset.mjs" "$@" ;;
-    *) node "$t" chat "$@" ;;
-  esac
-}
-# <<< agentic-workflow headless (ccp) <<<
+// `ccp` is a POSIX sh executable in ~/.local/bin — the same in zsh, bash,
+// fish, sh, cron and scripts; no shell function, no shell-specific syntax.
+export function ccpScript(self = SELF) {
+  return `#!/bin/sh
+# ccp — continue your last Claude Code session headless via claude -p (bills
+# where claude -p bills). ccp run <mission> drives a mission unattended;
+# ccp preset apply|reset|show manages tune presets with no session needed.
+# Written by agentic-workflow tools/headless.mjs setup; re-run setup to refresh.
+list=$(ls -d "$HOME"/.claude/plugins/cache/*/agentic-workflow/*/tools/headless.mjs 2>/dev/null)
+t=$(printf '%s\\n' "$list" | sort -V 2>/dev/null | tail -n 1)
+[ -n "$t" ] || t=$(printf '%s\\n' "$list" | tail -n 1)
+[ -n "$t" ] || t=${shQuote(self)}
+if [ ! -f "$t" ]; then echo "ccp: agentic-workflow plugin not found (reinstall it, then re-run setup)" >&2; exit 1; fi
+command -v node >/dev/null 2>&1 || { echo "ccp: node is not on PATH" >&2; exit 1; }
+case "$1" in
+  run) exec node "$t" "$@" ;;
+  preset) shift; exec node "$(dirname "$t")/preset.mjs" "$@" ;;
+  *) exec node "$t" chat "$@" ;;
+esac
 `;
+}
+
+const shQuote = (s) => `'${String(s).replaceAll("'", `'\\''`)}'`;
+const PATH_MARK = '# >>> agentic-workflow ccp PATH >>>';
+const PATH_END = '# <<< agentic-workflow ccp PATH <<<';
+
+// Shell startup files that should put ~/.local/bin on PATH, by login shell.
+export function rcFiles(home, shell = process.env.SHELL || '') {
+  const name = path.basename(shell);
+  if (name === 'fish') return [{ file: path.join(home, '.config/fish/conf.d/ccp.fish'), line: 'fish_add_path -g $HOME/.local/bin' }];
+  const line = 'case ":$PATH:" in *":$HOME/.local/bin:"*) ;; *) export PATH="$HOME/.local/bin:$PATH" ;; esac';
+  if (name === 'bash') return [path.join(home, '.bashrc'), path.join(home, '.bash_profile')].map((file) => ({ file, line }));
+  if (name === 'zsh') return [{ file: path.join(home, '.zshrc'), line }];
+  return [{ file: path.join(home, '.profile'), line }];
+}
+
+const stripBlock = (text, a, b) => text.replace(new RegExp(`\\n?${a.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}[\\s\\S]*?${b.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\n?`, 'g'), '\n');
+
+export function installCcp(home = homedir(), { shell = process.env.SHELL, pathEnv = process.env.PATH || '', log = console.log } = {}) {
+  const bin = path.join(home, '.local', 'bin');
+  const target = path.join(bin, 'ccp');
+  mkdirSync(bin, { recursive: true });
+  writeFileSync(target, ccpScript());
+  chmodSync(target, 0o755);
+  log(`installed ${target}`);
+  // The old zsh-only function would shadow the executable — remove it.
+  const zshrc = path.join(home, '.zshrc');
+  if (existsSync(zshrc) && readFileSync(zshrc, 'utf8').includes(ALIAS_MARK)) {
+    writeFileSync(zshrc, stripBlock(readFileSync(zshrc, 'utf8'), ALIAS_MARK, '# <<< agentic-workflow headless (ccp) <<<'));
+    log('removed the old ccp function from ~/.zshrc (the executable replaces it)');
+  }
+  if (pathEnv.split(':').includes(bin)) return target;
+  for (const { file, line } of rcFiles(home, shell)) {
+    const text = existsSync(file) ? readFileSync(file, 'utf8') : '';
+    if (text.includes(PATH_MARK)) continue;
+    mkdirSync(path.dirname(file), { recursive: true });
+    appendFileSync(file, `\n${PATH_MARK}\n${line}\n${PATH_END}\n`);
+    log(`added ~/.local/bin to PATH in ${file.replace(home, '~')}`);
+  }
+  log('open a new terminal (or re-source that file) so `ccp` is found');
+  return target;
 }
 
 function setup(o, cwd, cfg) {
@@ -176,13 +221,8 @@ function setup(o, cwd, cfg) {
   mkdirSync(path.dirname(file), { recursive: true });
   writeFileSync(file, JSON.stringify(next, null, 2) + '\n');
   console.log(`wrote ${path.relative(cwd, file)} (permission_mode ${next.permission_mode}, ticks ${next.ticks})`);
-  if (o.shellAlias) {
-    const rc = path.join(homedir(), '.zshrc');
-    const has = existsSync(rc) && readFileSync(rc, 'utf8').includes(ALIAS_MARK);
-    if (!has) appendFileSync(rc, `\n${aliasBlock()}`);
-    console.log(has ? '~/.zshrc already has ccp' : 'added ccp to ~/.zshrc — open a new terminal or `source ~/.zshrc`');
-  }
-  console.log(`\nWhen the subscription limit hits:\n  ccp                 # same session, headless, you keep typing\n  ccp run <mission>   # unattended mission ticks\n(without the alias: node ${SELF} chat | run <mission>)`);
+  if (o.shellAlias) installCcp();
+  console.log(`\nWhen the subscription limit hits:\n  ccp                 # same session, headless, you keep typing\n  ccp run <mission>   # unattended mission ticks\n  ccp preset show     # tune presets, no session needed\n(without ccp: node ${SELF} chat | run <mission>)`);
   return 0;
 }
 

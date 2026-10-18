@@ -8,6 +8,18 @@ has no tags — each version-stamped commit on `main` IS the release.
 
 _(empty)_
 
+## [1.65.1] — 2026-10-18
+### Changed — `ccp` works in every shell
+- `headless.mjs setup --shell-alias` now installs `ccp` as a POSIX `sh`
+  executable at `~/.local/bin/ccp` instead of a zsh-only function in
+  `~/.zshrc`: works in zsh, bash, fish, sh, dash, cron and scripts. It finds
+  the newest installed plugin copy (`sort -V`, with a plain fallback), checks
+  `node` is on PATH, and `exec`s `headless.mjs` / `preset.mjs`.
+- If `~/.local/bin` is not on PATH, one marked block is added to the login
+  shell's startup file (`~/.zshrc`; `~/.bashrc` + `~/.bash_profile`;
+  fish `conf.d/ccp.fish`; else `~/.profile`). The old zsh `ccp` function is
+  removed so it cannot shadow the executable. Idempotent.
+
 ## [1.65.0] — 2026-10-18
 ### Added
 - **`tools/preset.mjs`** — `apply <name>` / `reset` / `show` run the

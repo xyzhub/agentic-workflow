@@ -246,9 +246,9 @@ the agent's **balanced** cell. So `balanced` writes zero files in any project.
 4. Rewrite the §10 row to `<name> (applied YYYY-MM-DD)`. For **`isolated`**,
    also set up the headless orchestrator: run `node
    "${CLAUDE_PLUGIN_ROOT}/tools/headless.mjs" setup` (writes
-   `.claude/headless.json`), then ask the owner once whether to add the `ccp`
-   shell function — on yes re-run with `--shell-alias` (idempotent marked
-   block in `~/.zshrc`). Report the two commands: `ccp` (resume this session
+   `.claude/headless.json`), then ask the owner once whether to install the `ccp`
+   command — on yes re-run with `--shell-alias` (a POSIX `sh` executable at
+   `~/.local/bin/ccp`, any shell; adds `~/.local/bin` to PATH if missing). Report the two commands: `ccp` (resume this session
    via `claude -p`) and `ccp run <mission>` (unattended ticks).
 5. Report written / removed / skipped (with why); recommend committing
    `.claude/agents/` with `docs/WORKFLOW.md`. Re-running is idempotent (same
