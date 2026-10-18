@@ -12,7 +12,9 @@
 //   agents/*.md              → ~/.config/opencode/agents/agentic-workflow-<role>.md
 //                              (AgentEditor has no add; agents load from files)
 //   UserPromptSubmit hooks   → ctx.session.hook("prompt"), stdout appended
-//   PreToolUse Bash/Read     → ctx.permission.hook("evaluate"), exit 2 → deny
+//   PreToolUse Bash/Read     → ctx.permission.hook("evaluate") + ctx.tool.hook
+//                              ("execute.before"); exit 2 or a guard that
+//                              cannot run → blocked (fail closed)
 //   PostToolUse Write|Edit   → ctx.tool.hook("execute.after"), advisory only
 // Not mapped (no V2 equivalent): Stop, SessionStart, SessionEnd.
 
@@ -26,14 +28,30 @@ export const ROOT = dirname(dirname(fileURLToPath(import.meta.url)))
 export const PREFIX = "agentic-workflow"
 const OWNED = "# managed-by: agentic-workflow (opencode sync) — edits are overwritten"
 
-// Minimal frontmatter split: `key: value` lines only (all this plugin uses).
+// Frontmatter split covering the YAML shapes Claude Code accepts in this repo:
+// `key: value`, quoted values, block scalars (`|` / `>`) and indented
+// continuation lines. Anything else is a parse error, never silently dropped,
+// so both runtimes read the same text or OpenCode refuses the file.
 export function parseMarkdown(text) {
-  const m = text.match(/^---\n([\s\S]*?)\n---\n?([\s\S]*)$/)
+  const m = text.replace(/\r\n/g, "\n").match(/^---\n([\s\S]*?)\n---\n?([\s\S]*)$/)
   if (!m) return { data: {}, body: text }
   const data = {}
+  let key = null
+  let block = null
   for (const line of m[1].split("\n")) {
-    const kv = line.match(/^([A-Za-z0-9_-]+):\s*(.*)$/)
-    if (kv) data[kv[1]] = kv[2].trim()
+    const kv = line.match(/^([A-Za-z0-9_-]+):[ \t]*(.*)$/)
+    if (kv) {
+      key = kv[1]
+      const v = kv[2].trim()
+      block = v === "|" || v === ">" || v === "|-" || v === ">-" ? v[0] : null
+      const q = v.match(/^(["'])([\s\S]*)\1$/)
+      data[key] = block ? "" : q ? (q[1] === '"' ? q[2].replace(/\\"/g, '"') : q[2].replace(/''/g, "'")) : v
+    } else if (key && /^[ \t]+\S/.test(line)) {
+      const sep = data[key] === "" ? "" : block === "|" ? "\n" : " "
+      data[key] += sep + line.trim()
+    } else if (line.trim() !== "" && !line.trim().startsWith("#")) {
+      throw new Error(`unparseable frontmatter line: ${JSON.stringify(line)}`)
+    }
   }
   return { data, body: m[2] }
 }
@@ -120,7 +138,11 @@ export function runHook(hook, payload, cwd) {
     timeout: (hook.timeout || 10) * 1000,
     env: { ...process.env, CLAUDE_PLUGIN_ROOT: ROOT, AGENTIC_WORKFLOW_RUNTIME: "opencode" },
   })
-  return { code: r.status ?? 0, stdout: (r.stdout || "").trim(), stderr: (r.stderr || "").trim() }
+  // A guard that could not start, timed out or was killed has no verdict;
+  // `failed` lets the blocking path fail closed instead of reading it as 0.
+  const failed = Boolean(r.error) || r.status === null
+  const why = r.error ? r.error.message : r.signal ? `killed by ${r.signal} (timeout ${hook.timeout || 10}s)` : ""
+  return { code: r.status ?? -1, failed, stdout: (r.stdout || "").trim(), stderr: (r.stderr || "").trim() || why }
 }
 
 // OpenCode tool/permission ids → the Claude tool names hooks.json matches on.
@@ -131,14 +153,19 @@ export function claudeInput(tool, input = {}) {
   return { file_path: input.filePath ?? input.file_path ?? input.path ?? "" }
 }
 
-// Runs the PreToolUse guards; returns the first block (exit 2) or null.
+// Runs the PreToolUse guards; returns the first block reason or null. Exit 2
+// blocks (Claude semantics); a guard that failed to run also blocks — these
+// are the push/merge/publish guards, so a missing verdict fails closed.
 export function preToolBlock(tool, toolInput, cwd) {
   for (const h of hookCommands("PreToolUse", tool)) {
     const r = runHook(h, { hook_event_name: "PreToolUse", tool_name: tool, tool_input: toolInput, cwd }, cwd)
     if (r.code === 2) return r.stderr || r.stdout || `${PREFIX} guard blocked this ${tool} call`
+    if (r.failed) return `${PREFIX} guard could not run (${r.stderr || "no verdict"}) — blocked; fix the guard or its dependencies (bash, git, jq)`
   }
   return null
 }
+
+const shQuote = (s) => `'${String(s).replaceAll("'", `'\\''`)}'`
 
 export default {
   id: PREFIX,
@@ -188,16 +215,31 @@ export default {
     })
 
     // PreToolUse: blocking guards (push to default branch, merge/publish
-    // guards). Permission evaluation is V2's typed deny path.
+    // guards), enforced at two points. (1) Permission evaluation — V2's typed
+    // deny — when the event carries the command. (2) tool execute.before, which
+    // always carries the real tool input: this is the authoritative check, so a
+    // permission event whose resources hold a pattern (not the command) cannot
+    // bypass the guard. On a block the shell input is replaced (documented V2
+    // behaviour) with a command that prints the reason and exits 1.
     await ctx.permission.hook("evaluate", (event) => {
       const tool = CLAUDE_TOOL[event.action]
-      if (!tool || (tool !== "Bash" && tool !== "Read")) return
-      const raw = event.metadata?.input || (tool === "Bash" ? { command: event.resources?.[0] } : { filePath: event.resources?.[0] })
-      const why = preToolBlock(tool, claudeInput(tool, raw), cwd)
+      if (tool !== "Bash" && tool !== "Read") return
+      const input = claudeInput(tool, event.metadata?.input || {})
+      if (!(input.command || input.file_path)) return // no command here; execute.before enforces
+      const why = preToolBlock(tool, input, cwd)
       if (why) {
         event.effect = "deny"
         event.message = why
       }
+    })
+
+    await ctx.tool.hook("execute.before", (event) => {
+      const tool = CLAUDE_TOOL[event.tool]
+      if (tool !== "Bash" && tool !== "Read") return
+      const why = preToolBlock(tool, claudeInput(tool, event.input || {}), cwd)
+      if (!why) return
+      if (tool === "Bash") event.input = { ...(event.input || {}), command: `printf '%s\\n' ${shQuote(why)} >&2; exit 1` }
+      else throw new Error(why)
     })
 
     // PostToolUse Write|Edit hooks are advisory reminders; run them for parity.
