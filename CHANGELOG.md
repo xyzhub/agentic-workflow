@@ -8,6 +8,19 @@ has no tags — each version-stamped commit on `main` IS the release.
 
 _(empty)_
 
+## [1.66.2] — 2026-10-19
+### Fixed — ccp review findings (Fable post-merge review of #161/#162)
+- A pi-tui render error no longer crashes `ccp` mid-turn (which orphaned the
+  `claude` child): it falls back to the plain renderer and says so once.
+- `ccp run` sanitises the ledger `Next up:` line and answer-page lines too;
+  `clean()` now also drops zero-width and bidi controls (U+200B–200F,
+  U+202A–202E, U+2066–2069, U+FEFF), so a tool line can't disguise a command.
+- `setup --tui` no longer skips the rest of setup when combined with
+  `--shell-alias`.
+- `setup --tui` installs from a committed lockfile (`tools/ccp-tui/`, every
+  package pinned with an integrity hash) via `npm ci --ignore-scripts`.
+- New `tools/headless-test.mjs` (12 checks, fake `claude`), run by the lint gate.
+
 ## [1.66.1] — 2026-10-18
 ### Security — ccp strips terminal control characters
 - Model text, tool names and arguments, error results and the model id are

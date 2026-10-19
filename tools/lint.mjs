@@ -512,6 +512,24 @@ function checkRunClaudeHarness() {
   }
 }
 
+// ── 10.7c ccp harness (tier-1.5) ─────────────────────────────────────────
+// `ccp` renders model output to the owner's terminal; the harness proves no
+// escape/bidi control gets through, a pi-tui throw falls back to plain, and the
+// chat loop streams json, resumes the session and exits 0 on stdin EOF.
+function checkHeadlessHarness() {
+  const runner = path.join(ROOT, 'tools/headless-test.mjs');
+  if (!existsSync(runner)) {
+    fail(runner, null, 'ccp harness missing — tools/headless-test.mjs must exist so the gate proves ccp output sanitising and the chat loop (do not silently drop the check)');
+    return;
+  }
+  const res = spawnSync('node', [runner], { encoding: 'utf8' });
+  if (res.status !== 0) {
+    const detail = `${res.stdout ?? ''}${res.stderr ?? ''}`
+      .split('\n').filter((l) => /FAIL|failure|Error/.test(l)).join(' | ');
+    fail(runner, null, `ccp harness failed — run \`node tools/headless-test.mjs\`: ${detail || '(no detail)'}`);
+  }
+}
+
 // ── 10.10 ledger verbs harness (tier-1.5, #132) ──────────────────────────
 // `tools/ledger.mjs` writes the mission ledger and the obligations register
 // for the orchestrator; a verb that matched the wrong row or wrote a row the
@@ -1363,7 +1381,7 @@ const isEntryPoint = () => {
 };
 
 if (isEntryPoint()) {
-  for (const check of [checkManifests, checkAgents, checkCommands, checkCrossRefs, checkTemplateRefs, checkPluginRootBraced, checkSections, checkFrontmatterYaml, checkTemplateFrontmatter, checkHooks, checkObfuscation, checkHookBehavior, checkClockGuard, checkMarkerMutation, checkContextAttrib, checkCatalogSelftest, checkCiWaitSelftest, checkPublishGateSelftest, checkRunCodexHarness, checkRunClaudeHarness, checkLedgerHarness, checkCeremonyHarness, checkAgentsRegistryHarness, checkOperateTriageSelftest, checkStandingSteers, checkNextUpAgreement, checkClosing, checkObligationsRegister, checkBudgets, checkRuleDedup, checkClassListDedup, checkCeremonyCopies, checkTunePresets]) {
+  for (const check of [checkManifests, checkAgents, checkCommands, checkCrossRefs, checkTemplateRefs, checkPluginRootBraced, checkSections, checkFrontmatterYaml, checkTemplateFrontmatter, checkHooks, checkObfuscation, checkHookBehavior, checkClockGuard, checkMarkerMutation, checkContextAttrib, checkCatalogSelftest, checkCiWaitSelftest, checkPublishGateSelftest, checkRunCodexHarness, checkRunClaudeHarness, checkHeadlessHarness, checkLedgerHarness, checkCeremonyHarness, checkAgentsRegistryHarness, checkOperateTriageSelftest, checkStandingSteers, checkNextUpAgreement, checkClosing, checkObligationsRegister, checkBudgets, checkRuleDedup, checkClassListDedup, checkCeremonyCopies, checkTunePresets]) {
     check();
   }
 
