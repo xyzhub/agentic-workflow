@@ -8,6 +8,24 @@ has no tags — each version-stamped commit on `main` IS the release.
 
 _(empty)_
 
+## [1.67.0] — 2026-10-19
+### Added — agent-managed repos may push their default branch
+- The push guard now lets an agent push straight to the default branch of a
+  repo that opts in with a `.agent-managed` file (first line: `owner/name`),
+  for repos agents fully own, such as a memory repo. All of these must hold
+  (`hooks/lib/agent-managed.sh`):
+  - the marker is on the **remote** default branch, read by a fresh fetch, so
+    an agent can't exempt itself: the first marker comes from a human (a
+    GitHub web edit or a human push);
+  - the `owner/name` inside matches the `origin` URL, so a fork or copied
+    marker exempts nothing;
+  - the command is one plain push (`git push [-u|-q] [origin] [<default>|HEAD]`):
+    no force, delete, explicit refspec, URL or other remote.
+  A missing script or unset plugin root means no exemption. 9 new hook-test
+  scenarios; `/agentic-workflow:doctor` lists every agent-managed repo.
+- Trade-off: an exempt repo has no PR review on its default branch. Opt in
+  only repos whose whole content is agent-written.
+
 ## [1.66.2] — 2026-10-19
 ### Fixed — ccp review findings (Fable post-merge review of #161/#162)
 - A pi-tui render error no longer crashes `ccp` mid-turn (which orphaned the

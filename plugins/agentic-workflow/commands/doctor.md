@@ -126,6 +126,11 @@ The profile is load-bearing and written once — verify it still tells the truth
   stamped older than the installed plugin → 🟡, the base prompt may have
   changed — refresh with `/agentic-workflow:tune <agent> <model>` (it re-copies fresh).
   Overrides without the banner are hand-rolled agents — report, don't touch.
+- **Agent-managed repos**: list every git repo in or under the project whose
+  `origin/<default>` carries `.agent-managed` (`git show origin/<def>:.agent-managed`)
+  → ℹ️ name each one — agents fast-forward-push its default branch directly
+  (hooks/lib/agent-managed.sh). A marker whose `owner/name` doesn't match the
+  origin URL → 🟡 (it exempts nothing; fix or remove it).
 
 ## 4. `fix` mode (explicit opt-in — mechanical, local, free repairs only)
 

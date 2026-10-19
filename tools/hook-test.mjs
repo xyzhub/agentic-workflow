@@ -1627,6 +1627,53 @@ const CLOSING_NONE_DUE = {
     check('guardrails: jq missing + `none` → no attribution line', r.code === 0 && /no attribution line/.test(r.stdout), r.stdout + r.stderr); }
   { const r = g(['git', 'push', 'origin', 'HEAD:main'].join(' '));
     check('guardrails: push refspec HEAD:main → BLOCK (exit 2, "refspec targets main")', r.code === 2 && /refspec targets main/.test(r.stderr), `code=${r.code} ${r.stderr}`); }
+  // agent-managed exemption (v1.67.0): real repos, a local bare "remote" named
+  // <tmp>/xyzhub/<name>.git; the fixture seeds the marker with plain git (the
+  // human step), then the hook decides the agent's push.
+  {
+    const root = mkdtempSync(path.join(tmpdir(), 'agentmanaged-'));
+    const git = (cwd, ...a) => spawnSync('git', ['-c', 'user.name=t', '-c', 'user.email=t@t', ...a], { cwd, encoding: 'utf8' });
+    const repo = (name, marker, local = false) => {
+      const bare = path.join(root, 'xyzhub', `${name}.git`);
+      mkdirSync(bare, { recursive: true });
+      git(bare, 'init', '-q', '--bare', '-b', 'main');
+      const seed = path.join(root, `${name}-seed`);
+      git(root, 'clone', '-q', bare, seed);
+      git(seed, 'checkout', '-q', '-b', 'main');
+      writeFileSync(path.join(seed, 'note.md'), 'n\n');
+      if (marker && !local) writeFileSync(path.join(seed, '.agent-managed'), `${marker}\n`);
+      git(seed, 'add', '-A'); git(seed, 'commit', '-qm', 'seed'); git(seed, 'push', '-q', 'origin', 'main');
+      const clone = path.join(root, name);
+      git(root, 'clone', '-q', bare, clone);
+      if (marker && local) { writeFileSync(path.join(clone, '.agent-managed'), `${marker}\n`); git(clone, 'add', '-A'); git(clone, 'commit', '-qm', 'self-exempt'); }
+      writeFileSync(path.join(clone, 'note2.md'), 'm\n'); git(clone, 'add', '-A'); git(clone, 'commit', '-qm', 'note');
+      return clone;
+    };
+    const push = (dir, args) => g(['cd', dir, '&&', 'git', 'push', ...args].join(' '));
+    try {
+      const ok = repo('memory', 'xyzhub/memory');
+      { const r = push(ok, []);
+        check('agent-managed: marker on remote main names the repo → plain push from main allowed (exit 0, ✅ note)', r.code === 0 && /agent-managed repo/.test(r.stdout), `code=${r.code} ${r.stdout} ${r.stderr}`); }
+      { const r = push(ok, ['-u', 'origin', 'main']);
+        check('agent-managed: `-u origin main` allowed', r.code === 0, `code=${r.code} ${r.stderr}`); }
+      { const r = push(ok, ['--force']);
+        check('agent-managed: --force → still BLOCKED', r.code === 2 && /never push while checked out/.test(r.stderr), `code=${r.code} ${r.stderr}`); }
+      { const r = push(ok, ['origin', ['HEAD', 'main'].join(':')]);
+        check('agent-managed: explicit refspec → still BLOCKED', r.code === 2, `code=${r.code} ${r.stderr}`); }
+      { const r = push(ok, ['https://example.com/x.git', 'main']);
+        check('agent-managed: push to another URL → still BLOCKED', r.code === 2, `code=${r.code} ${r.stderr}`); }
+      { const r = push(ok, ['&&', 'git', 'push', 'origin', 'main']);
+        check('agent-managed: two pushes in one command → still BLOCKED', r.code === 2, `code=${r.code} ${r.stderr}`); }
+      const self = repo('selfexempt', 'xyzhub/selfexempt', true);
+      { const r = push(self, []);
+        check('agent-managed: marker committed only locally (agent self-exemption) → BLOCKED', r.code === 2 && /never push while checked out/.test(r.stderr), `code=${r.code} ${r.stderr}`); }
+      const fork = repo('fork', 'xyzhub/memory');
+      { const r = push(fork, []);
+        check('agent-managed: marker names a different repo than origin → BLOCKED', r.code === 2, `code=${r.code} ${r.stderr}`); }
+      { const r = runHook({ event: 'PreToolUse', desc: GR, input: { tool_input: { command: ['cd', ok, '&&', 'git', 'push'].join(' ') } }, env: { CLAUDE_PLUGIN_ROOT: '' } });
+        check('agent-managed: CLAUDE_PLUGIN_ROOT unset (script unreachable) → no exemption, BLOCKED', r.code === 2, `code=${r.code} ${r.stderr}`); }
+    } finally { rmSync(root, { recursive: true, force: true }); }
+  }
   { const r = g('git status');
     check('guardrails: git status → exit 0, no commit hint', r.code === 0 && !/Commit format/.test(r.stdout), `code=${r.code}`); }
 }
