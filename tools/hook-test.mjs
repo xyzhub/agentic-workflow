@@ -1671,6 +1671,10 @@ const CLOSING_NONE_DUE = {
         check('agent-managed: `cd <exempt> && git -C <other> push` → BLOCKED (checked repo must be the pushed repo)', r.code === 2, `code=${r.code} ${r.stderr}`); }
       { const r = g(['cd', ok, '&&', 'git', 'push', ';', 'cd', other, '&&', 'git', 'push'].join(' '));
         check('agent-managed: chained `; cd <other> && git push` → BLOCKED', r.code === 2, `code=${r.code} ${r.stderr}`); }
+      { const r = push(ok, ['main', 'origin']);
+        check('agent-managed: `git push main origin` (remote is `main`, not origin) → BLOCKED', r.code === 2, `code=${r.code} ${r.stderr}`); }
+      { const r = push(ok, ['origin', 'main', 'HEAD']);
+        check('agent-managed: a third positional arg → BLOCKED', r.code === 2, `code=${r.code} ${r.stderr}`); }
       { const r = push(ok, []);
         check('agent-managed: bare `git push` (remote chosen by config) → BLOCKED', r.code === 2, `code=${r.code} ${r.stderr}`); }
       git(ok, 'config', 'remote.origin.push', '+refs/heads/*:refs/heads/*');

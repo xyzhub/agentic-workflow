@@ -20,7 +20,8 @@ _(empty)_
   - the `owner/name` inside matches the `origin` URL, so a fork or copied
     marker exempts nothing;
   - the whole command is one plain push, `[cd <dir> && ]git push [args]` or
-    `git -C <dir> push [args]` (args only -u/-q/origin/<default>/HEAD): no
+    `git -C <dir> push [args]` (flags only -u/-q; then `origin`, then
+    optionally `<default>` or `HEAD`, in that order): no
     force, delete, refspec, URL, other remote, chained command, or cd plus -C,
     so the repo checked is the repo pushed;
   - `origin` is named explicitly (config can't pick another remote), origin
@@ -28,7 +29,7 @@ _(empty)_
     `remote.origin.mirror` or `push.default=matching` widens what is sent.
   The fetch is capped at 3 s with prompts off, and the exemption is consulted
   only when a block would fire. A missing script, unset plugin root, failed or
-  slow fetch means no exemption. 16 new hook-test scenarios;
+  slow fetch means no exemption. 18 new hook-test scenarios;
   `/agentic-workflow:doctor` lists every agent-managed repo. Agents push in a
   separate command from `git commit`.
 - Trade-off: an exempt repo has no PR review on its default branch. Opt in

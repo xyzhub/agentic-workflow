@@ -33,11 +33,21 @@ else
 fi
 case "$REST" in *'&'*) exit 1;; esac
 printf '%s' "$REST" | grep -qE '^ *git +push( +[^ ]+)* *$' || exit 1
-HASORIGIN=0
+# Positional order as git reads it: 1st = remote (must be origin, so
+# pushRemote / pushDefault can't redirect), 2nd = HEAD or <DEF>, no 3rd.
+# noglob: the words checked here are the words git receives.
+set -f
+POS=0
 for a in $(printf '%s' "$REST" | sed 's/^ *git  *push//'); do
-  case "$a" in origin) HASORIGIN=1;; -u|-q|--quiet|--set-upstream|HEAD|"$DEF") ;; *) exit 1;; esac
+  case "$a" in
+    -u|-q|--quiet|--set-upstream) ;;
+    -*) exit 1;;
+    *) POS=$((POS + 1))
+       case "$POS:$a" in 1:origin|2:HEAD|2:"$DEF") ;; *) exit 1;; esac;;
+  esac
 done
-[ "$HASORIGIN" = 1 ] || exit 1   # explicit remote: pushRemote / pushDefault can't redirect
+set +f
+[ "$POS" -ge 1 ] || exit 1
 # No config that widens or rewrites what `git push origin [..]` sends.
 git -C "$D" config --get-regexp '^remote\.origin\.(push|mirror)$' >/dev/null 2>&1 && exit 1
 case "$(git -C "$D" config --get push.default 2>/dev/null)" in ''|simple|current|upstream) ;; *) exit 1;; esac
