@@ -12,7 +12,7 @@ import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 export const PI_TUI = '@earendil-works/pi-tui';
-export const PI_TUI_VERSION = '1.3.0';
+export const PI_TUI_VERSION = '1.3.0'; // keep in step with tools/ccp-tui/package-lock.json
 export const tuiDir = (home = homedir()) => path.join(process.env.XDG_DATA_HOME || path.join(home, '.local', 'share'), 'ccp');
 
 const color = (on) => {
@@ -20,9 +20,10 @@ const color = (on) => {
   return { dim: w(2, 22), bold: w(1, 22), cyan: w(36, 39), green: w(32, 39), red: w(31, 39), yellow: w(33, 39), mag: w(35, 39) };
 };
 
-// Model/tool-derived strings never reach the terminal raw: drop C0/C1 controls
-// (ESC included) except \n and \t, so a file or reply can't inject escapes.
-export const clean = (s) => String(s ?? '').replace(/[\x00-\x08\x0b-\x1f\x7f-\x9f]/g, '');
+// Model/tool/ledger-derived strings never reach the terminal raw: drop C0/C1
+// controls (ESC included) except \n and \t, so a file or reply can't inject
+// escapes, plus zero-width and bidi controls, so a line can't disguise a command.
+export const clean = (s) => String(s ?? '').replace(/[\x00-\x08\x0b-\x1f\x7f-\x9f\u200b-\u200f\u202a-\u202e\u2066-\u2069\ufeff]/g, '');
 
 // The one argument worth showing for a tool call.
 export function toolSummary(name, input = {}) {
@@ -76,7 +77,16 @@ export function piUi(tui, opts) {
   const theme = { heading: (s) => c.bold(c.cyan(s)), link: c.cyan, linkUrl: c.dim, code: c.yellow, codeBlock: id, codeBlockBorder: c.dim,
     quote: c.dim, quoteBorder: c.dim, hr: c.dim, listBullet: c.cyan, bold: c.bold, italic: id, strikethrough: id, underline: id };
   const out = opts?.out || process.stdout;
-  ui.renderText = (t) => new tui.Markdown(t, 0, 0, theme).render(width(out)).map((l) => l.trimEnd()).join('\n');
+  const plain = ui.renderText;
+  let warned = false;
+  // A pi-tui throw must never kill ccp mid-turn (orphaning the claude child):
+  // fall back to the plain renderer, say so once.
+  ui.renderText = (t) => {
+    try { return new tui.Markdown(t, 0, 0, theme).render(width(out)).map((l) => l.trimEnd()).join('\n'); } catch (e) {
+      if (!warned) { warned = true; (opts?.err || process.stderr).write(`ccp: pi-tui render failed (${clean(e.message)}) — plain output\n`); }
+      return plain(t);
+    }
+  };
   ui.kind = 'pi';
   return ui;
 }

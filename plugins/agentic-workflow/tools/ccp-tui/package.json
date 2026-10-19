@@ -1,0 +1,5 @@
+{
+  "name": "ccp-tui",
+  "private": true,
+  "dependencies": { "@earendil-works/pi-tui": "1.3.0" }
+}

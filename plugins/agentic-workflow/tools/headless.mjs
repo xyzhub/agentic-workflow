@@ -26,7 +26,7 @@
 // --permission-mode. Never bypassPermissions. Zero deps, Node >= 18.
 
 import { spawn } from 'node:child_process';
-import { appendFileSync, chmodSync, existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
+import { appendFileSync, chmodSync, copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import path from 'node:path';
 import readline from 'node:readline';
@@ -144,7 +144,8 @@ async function answerPending(cwd, mission, cfg) {
   const o = { root: cwd, mission, port: cfg.ask_port || 0, open: cfg.open_page !== false };
   const pend = ask.pendingOf(ask.readLog(path.join(cwd, '.plans', 'questions.jsonl')), mission);
   if (!pend.length) return false;
-  const { url, server } = await ask.serve(o, { onAnswer: (l) => console.error(`  ${l}`) });
+  const { clean } = await import('./ccp-ui.mjs');
+  const { url, server } = await ask.serve(o, { onAnswer: (l) => console.error(`  ${clean(l)}`) });
   console.error(`${pend.length} question(s) waiting — answer here: ${url}`);
   await ask.waitNone(o);
   server.close();
@@ -157,14 +158,15 @@ async function run(o, cwd, cfg) {
   const ticks = Number(o.ticks || cfg.ticks || 10);
   const mode = permissionMode(o, cfg);
   const { HEADLESS_ASK_NOTE } = await import('./ask.mjs');
-  const ui = await (await import('./ccp-ui.mjs')).makeUi();
+  const { makeUi, clean } = await import('./ccp-ui.mjs');
+  const ui = await makeUi();
   const totals = {};
   for (let i = 1; i <= ticks; i++) {
     const before = ledgerState(cwd, mission);
     if (!before) throw new Error(`no ledger .plans/${mission}.state.md`);
     if (before.closed) { console.error(`mission ${mission} is closed — done.`); return 0; }
     if (await answerPending(cwd, mission, cfg)) continue; // answers in → next tick reads them
-    console.error(`tick ${i}/${ticks}: ${before.nextUp.trim()}`);
+    console.error(`tick ${i}/${ticks}: ${clean(before.nextUp).trim()}`);
     const rc = await turn(claudeArgs({ prompt: `/agentic-workflow:mission ${mission} continue`, mode, note: HEADLESS_ASK_NOTE }), cwd, ui, totals);
     const after = ledgerState(cwd, mission);
     if (rc !== 0) { console.error(`tick ${i} exited ${rc} — stopping.`); return rc; }
@@ -242,28 +244,30 @@ export function installCcp(home = homedir(), { shell = process.env.SHELL, pathEn
   return target;
 }
 
-// `setup --tui`: pi-tui into ccp's own folder, exact version, no install scripts.
+// `setup --tui`: pi-tui into ccp's own folder from the committed lockfile
+// (tools/ccp-tui — every package pinned with an integrity hash), `npm ci`,
+// no install scripts.
 async function installTui() {
-  const { PI_TUI, PI_TUI_VERSION, tuiDir, loadPiTui } = await import('./ccp-ui.mjs');
+  const { PI_TUI_VERSION, tuiDir, loadPiTui } = await import('./ccp-ui.mjs');
   const dir = tuiDir();
   mkdirSync(dir, { recursive: true });
-  if (!existsSync(path.join(dir, 'package.json'))) writeFileSync(path.join(dir, 'package.json'), '{"private":true}\n');
-  const r = await new Promise((res) => spawn('npm', ['install', '--ignore-scripts', '--no-audit', '--no-fund', '--save-exact', `${PI_TUI}@${PI_TUI_VERSION}`], { cwd: dir, stdio: 'inherit' }).on('close', res).on('error', () => res(1)));
+  for (const f of ['package.json', 'package-lock.json']) copyFileSync(path.join(path.dirname(SELF), 'ccp-tui', f), path.join(dir, f));
+  const r = await new Promise((res) => spawn('npm', ['ci', '--ignore-scripts', '--no-audit', '--no-fund'], { cwd: dir, stdio: 'inherit' }).on('close', res).on('error', () => res(1)));
   const ok = r === 0 && (await loadPiTui(dir));
   console.log(ok ? `pi-tui ${PI_TUI_VERSION} ready in ${dir} — ccp now renders markdown` : `pi-tui install failed (needs Node >= 22.19); ccp keeps the plain renderer`);
   return ok ? 0 : 1;
 }
 
-function setup(o, cwd, cfg) {
-  if (o.tui) return installTui();
+async function setup(o, cwd, cfg) {
   const file = path.join(cwd, '.claude', 'headless.json');
   const next = { permission_mode: cfg.permission_mode || 'auto', ticks: cfg.ticks || 10, preset: 'isolated' };
   mkdirSync(path.dirname(file), { recursive: true });
   writeFileSync(file, JSON.stringify(next, null, 2) + '\n');
   console.log(`wrote ${path.relative(cwd, file)} (permission_mode ${next.permission_mode}, ticks ${next.ticks})`);
   if (o.shellAlias) installCcp();
+  const tuiRc = o.tui ? await installTui() : 0;
   console.log(`\nWhen the subscription limit hits:\n  ccp                 # same session, headless, you keep typing\n  ccp run <mission>   # unattended mission ticks\n  ccp preset show     # tune presets, no session needed\n(without ccp: node ${SELF} chat | run <mission>)`);
-  return 0;
+  return tuiRc;
 }
 
 export async function main(argv = process.argv.slice(2)) {
