@@ -1664,6 +1664,17 @@ const CLOSING_NONE_DUE = {
         check('agent-managed: push to another URL → still BLOCKED', r.code === 2, `code=${r.code} ${r.stderr}`); }
       { const r = push(ok, ['&&', 'git', 'push', 'origin', 'main']);
         check('agent-managed: two pushes in one command → still BLOCKED', r.code === 2, `code=${r.code} ${r.stderr}`); }
+      { const r = g(['git', '-C', ok, 'push', 'origin', 'main'].join(' '));
+        check('agent-managed: lone `git -C <exempt> push origin main` allowed', r.code === 0 && /agent-managed repo/.test(r.stdout), `code=${r.code} ${r.stderr}`); }
+      const other = repo('plain', null);
+      { const r = g(['cd', ok, '&&', 'git', '-C', other, 'push'].join(' '));
+        check('agent-managed: `cd <exempt> && git -C <other> push` → BLOCKED (checked repo must be the pushed repo)', r.code === 2, `code=${r.code} ${r.stderr}`); }
+      { const r = g(['cd', ok, '&&', 'git', 'push', ';', 'cd', other, '&&', 'git', 'push'].join(' '));
+        check('agent-managed: chained `; cd <other> && git push` → BLOCKED', r.code === 2, `code=${r.code} ${r.stderr}`); }
+      git(ok, 'remote', 'set-url', '--push', 'origin', path.join(root, 'xyzhub', 'plain.git'));
+      { const r = push(ok, []);
+        check('agent-managed: origin push URL ≠ fetch URL (pushurl redirect) → BLOCKED', r.code === 2, `code=${r.code} ${r.stderr}`); }
+      git(ok, 'config', '--unset', 'remote.origin.pushurl');
       const self = repo('selfexempt', 'xyzhub/selfexempt', true);
       { const r = push(self, []);
         check('agent-managed: marker committed only locally (agent self-exemption) → BLOCKED', r.code === 2 && /never push while checked out/.test(r.stderr), `code=${r.code} ${r.stderr}`); }

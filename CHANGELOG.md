@@ -19,10 +19,16 @@ _(empty)_
     GitHub web edit or a human push);
   - the `owner/name` inside matches the `origin` URL, so a fork or copied
     marker exempts nothing;
-  - the command is one plain push (`git push [-u|-q] [origin] [<default>|HEAD]`):
-    no force, delete, explicit refspec, URL or other remote.
-  A missing script or unset plugin root means no exemption. 9 new hook-test
-  scenarios; `/agentic-workflow:doctor` lists every agent-managed repo.
+  - the whole command is one plain push, `[cd <dir> && ]git push [args]` or
+    `git -C <dir> push [args]` (args only -u/-q/origin/<default>/HEAD): no
+    force, delete, refspec, URL, other remote, chained command, or cd plus -C,
+    so the repo checked is the repo pushed;
+  - origin has one push URL equal to its fetch URL (no pushurl redirect).
+  The fetch is capped at 3 s with prompts off, and the exemption is consulted
+  only when a block would fire. A missing script, unset plugin root, failed or
+  slow fetch means no exemption. 13 new hook-test scenarios;
+  `/agentic-workflow:doctor` lists every agent-managed repo. Agents push in a
+  separate command from `git commit`.
 - Trade-off: an exempt repo has no PR review on its default branch. Opt in
   only repos whose whole content is agent-written.
 
