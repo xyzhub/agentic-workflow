@@ -23,10 +23,12 @@ _(empty)_
     `git -C <dir> push [args]` (args only -u/-q/origin/<default>/HEAD): no
     force, delete, refspec, URL, other remote, chained command, or cd plus -C,
     so the repo checked is the repo pushed;
-  - origin has one push URL equal to its fetch URL (no pushurl redirect).
+  - `origin` is named explicitly (config can't pick another remote), origin
+    has one push URL equal to its fetch URL, and no `remote.origin.push`,
+    `remote.origin.mirror` or `push.default=matching` widens what is sent.
   The fetch is capped at 3 s with prompts off, and the exemption is consulted
   only when a block would fire. A missing script, unset plugin root, failed or
-  slow fetch means no exemption. 13 new hook-test scenarios;
+  slow fetch means no exemption. 16 new hook-test scenarios;
   `/agentic-workflow:doctor` lists every agent-managed repo. Agents push in a
   separate command from `git commit`.
 - Trade-off: an exempt repo has no PR review on its default branch. Opt in

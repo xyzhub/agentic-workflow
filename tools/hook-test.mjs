@@ -1652,8 +1652,8 @@ const CLOSING_NONE_DUE = {
     const push = (dir, args) => g(['cd', dir, '&&', 'git', 'push', ...args].join(' '));
     try {
       const ok = repo('memory', 'xyzhub/memory');
-      { const r = push(ok, []);
-        check('agent-managed: marker on remote main names the repo → plain push from main allowed (exit 0, ✅ note)', r.code === 0 && /agent-managed repo/.test(r.stdout), `code=${r.code} ${r.stdout} ${r.stderr}`); }
+      { const r = push(ok, ['origin']);
+        check('agent-managed: marker on remote main names the repo → `git push origin` from main allowed (exit 0, ✅ note)', r.code === 0 && /agent-managed repo/.test(r.stdout), `code=${r.code} ${r.stdout} ${r.stderr}`); }
       { const r = push(ok, ['-u', 'origin', 'main']);
         check('agent-managed: `-u origin main` allowed', r.code === 0, `code=${r.code} ${r.stderr}`); }
       { const r = push(ok, ['--force']);
@@ -1671,15 +1671,25 @@ const CLOSING_NONE_DUE = {
         check('agent-managed: `cd <exempt> && git -C <other> push` → BLOCKED (checked repo must be the pushed repo)', r.code === 2, `code=${r.code} ${r.stderr}`); }
       { const r = g(['cd', ok, '&&', 'git', 'push', ';', 'cd', other, '&&', 'git', 'push'].join(' '));
         check('agent-managed: chained `; cd <other> && git push` → BLOCKED', r.code === 2, `code=${r.code} ${r.stderr}`); }
-      git(ok, 'remote', 'set-url', '--push', 'origin', path.join(root, 'xyzhub', 'plain.git'));
       { const r = push(ok, []);
+        check('agent-managed: bare `git push` (remote chosen by config) → BLOCKED', r.code === 2, `code=${r.code} ${r.stderr}`); }
+      git(ok, 'config', 'remote.origin.push', '+refs/heads/*:refs/heads/*');
+      { const r = push(ok, ['origin']);
+        check('agent-managed: remote.origin.push refspec config → BLOCKED', r.code === 2, `code=${r.code} ${r.stderr}`); }
+      git(ok, 'config', '--unset', 'remote.origin.push');
+      git(ok, 'config', 'push.default', 'matching');
+      { const r = push(ok, ['origin']);
+        check('agent-managed: push.default=matching → BLOCKED', r.code === 2, `code=${r.code} ${r.stderr}`); }
+      git(ok, 'config', '--unset', 'push.default');
+      git(ok, 'remote', 'set-url', '--push', 'origin', path.join(root, 'xyzhub', 'plain.git'));
+      { const r = push(ok, ['origin']);
         check('agent-managed: origin push URL ≠ fetch URL (pushurl redirect) → BLOCKED', r.code === 2, `code=${r.code} ${r.stderr}`); }
       git(ok, 'config', '--unset', 'remote.origin.pushurl');
       const self = repo('selfexempt', 'xyzhub/selfexempt', true);
-      { const r = push(self, []);
+      { const r = push(self, ['origin']);
         check('agent-managed: marker committed only locally (agent self-exemption) → BLOCKED', r.code === 2 && /never push while checked out/.test(r.stderr), `code=${r.code} ${r.stderr}`); }
       const fork = repo('fork', 'xyzhub/memory');
-      { const r = push(fork, []);
+      { const r = push(fork, ['origin']);
         check('agent-managed: marker names a different repo than origin → BLOCKED', r.code === 2, `code=${r.code} ${r.stderr}`); }
       { const r = runHook({ event: 'PreToolUse', desc: GR, input: { tool_input: { command: ['cd', ok, '&&', 'git', 'push'].join(' ') } }, env: { CLAUDE_PLUGIN_ROOT: '' } });
         check('agent-managed: CLAUDE_PLUGIN_ROOT unset (script unreachable) → no exemption, BLOCKED', r.code === 2, `code=${r.code} ${r.stderr}`); }

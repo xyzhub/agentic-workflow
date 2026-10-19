@@ -11,7 +11,9 @@
 #      [args]` — one simple command, no other command, no ; & | ` $( or
 #      newline, never cd plus -C — so the repo
 #      checked here ($D) is the repo pushed. Args only -u/-q/--quiet/
-#      --set-upstream/origin/<DEF>/HEAD: no force, delete, refspec, URL.
+#      --set-upstream/origin/<DEF>/HEAD, `origin` required: no force, delete,
+#      refspec, URL, and no remote.origin.push/mirror or push.default=matching
+#      config that would widen or rewrite what the push sends.
 #   2. origin has ONE push URL, equal to its fetch URL (no pushurl /
 #      pushInsteadOf redirect), whose tail is the marker's `owner/name`.
 #   3. A fresh `git fetch origin <DEF>` (≤ 3 s, no prompts) succeeds and
@@ -31,9 +33,14 @@ else
 fi
 case "$REST" in *'&'*) exit 1;; esac
 printf '%s' "$REST" | grep -qE '^ *git +push( +[^ ]+)* *$' || exit 1
+HASORIGIN=0
 for a in $(printf '%s' "$REST" | sed 's/^ *git  *push//'); do
-  case "$a" in -u|-q|--quiet|--set-upstream|origin|HEAD|"$DEF") ;; *) exit 1;; esac
+  case "$a" in origin) HASORIGIN=1;; -u|-q|--quiet|--set-upstream|HEAD|"$DEF") ;; *) exit 1;; esac
 done
+[ "$HASORIGIN" = 1 ] || exit 1   # explicit remote: pushRemote / pushDefault can't redirect
+# No config that widens or rewrites what `git push origin [..]` sends.
+git -C "$D" config --get-regexp '^remote\.origin\.(push|mirror)$' >/dev/null 2>&1 && exit 1
+case "$(git -C "$D" config --get push.default 2>/dev/null)" in ''|simple|current|upstream) ;; *) exit 1;; esac
 FURL=$(git -C "$D" remote get-url origin 2>/dev/null)
 PURLS=$(git -C "$D" remote get-url --push --all origin 2>/dev/null)
 [ -n "$FURL" ] && [ "$PURLS" = "$FURL" ] || exit 1
