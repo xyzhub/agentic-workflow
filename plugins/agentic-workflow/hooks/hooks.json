@@ -40,7 +40,7 @@
           {
             "type": "command",
             "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/lib/handoff-budget.sh\"",
-            "description": "handoff-budget nudge (UserPromptSubmit): when the transcript_path byte count (wc -c — the only signal; a loose cumulative proxy, NOT tokens; bands derived from n=1 in S2) crosses ADVISORY_BYTES=3700000 or URGENT_BYTES=5380000, echo a ≤3-line nudge to write/refresh docs/product/session-handoff.md before compaction takes the window. Exactly four silencers (OQ4, human-locked): (1) at most two bands — below advisory, silence; (2) once per band per session ($TMPDIR marker keyed by session_id); (3) silent when session-handoff.md is newer than the transcript (the handoff already postdates the crossing); (4) silent when an active .plans/*.state.md ledger exists (OQ7; thread-keeper predicate verbatim). Advisory only — always exit 0, incl. missing transcript_path/session_id/jq. Body: hooks/lib/handoff-budget.sh",
+            "description": "handoff-budget nudge (UserPromptSubmit): the signal is real context TOKENS when the transcript tail has a non-sidechain assistant `usage` line (hooks/lib/handoff-lib.sh hl_band: input + cache_read + cache_creation vs the auto-compact point CLAUDE_CODE_AUTO_COMPACT_WINDOW × CLAUDE_AUTOCOMPACT_PCT_OVERRIDE, else the Assumed defaults 1000000 × 95%; advisory ≥70%, urgent ≥85%) — else transcript BYTES against ADVISORY_BYTES=3700000 / URGENT_BYTES=5380000 (a loose cumulative proxy, n=1), with the original texts byte-identical. Echoes a ≤3-line nudge to run /agentic-workflow:handoff (token path) or refresh docs/product/session-handoff.md (byte path). Exactly four silencers (OQ4, human-locked): (1) at most two bands — below advisory, silence; (2) once per band per session (marker keyed by session_id in the private state dir — git dir, or XDG outside a repo); (3) the handoff already postdates the crossing — token path: this session's handoff-gate marker (written only by a Write/Edit to the local handoff) within 10% of the threshold; byte path: session-handoff.md newer than the transcript; (4) silent when an active .plans/*.state.md ledger exists (OQ7; shared predicate). Advisory only — always exit 0, incl. missing transcript_path/session_id/jq. Body: hooks/lib/handoff-budget.sh",
             "timeout": 5
           }
         ]
@@ -112,6 +112,17 @@
             "timeout": 5
           }
         ]
+      },
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/lib/handoff-gate.sh\"",
+            "description": "handoff gate (PreToolUse, every tool): enforces the handoff at the urgent band (hooks/lib/handoff-lib.sh hl_band — ≥85% of the auto-compact point in tokens, byte band fallback). A Write/Edit whose canonical target (pwd -P) is the local handoff <git-path>/agentic-workflow/session-handoff.md writes this session's freshness marker (private 0700 state dir <git-path>/agentic-workflow/state, keyed by session_id; none without one; symlinks refused) — the only freshness proof; the band is cached (a cached below-urgent band exits before any git spawn) and re-parsed only after 64 KiB of transcript growth, and a re-parse never mints freshness. At urgent + no fresh handoff from this session, exit 2 with ≤5 stderr lines (why; handoff path, directory exists; branch; UTC now; the mechanical snapshot, written on the first block) for every tool except Read, Grep, Glob, AskUserQuestion, Skill `agentic-workflow:handoff` / SlashCommand `/agentic-workflow:handoff` (that field, not a substring), the whitespace-trimmed Bash lines `date -u +%Y-%m-%dT%H:%M:%SZ` / `git rev-parse [--path-format=absolute] --git-path agentic-workflow/session-handoff.md` / `git branch --show-current` exactly, and the handoff Write/Edit. The 6th consecutive block fails open to a one-line nudge (exit 0). Never engages outside a git work tree; silent below urgent, when fresh, inside a claude-p child (AGENTIC_WORKFLOW_CHILD=1), or on missing session_id/transcript/jq. Body: hooks/lib/handoff-gate.sh",
+            "timeout": 5
+          }
+        ]
       }
     ],
     "PostToolUse": [
@@ -140,6 +151,18 @@
         ]
       }
     ],
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/lib/pre-compact.sh\"",
+            "description": "pre-compact snapshot + manual-compact gate (PreCompact, both triggers): FIRST writes this session's mechanical snapshot <git-path>/agentic-workflow/snapshots/<session_id>.md (worktrees with branch/HEAD/dirty count, active ledger + first `Next up:` + open beat, open PRs by @me via gh bounded at 3 s else `unavailable`, last 5 user requests ≤300 chars, last assistant text ≤600 chars, `_Written: <ISO> · session <id> · trigger <t>_`; secret shapes redacted, 0600, tmp + mv; XDG state dir outside a repo) and drops the handoff gate's band cache. auto → exit 0 always (a snapshot failure never blocks). manual → exit 2 with ≤3 stderr lines naming /agentic-workflow:handoff and the override unless this session's handoff is fresh (the handoff-gate marker + a `_Written:` line + within 10% of the threshold), the /compact argument contains --force-compact, AGENTIC_WORKFLOW_COMPACT_FORCE=1, or the cwd is not a git work tree. Silent inside a claude-p child. Body: hooks/lib/pre-compact.sh",
+            "timeout": 15
+          }
+        ]
+      }
+    ],
     "SessionStart": [
       {
         "matcher": "compact",
@@ -147,7 +170,7 @@
           {
             "type": "command",
             "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/lib/compact-resume.sh\"",
-            "description": "compact-resume directive (D8, SessionStart): after a context compaction ONLY (matcher `compact` — never startup/resume; also silent when stdin's .source is present and not `compact`), inject a ≤6-line re-read directive with THREE branches, never silence (OQ6): (1) active .plans/*.state.md ledger (same newest-mtime rule as the beat-enforcer) → re-read the ledger + handoff VERBATIM, honor ## Standing steers; (2) no ledger but docs/product/session-handoff.md exists → re-read it VERBATIM with freshness stated in the directive (OQ5: freshness is stamp-first — a parseable `_Written:` ISO line beats mtime; malformed/absent stamp falls back to the mtime proxy; CURRENT only when the chosen signal is newer than the transcript — else SUSPECT, stating WHY per sub-path (stale: proven older than the transcript's last append; UNPROVABLE: transcript missing/unreadable, so no age comparison was made — F3, never a false 'older' claim), verify against git log/git status before trusting its Next); (3) neither → name git log -5, git status, .remember/now.md, tell the human the record is missing, and do NOT author a handoff now. Emits via hookSpecificOutput.additionalContext (jq-built so interpolated values are JSON-escaped, never executed); always exit 0 — NEVER exit 2. Body: hooks/lib/compact-resume.sh",
+            "description": "compact-resume directive (D8, SessionStart): after a context compaction ONLY (matcher `compact` — never startup/resume; also silent when stdin's .source is present and not `compact`), inject a ≤6-line re-read directive over FOUR records — active ledger, local handoff (<git-path>/agentic-workflow/session-handoff.md, never tracked), repo docs/product/session-handoff.md, and this session's mechanical snapshot (<handoff-dir>/snapshots/<session_id>.md from the PreCompact hook) — never silence (OQ6): (1) active .plans/*.state.md ledger → re-read the ledger + handoff VERBATIM, honor ## Standing steers (item 2 also names an existing local handoff/snapshot); (2) no ledger → name the freshest of local/repo/snapshot and why (newest `_Written:` stamp, mtime fallback); an agent handoff gets its freshness stated (CURRENT only when newer than the transcript, else SUSPECT — stale vs UNPROVABLE, F3 — verify against git log/git status before trusting its Next); a snapshot is labelled mechanical, naming the agent handoff to re-read too; with only the repo handoff present the three original texts are byte-identical; (3) no record → name git log -5, git status, .remember/now.md, tell the human the record is missing, and do NOT author a handoff now. Emits via hookSpecificOutput.additionalContext (jq-built so interpolated values are JSON-escaped, never executed); always exit 0 — NEVER exit 2. Body: hooks/lib/compact-resume.sh",
             "timeout": 30
           }
         ]

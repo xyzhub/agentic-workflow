@@ -49,6 +49,15 @@
 #          TELL THE HUMAN the record is missing — and NOT to author a handoff on
 #          the spot (right after losing context is the worst moment to write
 #          state).
+#   - FOUR records (precompact-handoff AC-6, v1.68.0): the active ledger, the
+#     LOCAL handoff (hl_paths: <git-path>/agentic-workflow/session-handoff.md,
+#     never tracked), the repo handoff above, and THIS session's mechanical
+#     snapshot (<handoff-dir>/snapshots/<session_id>.md, written by
+#     pre-compact.sh). Branch 1 names an existing local handoff/snapshot in its
+#     item 2; branch 2 names the freshest of the other three and why (newest
+#     `_Written:` stamp, mtime fallback), a snapshot labelled mechanical with the
+#     agent handoff to re-read too. With no local handoff and no snapshot, all
+#     three branch texts are byte-identical to the pre-v1.68.0 hook.
 #   - Every directive is ≤6 lines, emitted via
 #     hookSpecificOutput.additionalContext, built with `jq -n --arg` so every
 #     interpolated value is JSON-escaped, never executed. ALWAYS exit 0 —
@@ -77,6 +86,18 @@ LEDGER=$(active_ledger)
 
 HANDOFF=docs/product/session-handoff.md
 
+# The local handoff and this session's snapshot (handoff-lib.sh). Absent → empty,
+# and every branch below emits its original text.
+. "$(dirname "${BASH_SOURCE[0]}")/handoff-lib.sh"
+LOCAL="" SNAP=""
+SESSION_ID=$(printf '%s' "$INPUT" | jq -r '.session_id // ""' 2>/dev/null)
+if hl_paths; then
+  [ -f "$HL_HANDOFF" ] && LOCAL=$HL_HANDOFF
+  if [ -n "$SESSION_ID" ] && [ -f "$HL_SNAPDIR/$(hl_sid "$SESSION_ID").md" ]; then
+    SNAP="$HL_SNAPDIR/$(hl_sid "$SESSION_ID").md"
+  fi
+fi
+
 # The catalog README (§6.1) is the current shape of the product; a session that
 # resumes from a summary must re-read it too, or it builds on old knowledge.
 # Conditional so projects without a catalog get the directive byte-for-byte.
@@ -86,19 +107,9 @@ if [ -f docs/product/catalog/README.md ]; then
   3. docs/product/catalog/README.md — what the product IS now (routes, models, features, last changes)."
 fi
 
-if [ -n "$LEDGER" ]; then
-  # Branch 1 — active mission: the ledger is the richer record. Byte-for-byte
-  # the pre-P2 directive when no catalog exists; ckpt-p2 diff-checks this.
-  MSG="♻️ Context was just COMPACTED — what you hold now is a summary, not the record.
-Before anything else, re-read these VERBATIM (do not resume from the summary):
-  1. $LEDGER — phase, \`Next up:\`, open beats, Deviations, and \`## Standing steers\` (honor them).
-  2. docs/product/session-handoff.md — the last session handoff, if it exists.${CATALOG_LINE}
-Then re-state the current brief's remaining Do/Verify items before continuing."
-elif [ -f "$HANDOFF" ]; then
-  # Branch 2 — no mission, but a handoff exists. State its freshness in the
-  # directive itself (OQ5): current ONLY when provably newer than the
-  # transcript's last append; otherwise suspect — never silently trusted.
-  TRANSCRIPT=$(printf '%s' "$INPUT" | jq -r '.transcript_path // ""' 2>/dev/null)
+# judge FILE — sets FRESH (current|suspect) and SUSPECT_WHY (stale|unprovable)
+# for one handoff file against $TRANSCRIPT. Logic unchanged from S5/S6.
+judge() {
   FRESH=suspect
   # WHY the suspicion (F3, ckpt-p2): `unprovable` until a readable transcript
   # exists to compare against — only then can SUSPECT honestly mean `stale`
@@ -114,7 +125,7 @@ elif [ -f "$HANDOFF" ]; then
     # metacharacters, jq failure) leaves STAMP_EPOCH empty and falls through to
     # the S5 mtime proxy — malformed stamps fall back, they never error.
     STAMP_EPOCH=""
-    STAMP_ISO=$(grep -m1 '^_Written: ' "$HANDOFF" 2>/dev/null | cut -d' ' -f2)
+    STAMP_ISO=$(grep -m1 '^_Written: ' "$1" 2>/dev/null | cut -d' ' -f2)
     # F2 (ckpt-p2, note-only): mutations to this shape-gate regex are MASKED downstream — jq's `fromdateiso8601` and the numeric `case` guard reject what a loosened regex lets through; all three layers are deliberate, so don't judge the regex's coverage by mutation survival alone.
     if printf '%s' "$STAMP_ISO" | grep -qE '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$'; then
       STAMP_EPOCH=$(jq -rn --arg t "$STAMP_ISO" '$t | fromdateiso8601' 2>/dev/null)
@@ -137,11 +148,78 @@ elif [ -f "$HANDOFF" ]; then
       # mtime but not content. Strictly newer than the transcript's last
       # append ⇒ the handoff postdates any budget-band crossing.
       if [ "$STAMP_EPOCH" -gt "$T_MTIME" ]; then FRESH=current; fi
-    elif [ "$HANDOFF" -nt "$TRANSCRIPT" ]; then
+    elif [ "$1" -nt "$TRANSCRIPT" ]; then
       # Fallback: the S5 mtime proxy, behavior byte-identical to pre-S6.
       FRESH=current
     fi
   fi
+}
+
+if [ -n "$LEDGER" ]; then
+  # Branch 1 — active mission: the ledger is the richer record. Byte-for-byte
+  # the pre-P2 directive when no catalog, local handoff or snapshot exists;
+  # ckpt-p2 diff-checks this. A local handoff/snapshot widens item 2 only, so
+  # the directive stays ≤6 lines.
+  if [ -n "$LOCAL" ]; then ITEM2="  2. $LOCAL — the last agent handoff (local); also $HANDOFF if it exists"
+  else ITEM2="  2. $HANDOFF — the last session handoff, if it exists"; fi
+  [ -n "$SNAP" ] && ITEM2="$ITEM2; mechanical snapshot of this compaction (facts only — re-read the handoff too): $SNAP"
+  MSG="♻️ Context was just COMPACTED — what you hold now is a summary, not the record.
+Before anything else, re-read these VERBATIM (do not resume from the summary):
+  1. $LEDGER — phase, \`Next up:\`, open beats, Deviations, and \`## Standing steers\` (honor them).
+${ITEM2}.${CATALOG_LINE}
+Then re-state the current brief's remaining Do/Verify items before continuing."
+elif [ -n "$LOCAL$SNAP" ]; then
+  # Branch 2, four-record form (AC-6): the freshest of local handoff, repo
+  # handoff and this session's snapshot — newest `_Written:` stamp, mtime
+  # fallback; ties keep the earlier candidate (local, repo, snapshot).
+  TRANSCRIPT=$(printf '%s' "$INPUT" | jq -r '.transcript_path // ""' 2>/dev/null)
+  REPO=""; [ -f "$HANDOFF" ] && REPO=$HANDOFF
+  BEST="" BEST_EP=-1 BEST_WHY="" N=0
+  for C in "$LOCAL" "$REPO" "$SNAP"; do
+    [ -n "$C" ] || continue
+    N=$((N + 1))
+    EP=$(hl_stamp_epoch "$C"); WHY="newest \`_Written:\` stamp"
+    if [ -z "$EP" ]; then EP=$(hl_mtime "$C"); WHY="newest mtime, no parseable stamp"; fi
+    [ -n "$EP" ] || EP=0
+    if [ "$EP" -gt "$BEST_EP" ]; then BEST=$C BEST_EP=$EP BEST_WHY=$WHY; fi
+  done
+  [ "$N" = 1 ] && BEST_WHY="the only record found"
+  OTHERS=""
+  for C in "$LOCAL" "$REPO" "$SNAP"; do
+    [ -n "$C" ] && [ "$C" != "$BEST" ] && OTHERS="${OTHERS:+$OTHERS, }$C"
+  done
+  if [ "$BEST" = "$SNAP" ]; then
+    AGENT=${LOCAL:-$REPO}
+    MSG="♻️ Context was just COMPACTED — what you hold now is a summary, not the record.
+No active mission ledger; the freshest record is $SNAP ($BEST_WHY), a mechanical snapshot — re-read the agent handoff too: ${AGENT:-none was written, so tell the human the agent handoff is missing}.
+The snapshot holds facts only (worktrees, ledger, last requests, open PRs); re-read it VERBATIM (do not resume from the summary).
+Then verify against \`git log\` and \`git status\` before acting — treat both records as leads, not the truth."
+  else
+    judge "$BEST"
+    LINE2="No active mission ledger; the freshest record is $BEST ($BEST_WHY)${OTHERS:+; also present: $OTHERS}."
+    if [ "$FRESH" = current ]; then
+      MSG="♻️ Context was just COMPACTED — what you hold now is a summary, not the record.
+$LINE2
+Freshness: CURRENT — written after the transcript's last append, so it postdates any budget-band crossing (currency is judged against the transcript, never the clock).
+Re-read it VERBATIM (do not resume from the summary), then continue from its **Next** line."
+    elif [ "$SUSPECT_WHY" = stale ]; then
+      MSG="♻️ Context was just COMPACTED — what you hold now is a summary, not the record.
+$LINE2
+Freshness: SUSPECT — it is OLDER than the transcript's last append, so it may predate the last compaction/band crossing; work may have happened after it was written.
+Re-read it VERBATIM, but do NOT trust its **Next** yet: verify against \`git log\` and \`git status\` first — treat the handoff as a lead, not the truth."
+    else
+      MSG="♻️ Context was just COMPACTED — what you hold now is a summary, not the record.
+$LINE2
+Freshness: SUSPECT — UNPROVABLE: the transcript is missing or unreadable, so the handoff's age could not be judged against its last append; assume work may have happened after it was written.
+Re-read it VERBATIM, but do NOT trust its **Next** yet: verify against \`git log\` and \`git status\` first — treat the handoff as a lead, not the truth."
+    fi
+  fi
+elif [ -f "$HANDOFF" ]; then
+  # Branch 2 — no mission, but a handoff exists. State its freshness in the
+  # directive itself (OQ5): current ONLY when provably newer than the
+  # transcript's last append; otherwise suspect — never silently trusted.
+  TRANSCRIPT=$(printf '%s' "$INPUT" | jq -r '.transcript_path // ""' 2>/dev/null)
+  judge "$HANDOFF"
   if [ "$FRESH" = current ]; then
     MSG="♻️ Context was just COMPACTED — what you hold now is a summary, not the record.
 No active mission ledger; the durable record is docs/product/session-handoff.md.

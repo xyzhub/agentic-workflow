@@ -271,13 +271,17 @@ close, `reviewer` at a checkpoint) at the moment you try to close or advance —
 stepping over beats that aren't due (held, or behind unfinished work or an
 unreleased blocker) to reach the first one that is; **compact-resume** fires after a
 context compaction and is never silent: with an active ledger it re-reads the
-ledger verbatim; otherwise it falls back to `docs/product/session-handoff.md`,
-stating its freshness, or — with neither record — names `git log`, `git status`
+ledger verbatim; otherwise it names the freshest of the local handoff,
+`docs/product/session-handoff.md` and this compaction's mechanical snapshot,
+stating its freshness, or — with no record — names `git log`, `git status`
 and `.remember/now.md` and flags the gap to the human; **handoff-budget**
-nudges once cumulative transcript bytes — a loose proxy, never a token
-measurement — cross an advisory or urgent band, telling the session to
-write/refresh `docs/product/session-handoff.md` before compaction takes the
-window; and **obligations-due** surfaces, once per session at session start
+nudges once context tokens (transcript bytes as the fallback) cross an advisory
+(70%) or urgent (85%) share of the auto-compact point, telling the session to
+run `/agentic-workflow:handoff` before compaction takes the window; the
+**handoff gate** then blocks tool calls at the urgent band until the session
+writes its local, never-tracked handoff (`<git dir>/agentic-workflow/session-handoff.md`);
+the **pre-compact snapshot** writes a mechanical snapshot before every
+compaction and refuses a manual `/compact` until the handoff exists; and **obligations-due** surfaces, once per session at session start
 (never after a compaction — compact-resume owns that beat), how many deferred
 obligations sit unticked in `.plans/OBLIGATIONS.md` and mission-ledger
 `## Closing` blocks, naming the oldest row and `/agentic-workflow:settle` —

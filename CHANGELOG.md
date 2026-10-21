@@ -8,6 +8,47 @@ has no tags — each version-stamped commit on `main` IS the release.
 
 _(empty)_
 
+## [1.68.0] — 2026-10-20
+### Added — any session is safe to compact
+- **Pre-compact snapshot** (`hooks/lib/pre-compact.sh`, `PreCompact`, both
+  triggers, timeout 15 s): before every compaction, writes this session's
+  mechanical snapshot `<git dir>/agentic-workflow/snapshots/<session>.md` —
+  worktrees (branch, HEAD, dirty count), active ledger + first `Next up:` +
+  open beat, open PRs by `@me` (gh bounded at 3 s, else `unavailable`), the
+  last 5 user requests and the last assistant text; secret shapes redacted,
+  0600, tmp + `mv`, never tracked. A manual `/compact` is refused (exit 2)
+  until this session has written its handoff; override with
+  `/compact --force-compact` or `AGENTIC_WORKFLOW_COMPACT_FORCE=1`.
+  Auto-compaction is never blocked.
+- **Handoff gate** (`hooks/lib/handoff-gate.sh`, `PreToolUse`, every tool): at
+  the urgent band with no handoff written by this session, blocks every tool
+  except Read/Grep/Glob/AskUserQuestion, `/agentic-workflow:handoff`, its three
+  Bash lines and the handoff Write/Edit; the block message carries the path,
+  branch and UTC time; fails open to a nudge after 5 blocks; never engages
+  outside a git work tree.
+- **Token bands** (`hooks/lib/handoff-lib.sh`): the size signal is the
+  transcript's latest assistant `usage` against the auto-compact point
+  (`CLAUDE_CODE_AUTO_COMPACT_WINDOW` × `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE`;
+  Assumed defaults 1,000,000 × 95%, confirmed by OB-32); advisory 70%,
+  urgent 85%; byte bands remain the fallback.
+- **Local canonical handoff**: `/agentic-workflow:handoff` writes
+  `<git dir>/agentic-workflow/session-handoff.md` (never tracked; XDG state dir
+  outside a repo); `docs/product/session-handoff.md` is optional for shared
+  handoffs and still read. The memory directory is never a handoff.
+- **Four-record resume**: compact-resume weighs the active ledger, the local
+  handoff, the repo handoff and this session's snapshot, names the freshest
+  and why, and labels a snapshot mechanical. With no local handoff and no
+  snapshot its texts are byte-identical.
+- Markers (band cache, handoff evidence, handoff-budget's once-per-band) live
+  in a private 0700 state dir inside the git dir (XDG outside a repo), never
+  `$TMPDIR`: symlinked or foreign-owned paths are refused, writes go tmp +
+  `mv`, and no marker is kept without a session id.
+- `/agentic-workflow:doctor` §3 **Handoff** row; 52 new hook-test `check(` calls.
+### Changed
+- **handoff-budget** reads tokens first (new ≤3-line texts naming tokens and
+  the percentage); with no readable `usage` it keeps the byte bands and the
+  original texts byte-identical.
+
 ## [1.67.0] — 2026-10-19
 ### Added — agent-managed repos may push their default branch
 - The push guard now lets an agent push straight to the default branch of a
