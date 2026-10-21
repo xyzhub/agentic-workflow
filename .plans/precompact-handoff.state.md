@@ -60,7 +60,7 @@ _Glyphs: `[ ]` not started · `[~]` in-flight / deferred / awaiting owner · `[x
 done (verified, not merely written)._
 
 - [x] S1 — `hooks/lib/handoff-lib.sh` + `pre-compact.sh` + `handoff-gate.sh`, `hooks.json` PreCompact (timeout 15) + PreToolUse `.*` rows, token bands in `handoff-budget.sh` (byte fallback byte-identical), four-record `compact-resume.sh` (existing pins untouched), `commands/handoff.md` + `templates/session-handoff.md` + `templates/WORKFLOW.md` rows/prose + README + `commands/doctor.md` row, ~25 harness cases incl. counsel's two deadlock fixtures, CHANGELOG 1.68.0 + both manifests, OB-32 row text reported, pre-merge Closing rows fired (branch `feat/precompact-handoff`)
-- [ ] Checkpoint ckpt-s1 — one-shot `reviewer` on **Fable** (boundary-class: `hooks/` + `tools/`) over `main..HEAD`, red-team list from the brief, plain-report read of the block/nudge/doctor strings; APPROVE → staging verify → PR ready, human merges
+- [~] Checkpoint ckpt-s1 — one-shot `reviewer` on **Fable** (boundary-class: `hooks/` + `tools/`) over `main..HEAD`, red-team list from the brief, plain-report read of the block/nudge/doctor strings; APPROVE → staging verify → PR ready, human merges
 
 ## Open questions
 
