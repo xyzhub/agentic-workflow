@@ -26,8 +26,9 @@
 #   - Exactly four silencers, all mechanical — a human must be able to predict
 #     every firing. If it still nags, RAISE THE BANDS; never add conditions:
 #       1. at most two bands (advisory, urgent); below advisory, silence;
-#       2. one firing per band per session — a marker file under $TMPDIR keyed
-#          by session_id (no repo state, nothing to .gitignore);
+#       2. one firing per band per session — a marker keyed by session_id in the
+#          private state dir (inside the git dir, or the XDG dir outside a repo;
+#          nothing to .gitignore);
 #       3. silent when the handoff is FRESHER than the band crossing. Token path:
 #          hl_fresh (this session's handoff-gate marker — written only by a
 #          Write/Edit to the local handoff — within 10 % of the threshold).
@@ -96,7 +97,7 @@ fi
 # Silencer 3 — the handoff already postdates the band crossing (see header).
 SID=$(printf '%s' "$SESSION_ID" | tr -c 'A-Za-z0-9._-' '_')
 if [ "$UNIT" = tokens ]; then
-  hl_paths && hl_fresh "$SID" "$SIZE" tokens && exit 0
+  hl_paths && hl_state_init && hl_fresh "$SID" "$SIZE" tokens && exit 0
 else
   HANDOFF=docs/product/session-handoff.md
   if [ -f "$HANDOFF" ] && [ "$HANDOFF" -nt "$TRANSCRIPT" ]; then exit 0; fi
@@ -105,9 +106,14 @@ fi
 # Silencer 2 — one firing per band per session. session_id lands in a path, so
 # sanitize it (never trust stdin); marker creation failure degrades to re-nudging,
 # never to a non-zero exit.
-MARK="${TMPDIR:-/tmp}/handoff-budget-${SID}.${BAND}"
-[ -e "$MARK" ] && exit 0
-: > "$MARK" 2>/dev/null || true
+# The marker lives in the private state dir (handoff-lib.sh: 0700, no symlink,
+# owner-checked, tmp + mv) — never the shared $TMPDIR.
+MARK=""
+if [ -z "$HL_DIR" ]; then hl_paths; fi
+if hl_state_init && MARK=$(hl_mark "$SID" "budget-$BAND"); then
+  [ -e "$MARK" ] && exit 0
+  hl_mput "$MARK" "" || true
+fi
 
 # The nudge: ≤3 lines per band (OQ4 cap), fixed text + numeric counts — no
 # untrusted value is interpolated, and stdout here is context, never code.

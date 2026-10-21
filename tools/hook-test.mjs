@@ -47,6 +47,7 @@ function hookCommand(event, descNeedle) {
 // to ONLY a temp bin/ of BIN_LIST symlinks (+ jq, + the gh stub) — how "gh
 // missing" / "jq missing" are produced, and proof that a hook's `# externals:`
 // line is complete.
+const HARNESS_STATE = mkdtempSync(path.join(tmpdir(), 'hooktest-state-'));
 const BIN_LIST = ['bash', 'sh', 'git', 'grep', 'sed', 'head', 'tr', 'cut', 'wc', 'cat', 'mkdir', 'dirname',
   'stat', 'tail', 'mv', 'rm', 'date', 'mktemp', 'chmod', 'pwd', 'sleep', 'ls'];
 const whichBin = (name) => {
@@ -96,7 +97,9 @@ function runHook({ event, desc, command, input = {}, ledgers, files, transcript,
     }
     // Claude Code exports CLAUDE_PLUGIN_ROOT to hook processes; mirror it so a
     // hook that invokes `${CLAUDE_PLUGIN_ROOT}/hooks/lib/*.sh` resolves here.
-    const env = { ...process.env, CLAUDE_PLUGIN_ROOT: PLUGIN, ...envOver };
+    // XDG_STATE_HOME → a harness-owned root: outside a git repo the handoff hooks
+    // keep their markers under it, never in the operator's real ~/.local/state.
+    const env = { ...process.env, CLAUDE_PLUGIN_ROOT: PLUGIN, XDG_STATE_HOME: HARNESS_STATE, ...envOver };
     let shell = 'bash';
     if (bin) {
       const b = path.join(dir, 'bin');
@@ -988,11 +991,14 @@ const sid = (tag) => `hb-${tag}-${process.pid}-${Date.now()}-${sidSeq++}`;
     `code=${r.code} stdout=${JSON.stringify(r.stdout)}`);
 }
 { // silencer 2: same band, same session → the second crossing is silent.
+  // One shared cwd: the marker lives in that cwd's private state dir (v1.68.0).
   const s = sid('once');
-  const first = runHook({ event: 'UserPromptSubmit', desc: BUDGET,
+  const dir = mkdtempSync(path.join(tmpdir(), 'hooktest-'));
+  const first = runHook({ event: 'UserPromptSubmit', desc: BUDGET, dir,
     input: { session_id: s }, transcript: { bytes: ADVISORY } });
-  const again = runHook({ event: 'UserPromptSubmit', desc: BUDGET,
+  const again = runHook({ event: 'UserPromptSubmit', desc: BUDGET, dir,
     input: { session_id: s }, transcript: { bytes: ADVISORY + 1000 } });
+  rmSync(dir, { recursive: true, force: true });
   check('UserPromptSubmit(budget): advisory fires ONCE per session — second dispatch same session_id → silent',
     first.code === 0 && budgetNudge(first) && again.code === 0 && again.stdout === '',
     `first=${JSON.stringify(first.stdout)} again=${JSON.stringify(again.stdout)}`);
@@ -1012,12 +1018,14 @@ const sid = (tag) => `hb-${tag}-${process.pid}-${Date.now()}-${sidSeq++}`;
 { // the marker is PER BAND (OQ4: "one firing per band", ≤2 total): an advisory
   // firing must not consume the urgent band, and urgent then re-fires never.
   const s = sid('bands');
-  const adv = runHook({ event: 'UserPromptSubmit', desc: BUDGET,
+  const dir = mkdtempSync(path.join(tmpdir(), 'hooktest-'));
+  const adv = runHook({ event: 'UserPromptSubmit', desc: BUDGET, dir,
     input: { session_id: s }, transcript: { bytes: ADVISORY } });
-  const urg = runHook({ event: 'UserPromptSubmit', desc: BUDGET,
+  const urg = runHook({ event: 'UserPromptSubmit', desc: BUDGET, dir,
     input: { session_id: s }, transcript: { bytes: URGENT } });
-  const urg2 = runHook({ event: 'UserPromptSubmit', desc: BUDGET,
+  const urg2 = runHook({ event: 'UserPromptSubmit', desc: BUDGET, dir,
     input: { session_id: s }, transcript: { bytes: URGENT + 1000 } });
+  rmSync(dir, { recursive: true, force: true });
   check('UserPromptSubmit(budget): advisory then urgent in one session → both fire once each, third dispatch silent (≤2 total)',
     adv.code === 0 && budgetNudge(adv) && !urgent(adv)
       && urg.code === 0 && urgent(urg)
@@ -1075,10 +1083,12 @@ const sid = (tag) => `hb-${tag}-${process.pid}-${Date.now()}-${sidSeq++}`;
   // is the pin: drop the sanitizer and the '/'-laden sid below makes marker
   // creation fail silently, so the second dispatch nudges AGAIN and this fails.
   const s = `${sid('meta')}/../nope; $(touch HACK) \`touch HACK2\` "d" 's'`;
-  const first = runHook({ event: 'UserPromptSubmit', desc: BUDGET,
+  const dir = mkdtempSync(path.join(tmpdir(), 'hooktest-')); // one cwd: per-cwd state dir (v1.68.0)
+  const first = runHook({ event: 'UserPromptSubmit', desc: BUDGET, dir,
     input: { session_id: s }, transcript: { bytes: ADVISORY } });
-  const again = runHook({ event: 'UserPromptSubmit', desc: BUDGET,
+  const again = runHook({ event: 'UserPromptSubmit', desc: BUDGET, dir,
     input: { session_id: s }, transcript: { bytes: ADVISORY + 500 } });
+  rmSync(dir, { recursive: true, force: true });
   check('UserPromptSubmit(budget): metachar session_id → sanitized (nudges once, second dispatch silent, exit 0, empty stderr)',
     first.code === 0 && budgetNudge(first) && first.stderr === ''
       && again.code === 0 && again.stdout === '',
@@ -2019,7 +2029,7 @@ const CLOSING_NONE_DUE = {
 // handoff gate, token bands, four-record resume. The handoff hooks resolve the
 // local handoff via `git rev-parse --git-path`, so these cases run in a `git:
 // true` cwd; multi-call sequences share one caller-owned `dir`. Markers live in
-// the real $TMPDIR keyed by a sid() minted per case (same discipline as above).
+// a private 0700 state dir inside the git dir (never $TMPDIR), keyed by session_id.
 {
   const GATE_D = 'handoff gate (PreToolUse';
   const PC_D = 'pre-compact snapshot';
@@ -2058,10 +2068,10 @@ const CLOSING_NONE_DUE = {
     mkdirSync(path.dirname(canonOf(dir)), { recursive: true });
     writeFileSync(canonOf(dir), stampLine(iso));
   };
-  const mark = (s, ext) => path.join(tmpdir(), `handoff-gate-${s}.${ext}`);
-  const blocksOf = (s) => (existsSync(mark(s, 'band')) ? Number(readFileSync(mark(s, 'band'), 'utf8').trim().split(/\s+/)[3] || 0) : 0);
-  const minted = [];
-  const hsid = (tag) => { const s = sid(`hg-${tag}`); minted.push(s); return s; };
+  const stateOf = (dir) => path.join(realpathSync(dir), '.git/agentic-workflow/state');
+  const mark = (dir, s, ext) => path.join(stateOf(dir), `${s}.${ext}`);
+  const blocksOf = (dir, s) => (existsSync(mark(dir, s, 'band')) ? Number(readFileSync(mark(dir, s, 'band'), 'utf8').trim().split(/\s+/)[3] || 0) : 0);
+  const hsid = (tag) => sid(`hg-${tag}`);
   const gate = (dir, s, tool, tool_input, content, env = {}) => runHook({ event: 'PreToolUse', desc: GATE_D, dir, git: true,
     input: { session_id: s, tool_name: tool, tool_input }, transcript: { content }, env: { ...ENV0, ...env } });
   const compact = (dir, s, trigger, content, { ci = null, env = {}, bin, ledgers, files } = {}) => runHook({ event: 'PreCompact', desc: PC_D,
@@ -2107,7 +2117,7 @@ const CLOSING_NONE_DUE = {
     const s = hsid('snap');
     const users = ['oldest request, dropped', 'second oldest, dropped',
       'deploy with sk-ABCDEFGH12345678 please', 'token ghp_ABCDEFGHIJKLMNOP and github_pat_ABCDEFGH1234',
-      'aws AKIAABCDEFGHIJKLMNOP now', 'curl -H "Authorization: Bearer xyz.secret.value"',
+      'aws AKIAABCDEFGHIJKLMNOP now, slack xoxb-1234567890-abcdefgh', 'curl -H "Authorization: Bearer xyz.secret.value"',
       `bell\u0007and\nnewline -----BEGIN RSA PRIVATE KEY----- MIIEabc -----END RSA PRIVATE KEY----- ${'z'.repeat(400)}`];
     const tc = mkTranscript({ tokens: 1000, users, assistantText: 'A'.repeat(700), meta: 'META-LINE' })
       + JSON.stringify({ type: 'user', message: { content: [{ type: 'tool_result', content: 'TOOL-ECHO' }] } }) + '\n';
@@ -2123,8 +2133,8 @@ const CLOSING_NONE_DUE = {
     check('PreCompact snapshot: exactly the last 5 user requests (no tool_result echo, no isMeta), each ≤300 chars, control chars stripped',
       prompts.length === 5 && !/oldest/.test(body) && !/TOOL-ECHO|META-LINE/.test(body)
         && prompts.every((x) => x.length <= 302) && !/\u0007/.test(body), JSON.stringify(prompts));
-    check('PreCompact snapshot: secrets redacted (sk-, ghp_, github_pat_, AKIA, Bearer, PEM)',
-      !/sk-ABC|ghp_|github_pat_|AKIA|Bearer|BEGIN RSA|MIIEabc/.test(body) && (body.match(/\[redacted\]/g) || []).length >= 6, body);
+    check('PreCompact snapshot: secrets redacted (sk-, ghp_, github_pat_, AKIA, xox?-, Bearer, PEM)',
+      !/sk-ABC|ghp_|github_pat_|AKIA|xoxb|Bearer|BEGIN RSA|MIIEabc/.test(body) && (body.match(/\[redacted\]/g) || []).length >= 7, body);
     check('PreCompact snapshot: last assistant text ≤600 chars; file mode 0600; open PRs line present',
       /^> A{600}$/m.test(last) && !/A{601}/.test(last) && (statSync(p).mode & 0o777) === 0o600 && /## Open PRs \(@me\)\n- /.test(body),
       `mode=${existsSync(p) ? (statSync(p).mode & 0o777).toString(8) : 'none'}`);
@@ -2208,7 +2218,7 @@ const CLOSING_NONE_DUE = {
     for (const [tool, ti] of seq) {
       const r = gate(d, s, tool, ti, URGENT_T);
       codes.push(r.code);
-      maxBlocks = Math.max(maxBlocks, blocksOf(s));
+      maxBlocks = Math.max(maxBlocks, blocksOf(d, s));
       if (tool === 'Write') putHandoff(d);
     }
     check('handoff gate: /agentic-workflow:handoff\'s full sequence at urgent → zero exit-2, blocks never incremented (compliance never touches fail-open)',
@@ -2220,7 +2230,7 @@ const CLOSING_NONE_DUE = {
     const grown = mkTranscript({ tokens: URG_T, pad: 70_000 });
     const b = gate(d, s, 'Bash', { command: 'ls' }, grown);
     check('handoff gate: urgent, transcript grows ≥ 64 KiB (re-parse) with NO handoff write → still blocked, no `.handoff` marker',
-      a.code === 2 && b.code === 2 && !existsSync(mark(s, 'handoff')), `${why(a)} | ${why(b)}`);
+      a.code === 2 && b.code === 2 && !existsSync(mark(d, s, 'handoff')), `${why(a)} | ${why(b)}`);
   });
   withDir((d) => { // marker written, then the file deleted → stale again
     const s = hsid('del');
@@ -2239,6 +2249,9 @@ const CLOSING_NONE_DUE = {
       ['Bash', { command: 'date -u +%Y-%m-%dT%H:%M:%SZ' }],
       ['Bash', { command: 'git rev-parse --git-path agentic-workflow/session-handoff.md' }],
       ['Bash', { command: 'git branch --show-current' }],
+      ['Bash', { command: '  git branch --show-current \n' }],
+      ['Bash', { command: 'git rev-parse --path-format=absolute --git-path agentic-workflow/session-handoff.md' }],
+      ['SlashCommand', { command: '/agentic-workflow:handoff resume' }],
     ];
     const deny = [
       ['Bash', { command: 'ls' }], ['Bash', { command: 'date -u +%s' }],
@@ -2246,17 +2259,19 @@ const CLOSING_NONE_DUE = {
       ['Write', { file_path: path.join(d, 'docs/x/session-handoff.md') }],
       ['Edit', { file_path: path.join(d, 'session-handoff.md') }],
       ['Skill', { skill: 'agentic-workflow:plan' }], ['Task', { prompt: 'do it' }],
+      ['Skill', { skill: 'commit', args: 'then run agentic-workflow:handoff' }],
+      ['SlashCommand', { command: '/commit agentic-workflow:handoff' }], ['SlashCommand', { command: '/agentic-workflow:handoffx' }],
     ];
     const bad = [];
     for (const [t, ti] of allow) { const r = gate(d, hsid('al'), t, ti, URGENT_T); if (r.code !== 0) bad.push(`allow ${t} ${JSON.stringify(ti)} → ${r.code}`); }
     for (const [t, ti] of deny) { const r = gate(d, hsid('dn'), t, ti, URGENT_T); if (r.code !== 2) bad.push(`deny ${t} ${JSON.stringify(ti)} → ${r.code}`); }
-    check('handoff gate allowlist: Read/Grep/Glob/AskUserQuestion/Skill+SlashCommand(handoff)/the three Bash lines → 0; ls, `date -u +%s`, a compound, a same-basename Write elsewhere, other Skill, Task → 2',
+    check('handoff gate allowlist: Read/Grep/Glob/AskUserQuestion/Skill+SlashCommand(handoff, by field)/the Bash lines (trimmed, incl. --path-format=absolute) → 0; ls, `date -u +%s`, a compound, a same-basename Write elsewhere, other Skill (even with args naming the handoff), Task → 2',
       bad.length === 0, bad.join('; '));
   });
   withDir((d) => { // path identity: relative and symlinked spellings canonicalise to the handoff
     const s = hsid('rel');
     const r = gate(d, s, 'Write', { file_path: '.git/agentic-workflow/session-handoff.md' }, URGENT_T);
-    const relMarked = existsSync(mark(s, 'handoff'));
+    const relMarked = existsSync(mark(d, s, 'handoff'));
     const s2 = hsid('sym');
     mkdirSync(path.join(d, '.git/agentic-workflow'), { recursive: true });
     symlinkSync(path.join(d, '.git/agentic-workflow'), path.join(d, 'hlink'));
@@ -2264,7 +2279,7 @@ const CLOSING_NONE_DUE = {
     putHandoff(d);
     const after = gate(d, s2, 'Bash', { command: 'ls' }, URGENT_T);
     check('handoff gate: Write via a relative or a symlinked spelling of the handoff path → 0, marker written, then fresh',
-      r.code === 0 && relMarked && r2.code === 0 && existsSync(mark(s2, 'handoff')) && after.code === 0, `${why(r)} | ${why(r2)} | ${why(after)}`);
+      r.code === 0 && relMarked && r2.code === 0 && existsSync(mark(d, s2, 'handoff')) && after.code === 0, `${why(r)} | ${why(r2)} | ${why(after)}`);
   });
   withDir((d) => { // block message content + the first block writes the snapshot (and so the dir)
     const s = hsid('msg');
@@ -2397,6 +2412,66 @@ const CLOSING_NONE_DUE = {
       /1\. \.plans\/m\.state\.md/.test(m) && m.includes(`2. ${canonOf(d)} — the last agent handoff (local)`) && m.includes(snapOf(d, s)) && m.split('\n').length <= 6, m);
   });
 
+  // ── marker hardening (ckpt-s1 advisories) ──
+  withDir((d) => { // markers live in a private 0700 state dir inside the git dir, never $TMPDIR
+    const s = hsid('priv');
+    gate(d, s, 'Bash', { command: 'ls' }, URGENT_T);
+    check('handoff markers: state dir is 0700 inside the git dir; no marker in $TMPDIR',
+      existsSync(mark(d, s, 'band')) && (statSync(stateOf(d)).mode & 0o777) === 0o700
+        && !existsSync(path.join(tmpdir(), `handoff-gate-${s}.band`)), `mode=${existsSync(stateOf(d)) ? (statSync(stateOf(d)).mode & 0o777).toString(8) : 'none'}`);
+  });
+  withDir((d) => { // a pre-created symlink at the marker path is never followed
+    const s = hsid('sym-m');
+    const victim = path.join(d, 'victim.txt');
+    writeFileSync(victim, 'keep');
+    mkdirSync(stateOf(d), { recursive: true, mode: 0o700 });
+    symlinkSync(victim, mark(d, s, 'band'));
+    symlinkSync(victim, mark(d, s, 'handoff'));
+    const g = gate(d, s, 'Bash', { command: 'ls' }, URGENT_T);
+    const w = gate(d, s, 'Write', { file_path: canonOf(d) }, URGENT_T);
+    const sb = hsid('sym-b');
+    symlinkSync(victim, path.join(stateOf(d), `${sb}.budget-urgent`));
+    const b = runHook({ event: 'UserPromptSubmit', desc: BUDGET, dir: d, git: true, input: { session_id: sb }, transcript: { content: URGENT_T }, env: ENV0 });
+    check('handoff markers: symlinks pre-planted at the gate and budget marker paths are not followed (target unchanged, hooks fail open)',
+      readFileSync(victim, 'utf8') === 'keep' && g.code === 0 && w.code === 0 && b.code === 0, `${why(g)} | ${why(w)} | ${why(b)}`);
+  });
+  withDir((d) => { // a symlinked state dir is refused outright
+    const s = hsid('sym-d');
+    const elsewhere = mkDir(false);
+    mkdirSync(path.join(d, '.git/agentic-workflow'), { recursive: true });
+    symlinkSync(elsewhere, stateOf(d));
+    const g = gate(d, s, 'Bash', { command: 'ls' }, URGENT_T);
+    const leaked = spawnSync('ls', ['-A', elsewhere], { encoding: 'utf8' }).stdout.trim();
+    check('handoff markers: a symlinked state dir is refused — nothing written through it, gate fails open', g.code === 0 && leaked === '', `${why(g)} leaked=${leaked}`);
+    rmSync(elsewhere, { recursive: true, force: true });
+  });
+  withDir((d) => { // no session_id → no marker (no shared constant id)
+    const g = gate(d, '', 'Bash', { command: 'ls' }, URGENT_T);
+    const c = compact(d, '', 'auto', URGENT_T);
+    const st = existsSync(stateOf(d)) ? spawnSync('ls', ['-A', stateOf(d)], { encoding: 'utf8' }).stdout.trim() : '';
+    const snaps = spawnSync('ls', [path.join(realpathSync(d), '.git/agentic-workflow/snapshots')], { encoding: 'utf8' }).stdout;
+    check('handoff markers: empty session_id → gate exits 0, PreCompact still snapshots (nosession-<epoch>), no marker written',
+      g.code === 0 && c.code === 0 && st === '' && /^nosession-\d+\.md$/m.test(snaps) && !/unknown/.test(snaps), `state=${st} snaps=${snaps}`);
+  });
+  withDir((d) => { // unit drift: marker recorded in tokens, now the byte path → fail toward NOT blocking
+    const s = hsid('unit');
+    gate(d, s, 'Write', { file_path: canonOf(d) }, URGENT_T);
+    putHandoff(d);
+    const r = gate(d, s, 'Bash', { command: 'ls' }, 'x'.repeat(URGENT + 70_000));
+    const m = compact(d, s, 'manual', 'x'.repeat(URGENT + 70_000));
+    check('hl_fresh: marker unit (tokens) ≠ current unit (bytes) with the stamped file present → fresh: gate 0, manual /compact 0',
+      r.code === 0 && m.code === 0, `${why(r)} | ${why(m)}`);
+  });
+  withDir((d) => { // fast path: a cached below-urgent band exits without spawning git
+    const s = hsid('fast');
+    const low = mkTranscript({ tokens: 1000 });
+    gate(d, s, 'Bash', { command: 'ls' }, low);
+    const trace = path.join(d, 'git-trace.log');
+    const r = gate(d, s, 'Bash', { command: 'ls' }, low, { GIT_TRACE: trace });
+    check('handoff gate: cached below-urgent band → exit 0 with zero git spawns (GIT_TRACE empty)',
+      r.code === 0 && (!existsSync(trace) || readFileSync(trace, 'utf8').trim() === ''), existsSync(trace) ? readFileSync(trace, 'utf8').slice(0, 200) : '');
+  });
+
   // ── child silence for the two new hooks (control proves the setup speaks) ──
   withDir((d) => {
     const CH = { AGENTIC_WORKFLOW_CHILD: '1' };
@@ -2410,7 +2485,6 @@ const CLOSING_NONE_DUE = {
       pc.code === 0 && pc.stdout === '' && pc.stderr === '' && pctl.code === 2, `${why(pc)} | ${why(pctl)}`);
   });
 
-  for (const s of minted) for (const ext of ['band', 'handoff']) rmSync(mark(s, ext), { force: true });
 }
 
 // ── Child silencer (tune-presets D4): inside a claude-p child spawned by
@@ -2440,6 +2514,7 @@ const CLOSING_NONE_DUE = {
   }
 }
 
+rmSync(HARNESS_STATE, { recursive: true, force: true });
 if (failures.length) {
   console.error(`\nhook-test: ${failures.length} failure(s)`);
   process.exit(1);

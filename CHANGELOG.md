@@ -39,7 +39,11 @@ _(empty)_
   handoff, the repo handoff and this session's snapshot, names the freshest
   and why, and labels a snapshot mechanical. With no local handoff and no
   snapshot its texts are byte-identical.
-- `/agentic-workflow:doctor` §3 **Handoff** row; 43 new hook-test cases.
+- Markers (band cache, handoff evidence, handoff-budget's once-per-band) live
+  in a private 0700 state dir inside the git dir (XDG outside a repo), never
+  `$TMPDIR`: symlinked or foreign-owned paths are refused, writes go tmp +
+  `mv`, and no marker is kept without a session id.
+- `/agentic-workflow:doctor` §3 **Handoff** row; 52 new hook-test `check(` calls.
 ### Changed
 - **handoff-budget** reads tokens first (new ≤3-line texts naming tokens and
   the percentage); with no readable `usage` it keeps the byte bands and the

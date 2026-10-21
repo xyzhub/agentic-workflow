@@ -60,7 +60,7 @@ _Glyphs: `[ ]` not started · `[~]` in-flight / deferred / awaiting owner · `[x
 done (verified, not merely written)._
 
 - [x] S1 — `hooks/lib/handoff-lib.sh` + `pre-compact.sh` + `handoff-gate.sh`, `hooks.json` PreCompact (timeout 15) + PreToolUse `.*` rows, token bands in `handoff-budget.sh` (byte fallback byte-identical), four-record `compact-resume.sh` (existing pins untouched), `commands/handoff.md` + `templates/session-handoff.md` + `templates/WORKFLOW.md` rows/prose + README + `commands/doctor.md` row, ~25 harness cases incl. counsel's two deadlock fixtures, CHANGELOG 1.68.0 + both manifests, OB-32 row text reported, pre-merge Closing rows fired (branch `feat/precompact-handoff`)
-- [~] Checkpoint ckpt-s1 — one-shot `reviewer` on **Fable** (boundary-class: `hooks/` + `tools/`) over `main..HEAD`, red-team list from the brief, plain-report read of the block/nudge/doctor strings; APPROVE → staging verify → PR ready, human merges
+- [x] Checkpoint ckpt-s1 — one-shot `reviewer` on **Fable** (boundary-class: `hooks/` + `tools/`) over `main..HEAD`, red-team list from the brief, plain-report read of the block/nudge/doctor strings; APPROVE → staging verify → PR ready, human merges
 
 ## Open questions
 
@@ -88,6 +88,10 @@ before execution starts._
 
 ## Handoff log (newest first)
 
+- 2026-10-21 S1 tidy folded (ckpt-s1 advisories 1–5, 7 + nits): markers in 0700 git-dir state dir, exact Skill match, unit-mismatch fail-toward-fresh, trimmed/absolute allowlist, no-git fast path; hook-test clean (301 checks), lint clean, plugin validate passed
+
+- 2026-10-21 ckpt-s1 APPROVE (Fable, 2026-10-21) on 83adec7 — scorecard Sec 2 · QA 3 · DX 3 · Eff 2 · Arch 3; 290 hook-test cases, lint clean; 9 advisory findings; folding 1,2,3,4,5,7 + nits as an S1 tidy by the same builder (no re-review per reviewer)
+
 - 2026-10-20 planned: trio authored from `docs/product/decisions/2026-10-20-precompact-handoff-brief.md`; branch `feat/precompact-handoff` at 92c886b; OQ-1..3 to the owner before S1.
 
-Next up: ckpt-s1 (Fable reviewer in flight on main..HEAD)
+Next up: push → CI green → PR to main (human merges)

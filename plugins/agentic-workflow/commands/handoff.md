@@ -19,16 +19,18 @@ tuned to its artifacts (ledger, decision log, plan file).
 
 Write the **local handoff** — a file git never tracks — from
 `${CLAUDE_PLUGIN_ROOT}/templates/session-handoff.md` as a **re-read manifest —
-pointers, not corpora**. Its path is `git rev-parse --git-path
-agentic-workflow/session-handoff.md` (inside the git dir: per worktree, nothing
-to commit, no `.gitignore`); `mkdir -p` its directory first. Outside a git repo:
+pointers, not corpora**. Its path is `git rev-parse --path-format=absolute
+--git-path agentic-workflow/session-handoff.md`, run from the repo root (inside
+the git dir: per worktree, nothing to commit, no `.gitignore`); `mkdir -p` its
+directory first. Outside a git repo:
 `${XDG_STATE_HOME:-~/.local/state}/agentic-workflow/<cwd basename>/session-handoff.md`.
 
 **When the handoff gate's block message names `handoff=`, `branch=` and `now=`,
-use those values verbatim** — do not resolve or `mkdir` (the directory already
-exists). Under the gate the only Bash this command may run is exactly
-`git rev-parse --git-path agentic-workflow/session-handoff.md`,
-`git branch --show-current` or `date -u +%Y-%m-%dT%H:%M:%SZ`; Read, Grep, Glob
+use those values verbatim** — `handoff=` is already absolute; do not resolve or
+`mkdir` (the directory already exists). Under the gate the only Bash this
+command may run is exactly `git rev-parse --path-format=absolute --git-path
+agentic-workflow/session-handoff.md`, `git branch --show-current` or
+`date -u +%Y-%m-%dT%H:%M:%SZ`; Read, Grep, Glob
 and the Write/Edit of the handoff path are always allowed. Write
 `docs/product/session-handoff.md` (tracked, shared) only when the human asks for
 a shared handoff.

@@ -11,12 +11,17 @@
 #     a session proves freshness. Exit 0.
 #   - Band cache: re-parse the transcript only when it grew ≥ 64 KiB since the
 #     cached parse (`.band`); a re-parse never touches `.handoff`, so it can't
-#     mint freshness.
+#     mint freshness. A cached below-urgent band is read via hl_state_fast before
+#     hl_paths, so the common call spawns no git. Markers live in the private
+#     per-worktree state dir (handoff-lib.sh), never $TMPDIR; none without a
+#     session_id.
 #   - Below urgent, or fresh (hl_fresh), or the handoff path not inside a git work
 #     tree (A3) → exit 0 silent.
 #   - Urgent + stale → allowlist (exit 0): Read, Grep, Glob, AskUserQuestion;
-#     Skill/SlashCommand whose input names agentic-workflow:handoff; a Bash command
-#     EXACTLY one of `date -u +%Y-%m-%dT%H:%M:%SZ`, `git rev-parse --git-path
+#     Skill `agentic-workflow:handoff` / SlashCommand `/agentic-workflow:handoff…`
+#     (the skill/command field itself, never a substring of the whole input); a
+#     Bash command (whitespace-trimmed) EXACTLY one of `date -u +%Y-%m-%dT%H:%M:%SZ`,
+#     `git rev-parse [--path-format=absolute] --git-path
 #     agentic-workflow/session-handoff.md`, `git branch --show-current`; a
 #     Write/Edit to the handoff (above). Anything else → blocks+1; the first block
 #     writes the mechanical snapshot (which creates the handoff dir); ≤5 stderr
@@ -38,14 +43,30 @@ TRANSCRIPT=$(field .transcript_path)
 TOOL=$(field .tool_name)
 
 . "$(dirname "${BASH_SOURCE[0]}")/handoff-lib.sh"
-hl_paths || exit 0
 SID=$(hl_sid "$SESSION_ID")
-BANDF=$(hl_mark "$SID" band)
-HOF=$(hl_mark "$SID" handoff)
-
-# Band, cached: re-parse only on ≥ 64 KiB of growth (or a shrink / no cache).
+[ -n "$SID" ] || exit 0
 SIZE=$(wc -c < "$TRANSCRIPT" 2>/dev/null | tr -d '[:space:]')
 hl_num "$SIZE" || exit 0
+
+# Fast path — no git spawn: a cached below-urgent band that is still within the
+# re-parse window exits here (most tool calls). Write/Edit always take the full
+# path (they may be the handoff write).
+case "$TOOL" in
+  Write | Edit | MultiEdit) ;;
+  *)
+    if HL_STATE=$(hl_state_fast) && BANDF=$(hl_mark "$SID" band); then
+      read -r BAND AT UNIT BLOCKS CUR 2>/dev/null < "$BANDF"
+      if [ -n "$UNIT" ] && [ "$BAND" != urgent ] && hl_num "$AT" && [ "$SIZE" -ge "$AT" ] \
+        && [ $((SIZE - AT)) -lt "$HL_REPARSE_BYTES" ]; then exit 0; fi
+    fi ;;
+esac
+
+hl_paths || exit 0
+hl_state_init || exit 0
+BANDF=$(hl_mark "$SID" band) || exit 0
+HOF=$(hl_mark "$SID" handoff) || exit 0
+
+# Band, cached: re-parse only on ≥ 64 KiB of growth (or a shrink / no cache).
 BAND="" AT="" UNIT="" BLOCKS="" CUR=""
 read -r BAND AT UNIT BLOCKS CUR 2>/dev/null < "$BANDF"
 hl_num "$BLOCKS" || BLOCKS=0
@@ -53,7 +74,7 @@ if ! hl_num "$AT" || [ "$SIZE" -lt "$AT" ] || [ $((SIZE - AT)) -ge "$HL_REPARSE_
   read -r BAND CUR UNIT <<< "$(hl_band "$TRANSCRIPT")"
   [ -n "$UNIT" ] || exit 0
   AT=$SIZE
-  printf '%s %s %s %s %s\n' "$BAND" "$AT" "$UNIT" "$BLOCKS" "$CUR" > "$BANDF" 2>/dev/null
+  hl_mput "$BANDF" "$BAND $AT $UNIT $BLOCKS $CUR"
 fi
 
 # The handoff write itself — the one thing that proves this session's freshness.
@@ -61,8 +82,8 @@ case "$TOOL" in
   Write | Edit | MultiEdit)
     FP=$(field .tool_input.file_path)
     if [ -n "$FP" ] && [ "$(hl_canon "$FP")" = "$HL_HANDOFF" ]; then
-      printf '%s %s %s\n' "$(date +%s)" "$CUR" "$UNIT" > "$HOF" 2>/dev/null
-      printf '%s %s %s %s %s\n' "$BAND" "$AT" "$UNIT" 0 "$CUR" > "$BANDF" 2>/dev/null
+      hl_mput "$HOF" "$(date +%s) $CUR $UNIT"
+      hl_mput "$BANDF" "$BAND $AT $UNIT 0 $CUR"
       exit 0
     fi
     ;;
@@ -74,16 +95,22 @@ hl_fresh "$SID" "$CUR" "$UNIT" && exit 0
 
 case "$TOOL" in
   Read | Grep | Glob | AskUserQuestion) exit 0 ;;
-  Skill | SlashCommand)
-    case "$(field .tool_input)" in *agentic-workflow:handoff*) exit 0 ;; esac ;;
+  Skill)
+    [ "$(field .tool_input.skill)" = agentic-workflow:handoff ] && exit 0 ;;
+  SlashCommand)
+    case "$(field .tool_input.command)" in '/agentic-workflow:handoff' | '/agentic-workflow:handoff '*) exit 0 ;; esac ;;
   Bash)
-    case "$(field .tool_input.command)" in
-      'date -u +%Y-%m-%dT%H:%M:%SZ' | 'git rev-parse --git-path agentic-workflow/session-handoff.md' | 'git branch --show-current') exit 0 ;;
+    CMD=$(field .tool_input.command)
+    CMD=${CMD#"${CMD%%[![:space:]]*}"}
+    CMD=${CMD%"${CMD##*[![:space:]]}"}
+    case "$CMD" in
+      'date -u +%Y-%m-%dT%H:%M:%SZ' | 'git rev-parse --git-path agentic-workflow/session-handoff.md' \
+        | 'git rev-parse --path-format=absolute --git-path agentic-workflow/session-handoff.md' | 'git branch --show-current') exit 0 ;;
     esac ;;
 esac
 
 BLOCKS=$((BLOCKS + 1))
-printf '%s %s %s %s %s\n' "$BAND" "$AT" "$UNIT" "$BLOCKS" "$CUR" > "$BANDF" 2>/dev/null
+hl_mput "$BANDF" "$BAND $AT $UNIT $BLOCKS $CUR"
 if [ "$BLOCKS" -ge "$HL_FAIL_OPEN" ]; then
   echo "⚠️ Handoff gate failed open after $((HL_FAIL_OPEN - 1)) blocks — context is past the urgent band and no handoff was written; run /agentic-workflow:handoff (writes $HL_HANDOFF) before anything else."
   exit 0

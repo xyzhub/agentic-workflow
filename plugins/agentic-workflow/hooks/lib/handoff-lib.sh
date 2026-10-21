@@ -42,11 +42,19 @@
 #   hl_snapshot SID TRIGGER TRANSCRIPT → writes HL_SNAPDIR/<SID>.md (0600, tmp + mv),
 #                           prints its path; facts only (worktrees, ledger, PRs,
 #                           last 5 user requests, last assistant text), redacted.
-#   Markers (per session, $TMPDIR, sanitised session_id):
-#     handoff-gate-<sid>.band    "band size_at_parse unit blocks size" — the band
-#                                cache, rewritten on every re-parse;
-#     handoff-gate-<sid>.handoff "handoff_epoch handoff_size unit" — the handoff
-#                                evidence; a re-parse never writes it.
+#   Markers (per session, sanitised session_id; NONE when session_id is empty)
+#   live in a private state dir, HL_STATE = $HL_DIR/state (per worktree inside
+#   the git dir; the XDG dir outside a repo) — never the shared $TMPDIR.
+#   hl_state_init makes it 0700 and refuses a symlinked or foreign-owned dir;
+#   hl_mark refuses a symlinked or foreign-owned marker; hl_mput writes tmp + mv,
+#   never `>` onto the final path:
+#     <sid>.band          "band size_at_parse unit blocks size" — the band cache,
+#                         rewritten on every re-parse;
+#     <sid>.handoff       "handoff_epoch handoff_size unit" — the handoff
+#                         evidence; a re-parse never writes it;
+#     <sid>.budget-<band> handoff-budget's once-per-band marker.
+#   hl_state_fast → the same state dir found WITHOUT spawning git (walks up for
+#                   .git); used only to read the gate's cached band.
 # externals: cat git grep sed head tail tr cut wc mkdir dirname stat mv rm date mktemp chmod pwd sleep ls jq gh
 #
 # Verified transcript shape (2026-10-20, Claude Code 2.1.x): assistant lines are
@@ -104,7 +112,53 @@ hl_paths() {
 }
 
 hl_sid() { printf '%s' "$1" | tr -c 'A-Za-z0-9._-' '_'; }
-hl_mark() { printf '%s/handoff-gate-%s.%s' "${TMPDIR:-/tmp}" "$1" "$2"; }
+
+hl_state_ok() { [ -d "$1" ] && [ ! -L "$1" ] && [ -O "$1" ]; }
+
+hl_state_init() {
+  HL_STATE=""
+  [ -n "$HL_DIR" ] && [ ! -L "$HL_DIR" ] || return 1
+  [ -L "$HL_DIR/state" ] && return 1
+  (umask 077; mkdir -p "$HL_DIR/state") 2>/dev/null || return 1
+  hl_state_ok "$HL_DIR/state" || return 1
+  chmod 700 "$HL_DIR/state" 2>/dev/null || return 1
+  HL_STATE="$HL_DIR/state"
+}
+
+hl_state_fast() {
+  [ -z "${GIT_DIR:-}" ] || return 1
+  local d=$PWD g k
+  while :; do
+    if [ -d "$d/.git" ]; then g="$d/.git"; break
+    elif [ -f "$d/.git" ]; then
+      read -r k g 2>/dev/null < "$d/.git" || return 1
+      [ "$k" = gitdir: ] && [ -n "$g" ] || return 1
+      case "$g" in /*) ;; *) g="$d/$g" ;; esac
+      break
+    fi
+    [ -n "$d" ] || return 1
+    d=${d%/*}
+  done
+  g=$(cd "$g" 2>/dev/null && pwd -P) || return 1
+  hl_state_ok "$g/agentic-workflow/state" || return 1
+  printf '%s/agentic-workflow/state' "$g"
+}
+
+hl_mark() {
+  local p
+  [ -n "$1" ] && [ -n "$HL_STATE" ] || return 1
+  p="$HL_STATE/$1.$2"
+  [ -L "$p" ] && return 1
+  [ -e "$p" ] && [ ! -O "$p" ] && return 1
+  printf '%s' "$p"
+}
+
+hl_mput() {
+  local tmp
+  [ -n "$1" ] && [ -n "$HL_STATE" ] || return 1
+  tmp=$(mktemp "$HL_STATE/.m.XXXXXX" 2>/dev/null) || return 1
+  printf '%s\n' "$2" > "$tmp" 2>/dev/null && mv -f "$tmp" "$1" 2>/dev/null || { rm -f "$tmp" 2>/dev/null; return 1; }
+}
 
 hl_tokens() {
   [ -f "$1" ] && [ -r "$1" ] || return 0
@@ -148,13 +202,16 @@ hl_band() {
 }
 
 hl_fresh() {
-  local sid=$1 cur=$2 unit=$3 he hs hu thr
+  local sid=$1 cur=$2 unit=$3 he hs hu thr m
   [ -n "$HL_HANDOFF" ] && [ -f "$HL_HANDOFF" ] || return 1
   grep -q '^_Written: ' "$HL_HANDOFF" 2>/dev/null || return 1
-  read -r he hs hu 2>/dev/null < "$(hl_mark "$sid" handoff)" || return 1
+  m=$(hl_mark "$sid" handoff) || return 1
+  read -r he hs hu 2>/dev/null < "$m" || return 1
   hl_num "$he" && hl_num "$hs" || return 1
   hl_num "$cur" || return 0 # no current measure to compare: the marker + file suffice
-  [ "$hu" = "$unit" ] || return 1
+  # Unit drift (marker in tokens, now bytes, or back): the sizes are not
+  # comparable — fail toward NOT blocking; the marker + stamped file suffice.
+  [ "$hu" = "$unit" ] || return 0
   thr=$(hl_unit_threshold "$unit")
   [ $((cur - hs)) -le $((thr / 10)) ]
 }
@@ -165,6 +222,7 @@ hl_redact() {
     -e 's/(^|[^A-Za-z0-9_])gh[pousr]_[A-Za-z0-9_]{8,}/\1[redacted]/g' \
     -e 's/github_pat_[A-Za-z0-9_]{8,}/[redacted]/g' \
     -e 's/AKIA[A-Z0-9]{16}/[redacted]/g' \
+    -e 's/xox[abpr]-[A-Za-z0-9-]{8,}/[redacted]/g' \
     -e 's/[Bb][Ee][Aa][Rr][Ee][Rr] [^ ]+/[redacted]/g' \
     -e 's/-----BEGIN [A-Z0-9 ]*-----.*/[redacted]/'
 }
@@ -207,11 +265,10 @@ hl_prs() {
 hl_snapshot() {
   local sid=$1 trig=$2 tr=$3 now tmp dst ledger wt
   [ -n "$HL_SNAPDIR" ] || return 1
-  umask 077
-  mkdir -p "$HL_SNAPDIR" 2>/dev/null || return 1
+  (umask 077; mkdir -p "$HL_SNAPDIR") 2>/dev/null || return 1
   now=$(date -u +%Y-%m-%dT%H:%M:%SZ)
   dst="$HL_SNAPDIR/$sid.md"
-  tmp=$(mktemp "$HL_SNAPDIR/.snap.XXXXXX" 2>/dev/null) || return 1
+  tmp=$(umask 077; mktemp "$HL_SNAPDIR/.snap.XXXXXX" 2>/dev/null) || return 1
   {
     echo "# Pre-compact snapshot — mechanical, not an agent handoff"
     echo

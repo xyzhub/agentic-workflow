@@ -31,12 +31,16 @@ SESSION_ID=$(field .session_id)
 TRANSCRIPT=$(field .transcript_path)
 
 . "$(dirname "${BASH_SOURCE[0]}")/handoff-lib.sh"
-SID=$(hl_sid "${SESSION_ID:-unknown}")
+SID=$(hl_sid "$SESSION_ID")
 case "$TRIGGER" in manual | auto) ;; *) TRIGGER=unknown ;; esac
 
 hl_paths || exit 0
-SNAP=$(hl_snapshot "$SID" "$TRIGGER" "$TRANSCRIPT")
-: > "$(hl_mark "$SID" band)" 2>/dev/null
+# No session_id → still snapshot (per-epoch name, never a shared constant), but
+# no marker is read or written.
+SNAP=$(hl_snapshot "${SID:-nosession-$(date +%s)}" "$TRIGGER" "$TRANSCRIPT")
+if [ -n "$SID" ] && hl_state_init && BANDF=$(hl_mark "$SID" band); then
+  hl_mput "$BANDF" ""
+fi
 
 [ "$TRIGGER" = manual ] || exit 0
 [ "$HL_GIT" = 1 ] || exit 0
