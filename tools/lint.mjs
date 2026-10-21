@@ -20,7 +20,7 @@ const KNOWN_TOOLS = new Set([
   'Artifact',
 ]);
 // Slash commands that are Claude Code built-ins, not shipped by this plugin.
-const EXTERNAL_COMMANDS = new Set(['plugin', 'loop', 'clear']);
+const EXTERNAL_COMMANDS = new Set(['plugin', 'loop', 'clear', 'compact']);
 
 const findings = [];
 const rel = (p) => path.relative(ROOT, p);

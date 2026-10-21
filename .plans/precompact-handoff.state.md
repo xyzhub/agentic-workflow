@@ -16,7 +16,7 @@ Status: active
 
 Estimate: 1 session
 Sessions used: 1
-Reviewer runs: 2
+Reviewer runs: 3
 
 _The budget lines above are read by the mission-budget hook every turn.
 `Estimate: 1` = the one brief S1 (no `phases`; the one-shot checkpoint review
@@ -59,7 +59,7 @@ version **1.68.0**.
 _Glyphs: `[ ]` not started · `[~]` in-flight / deferred / awaiting owner · `[x]`
 done (verified, not merely written)._
 
-- [~] S1 — `hooks/lib/handoff-lib.sh` + `pre-compact.sh` + `handoff-gate.sh`, `hooks.json` PreCompact (timeout 15) + PreToolUse `.*` rows, token bands in `handoff-budget.sh` (byte fallback byte-identical), four-record `compact-resume.sh` (existing pins untouched), `commands/handoff.md` + `templates/session-handoff.md` + `templates/WORKFLOW.md` rows/prose + README + `commands/doctor.md` row, ~25 harness cases incl. counsel's two deadlock fixtures, CHANGELOG 1.68.0 + both manifests, OB-32 row text reported, pre-merge Closing rows fired (branch `feat/precompact-handoff`)
+- [x] S1 — `hooks/lib/handoff-lib.sh` + `pre-compact.sh` + `handoff-gate.sh`, `hooks.json` PreCompact (timeout 15) + PreToolUse `.*` rows, token bands in `handoff-budget.sh` (byte fallback byte-identical), four-record `compact-resume.sh` (existing pins untouched), `commands/handoff.md` + `templates/session-handoff.md` + `templates/WORKFLOW.md` rows/prose + README + `commands/doctor.md` row, ~25 harness cases incl. counsel's two deadlock fixtures, CHANGELOG 1.68.0 + both manifests, OB-32 row text reported, pre-merge Closing rows fired (branch `feat/precompact-handoff`)
 - [ ] Checkpoint ckpt-s1 — one-shot `reviewer` on **Fable** (boundary-class: `hooks/` + `tools/`) over `main..HEAD`, red-team list from the brief, plain-report read of the block/nudge/doctor strings; APPROVE → staging verify → PR ready, human merges
 
 ## Open questions
@@ -90,4 +90,4 @@ before execution starts._
 
 - 2026-10-20 planned: trio authored from `docs/product/decisions/2026-10-20-precompact-handoff-brief.md`; branch `feat/precompact-handoff` at 92c886b; OQ-1..3 to the owner before S1.
 
-Next up: S1
+Next up: ckpt-s1 (Fable reviewer in flight on main..HEAD)

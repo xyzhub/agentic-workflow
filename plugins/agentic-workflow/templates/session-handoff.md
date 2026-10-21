@@ -12,8 +12,9 @@ _A **re-read manifest**, not a summary. Written by `/agentic-workflow:handoff` w
 agent's context is filling, so a FRESH session continues by reading the same
 verbatim files — never a diluted auto-summary of the old transcript (WORKFLOW.md
 §2, principle 1; §6.2). Pointers, not corpora: name the artifacts, don't paste
-them. Deploys to `docs/product/session-handoff.md`. Overwritten each handoff;
-the durable record lives in the artifacts this points at._
+them. Deploys to the local, never-tracked `$(git rev-parse --git-path agentic-workflow/session-handoff.md)`;
+`docs/product/session-handoff.md` only for a shared handoff. Overwritten each
+handoff; the durable record lives in the artifacts this points at._
 
 ## Goal
 _What this session is trying to achieve — one or two sentences. The fresh agent

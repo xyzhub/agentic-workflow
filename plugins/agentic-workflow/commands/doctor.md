@@ -131,6 +131,14 @@ The profile is load-bearing and written once — verify it still tells the truth
   → ℹ️ name each one — agents fast-forward-push its default branch directly
   (hooks/lib/agent-managed.sh). A marker whose `owner/name` doesn't match the
   origin URL → 🟡 (it exempts nothing; fix or remove it).
+- **Handoff**: the installed `hooks/hooks.json` registers `PreCompact`
+  (`pre-compact.sh`) and the `handoff-gate.sh` PreToolUse entry, else 🔴; print
+  the resolved local handoff path (`git rev-parse --git-path
+  agentic-workflow/session-handoff.md`, canonicalised); `git ls-files
+  --error-unmatch <path>` must FAIL (never tracked) else 🔴; freshness — the
+  local file's `_Written:` stamp vs the newest `snapshots/*.md` beside it (older
+  → 🟡, missing → ℹ️). Disclose: snapshots hold prompt excerpts (redacted, 0600,
+  never tracked).
 
 ## 4. `fix` mode (explicit opt-in — mechanical, local, free repairs only)
 
