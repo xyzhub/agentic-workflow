@@ -88,10 +88,12 @@ before execution starts._
 
 ## Handoff log (newest first)
 
+- 2026-10-21 CI green on e371d32 (lint run 39618874948); PR #165 opened to main, awaiting owner merge
+
 - 2026-10-21 S1 tidy folded (ckpt-s1 advisories 1–5, 7 + nits): markers in 0700 git-dir state dir, exact Skill match, unit-mismatch fail-toward-fresh, trimmed/absolute allowlist, no-git fast path; hook-test clean (301 checks), lint clean, plugin validate passed
 
 - 2026-10-21 ckpt-s1 APPROVE (Fable, 2026-10-21) on 83adec7 — scorecard Sec 2 · QA 3 · DX 3 · Eff 2 · Arch 3; 290 hook-test cases, lint clean; 9 advisory findings; folding 1,2,3,4,5,7 + nits as an S1 tidy by the same builder (no re-review per reviewer)
 
 - 2026-10-20 planned: trio authored from `docs/product/decisions/2026-10-20-precompact-handoff-brief.md`; branch `feat/precompact-handoff` at 92c886b; OQ-1..3 to the owner before S1.
 
-Next up: push → CI green → PR to main (human merges)
+Next up: owner merges PR #165 → bookkeeping PR (settle, OB-32 stays open until live check)
