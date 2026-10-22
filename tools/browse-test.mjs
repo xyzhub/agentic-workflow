@@ -45,7 +45,7 @@ check('resolveSecret: login cell, role case-insensitive, seeded literal', B.reso
 check('resolveSecret: login local part matches', B.resolveSecret('admin.login', AUTH, {}) === 'admin@demo.test');
 check('resolveSecret: unset env / unknown user → null', B.resolveSecret('alice.password', AUTH, {}) === null && B.resolveSecret('bob.password', AUTH, {}) === null);
 const tricky = 'p&ss<w>rd "q" /?x=1';
-const v = B.makeVault(B.parseGoal('{{secret:alice.password}} and {{secret:bob.password}}').menu, AUTH.replace('$BROWSE_TEST_PW', '$T'), { T: tricky });
+const v = B.makeVault(B.parseGoal('{{secret:alice.password}} and {{secret:bob.password}}').menu, AUTH.replace('$BROWSE_TEST_PW', '$TEST_T'), { TEST_T: tricky });
 check('makeVault: missing secrets listed', v.missing.length === 1 && v.missing[0] === 'bob.password', JSON.stringify(v.missing));
 const red = JSON.stringify(v.redact({ a: `raw ${tricky}`, b: [`url ${encodeURIComponent(tricky)}`], c: { d: `html ${forms(tricky)[2]}` } }));
 check('redact: raw, URL-encoded and HTML-escaped forms → reference', !leaks(red, tricky) && (red.match(/\{\{secret:alice\.password\}\}/g) || []).length === 3, red);
@@ -110,7 +110,17 @@ check('secretBinding: another origin refused; goal literals are never bound', /o
 const refAuth = AUTH.replace('$BROWSE_TEST_PW', '$TYPESAFE_API_KEY');
 const rv = B.makeVault(B.parseGoal('{{secret:alice.password}}').menu, refAuth, { TYPESAFE_API_KEY: 'sk-real-key-123' });
 check('AUTH.md $TYPESAFE_API_KEY refused (needs_secret, plain line, no value)', B.resolveSecretInfo('alice.password', refAuth, { TYPESAFE_API_KEY: 'sk-real-key-123' }).refused === '$TYPESAFE_API_KEY' && rv.missing.length === 1 && rv.problems[0].startsWith(B.REFUSED_LINE) && !rv.problems.join().includes('sk-real'));
-check('AUTH.md refusal covers *_TOKEN, GITHUB_*, *_API_KEY; TEST_* and *_PASSWORD allowed', ['GH_TOKEN', 'GITHUB_PAT', 'X_API_KEY', 'AWS_SECRET_ACCESS_KEY', 'DATABASE_URL'].every((n) => B.REFUSED_ENV.test(n)) && !['TEST_ALICE_PW', 'STAGING_ADMIN_PASSWORD'].some((n) => B.REFUSED_ENV.test(n)));
+check('AUTH.md env allowlist: DB_PASSWORD, STRIPE_SECRET, GH_TOKEN refused; TEST_ALICE_PW, BROWSE_TEST_PW, ADMIN_TEST_PASSWORD allowed', ['DB_PASSWORD', 'STRIPE_SECRET', 'GH_TOKEN', 'TYPESAFE_API_KEY', 'TEST_', 'test_alice'].every((n) => !B.ALLOWED_ENV.test(n)) && ['TEST_ALICE_PW', 'BROWSE_TEST_PW', 'ADMIN_TEST_PASSWORD'].every((n) => B.ALLOWED_ENV.test(n)));
+check('resolveSecretInfo: $DB_PASSWORD and $STRIPE_SECRET refused, $TEST_ALICE_PW resolves', ['DB_PASSWORD', 'STRIPE_SECRET'].every((n) => B.resolveSecretInfo('alice.password', AUTH.replace('$BROWSE_TEST_PW', `$${n}`), { [n]: 'real-value-1' }).refused === `$${n}`) && B.resolveSecretInfo('alice.password', AUTH.replace('$BROWSE_TEST_PW', '$TEST_ALICE_PW'), { TEST_ALICE_PW: 'pw-123456' }).value === 'pw-123456');
+// pageGuard runs in the page; here it gets a fake document/location.
+const fakeEl = (o) => { const e = { tagName: 'INPUT', type: 'password', isConnected: true, focused: false, scrollIntoView() {}, focus() { e.focused = true; fakeDoc.activeElement = e; }, select() {}, ...o }; return e; };
+const fakeDoc = { activeElement: null, el: null, querySelector() { return this.el; }, execCommand() {} };
+const guardRun = (el, origin, kind, at = 'https://app.test') => { fakeDoc.el = el; fakeDoc.activeElement = null; return B.pageGuard(fakeDoc, { origin: at }, '[x]', origin, kind); };
+const swapped = fakeEl({ isConnected: false });
+check('pageGuard: DOM swap (node gone or detached) → refused before focus, so no insertText', guardRun(null, 'https://app.test', 'password').why === 'the field changed after the snapshot' && guardRun(swapped, 'https://app.test', 'password').why && !swapped.focused);
+const pwIn = fakeEl({}); const txIn = fakeEl({ type: 'text' });
+check('pageGuard: password into type=password on the origin → focused ok', guardRun(pwIn, 'https://app.test', 'password').ok === true && pwIn.focused);
+check('pageGuard: password into a text input / login into a password input / other origin → refused, no focus', /password field/.test(guardRun(fakeEl({ type: 'text' }), 'https://app.test', 'password').why) && /plain text/.test(guardRun(fakeEl({}), 'https://app.test', 'login').why) && /origin/.test(guardRun(fakeEl({}), 'https://app.test', 'password', 'https://evil.test').why) && guardRun(txIn, 'https://app.test', 'login').ok === true);
 const sv = B.makeVault(B.parseGoal('{{secret:alice.password}}').menu, AUTH, { BROWSE_TEST_PW: 'ab12x' });
 check('makeVault: a secret under 6 chars is refused (needs_secret, plain line)', sv.missing[0] === 'alice.password' && /shorter than 6/.test(sv.problems[0]));
 const STR = 'straddle-secret-XYZ';
@@ -140,7 +150,7 @@ const server = http.createServer((req, res) => {
     const a = stub.answers[stub.i++];
     if (!a) { res.writeHead(500); res.end('no more answers'); return; }
     if (a.http) { res.writeHead(a.http, { 'content-type': 'application/json' }); res.end(a.body ?? '{}'); return; }
-    res.writeHead(200, { 'content-type': 'application/json' }); res.end(JSON.stringify(a));
+    setTimeout(() => { res.writeHead(200, { 'content-type': 'application/json' }); res.end(JSON.stringify(a)); }, a.delay ?? 0);
   });
 });
 await new Promise((r) => server.listen(0, '127.0.0.1', r));
@@ -207,6 +217,12 @@ try {
     { cwd: work, env: { TYPESAFE_API_KEY: 'test-key', BROWSE_JEV_URL: JEV, BROWSE_TRACE_DIR: path.join(traces, 'ns') } });
   check('run: unresolvable secret → exit 3 needs_secret before the first Jev request', ns.status === 3 && JSON.parse(ns.stdout).reason === 'needs_secret' && stub.bodies.length === 0, ns.stdout + ns.stderr);
 
+  // A goal with a secret needs an operator-given origin.
+  stub = { answers: [], i: 0, bodies: [] };
+  const no = await runCli(['run', '--backend', `fixture:${path.join(FIX, 'cases.json')}#login`, '--goal', 'sign in with {{secret:alice.password}}', '--json'],
+    { cwd: work, env: { TYPESAFE_API_KEY: 'test-key', BROWSE_JEV_URL: JEV, BROWSE_TRACE_DIR: path.join(traces, 'no'), BROWSE_TEST_PW: SECRET } });
+  check('run: secret goal without --url/--origin → exit 3 needs_secret "secrets need --url or --origin", no request', no.status === 3 && JSON.parse(no.stdout).detail === B.SECRET_ORIGIN_LINE && no.stderr.includes(B.SECRET_ORIGIN_LINE) && stub.bodies.length === 0, no.stdout + no.stderr);
+
   // AUTH.md naming a real credential: refused before any Jev request.
   const refWork = path.join(tmp, 'refused'); mkdirSync(path.join(refWork, 'docs'), { recursive: true });
   writeFileSync(path.join(refWork, 'docs', 'AUTH.md'), refAuth);
@@ -265,6 +281,12 @@ try {
       const sm = await runCli(['snapshot', '--url', `http://127.0.0.1:${site.address().port}/login.html`], { cwd: work, env: { BROWSE_PROFILE_DIR: profile, BROWSE_CHROME: chrome } });
       const rows = sm.stdout.split('\n').filter((l) => /^\[\d+\] /.test(l));
       check('live CDP smoke: snapshot of login.html prints ≥ 3 rows', sm.status === 0 && rows.length >= 3, sm.stdout + sm.stderr);
+      const swapAns = json(path.join(FIX, 'answers', 'login.json'))[1];
+      stub = { answers: [{ ...swapAns, delay: 1500 }], i: 0, bodies: [] };
+      const sw = await runCli(['run', '--json', '--url', `http://127.0.0.1:${site.address().port}/swap.html`, '--goal', 'sign in with {{secret:alice.password}}'],
+        { cwd: work, env: { BROWSE_PROFILE_DIR: profile, BROWSE_CHROME: chrome, TYPESAFE_API_KEY: 'test-key', BROWSE_JEV_URL: JEV, BROWSE_TRACE_DIR: path.join(traces, 'swap'), BROWSE_TEST_PW: SECRET } });
+      let swo = null; try { swo = JSON.parse(sw.stdout); } catch {}
+      check('live DOM swap between snapshot and act → needs_secret, the in-page guard refused before insertText', sw.status === 3 && swo?.reason === 'needs_secret' && swo?.detail === 'the field changed after the snapshot' && stub.bodies.length === 1 && !leaks(sw.stdout + sw.stderr, SECRET), sw.stdout + sw.stderr);
     } finally {
       site.close();
       rmSync(profile, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 });

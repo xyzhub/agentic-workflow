@@ -9,7 +9,9 @@
    "goal": "sign in as {{secret:alice.login}} with password {{secret:alice.password}}",
    "args": [
     "--until-text",
-    "Welcome back"
+    "Welcome back",
+    "--origin",
+    "http://fixture.test"
    ],
    "transitions": [
     {
@@ -39,7 +41,10 @@
    "fixture": "login.html",
    "start": "login",
    "goal": "sign in as {{secret:alice.login}} with password {{secret:alice.password}}",
-   "args": [],
+   "args": [
+    "--origin",
+    "http://fixture.test"
+   ],
    "transitions": [
     {
      "op": "CLICK",
@@ -70,7 +75,9 @@
    "goal": "sign in as {{secret:alice.login}} with password {{secret:alice.password}}",
    "args": [
     "--until-text",
-    "Admin console"
+    "Admin console",
+    "--origin",
+    "http://fixture.test"
    ],
    "transitions": [
     {
@@ -400,7 +407,10 @@
    "fixture": "login.html",
    "start": "login",
    "goal": "sign in as {{secret:alice.login}} with password {{secret:alice.password}}",
-   "args": [],
+   "args": [
+    "--origin",
+    "http://fixture.test"
+   ],
    "expected": [],
    "exit": 3,
    "reason": "needs_secret"

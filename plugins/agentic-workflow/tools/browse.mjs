@@ -5,7 +5,7 @@
 // gets back a verified result, a hand-off, or a proposed irreversible action.
 // Snapshot/question ideas adapted from browser-use/jev-ultrafast (MIT).
 //
-//   node tools/browse.mjs run --goal <g> [--url <u>] [--cdp <url>]
+//   node tools/browse.mjs run --goal <g> [--url <u>] [--origin <o>] [--cdp <url>]
 //       [--until-url <re>] [--until-text <s>] [--allow-irreversible]
 //       [--json] [--trace <file>] [--max-steps N]
 //       The loop: settle → snapshot → ONE Jev request → gates → act, until
@@ -26,11 +26,13 @@
 //
 // Goals: short, one page/form; quote literals ("Jane Doe" → {{goal:1}});
 // secrets by reference {{secret:<user>.<field>}} (field password|login),
-// resolved ONCE at `run` start from docs/AUTH.md Test users ($NAME → env;
-// names of real credentials — TYPESAFE_*, GITHUB_*, *_TOKEN, *_API_KEY … —
-// are refused, as are values under 6 chars). A secret is typed only on the
-// run's origin, `.password` only into a password field, `.login` only into a
-// plain text field; anything else hands off `needs_secret`.
+// resolved ONCE at `run` start from docs/AUTH.md Test users ($NAME → env,
+// only names matching TEST_*, BROWSE_TEST_* or *_TEST_PASSWORD; values under
+// 6 chars refused). A goal with a secret needs an operator-given origin
+// (--url or --origin; never taken from the page). A secret is typed only on
+// that origin, `.password` only into a password input, `.login` only into a
+// plain text input — checked in the page in the same step that focuses the
+// field; anything else hands off `needs_secret`.
 //
 // Exit codes: 0 done, verified · 1 usage/internal · 2 done, unverified (verify
 // yourself) · 3 handed off (reason: low_confidence|stuck|bot|error|
@@ -54,6 +56,7 @@
 // Zero deps. Node >= 22 (global WebSocket and fetch).
 
 import { spawn, spawnSync } from 'node:child_process';
+import { randomBytes } from 'node:crypto';
 import { appendFileSync, chmodSync, closeSync, existsSync, mkdirSync, openSync, readFileSync } from 'node:fs';
 import net from 'node:net';
 import { homedir } from 'node:os';
@@ -82,6 +85,7 @@ export const EXIT = Object.freeze({
 });
 export const exitFor = (status) => EXIT[status] ?? 1;
 export const NO_KEY_LINE = 'TYPESAFE_API_KEY not set — verify with Bash-driven Playwright as before';
+export const SECRET_ORIGIN_LINE = 'secrets need --url or --origin';
 export const STEP_SECRET_LINE = 'secrets cannot be typed on a hand-back surface — use run or --cdp';
 const OPS = ['CLICK', 'TYPE', 'SELECT', 'SCROLL_UP', 'SCROLL_DOWN', 'ENTER', 'WAIT', 'DONE', 'BLOCKED'];
 const TARGET_OPS = new Set(['CLICK', 'TYPE', 'SELECT']);
@@ -109,11 +113,11 @@ export function parseGoal(goal) {
 
 const cellText = (c) => c.trim().replace(/^[_*]+|[_*]+$/g, '').replace(/^`|`$/g, '').trim();
 
-// Env names an AUTH.md `$NAME` cell may never point at: real credentials, not
-// test users. Test-user secrets use names like TEST_* or *_PASSWORD.
-export const REFUSED_ENV = /^(TYPESAFE_|GITHUB_|GH_|AWS_|ANTHROPIC_|OPENAI_|SLACK_|NPM_|DATABASE_URL|CLAUDE_|.*_TOKEN$|.*_API_KEY$|.*_SECRET_KEY$)/;
+// The only env names an AUTH.md `$NAME` cell may point at: test-user secrets
+// (TEST_*, BROWSE_TEST_*, *_TEST_PASSWORD). Anything else is refused.
+export const ALLOWED_ENV = /^(?:(?:BROWSE_TEST_|TEST_)[A-Z0-9_]+|[A-Z0-9_]*_TEST_PASSWORD)$/;
 export const MIN_SECRET = 6;
-export const REFUSED_LINE = 'AUTH.md names a credential this tool will not type';
+export const REFUSED_LINE = 'AUTH.md names an env var outside the TEST_/BROWSE_TEST_ allowlist';
 
 // Test users rows of docs/AUTH.md: `<user>` matches the Role cell, the login
 // cell, or the login's local part (case-insensitive); `$NAME` → env[NAME].
@@ -144,7 +148,7 @@ export function resolveSecretInfo(ref, authMd, env = process.env) {
     v = v.replace(/\s*\(seeded\)$/i, '').trim();
     const env1 = /^\$([A-Za-z_][A-Za-z0-9_]*)$/.exec(v);
     if (env1) {
-      if (REFUSED_ENV.test(env1[1])) return { refused: `$${env1[1]}` };
+      if (!ALLOWED_ENV.test(env1[1])) return { refused: `$${env1[1]}` };
       v = env[env1[1]] ?? '';
     }
     return v ? { value: v } : {};
@@ -266,7 +270,7 @@ export const originOf = (u) => { try { const o = new URL(u).origin; return o ===
 export function secretBinding(valueRef, el, runOrigin, pageUrl) {
   if (!String(valueRef).startsWith('{{secret:')) return null;
   const here = originOf(pageUrl);
-  if (!runOrigin || here !== runOrigin) return `the page is on ${here ?? 'an unknown origin'}, not ${runOrigin ?? 'the run origin'} — secrets are typed only on the origin the run started on`;
+  if (!runOrigin || here !== runOrigin) return `the page is on ${here ?? 'an unknown origin'}, not ${runOrigin ?? 'the run origin'} — secrets are typed only on the operator-given origin`;
   if (!el) return 'the target field is not on the page';
   if (valueRef.endsWith('.password}}')) return el.password ? null : 'a password is typed only into a password field';
   return !el.password && el.role === 'textbox' ? null : 'a login is typed only into a plain text field';
@@ -418,7 +422,24 @@ async function askJev(env, build) {
 }
 
 // ── page script (element table) ──────────────────────────────────────────
-const PAGE_SCRIPT = String.raw`(() => {
+// Runs IN the page, in the same evaluate that focuses the field, so the checks
+// and the focus cannot be separated by a DOM swap. kind: 'password' | 'login'
+// for a secret (origin + field type checked), null for a goal literal.
+export function pageGuard(doc, loc, sel, origin, kind) {
+  const el = doc.querySelector(sel);
+  if (!el || !el.isConnected) return { why: 'the field changed after the snapshot' };
+  if (kind) {
+    if (loc.origin !== origin) return { why: `the page is on ${loc.origin}, not ${origin} — secrets are typed only on the operator-given origin` };
+    const t = String(el.tagName || '').toLowerCase(); const ty = String(el.type || '').toLowerCase();
+    if (kind === 'password' && !(t === 'input' && ty === 'password')) return { why: 'a password is typed only into a password field' };
+    if (kind === 'login' && !(t === 'textarea' || (t === 'input' && ['text', 'email', 'tel', 'search', 'url', ''].includes(ty)))) return { why: 'a login is typed only into a plain text field' };
+  }
+  el.scrollIntoView({ block: 'center' });
+  el.focus();
+  if (typeof el.select === 'function') el.select(); else doc.execCommand('selectAll');
+  return { ok: doc.activeElement === el };
+}
+const pageScript = (nonce) => String.raw`((NONCE) => {
   const SEL = 'a[href], button, input:not([type=hidden]), select, textarea, [role=button], [role=link], [role=checkbox], [role=radio], [role=tab], [role=menuitem], [role=option], [role=combobox], [role=textbox], [role=switch], [contenteditable]:not([contenteditable=false]), [tabindex]:not([tabindex="-1"])';
   document.querySelectorAll('[data-browse-idx]').forEach((n) => n.removeAttribute('data-browse-idx'));
   const W = innerWidth, H = innerHeight, out = [];
@@ -457,11 +478,11 @@ const PAGE_SCRIPT = String.raw`(() => {
     else if (t === 'select') { e.value = el.selectedOptions[0] ? clip(el.selectedOptions[0].label, 60) : ''; e.options = Array.from(el.options).slice(0, 20).map((o, k) => ({ index: k, label: clip(o.label, 60), value: o.value })); }
     else if (t === 'input' || t === 'textarea') { if (!e.password) e.value = clip(el.value, 200); }
     if (el.hasAttribute('aria-expanded')) e.expanded = el.getAttribute('aria-expanded') === 'true';
-    el.setAttribute('data-browse-idx', String(i));
+    el.setAttribute('data-browse-idx', NONCE + ':' + i);
     out.push(e); i++;
   }
   return { url: location.href, title: document.title, text: (document.body ? document.body.innerText : '').replace(/\s+/g, ' ').trim(), viewport: { w: W, h: H }, scrollY: Math.round(scrollY), elements: out };
-})()`;
+})(${JSON.stringify(nonce)})`;
 const DIGEST = '(() => location.href + "|" + document.readyState + "|" + Math.round(scrollY) + ":" + (document.body ? document.body.innerHTML.length + ":" + document.body.innerText.length : 0))()';
 
 // ── CDP backend ──────────────────────────────────────────────────────────
@@ -614,7 +635,9 @@ async function cdpBackend({ cdpUrl, env, url }) {
       prev = d;
     }
   };
-  const center = async (index) => evaluate(`(() => { const el = document.querySelector('[data-browse-idx="${Number(index)}"]'); if (!el) return null; el.scrollIntoView({ block: 'center', inline: 'center' }); const r = el.getBoundingClientRect(); return { x: r.x + r.width / 2, y: r.y + r.height / 2 }; })()`);
+  let nonce = randomBytes(12).toString('hex');
+  const sel = (index) => `[data-browse-idx="${nonce}:${Number(index)}"]`;
+  const center = async (index) => evaluate(`(() => { const el = document.querySelector(${JSON.stringify(sel(index))}); if (!el) return null; el.scrollIntoView({ block: 'center', inline: 'center' }); const r = el.getBoundingClientRect(); return { x: r.x + r.width / 2, y: r.y + r.height / 2 }; })()`);
   return {
     async open(u) {
       if (!u) return;
@@ -623,19 +646,19 @@ async function cdpBackend({ cdpUrl, env, url }) {
       if (r.errorText) throw new Unavailable(`cdp: navigate failed (${r.errorText})`);
       await load;
     },
-    async snapshot() { await settle(); return evaluate(PAGE_SCRIPT); },
-    async act(op, index, value) {
+    async snapshot() { await settle(); nonce = randomBytes(12).toString('hex'); return evaluate(pageScript(nonce)); },
+    async act(op, index, value, guard = null) {
       const before = await digest();
       if (op === 'CLICK') {
         const c = await center(index);
         if (!c) throw new Error(`element ${index} is gone`);
         for (const type of ['mouseMoved', 'mousePressed', 'mouseReleased']) await cdp.send('Input.dispatchMouseEvent', { type, x: c.x, y: c.y, button: 'left', clickCount: type === 'mouseMoved' ? 0 : 1 });
       } else if (op === 'TYPE') {
-        const ok = await evaluate(`(() => { const el = document.querySelector('[data-browse-idx="${Number(index)}"]'); if (!el) return false; el.scrollIntoView({ block: 'center' }); el.focus(); if (typeof el.select === 'function') el.select(); else document.execCommand('selectAll'); return true; })()`);
-        if (!ok) throw new Error(`element ${index} is gone`);
+        const g = await evaluate(`(${pageGuard.toString()})(document, location, ${JSON.stringify(sel(index))}, ${JSON.stringify(guard?.origin ?? null)}, ${JSON.stringify(guard?.kind ?? null)})`);
+        if (!g?.ok) return { pageChanged: false, refused: g?.why ?? 'the field could not be focused' };
         await cdp.send('Input.insertText', { text: value });
       } else if (op === 'SELECT') {
-        const ok = await evaluate(`((v) => { const el = document.querySelector('[data-browse-idx="${Number(index)}"]'); if (!el || !el.options) return false; const w = String(v).toLowerCase(); const o = Array.from(el.options).find((x) => x.label.toLowerCase() === w || x.value.toLowerCase() === w); if (!o) return false; el.value = o.value; el.dispatchEvent(new Event('input', { bubbles: true })); el.dispatchEvent(new Event('change', { bubbles: true })); return true; })(${JSON.stringify(String(value))})`);
+        const ok = await evaluate(`((v) => { const el = document.querySelector(${JSON.stringify(sel(index))}); if (!el || !el.options) return false; const w = String(v).toLowerCase(); const o = Array.from(el.options).find((x) => x.label.toLowerCase() === w || x.value.toLowerCase() === w); if (!o) return false; el.value = o.value; el.dispatchEvent(new Event('input', { bubbles: true })); el.dispatchEvent(new Event('change', { bubbles: true })); return true; })(${JSON.stringify(String(value))})`);
         if (!ok) return { pageChanged: false, noOption: true };
       } else if (op === 'ENTER') {
         for (const type of ['keyDown', 'keyUp']) await cdp.send('Input.dispatchKeyEvent', { type, key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13, ...(type === 'keyDown' ? { text: '\r' } : {}) });
@@ -667,8 +690,13 @@ function fixtureBackend(spec, env) {
   return {
     async open() {},
     async snapshot() { return structuredClone(page); },
-    async act(op, index, value) {
+    async act(op, index, value, guard = null) {
       const el = page.elements.find((e) => e.index === index);
+      if (guard) {
+        if (!el) return { pageChanged: false, refused: 'the field changed after the snapshot' };
+        if (originOf(page.url) !== guard.origin) return { pageChanged: false, refused: 'the page is not on the operator-given origin' };
+        if (guard.kind === 'password' ? !el.password : (el.password || el.role !== 'textbox')) return { pageChanged: false, refused: 'the field type does not match the secret' };
+      }
       if (env.BROWSE_ACT_LOG) appendFileSync(env.BROWSE_ACT_LOG, `${JSON.stringify({ op, index, label: el?.label ?? null, ...(value !== undefined ? { value } : {}) })}\n`);
       if (op === 'TYPE' && el) el.value = value;
       if (op === 'SELECT' && el) el.value = value;
@@ -767,6 +795,8 @@ async function cmdRun(o, env) {
     return exitFor(status);
   };
   if (vault.missing.length) { io.err(vault.problems.join('; ')); return finish('handed-off', { reason: 'needs_secret', detail: vault.problems.join('; ') }); }
+  if (o.origin && !originOf(o.origin)) throw new Usage('--origin must be a URL origin like https://app.example.com');
+  if (menu.some((m) => m.kind === 'secret') && !originOf(o.origin || o.url)) { io.err(SECRET_ORIGIN_LINE); return finish('handed-off', { reason: 'needs_secret', detail: SECRET_ORIGIN_LINE }); }
   if (o.untilUrl) { try { new RegExp(o.untilUrl); } catch { throw new Usage('--until-url is not a valid regex'); } }
 
   let backend;
@@ -781,14 +811,14 @@ async function cmdRun(o, env) {
   const ctx = { bannerDone: false, allowIrreversible: Boolean(o.allowIrreversible) };
   const maxSteps = Math.min(Number(o.maxSteps) || GATES.MAX_STEPS, 100);
   let waits = 0; let repeat = { key: null, n: 0 };
-  let runOrigin = o.url ? originOf(o.url) : null;
+  // Secrets need an operator-given origin; it is never latched from page state.
+  const runOrigin = originOf(o.origin || o.url);
   try {
     await backend.open(o.url);
     for (;;) {
       if (steps >= maxSteps) return finish('handed-off', { reason: 'max_steps' });
       const tStep = Date.now();
       snap = vault.redact(await backend.snapshot());
-      if (!runOrigin && !o.url) runOrigin = originOf(snap.url);
       const build = (max) => {
         table = tableFromElements(snap.elements, snap.viewport, { max });
         const state = vault.redact(buildState(goal, snap, table, history, tainted, vault.maskTail));
@@ -845,8 +875,10 @@ async function cmdRun(o, env) {
       }
       let r;
       if (d.valueRef) {
-        r = await vault.typeInto(d.valueRef, (v) => backend.act(d.op, d.index, v));
-        if (d.valueRef.startsWith('{{secret:') && el) tainted.add(taintKey(snap, el));
+        const kind = d.valueRef.startsWith('{{secret:') ? (d.valueRef.endsWith('.password}}') ? 'password' : 'login') : null;
+        r = await vault.typeInto(d.valueRef, (v) => backend.act(d.op, d.index, v, kind ? { origin: runOrigin, kind } : null));
+        if (r?.refused) { io.err(r.refused); trace({ ...row, handoff: 'needs_secret', ms_step: Date.now() - tStep }); return finish('handed-off', { reason: 'needs_secret', proposed, detail: r.refused }); }
+        if (kind && el) tainted.add(taintKey(snap, el));
       } else r = await backend.act(d.op, d.index);
       if (r?.noOption) { trace({ ...row, handoff: 'needs_value', ms_step: Date.now() - tStep }); return finish('handed-off', { reason: 'needs_value', proposed, detail: 'no option matches the chosen value' }); }
       if (d.banner) ctx.bannerDone = true;
@@ -971,7 +1003,7 @@ async function cmdDoctor(o, env) {
   return 0;
 }
 
-const USAGE = 'usage: browse.mjs run --goal <g> [--url <u>] [--cdp <url>] [--until-url <re>] [--until-text <s>] [--allow-irreversible] [--json] [--trace <file>] [--max-steps N]\n       browse.mjs step --goal <g> --state <file.json> [--history <file>]\n       browse.mjs snapshot [--url <u> | --cdp <url>] [--json]\n       browse.mjs doctor [--json]';
+const USAGE = 'usage: browse.mjs run --goal <g> [--url <u>] [--origin <o>] [--cdp <url>] [--until-url <re>] [--until-text <s>] [--allow-irreversible] [--json] [--trace <file>] [--max-steps N]\n       browse.mjs step --goal <g> --state <file.json> [--history <file>]\n       browse.mjs snapshot [--url <u> | --cdp <url>] [--json]\n       browse.mjs doctor [--json]';
 
 async function main(argv = process.argv.slice(2), env = process.env) {
   const [cmd, ...rest] = argv;

@@ -25,7 +25,8 @@ node ${CLAUDE_PLUGIN_ROOT}/tools/browse.mjs snapshot --url <url> [--json]
 node ${CLAUDE_PLUGIN_ROOT}/tools/browse.mjs doctor
 ```
 
-Other `run` flags: `--cdp <url>` (attach), `--allow-irreversible`,
+Other `run` flags: `--cdp <url>` (attach), `--origin <o>` (the site secrets
+may be typed on, when there is no `--url`), `--allow-irreversible`,
 `--trace <file>`, `--max-steps N` (default 30).
 
 ## Writing a goal
@@ -76,16 +77,17 @@ resolves every `{{secret:…}}` once at start from `docs/AUTH.md` (`$NAME` cells
 read the env var), types it straight into the page, and writes only the
 reference to Jev, the trace, stdout and stderr.
 
-- Name test-user env vars like `TEST_ALICE_PW` or `STAGING_ADMIN_PASSWORD`. The
-  tool refuses to type real credentials: an AUTH.md cell naming
-  `$TYPESAFE_*`, `$GITHUB_*`, `$GH_*`, `$AWS_*`, `$ANTHROPIC_*`, `$OPENAI_*`,
-  `$SLACK_*`, `$NPM_*`, `$CLAUDE_*`, `$DATABASE_URL` or any `*_TOKEN`,
-  `*_API_KEY`, `*_SECRET_KEY` hands off `needs_secret`. Values under 6
-  characters are refused too (too short to redact safely).
-- A secret is typed only on the site the run started on (`--url`'s origin),
-  a `.password` only into a password field and a `.login` only into a plain
-  text field. A redirect to another site, or a mismatched field, hands off
-  `needs_secret` with the reason.
+- AUTH.md `$NAME` cells are resolved only for test-user names:
+  `TEST_*`, `BROWSE_TEST_*` or `*_TEST_PASSWORD` (e.g. `TEST_ALICE_PW`). Any
+  other env var (`DB_PASSWORD`, `STRIPE_SECRET`, `GH_TOKEN` …) hands off
+  `needs_secret`. Values under 6 characters are refused too.
+- A goal with a secret needs the site named by you: `--url`, or `--origin
+  https://app.example.com` when attaching with `--cdp`. Without one: exit 3
+  "secrets need --url or --origin". The site is never taken from the page.
+- A secret is typed only on that origin, a `.password` only into a password
+  input and a `.login` only into a plain text input, checked inside the page
+  in the same step that focuses the field. A redirect, a swapped field or a
+  mismatched type hands off `needs_secret` with the reason.
 
 ## Trace
 
