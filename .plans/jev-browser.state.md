@@ -62,7 +62,7 @@ _Glyphs: `[ ]` not started · `[~]` in-flight / deferred / awaiting owner · `[x
 done (verified, not merely written)._
 
 - [x] S1 — `tools/browse.mjs` (run/step/snapshot/doctor; CDP attach + launch with a plugin-owned profile; one Jev request per step, D3 gates, secrets by reference with redact-before-send, D5 exit codes, private JSONL trace), `skills/browse/SKILL.md`, prompt lines in frontend/reviewer/researcher (+ routing line in marketing/business), WORKFLOW §10 row + §3 clause + verify.md/README clauses, six fixture pages + recorded answers + `tools/browse-test.mjs` wired into `tools/lint.mjs`, CHANGELOG 1.69.0 + both manifests, OB-34 row text reported, pre-merge Closing rows fired (branch `feat/jev-browser`)
-- [~] Checkpoint ckpt-s1 — one-shot `reviewer` on **Fable** (boundary-class: `tools/` + `templates/`) over `main..HEAD`, red-team list from the sessions file (secret paths, off-head reads, gates, DONE check, default profile, trace location, no new Bash rule, keyless no-op), plain-report read of the skill/doctor/exit strings; APPROVE → staging verify → PR ready, human merges
+- [x] Checkpoint ckpt-s1 — one-shot `reviewer` on **Fable** (boundary-class: `tools/` + `templates/`) over `main..HEAD`, red-team list from the sessions file (secret paths, off-head reads, gates, DONE check, default profile, trace location, no new Bash rule, keyless no-op), plain-report read of the skill/doctor/exit strings; APPROVE → staging verify → PR ready, human merges
 
 ## Open questions
 
@@ -90,6 +90,8 @@ before execution starts._
 
 ## Handoff log (newest first)
 
+- 2026-10-22 ckpt-s1 re-review APPROVE on d5de562 (Fable): Sec 2 · QA 3 · DX 3 · Eff 3 · Arch 3; scan advisories (a) TOCTOU check at type time, (b) require operator origin when secrets present, (c) env allowlist — folded as an S1-fix tidy by the same builder (no new session, no re-gate per reviewer)
+
 - 2026-10-22 S1-fix done: blockers 1–3 + advisories 4–8 fixed with tests; browse-test 91/91 (92 live), lint clean; narrow ckpt-s1 re-review spawned (Fable)
 
 - 2026-10-22 ckpt-s1 REQUEST CHANGES (Fable): blocking 1 banner branch bypasses error/irreversible gates, 2 secret typing lacks origin/field binding, 3 AUTH.md $VAR resolves any env var; advisories 4–9. Scorecard Sec 1 · QA 2 · DX 3 · Eff 3 · Arch 2. LOCKED 2026-10-23 (owner): "Fix it: 1 more session" — Estimate revised 1 → 2; S1-fix runs blockers 1–3 + advisories 4–7 (+8 min-length refusal)
@@ -100,4 +102,4 @@ before execution starts._
 
 - 2026-10-23 planned: trio authored from `docs/product/decisions/2026-10-23-jev-browser-brief.md` + memos D1/D2-CDP/D3/D4/D5/D7 + counsel #3/#4/#5/#6/#8; build branch `feat/jev-browser` from main 495bcc2; OQ-1..2 to the owner before S1.
 
-Next up: S1-fix (corrective) → narrow ckpt-s1 re-review → push → CI → PR
+Next up: S1-fix tidy (a–c) → push → CI → PR to main
