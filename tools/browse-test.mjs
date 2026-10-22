@@ -92,6 +92,37 @@ check('decide: cookie banner gets one CLICK, then is ignored', B.decide(ban, ql)
 check('exitFor: 0 done · 2 unverified · 3 handed off · 4 irreversible · 5 unavailable · 6 no key · 1 else', [B.exitFor('done'), B.exitFor('done-unverified'), B.exitFor('handed-off'), B.exitFor('irreversible-pending'), B.exitFor('backend-unavailable'), B.exitFor('no-key'), B.exitFor('???')].join() === '0,2,3,4,5,6,1');
 check('GATES: D3 values', B.GATES.CONF === 0.7 && B.GATES.DONE === 0.8 && B.GATES.BOT === 0.7 && B.GATES.BANNER === 0.8 && B.GATES.IRREV === 0.5 && B.GATES.ERROR === 0.8 && B.GATES.MAX_STEPS === 30 && B.GATES.MAX_ELEMENTS === 80 && B.GATES.TEXT_CAP === 2000 && B.GATES.HISTORY === 5);
 
+// S1-fix: gate order, banner refusal, secret binding, env refusal, redaction edges.
+const qBan = B.buildQuestions(B.buildState('g', { url: 'http://a.test/' }, { rows: [{ index: 0, role: 'button', label: 'Confirm order', ops: ['CLICK'] }, { index: 1, role: 'button', label: 'Accept all', ops: ['CLICK'] }], hiddenBelow: 0, hiddenAbove: 0 }, []), []);
+const banA = (t, o = {}) => ({ operation: { choice: 'CLICK', confidence: 0.9 }, click_target: { choice: '[1] button Accept all', confidence: 0.9 }, banner_target: { choice: t, confidence: 0.95 }, cookie_banner: { probability: 0.9 }, bot_check: { probability: 0.01 }, error: { probability: 0.01 }, irreversible: { probability: 0.01 }, done: { probability: 0.01 }, ...o });
+const dRef = B.decide(banA('[0] button Confirm order'), qBan);
+check('banner: a target labelled like an action (Confirm order) is refused → low_confidence, no click', dRef.handoff === 'low_confidence' && !dRef.banner && /action/.test(dRef.detail), JSON.stringify(dRef));
+check('banner: a consent button is still clicked once', B.decide(banA('[1] button Accept all'), qBan).banner === true);
+check('banner: error gate runs before the banner branch', B.decide(banA('[1] button Accept all', { error: { probability: 0.9 } }), qBan).handoff === 'error');
+check('banner: irreversible signal blocks the banner click, even with --allow-irreversible', B.decide(banA('[1] button Accept all', { irreversible: { probability: 0.99 } }), qBan, B.GATES, { allowIrreversible: true }).handoff === 'low_confidence');
+check('noulP: no numeric field → null', B.noulP({ verdict: 'no' }) === null && B.noulP(undefined) === null && B.noulP({ probability: 0.2 }) === 0.2);
+check('decide: unknown shape on bot_check/error/irreversible fails closed (error, "Jev answer shape unknown")', ['bot_check', 'error', 'irreversible'].every((id) => { const d = B.decide(banA('[1] button Accept all', { [id]: { verdict: 'no' } }), qBan); return d.handoff === 'error' && d.detail === 'Jev answer shape unknown'; }));
+const pwEl = { role: 'textbox', label: 'Password', password: true }; const txEl = { role: 'textbox', label: 'Email' };
+check('secretBinding: password ref → password field on the run origin is allowed', B.secretBinding('{{secret:alice.password}}', pwEl, 'http://a.test', 'http://a.test/login') === null && B.secretBinding('{{secret:alice.login}}', txEl, 'http://a.test', 'http://a.test/x') === null);
+check('secretBinding: password ref into a plain textbox refused', /password field/.test(B.secretBinding('{{secret:alice.password}}', txEl, 'http://a.test', 'http://a.test/login') ?? ''));
+check('secretBinding: login ref into a password field or a button refused', /plain text field/.test(B.secretBinding('{{secret:alice.login}}', pwEl, 'http://a.test', 'http://a.test/') ?? '') && /plain text field/.test(B.secretBinding('{{secret:alice.login}}', { role: 'button', label: 'x' }, 'http://a.test', 'http://a.test/') ?? ''));
+check('secretBinding: another origin refused; goal literals are never bound', /origin/.test(B.secretBinding('{{secret:alice.password}}', pwEl, 'http://a.test', 'http://evil.test/login') ?? '') && B.secretBinding('{{goal:1}}', { role: 'button' }, null, 'x') === null);
+const refAuth = AUTH.replace('$BROWSE_TEST_PW', '$TYPESAFE_API_KEY');
+const rv = B.makeVault(B.parseGoal('{{secret:alice.password}}').menu, refAuth, { TYPESAFE_API_KEY: 'sk-real-key-123' });
+check('AUTH.md $TYPESAFE_API_KEY refused (needs_secret, plain line, no value)', B.resolveSecretInfo('alice.password', refAuth, { TYPESAFE_API_KEY: 'sk-real-key-123' }).refused === '$TYPESAFE_API_KEY' && rv.missing.length === 1 && rv.problems[0].startsWith(B.REFUSED_LINE) && !rv.problems.join().includes('sk-real'));
+check('AUTH.md refusal covers *_TOKEN, GITHUB_*, *_API_KEY; TEST_* and *_PASSWORD allowed', ['GH_TOKEN', 'GITHUB_PAT', 'X_API_KEY', 'AWS_SECRET_ACCESS_KEY', 'DATABASE_URL'].every((n) => B.REFUSED_ENV.test(n)) && !['TEST_ALICE_PW', 'STAGING_ADMIN_PASSWORD'].some((n) => B.REFUSED_ENV.test(n)));
+const sv = B.makeVault(B.parseGoal('{{secret:alice.password}}').menu, AUTH, { BROWSE_TEST_PW: 'ab12x' });
+check('makeVault: a secret under 6 chars is refused (needs_secret, plain line)', sv.missing[0] === 'alice.password' && /shorter than 6/.test(sv.problems[0]));
+const STR = 'straddle-secret-XYZ';
+const stv = B.makeVault(B.parseGoal('{{secret:alice.password}}').menu, AUTH, { BROWSE_TEST_PW: STR });
+const stSnap = { url: 'http://a.test/', text: `${'a'.repeat(1995)}${STR} tail` };
+const empty = { rows: [], hiddenBelow: 0, hiddenAbove: 0 };
+const capRaw = B.buildState('g', stSnap, empty, [], new Set(), stv.maskTail).page.text;
+const capRed = B.buildState('g', stv.redact(stSnap), empty, [], new Set(), stv.maskTail).page.text;
+check('cap: a secret straddling the 2000-char cap leaks no prefix (masked tail, and redacted before the cap)', !capRaw.includes('strad') && !capRed.includes('strad'), capRaw.slice(-12));
+const wsv = B.makeVault(B.parseGoal('{{secret:alice.password}}').menu, AUTH, { BROWSE_TEST_PW: 'two  spaced   words' });
+check('redact: the whitespace-collapsed form of a secret is redacted too', !JSON.stringify(wsv.redact(B.buildState('g', { text: 'x two  spaced   words y' }, empty, []))).includes('two spaced words'));
+
 // ── loop cases: CLI × fixture backend × stub Jev ─────────────────────────
 // browse.mjs refuses Node < 22 by design (exit 5); on such a runner the CLI
 // cases print `skip` instead of failing, and the pure cases above still run.
@@ -175,6 +206,16 @@ try {
   const ns = await runCli(['run', '--backend', `fixture:${path.join(FIX, 'cases.json')}#login`, '--goal', 'sign in with {{secret:bob.password}}', '--json'],
     { cwd: work, env: { TYPESAFE_API_KEY: 'test-key', BROWSE_JEV_URL: JEV, BROWSE_TRACE_DIR: path.join(traces, 'ns') } });
   check('run: unresolvable secret → exit 3 needs_secret before the first Jev request', ns.status === 3 && JSON.parse(ns.stdout).reason === 'needs_secret' && stub.bodies.length === 0, ns.stdout + ns.stderr);
+
+  // AUTH.md naming a real credential: refused before any Jev request.
+  const refWork = path.join(tmp, 'refused'); mkdirSync(path.join(refWork, 'docs'), { recursive: true });
+  writeFileSync(path.join(refWork, 'docs', 'AUTH.md'), refAuth);
+  stub = { answers: [], i: 0, bodies: [] };
+  const rf = await runCli(['run', '--backend', `fixture:${path.join(FIX, 'cases.json')}#login`, '--goal', 'sign in with {{secret:alice.password}}', '--json'],
+    { cwd: refWork, env: { TYPESAFE_API_KEY: 'test-key-refused', BROWSE_JEV_URL: JEV, BROWSE_TRACE_DIR: path.join(traces, 'rf') } });
+  check('run: AUTH.md $TYPESAFE_API_KEY → exit 3 needs_secret, the refusal line, no request, key never printed', rf.status === 3 && JSON.parse(rf.stdout).reason === 'needs_secret' && rf.stderr.includes(B.REFUSED_LINE) && stub.bodies.length === 0 && !(rf.stdout + rf.stderr).includes('test-key-refused'), rf.stdout + rf.stderr);
+  check('loop secret binding: cross-origin page and password-into-textbox both hand off with no act', results['secret-cross-origin'].acts.length === 0 && /origin/.test(results['secret-cross-origin'].out?.detail ?? '') && results['secret-wrong-field'].acts.length === 0 && /password field/.test(results['secret-wrong-field'].out?.detail ?? ''));
+  check('loop banner + irreversible: no click', results['banner-irreversible'].acts.length === 0);
 
   // step: hand-back surface never resolves secrets.
   const stepCwd = path.join(tmp, 'stepcwd'); mkdirSync(stepCwd);

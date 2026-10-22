@@ -12,7 +12,9 @@
 //       DONE (then an independent check) or a hand-off. Backend: --cdp /
 //       BROWSE_CDP_URL attaches to a running Chromium (BrowserOS neo too, when
 //       its debug port answers); otherwise launches Chrome headless with a
-//       plugin-owned profile (never the default one).
+//       plugin-owned profile (never the default one). --cdp without --url
+//       attaches to the first page target (the tab you are on); with --url it
+//       opens its own tab and closes it at the end.
 //   node tools/browse.mjs step --goal <g> --state <file.json> [--history <file>]
 //       Hand-back mode for surfaces this tool can't drive (Claude in Chrome,
 //       computer use, MCP browsers): prints the next {op, index, label,
@@ -24,7 +26,11 @@
 //
 // Goals: short, one page/form; quote literals ("Jane Doe" → {{goal:1}});
 // secrets by reference {{secret:<user>.<field>}} (field password|login),
-// resolved ONCE at `run` start from docs/AUTH.md Test users ($NAME → env).
+// resolved ONCE at `run` start from docs/AUTH.md Test users ($NAME → env;
+// names of real credentials — TYPESAFE_*, GITHUB_*, *_TOKEN, *_API_KEY … —
+// are refused, as are values under 6 chars). A secret is typed only on the
+// run's origin, `.password` only into a password field, `.login` only into a
+// plain text field; anything else hands off `needs_secret`.
 //
 // Exit codes: 0 done, verified · 1 usage/internal · 2 done, unverified (verify
 // yourself) · 3 handed off (reason: low_confidence|stuck|bot|error|
@@ -80,6 +86,7 @@ export const STEP_SECRET_LINE = 'secrets cannot be typed on a hand-back surface 
 const OPS = ['CLICK', 'TYPE', 'SELECT', 'SCROLL_UP', 'SCROLL_DOWN', 'ENTER', 'WAIT', 'DONE', 'BLOCKED'];
 const TARGET_OPS = new Set(['CLICK', 'TYPE', 'SELECT']);
 const ACTING = new Set(['CLICK', 'TYPE', 'SELECT', 'ENTER']);
+export const BANNER_REFUSE = /pay|buy|delete|remove|send|submit|confirm|checkout|order/i;
 
 class Unavailable extends Error {}
 class Usage extends Error {}
@@ -102,15 +109,26 @@ export function parseGoal(goal) {
 
 const cellText = (c) => c.trim().replace(/^[_*]+|[_*]+$/g, '').replace(/^`|`$/g, '').trim();
 
+// Env names an AUTH.md `$NAME` cell may never point at: real credentials, not
+// test users. Test-user secrets use names like TEST_* or *_PASSWORD.
+export const REFUSED_ENV = /^(TYPESAFE_|GITHUB_|GH_|AWS_|ANTHROPIC_|OPENAI_|SLACK_|NPM_|DATABASE_URL|CLAUDE_|.*_TOKEN$|.*_API_KEY$|.*_SECRET_KEY$)/;
+export const MIN_SECRET = 6;
+export const REFUSED_LINE = 'AUTH.md names a credential this tool will not type';
+
 // Test users rows of docs/AUTH.md: `<user>` matches the Role cell, the login
 // cell, or the login's local part (case-insensitive); `$NAME` → env[NAME].
 export function resolveSecret(ref, authMd, env = process.env) {
+  const r = resolveSecretInfo(ref, authMd, env);
+  return r.value ?? null;
+}
+// → {value} | {refused: '$NAME'} | {} (not found / empty).
+export function resolveSecretInfo(ref, authMd, env = process.env) {
   const m = /^(.+)\.(password|login)$/.exec(String(ref));
-  if (!m || !authMd) return null;
+  if (!m || !authMd) return {};
   const [, user, field] = m;
   const lines = String(authMd).split('\n');
   const start = lines.findIndex((l) => /^##\s+Test users/i.test(l));
-  if (start < 0) return null;
+  if (start < 0) return {};
   let header = null;
   for (let i = start + 1; i < lines.length && !/^##\s/.test(lines[i]); i++) {
     const l = lines[i].trim();
@@ -125,10 +143,13 @@ export function resolveSecret(ref, authMd, env = process.env) {
     let v = field === 'login' ? login : cells[header.findIndex((h) => h.startsWith('password'))] ?? '';
     v = v.replace(/\s*\(seeded\)$/i, '').trim();
     const env1 = /^\$([A-Za-z_][A-Za-z0-9_]*)$/.exec(v);
-    if (env1) v = env[env1[1]] ?? '';
-    return v ? v : null;
+    if (env1) {
+      if (REFUSED_ENV.test(env1[1])) return { refused: `$${env1[1]}` };
+      v = env[env1[1]] ?? '';
+    }
+    return v ? { value: v } : {};
   }
-  return null;
+  return {};
 }
 
 const htmlEscape = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
@@ -139,22 +160,33 @@ const htmlEscape = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace
 // the reference.
 export function makeVault(menu, authMd, env = process.env) {
   const values = new Map();
-  const missing = [];
+  const missing = []; const problems = [];
   for (const m of menu) {
-    if (m.kind === 'goal') values.set(m.name, m.text);
-    else {
-      const v = resolveSecret(m.ref, authMd, env);
-      if (v == null) missing.push(m.ref); else values.set(m.name, v);
-    }
+    if (m.kind === 'goal') { values.set(m.name, m.text); continue; }
+    const r = resolveSecretInfo(m.ref, authMd, env);
+    if (r.refused) { missing.push(m.ref); problems.push(`${REFUSED_LINE} (${r.refused} for ${m.name})`); }
+    else if (r.value == null) { missing.push(m.ref); problems.push(`no value for ${m.name} in docs/AUTH.md Test users`); }
+    else if (r.value.length < MIN_SECRET) { missing.push(m.ref); problems.push(`the value for ${m.name} is shorter than ${MIN_SECRET} characters — too short to redact safely`); }
+    else values.set(m.name, r.value);
   }
   const pairs = [];
   for (const m of menu) {
     if (m.kind !== 'secret' || !values.has(m.name)) continue;
     const v = values.get(m.name);
-    for (const f of new Set([v, encodeURIComponent(v), htmlEscape(v)])) pairs.push([f, m.name]);
+    for (const f of new Set([v, encodeURIComponent(v), htmlEscape(v), v.replace(/\s+/g, ' ').trim()])) if (f) pairs.push([f, m.name]);
   }
   pairs.sort((a, b) => b[0].length - a[0].length);
   const redactStr = (s) => { let o = s; for (const [f, name] of pairs) o = o.split(f).join(name); return o; };
+  // A cap can cut a secret; drop any trailing piece (≥ 3 chars) that starts one.
+  const maskTail = (s) => {
+    let o = String(s);
+    for (const [f] of pairs) {
+      for (let k = Math.min(f.length - 1, o.length); k >= 3; k--) {
+        if (o.endsWith(f.slice(0, k))) { o = o.slice(0, -k); break; }
+      }
+    }
+    return o;
+  };
   const redact = (x) => {
     if (typeof x === 'string') return redactStr(x);
     if (Array.isArray(x)) return x.map(redact);
@@ -163,12 +195,13 @@ export function makeVault(menu, authMd, env = process.env) {
   };
   return {
     missing,
+    problems,
+    maskTail,
     has: (ref) => values.has(ref),
     typeInto: (ref, sink) => { if (!values.has(ref)) throw new Error(`no value for ${ref}`); return sink(values.get(ref)); },
     redact,
   };
 }
-const NO_VAULT = { missing: [], has: () => false, typeInto: () => { throw new Error('no vault'); }, redact: (x) => x };
 
 // ── element table, state, questions, decision ────────────────────────────
 // Cap: form controls in the viewport → other viewport elements → DOM order.
@@ -209,9 +242,9 @@ export function jevElement(e, tainted = false) {
 }
 export const rowText = (e) => `[${e.index}] ${e.role} ${e.label}${e.value ? ` · ${e.value}` : ''}`;
 
-export function buildState(goal, snap, table, history, tainted = new Set()) {
+export function buildState(goal, snap, table, history, tainted = new Set(), maskTail = (x) => x) {
   let text = String(snap.text ?? '').replace(/\s+/g, ' ').trim();
-  if (text.length > GATES.TEXT_CAP) text = `${text.slice(0, GATES.TEXT_CAP)}…`;
+  if (text.length > GATES.TEXT_CAP) text = `${maskTail(text.slice(0, GATES.TEXT_CAP))}…`;
   const more = [];
   if (table.hiddenBelow) more.push(`+${table.hiddenBelow} more below`);
   if (table.hiddenAbove) more.push(`+${table.hiddenAbove} more above`);
@@ -225,6 +258,19 @@ export function buildState(goal, snap, table, history, tainted = new Set()) {
   };
 }
 export const taintKey = (snap, e) => `${snap.url}|${e.role}|${e.label}`;
+export const originOf = (u) => { try { const o = new URL(u).origin; return o === 'null' ? null : o; } catch { return null; } };
+
+// A secret is typed only on the run's origin, and only into the matching kind
+// of field: `.password` into a password input, `.login` into a plain textbox.
+// → null when allowed, else a plain reason.
+export function secretBinding(valueRef, el, runOrigin, pageUrl) {
+  if (!String(valueRef).startsWith('{{secret:')) return null;
+  const here = originOf(pageUrl);
+  if (!runOrigin || here !== runOrigin) return `the page is on ${here ?? 'an unknown origin'}, not ${runOrigin ?? 'the run origin'} — secrets are typed only on the origin the run started on`;
+  if (!el) return 'the target field is not on the page';
+  if (valueRef.endsWith('.password}}')) return el.password ? null : 'a password is typed only into a password field';
+  return !el.password && el.role === 'textbox' ? null : 'a login is typed only into a plain text field';
+}
 
 export function buildQuestions(state, menu) {
   const els = state.elements ?? [];
@@ -270,9 +316,9 @@ export function normalizeAnswers(resp, questions) {
 }
 export function noulP(a) {
   if (typeof a === 'number') return a;
-  if (!a || typeof a !== 'object') return 0;
+  if (!a || typeof a !== 'object') return null;
   for (const k of ['probability', 'yes', 'p_yes', 'p', 'score']) if (typeof a[k] === 'number') return a[k];
-  return 0;
+  return null;
 }
 // A choice head: the option it names must be one we offered.
 export function choiceOf(a, q) {
@@ -296,18 +342,24 @@ export function choiceOf(a, q) {
 export function decide(answers, questions, G = GATES, ctx = {}) {
   const gates = {};
   const byId = new Map(questions.map((q) => [q.id, q]));
-  const p = (id) => (byId.has(id) ? noulP(answers[id]) : 0);
+  const raw = (id) => (byId.has(id) ? noulP(answers[id]) : 0);
+  const p = (id) => raw(id) ?? 0;
   const gate = (name, value, limit, passIfBelow = false) => { const pass = passIfBelow ? value < limit : value >= limit; gates[name] = { value: +value.toFixed(3), gate: limit, pass }; return pass; };
   const hand = (reason, extra = {}) => ({ op: null, index: null, valueRef: null, handoff: reason, gates, ...extra });
 
+  // Safety nouls first, and fail closed when their shape is unknown.
+  for (const id of ['bot_check', 'error', 'irreversible']) if (raw(id) === null) return hand('error', { detail: 'Jev answer shape unknown' });
   if (!gate('bot_check', p('bot_check'), G.BOT, true)) return hand('bot');
+  if (!gate('error', p('error'), G.ERROR, true)) return hand('error');
+  const irr = p('irreversible');
   if (!ctx.bannerDone && byId.has('banner_target') && p('cookie_banner') >= G.BANNER) {
     gate('cookie_banner', p('cookie_banner'), G.BANNER);
+    if (!gate('irreversible', irr, G.IRREV, true)) return hand('low_confidence', { detail: 'a cookie banner and an irreversible signal on the same page' });
     const t = choiceOf(answers.banner_target, byId.get('banner_target'));
     if (!gate('banner_target', t.conf, G.CONF) || t.index == null) return hand('low_confidence');
+    if (BANNER_REFUSE.test(t.option.replace(/^\[\d+\]\s*/, ''))) return hand('low_confidence', { detail: 'the banner target looks like an action, not a consent button' });
     return { op: 'CLICK', index: t.index, option: t.option, valueRef: null, banner: true, gates };
   }
-  if (!gate('error', p('error'), G.ERROR, true)) return hand('error');
   if (gate('done', p('done'), G.DONE)) return { op: 'DONE', index: null, valueRef: null, gates };
   const o = choiceOf(answers.operation, byId.get('operation'));
   if (!gate('operation', o.conf, G.CONF) || !o.option) return hand('low_confidence');
@@ -328,7 +380,6 @@ export function decide(answers, questions, G = GATES, ctx = {}) {
     }
   }
   if (ACTING.has(op)) {
-    const irr = p('irreversible');
     gate('irreversible', irr, G.IRREV, true);
     if (irr >= G.IRREV && !ctx.allowIrreversible) return { op, index, option, valueRef, handoff: 'irreversible', gates };
   }
@@ -490,6 +541,9 @@ async function launchChrome(env) {
   child.once('error', (e) => { failed = e; });
   const kill = () => { try { child.kill('SIGKILL'); } catch {} };
   process.once('exit', kill);
+  CHILDREN.add(child);
+  child.once('exit', () => CHILDREN.delete(child));
+  armSignals();
   const base = `http://127.0.0.1:${port}`;
   const t0 = Date.now();
   while (Date.now() - t0 < 10000) {
@@ -499,6 +553,24 @@ async function launchChrome(env) {
   await stopChild(child);
   throw new Unavailable(`chrome: debug port did not answer within 10 s${failed ? ` (${failed.message})` : ''}`);
 }
+// SIGINT/SIGTERM: stop every launched Chrome, then re-raise the signal so the
+// process still ends the way the caller asked (no orphaned browser).
+const CHILDREN = new Set();
+let signalsArmed = false;
+function armSignals() {
+  if (signalsArmed) return;
+  signalsArmed = true;
+  for (const sig of ['SIGINT', 'SIGTERM']) {
+    const h = async () => {
+      await Promise.all([...CHILDREN].map((c) => stopChild(c)));
+      process.removeListener('SIGINT', handlers.SIGINT); process.removeListener('SIGTERM', handlers.SIGTERM);
+      process.kill(process.pid, sig);
+    };
+    handlers[sig] = h;
+    process.once(sig, h);
+  }
+}
+const handlers = {};
 async function stopChild(child) {
   if (!child || child.exitCode !== null) return;
   const gone = new Promise((r) => child.once('exit', r));
@@ -514,11 +586,13 @@ async function cdpBackend({ cdpUrl, env, url }) {
     base = cdpUrl.replace(/\/+$/, '');
     try { await getJson(`${base}/json/version`); } catch (e) { throw new Unavailable(`cdp: ${base} unreachable (${e.message})`); }
   } else ({ base, child } = await launchChrome(env));
-  let cdp;
+  let cdp; let created = null;
   try {
+    // --cdp without --url attaches to the first page target; with --url it opens
+    // its own tab and closes it again in close().
     let target = null;
     if (!cdpUrl || !url) target = (await getJson(`${base}/json/list`)).find((t) => t.type === 'page' && t.webSocketDebuggerUrl);
-    if (!target) target = await getJson(`${base}/json/new?about:blank`, { method: 'PUT' });
+    if (!target) { target = await getJson(`${base}/json/new?about:blank`, { method: 'PUT' }); if (cdpUrl) created = target.id; }
     cdp = await Cdp.connect(target.webSocketDebuggerUrl);
     await Promise.all([cdp.send('Page.enable'), cdp.send('Runtime.enable'), cdp.send('DOM.enable')]);
   } catch (e) {
@@ -572,7 +646,11 @@ async function cdpBackend({ cdpUrl, env, url }) {
       await settle();
       return { pageChanged: (await digest()) !== before };
     },
-    async close() { cdp.close(); await stopChild(child); },
+    async close() {
+      cdp.close();
+      if (created) await fetch(`${base}/json/close/${created}`, { signal: AbortSignal.timeout(2000) }).catch(() => {});
+      await stopChild(child);
+    },
   };
 }
 
@@ -688,7 +766,7 @@ async function cmdRun(o, env) {
     io.out(o.json ? JSON.stringify(r) : summary(r));
     return exitFor(status);
   };
-  if (vault.missing.length) return finish('handed-off', { reason: 'needs_secret', detail: `no value for ${vault.missing.map((m) => `{{secret:${m}}}`).join(', ')} in docs/AUTH.md Test users` });
+  if (vault.missing.length) { io.err(vault.problems.join('; ')); return finish('handed-off', { reason: 'needs_secret', detail: vault.problems.join('; ') }); }
   if (o.untilUrl) { try { new RegExp(o.untilUrl); } catch { throw new Usage('--until-url is not a valid regex'); } }
 
   let backend;
@@ -703,15 +781,17 @@ async function cmdRun(o, env) {
   const ctx = { bannerDone: false, allowIrreversible: Boolean(o.allowIrreversible) };
   const maxSteps = Math.min(Number(o.maxSteps) || GATES.MAX_STEPS, 100);
   let waits = 0; let repeat = { key: null, n: 0 };
+  let runOrigin = o.url ? originOf(o.url) : null;
   try {
     await backend.open(o.url);
     for (;;) {
       if (steps >= maxSteps) return finish('handed-off', { reason: 'max_steps' });
       const tStep = Date.now();
-      snap = await backend.snapshot();
+      snap = vault.redact(await backend.snapshot());
+      if (!runOrigin && !o.url) runOrigin = originOf(snap.url);
       const build = (max) => {
         table = tableFromElements(snap.elements, snap.viewport, { max });
-        const state = vault.redact(buildState(goal, snap, table, history, tainted));
+        const state = vault.redact(buildState(goal, snap, table, history, tainted, vault.maskTail));
         return { state, questions: buildQuestions(state, menu) };
       };
       let ask;
@@ -732,14 +812,16 @@ async function cmdRun(o, env) {
       let handoff = d.handoff;
       if (!handoff && (waits > GATES.MAX_WAITS || (d.op !== 'DONE' && repeat.n >= GATES.REPEAT))) handoff = 'stuck';
       if (!handoff && d.valueRef && !vault.has(d.valueRef)) handoff = 'needs_value';
+      let detail = d.detail;
+      if (!handoff && d.valueRef) { const why = secretBinding(d.valueRef, el, runOrigin, snap.url); if (why) { handoff = 'needs_secret'; detail = why; io.err(why); } }
       if (handoff) {
         trace({ ...row, handoff, ms_step: Date.now() - tStep });
         if (handoff === 'irreversible') return finish('irreversible-pending', { reason: 'irreversible', proposed });
-        return finish('handed-off', { reason: handoff, proposed, detail: d.detail });
+        return finish('handed-off', { reason: handoff, proposed, detail });
       }
       if (d.op === 'DONE') {
         trace({ ...row, ms_step: Date.now() - tStep });
-        snap = await backend.snapshot();
+        snap = vault.redact(await backend.snapshot());
         table = tableFromElements(snap.elements, snap.viewport);
         let verify;
         if (o.untilUrl || o.untilText) {
@@ -750,7 +832,7 @@ async function cmdRun(o, env) {
           const vq = [{ id: 'goal_complete', type: 'noul', question: `Does this page show that ${goal} is complete?` }];
           let vr;
           try {
-            vr = await askJev(env, () => ({ state: vault.redact(buildState(goal, snap, table, history, tainted)), questions: vq }));
+            vr = await askJev(env, () => ({ state: vault.redact(buildState(goal, snap, table, history, tainted, vault.maskTail)), questions: vq }));
           } catch (e) {
             if (e instanceof Unavailable) { io.err(`backend unavailable (${e.message})`); return finish('backend-unavailable', { reason: 'jev', detail: e.message }); }
             throw e;

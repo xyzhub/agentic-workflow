@@ -61,6 +61,8 @@ secret: a hand-back surface cannot type secrets — use `run` or `--cdp`.
   never your everyday Chrome profile.
 - **`--cdp <url>`**: attach to any running Chromium with a debug port,
   including BrowserOS neo when its debug port answers (`doctor` tells you).
+  Without `--url` it drives the first open tab; with `--url` it opens its own
+  tab and closes it at the end.
 - **`step`**: for surfaces only you can drive (Claude in Chrome, computer use,
   MCP browsers). Paste the page as a snapshot JSON (`{page:{url,title,text},
   elements:[{index, role, label, value?, ops}]}`), get back `{op, index, label,
@@ -73,6 +75,17 @@ Never paste a secret value into a goal, a state file or a prompt. `run`
 resolves every `{{secret:…}}` once at start from `docs/AUTH.md` (`$NAME` cells
 read the env var), types it straight into the page, and writes only the
 reference to Jev, the trace, stdout and stderr.
+
+- Name test-user env vars like `TEST_ALICE_PW` or `STAGING_ADMIN_PASSWORD`. The
+  tool refuses to type real credentials: an AUTH.md cell naming
+  `$TYPESAFE_*`, `$GITHUB_*`, `$GH_*`, `$AWS_*`, `$ANTHROPIC_*`, `$OPENAI_*`,
+  `$SLACK_*`, `$NPM_*`, `$CLAUDE_*`, `$DATABASE_URL` or any `*_TOKEN`,
+  `*_API_KEY`, `*_SECRET_KEY` hands off `needs_secret`. Values under 6
+  characters are refused too (too short to redact safely).
+- A secret is typed only on the site the run started on (`--url`'s origin),
+  a `.password` only into a password field and a `.login` only into a plain
+  text field. A redirect to another site, or a mismatched field, hands off
+  `needs_secret` with the reason.
 
 ## Trace
 

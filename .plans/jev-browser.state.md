@@ -16,7 +16,7 @@ Status: active
 
 Estimate: 2 sessions
 Sessions used: 2
-Reviewer runs: 3
+Reviewer runs: 4
 
 _The budget lines above are read by the mission-budget hook every turn.
 `Estimate: 1` = the one brief S1 (no `phases`, owner L1; the one-shot
@@ -89,6 +89,8 @@ before execution starts._
 (none)
 
 ## Handoff log (newest first)
+
+- 2026-10-22 S1-fix done: blockers 1–3 + advisories 4–8 fixed with tests; browse-test 91/91 (92 live), lint clean; narrow ckpt-s1 re-review spawned (Fable)
 
 - 2026-10-22 ckpt-s1 REQUEST CHANGES (Fable): blocking 1 banner branch bypasses error/irreversible gates, 2 secret typing lacks origin/field binding, 3 AUTH.md $VAR resolves any env var; advisories 4–9. Scorecard Sec 1 · QA 2 · DX 3 · Eff 3 · Arch 2. LOCKED 2026-10-23 (owner): "Fix it: 1 more session" — Estimate revised 1 → 2; S1-fix runs blockers 1–3 + advisories 4–7 (+8 min-length refusal)
 
