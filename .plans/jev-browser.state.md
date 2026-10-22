@@ -12,10 +12,10 @@ fresh agent resumes the mission from this file alone. Write-ahead — update it
 orchestrator has no session boundary to force a write; a compaction erases
 everything since the last one — §12 LA-6)._
 
-Status: planned
+Status: active
 
 Estimate: 1 session
-Sessions used: 0
+Sessions used: 1
 Reviewer runs: 2
 
 _The budget lines above are read by the mission-budget hook every turn.
@@ -61,7 +61,7 @@ version **1.69.0**.
 _Glyphs: `[ ]` not started · `[~]` in-flight / deferred / awaiting owner · `[x]`
 done (verified, not merely written)._
 
-- [ ] S1 — `tools/browse.mjs` (run/step/snapshot/doctor; CDP attach + launch with a plugin-owned profile; one Jev request per step, D3 gates, secrets by reference with redact-before-send, D5 exit codes, private JSONL trace), `skills/browse/SKILL.md`, prompt lines in frontend/reviewer/researcher (+ routing line in marketing/business), WORKFLOW §10 row + §3 clause + verify.md/README clauses, six fixture pages + recorded answers + `tools/browse-test.mjs` wired into `tools/lint.mjs`, CHANGELOG 1.69.0 + both manifests, OB-34 row text reported, pre-merge Closing rows fired (branch `feat/jev-browser`)
+- [~] S1 — `tools/browse.mjs` (run/step/snapshot/doctor; CDP attach + launch with a plugin-owned profile; one Jev request per step, D3 gates, secrets by reference with redact-before-send, D5 exit codes, private JSONL trace), `skills/browse/SKILL.md`, prompt lines in frontend/reviewer/researcher (+ routing line in marketing/business), WORKFLOW §10 row + §3 clause + verify.md/README clauses, six fixture pages + recorded answers + `tools/browse-test.mjs` wired into `tools/lint.mjs`, CHANGELOG 1.69.0 + both manifests, OB-34 row text reported, pre-merge Closing rows fired (branch `feat/jev-browser`)
 - [ ] Checkpoint ckpt-s1 — one-shot `reviewer` on **Fable** (boundary-class: `tools/` + `templates/`) over `main..HEAD`, red-team list from the sessions file (secret paths, off-head reads, gates, DONE check, default profile, trace location, no new Bash rule, keyless no-op), plain-report read of the skill/doctor/exit strings; APPROVE → staging verify → PR ready, human merges
 
 ## Open questions
