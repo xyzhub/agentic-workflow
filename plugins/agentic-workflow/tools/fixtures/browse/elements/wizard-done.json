@@ -1,0 +1,12 @@
+{
+ "source": "captured with `browse.mjs snapshot --json` from headless Google Chrome, 2026-10-23 (origin rewritten to http://fixture.test)",
+ "url": "http://fixture.test/wizard.html?step=done",
+ "title": "Setup wizard — Fixture",
+ "text": "Set up your account All set Your account is ready.",
+ "viewport": {
+  "w": 756,
+  "h": 469
+ },
+ "scrollY": 0,
+ "elements": []
+}

@@ -36,6 +36,11 @@ old, regional, or vendor-marketing.
 6. **Feasibility signals** — technical, regulatory, cost, or distribution risks
    that would change the plan.
 
+**Browsing.** When a question needs a real browser (a pricing toggle, an
+onboarding walk, a gated comparison page) and `TYPESAFE_API_KEY` is set, use
+`node ${CLAUDE_PLUGIN_ROOT}/tools/browse.mjs run …` (skill `browse`: one short goal per page, exit 2 →
+verify yourself, exit 5/6 → WebFetch or Bash-driven Playwright). Never put a secret in a goal.
+
 ## Deliverable
 
 Write a research brief and use it to draft/fill `docs/product/idea.md` (from the

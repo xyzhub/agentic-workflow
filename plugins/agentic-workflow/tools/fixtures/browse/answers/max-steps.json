@@ -1,0 +1,113 @@
+[
+ {
+  "answers": {
+   "operation": {
+    "choice": "WAIT",
+    "confidence": 0.97,
+    "probabilities": {
+     "CLICK": 0.0025,
+     "TYPE": 0.0025,
+     "SELECT": 0.0025,
+     "SCROLL_UP": 0.0025,
+     "SCROLL_DOWN": 0.0025,
+     "ENTER": 0.0025,
+     "WAIT": 0.98,
+     "DONE": 0.0025,
+     "BLOCKED": 0.0025
+    }
+   },
+   "done": {
+    "probability": 0.03
+   },
+   "irreversible": {
+    "probability": 0.03
+   },
+   "bot_check": {
+    "probability": 0.03
+   },
+   "cookie_banner": {
+    "probability": 0.03
+   },
+   "error": {
+    "probability": 0.03
+   }
+  },
+  "usage": {
+   "input_tokens": 1100
+  }
+ },
+ {
+  "answers": {
+   "operation": {
+    "choice": "WAIT",
+    "confidence": 0.97,
+    "probabilities": {
+     "CLICK": 0.0025,
+     "TYPE": 0.0025,
+     "SELECT": 0.0025,
+     "SCROLL_UP": 0.0025,
+     "SCROLL_DOWN": 0.0025,
+     "ENTER": 0.0025,
+     "WAIT": 0.98,
+     "DONE": 0.0025,
+     "BLOCKED": 0.0025
+    }
+   },
+   "done": {
+    "probability": 0.03
+   },
+   "irreversible": {
+    "probability": 0.03
+   },
+   "bot_check": {
+    "probability": 0.03
+   },
+   "cookie_banner": {
+    "probability": 0.03
+   },
+   "error": {
+    "probability": 0.03
+   }
+  },
+  "usage": {
+   "input_tokens": 1100
+  }
+ },
+ {
+  "answers": {
+   "operation": {
+    "choice": "WAIT",
+    "confidence": 0.97,
+    "probabilities": {
+     "CLICK": 0.0025,
+     "TYPE": 0.0025,
+     "SELECT": 0.0025,
+     "SCROLL_UP": 0.0025,
+     "SCROLL_DOWN": 0.0025,
+     "ENTER": 0.0025,
+     "WAIT": 0.98,
+     "DONE": 0.0025,
+     "BLOCKED": 0.0025
+    }
+   },
+   "done": {
+    "probability": 0.03
+   },
+   "irreversible": {
+    "probability": 0.03
+   },
+   "bot_check": {
+    "probability": 0.03
+   },
+   "cookie_banner": {
+    "probability": 0.03
+   },
+   "error": {
+    "probability": 0.03
+   }
+  },
+  "usage": {
+   "input_tokens": 1100
+  }
+ }
+]

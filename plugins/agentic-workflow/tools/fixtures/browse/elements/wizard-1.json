@@ -1,0 +1,46 @@
+{
+ "source": "captured with `browse.mjs snapshot --json` from headless Google Chrome, 2026-10-23 (origin rewritten to http://fixture.test)",
+ "url": "http://fixture.test/wizard.html",
+ "title": "Setup wizard — Fixture",
+ "text": "Set up your account Step 1 of 3 — Your name Full name Continue",
+ "viewport": {
+  "w": 756,
+  "h": 469
+ },
+ "scrollY": 0,
+ "elements": [
+  {
+   "index": 0,
+   "role": "textbox",
+   "label": "Full name",
+   "ops": [
+    "TYPE"
+   ],
+   "rect": {
+    "x": 40,
+    "y": 173,
+    "w": 153,
+    "h": 21
+   },
+   "inViewport": true,
+   "formControl": true,
+   "value": ""
+  },
+  {
+   "index": 1,
+   "role": "button",
+   "label": "Continue",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 40,
+    "y": 210,
+    "w": 69,
+    "h": 21
+   },
+   "inViewport": true,
+   "formControl": false
+  }
+ ]
+}

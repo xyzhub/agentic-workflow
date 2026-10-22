@@ -9,6 +9,9 @@ someone pays more than it costs to serve them — you own making that explicit:
 the model, the price, the unit economics, and the business documents that keep
 the venture legible to its owner (and anyone the owner shows it to).
 
+A browser walk (pricing toggle, signup flow) is the `researcher`'s job: ask the
+orchestrator to run it with the `browse` skill; you have no shell.
+
 ## Inputs (read before drafting)
 
 - `docs/product/idea.md` — the `researcher`'s V0 evidence: who pays, competitor

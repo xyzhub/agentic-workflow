@@ -1,0 +1,2222 @@
+{
+ "source": "captured with `browse.mjs snapshot --json` from headless Google Chrome, 2026-10-23 (origin rewritten to http://fixture.test)",
+ "url": "http://fixture.test/big.html?scroll=469",
+ "title": "Settings grid — Fixture",
+ "text": "Notification settings Option 1 Option 2 Option 3 Option 4 Option 5 Option 6 Option 7 Option 8 Option 9 Option 10 Option 11 Option 12 Option 13 Option 14 Option 15 Option 16 Option 17 Option 18 Option 19 Option 20 Option 21 Option 22 Option 23 Option 24 Option 25 Option 26 Option 27 Option 28 Option 29 Option 30 Option 31 Option 32 Option 33 Option 34 Option 35 Option 36 Option 37 Option 38 Option 39 Option 40 Option 41 Option 42 Option 43 Option 44 Option 45 Option 46 Option 47 Option 48 Option 49 Option 50 Option 51 Option 52 Option 53 Option 54 Option 55 Option 56 Option 57 Option 58 Option 59 Option 60 Option 61 Option 62 Option 63 Option 64 Option 65 Option 66 Option 67 Option 68 Option 69 Option 70 Option 71 Option 72 Option 73 Option 74 Option 75 Option 76 Option 77 Option 78 Option 79 Option 80 Option 81 Option 82 Option 83 Option 84 Option 85 Option 86 Option 87 Option 88 Option 89 Option 90 Option 91 Option 92 Option 93 Option 94 Option 95 Option 96 Option 97 Option 98 Option 99 Option 100 Save notification settings Option 102 Option 103 Option 104 Option 105 Option 106 Option 107 Option 108 Option 109 Option 110 Option 111 Option 112 Option 113 Option 114 Option 115 Option 116 Option 117 Option 118 Option 119 Option 120 Option 121 Option 122 Option 123 Option 124 Option 125 Option 126 Option 127 Option 128 Option 129 Option 130",
+ "viewport": {
+  "w": 756,
+  "h": 469
+ },
+ "scrollY": 469,
+ "elements": [
+  {
+   "index": 0,
+   "role": "checkbox",
+   "label": "Option 1",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 24,
+    "y": -394,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": false,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 1,
+   "role": "checkbox",
+   "label": "Option 2",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 206,
+    "y": -394,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": false,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 2,
+   "role": "checkbox",
+   "label": "Option 3",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 388,
+    "y": -394,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": false,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 3,
+   "role": "checkbox",
+   "label": "Option 4",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 570,
+    "y": -394,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": false,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 4,
+   "role": "checkbox",
+   "label": "Option 5",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 24,
+    "y": -362,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": false,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 5,
+   "role": "checkbox",
+   "label": "Option 6",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 206,
+    "y": -362,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": false,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 6,
+   "role": "checkbox",
+   "label": "Option 7",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 388,
+    "y": -362,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": false,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 7,
+   "role": "checkbox",
+   "label": "Option 8",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 570,
+    "y": -362,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": false,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 8,
+   "role": "checkbox",
+   "label": "Option 9",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 24,
+    "y": -330,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": false,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 9,
+   "role": "checkbox",
+   "label": "Option 10",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 206,
+    "y": -330,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": false,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 10,
+   "role": "checkbox",
+   "label": "Option 11",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 388,
+    "y": -330,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": false,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 11,
+   "role": "checkbox",
+   "label": "Option 12",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 570,
+    "y": -330,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": false,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 12,
+   "role": "checkbox",
+   "label": "Option 13",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 24,
+    "y": -298,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": false,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 13,
+   "role": "checkbox",
+   "label": "Option 14",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 206,
+    "y": -298,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": false,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 14,
+   "role": "checkbox",
+   "label": "Option 15",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 388,
+    "y": -298,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": false,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 15,
+   "role": "checkbox",
+   "label": "Option 16",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 570,
+    "y": -298,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": false,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 16,
+   "role": "checkbox",
+   "label": "Option 17",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 24,
+    "y": -266,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": false,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 17,
+   "role": "checkbox",
+   "label": "Option 18",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 206,
+    "y": -266,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": false,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 18,
+   "role": "checkbox",
+   "label": "Option 19",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 388,
+    "y": -266,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": false,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 19,
+   "role": "checkbox",
+   "label": "Option 20",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 570,
+    "y": -266,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": false,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 20,
+   "role": "checkbox",
+   "label": "Option 21",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 24,
+    "y": -234,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": false,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 21,
+   "role": "checkbox",
+   "label": "Option 22",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 206,
+    "y": -234,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": false,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 22,
+   "role": "checkbox",
+   "label": "Option 23",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 388,
+    "y": -234,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": false,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 23,
+   "role": "checkbox",
+   "label": "Option 24",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 570,
+    "y": -234,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": false,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 24,
+   "role": "checkbox",
+   "label": "Option 25",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 24,
+    "y": -202,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": false,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 25,
+   "role": "checkbox",
+   "label": "Option 26",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 206,
+    "y": -202,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": false,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 26,
+   "role": "checkbox",
+   "label": "Option 27",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 388,
+    "y": -202,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": false,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 27,
+   "role": "checkbox",
+   "label": "Option 28",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 570,
+    "y": -202,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": false,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 28,
+   "role": "checkbox",
+   "label": "Option 29",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 24,
+    "y": -170,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": false,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 29,
+   "role": "checkbox",
+   "label": "Option 30",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 206,
+    "y": -170,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": false,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 30,
+   "role": "checkbox",
+   "label": "Option 31",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 388,
+    "y": -170,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": false,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 31,
+   "role": "checkbox",
+   "label": "Option 32",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 570,
+    "y": -170,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": false,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 32,
+   "role": "checkbox",
+   "label": "Option 33",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 24,
+    "y": -138,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": false,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 33,
+   "role": "checkbox",
+   "label": "Option 34",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 206,
+    "y": -138,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": false,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 34,
+   "role": "checkbox",
+   "label": "Option 35",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 388,
+    "y": -138,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": false,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 35,
+   "role": "checkbox",
+   "label": "Option 36",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 570,
+    "y": -138,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": false,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 36,
+   "role": "checkbox",
+   "label": "Option 37",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 24,
+    "y": -106,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": false,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 37,
+   "role": "checkbox",
+   "label": "Option 38",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 206,
+    "y": -106,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": false,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 38,
+   "role": "checkbox",
+   "label": "Option 39",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 388,
+    "y": -106,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": false,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 39,
+   "role": "checkbox",
+   "label": "Option 40",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 570,
+    "y": -106,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": false,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 40,
+   "role": "checkbox",
+   "label": "Option 41",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 24,
+    "y": -74,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": false,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 41,
+   "role": "checkbox",
+   "label": "Option 42",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 206,
+    "y": -74,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": false,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 42,
+   "role": "checkbox",
+   "label": "Option 43",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 388,
+    "y": -74,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": false,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 43,
+   "role": "checkbox",
+   "label": "Option 44",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 570,
+    "y": -74,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": false,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 44,
+   "role": "checkbox",
+   "label": "Option 45",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 24,
+    "y": -42,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": false,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 45,
+   "role": "checkbox",
+   "label": "Option 46",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 206,
+    "y": -42,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": false,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 46,
+   "role": "checkbox",
+   "label": "Option 47",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 388,
+    "y": -42,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": false,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 47,
+   "role": "checkbox",
+   "label": "Option 48",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 570,
+    "y": -42,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": false,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 48,
+   "role": "checkbox",
+   "label": "Option 49",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 24,
+    "y": -10,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": true,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 49,
+   "role": "checkbox",
+   "label": "Option 50",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 206,
+    "y": -10,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": true,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 50,
+   "role": "checkbox",
+   "label": "Option 51",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 388,
+    "y": -10,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": true,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 51,
+   "role": "checkbox",
+   "label": "Option 52",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 570,
+    "y": -10,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": true,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 52,
+   "role": "checkbox",
+   "label": "Option 53",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 24,
+    "y": 22,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": true,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 53,
+   "role": "checkbox",
+   "label": "Option 54",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 206,
+    "y": 22,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": true,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 54,
+   "role": "checkbox",
+   "label": "Option 55",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 388,
+    "y": 22,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": true,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 55,
+   "role": "checkbox",
+   "label": "Option 56",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 570,
+    "y": 22,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": true,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 56,
+   "role": "checkbox",
+   "label": "Option 57",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 24,
+    "y": 54,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": true,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 57,
+   "role": "checkbox",
+   "label": "Option 58",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 206,
+    "y": 54,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": true,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 58,
+   "role": "checkbox",
+   "label": "Option 59",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 388,
+    "y": 54,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": true,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 59,
+   "role": "checkbox",
+   "label": "Option 60",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 570,
+    "y": 54,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": true,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 60,
+   "role": "checkbox",
+   "label": "Option 61",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 24,
+    "y": 86,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": true,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 61,
+   "role": "checkbox",
+   "label": "Option 62",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 206,
+    "y": 86,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": true,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 62,
+   "role": "checkbox",
+   "label": "Option 63",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 388,
+    "y": 86,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": true,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 63,
+   "role": "checkbox",
+   "label": "Option 64",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 570,
+    "y": 86,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": true,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 64,
+   "role": "checkbox",
+   "label": "Option 65",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 24,
+    "y": 118,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": true,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 65,
+   "role": "checkbox",
+   "label": "Option 66",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 206,
+    "y": 118,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": true,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 66,
+   "role": "checkbox",
+   "label": "Option 67",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 388,
+    "y": 118,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": true,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 67,
+   "role": "checkbox",
+   "label": "Option 68",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 570,
+    "y": 118,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": true,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 68,
+   "role": "checkbox",
+   "label": "Option 69",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 24,
+    "y": 150,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": true,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 69,
+   "role": "checkbox",
+   "label": "Option 70",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 206,
+    "y": 150,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": true,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 70,
+   "role": "checkbox",
+   "label": "Option 71",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 388,
+    "y": 150,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": true,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 71,
+   "role": "checkbox",
+   "label": "Option 72",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 570,
+    "y": 150,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": true,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 72,
+   "role": "checkbox",
+   "label": "Option 73",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 24,
+    "y": 182,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": true,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 73,
+   "role": "checkbox",
+   "label": "Option 74",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 206,
+    "y": 182,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": true,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 74,
+   "role": "checkbox",
+   "label": "Option 75",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 388,
+    "y": 182,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": true,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 75,
+   "role": "checkbox",
+   "label": "Option 76",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 570,
+    "y": 182,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": true,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 76,
+   "role": "checkbox",
+   "label": "Option 77",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 24,
+    "y": 214,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": true,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 77,
+   "role": "checkbox",
+   "label": "Option 78",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 206,
+    "y": 214,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": true,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 78,
+   "role": "checkbox",
+   "label": "Option 79",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 388,
+    "y": 214,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": true,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 79,
+   "role": "checkbox",
+   "label": "Option 80",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 570,
+    "y": 214,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": true,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 80,
+   "role": "checkbox",
+   "label": "Option 81",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 24,
+    "y": 246,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": true,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 81,
+   "role": "checkbox",
+   "label": "Option 82",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 206,
+    "y": 246,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": true,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 82,
+   "role": "checkbox",
+   "label": "Option 83",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 388,
+    "y": 246,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": true,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 83,
+   "role": "checkbox",
+   "label": "Option 84",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 570,
+    "y": 246,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": true,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 84,
+   "role": "checkbox",
+   "label": "Option 85",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 24,
+    "y": 278,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": true,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 85,
+   "role": "checkbox",
+   "label": "Option 86",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 206,
+    "y": 278,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": true,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 86,
+   "role": "checkbox",
+   "label": "Option 87",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 388,
+    "y": 278,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": true,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 87,
+   "role": "checkbox",
+   "label": "Option 88",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 570,
+    "y": 278,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": true,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 88,
+   "role": "checkbox",
+   "label": "Option 89",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 24,
+    "y": 310,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": true,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 89,
+   "role": "checkbox",
+   "label": "Option 90",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 206,
+    "y": 310,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": true,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 90,
+   "role": "checkbox",
+   "label": "Option 91",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 388,
+    "y": 310,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": true,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 91,
+   "role": "checkbox",
+   "label": "Option 92",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 570,
+    "y": 310,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": true,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 92,
+   "role": "checkbox",
+   "label": "Option 93",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 24,
+    "y": 342,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": true,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 93,
+   "role": "checkbox",
+   "label": "Option 94",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 206,
+    "y": 342,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": true,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 94,
+   "role": "checkbox",
+   "label": "Option 95",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 388,
+    "y": 342,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": true,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 95,
+   "role": "checkbox",
+   "label": "Option 96",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 570,
+    "y": 342,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": true,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 96,
+   "role": "checkbox",
+   "label": "Option 97",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 24,
+    "y": 374,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": true,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 97,
+   "role": "checkbox",
+   "label": "Option 98",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 206,
+    "y": 374,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": true,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 98,
+   "role": "checkbox",
+   "label": "Option 99",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 388,
+    "y": 374,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": true,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 99,
+   "role": "checkbox",
+   "label": "Option 100",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 570,
+    "y": 374,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": true,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 100,
+   "role": "button",
+   "label": "Save notification settings",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 20,
+    "y": 403,
+    "w": 163,
+    "h": 21
+   },
+   "inViewport": true,
+   "formControl": false
+  },
+  {
+   "index": 101,
+   "role": "checkbox",
+   "label": "Option 102",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 206,
+    "y": 406,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": true,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 102,
+   "role": "checkbox",
+   "label": "Option 103",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 388,
+    "y": 406,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": true,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 103,
+   "role": "checkbox",
+   "label": "Option 104",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 570,
+    "y": 406,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": true,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 104,
+   "role": "checkbox",
+   "label": "Option 105",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 24,
+    "y": 438,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": true,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 105,
+   "role": "checkbox",
+   "label": "Option 106",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 206,
+    "y": 438,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": true,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 106,
+   "role": "checkbox",
+   "label": "Option 107",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 388,
+    "y": 438,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": true,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 107,
+   "role": "checkbox",
+   "label": "Option 108",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 570,
+    "y": 438,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": true,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 108,
+   "role": "checkbox",
+   "label": "Option 109",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 24,
+    "y": 470,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": false,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 109,
+   "role": "checkbox",
+   "label": "Option 110",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 206,
+    "y": 470,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": false,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 110,
+   "role": "checkbox",
+   "label": "Option 111",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 388,
+    "y": 470,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": false,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 111,
+   "role": "checkbox",
+   "label": "Option 112",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 570,
+    "y": 470,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": false,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 112,
+   "role": "checkbox",
+   "label": "Option 113",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 24,
+    "y": 502,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": false,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 113,
+   "role": "checkbox",
+   "label": "Option 114",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 206,
+    "y": 502,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": false,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 114,
+   "role": "checkbox",
+   "label": "Option 115",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 388,
+    "y": 502,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": false,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 115,
+   "role": "checkbox",
+   "label": "Option 116",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 570,
+    "y": 502,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": false,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 116,
+   "role": "checkbox",
+   "label": "Option 117",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 24,
+    "y": 534,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": false,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 117,
+   "role": "checkbox",
+   "label": "Option 118",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 206,
+    "y": 534,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": false,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 118,
+   "role": "checkbox",
+   "label": "Option 119",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 388,
+    "y": 534,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": false,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 119,
+   "role": "checkbox",
+   "label": "Option 120",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 570,
+    "y": 534,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": false,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 120,
+   "role": "checkbox",
+   "label": "Option 121",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 24,
+    "y": 566,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": false,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 121,
+   "role": "checkbox",
+   "label": "Option 122",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 206,
+    "y": 566,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": false,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 122,
+   "role": "checkbox",
+   "label": "Option 123",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 388,
+    "y": 566,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": false,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 123,
+   "role": "checkbox",
+   "label": "Option 124",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 570,
+    "y": 566,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": false,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 124,
+   "role": "checkbox",
+   "label": "Option 125",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 24,
+    "y": 598,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": false,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 125,
+   "role": "checkbox",
+   "label": "Option 126",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 206,
+    "y": 598,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": false,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 126,
+   "role": "checkbox",
+   "label": "Option 127",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 388,
+    "y": 598,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": false,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 127,
+   "role": "checkbox",
+   "label": "Option 128",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 570,
+    "y": 598,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": false,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 128,
+   "role": "checkbox",
+   "label": "Option 129",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 24,
+    "y": 630,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": false,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 129,
+   "role": "checkbox",
+   "label": "Option 130",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 206,
+    "y": 630,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": false,
+   "formControl": true,
+   "checked": false
+  }
+ ]
+}

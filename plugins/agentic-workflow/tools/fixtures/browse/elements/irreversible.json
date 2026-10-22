@@ -1,0 +1,45 @@
+{
+ "source": "captured with `browse.mjs snapshot --json` from headless Google Chrome, 2026-10-23 (origin rewritten to http://fixture.test)",
+ "url": "http://fixture.test/irreversible.html",
+ "title": "Account settings — Fixture",
+ "text": "Account settings Deleting your account removes all data permanently. This cannot be undone. Delete account Cancel",
+ "viewport": {
+  "w": 756,
+  "h": 469
+ },
+ "scrollY": 0,
+ "elements": [
+  {
+   "index": 0,
+   "role": "button",
+   "label": "Delete account",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 40,
+    "y": 133,
+    "w": 105,
+    "h": 21
+   },
+   "inViewport": true,
+   "formControl": false
+  },
+  {
+   "index": 1,
+   "role": "link",
+   "label": "Cancel",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 149,
+    "y": 133,
+    "w": 50,
+    "h": 18
+   },
+   "inViewport": true,
+   "formControl": false
+  }
+ ]
+}

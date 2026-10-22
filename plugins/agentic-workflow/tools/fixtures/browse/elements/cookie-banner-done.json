@@ -1,0 +1,29 @@
+{
+ "source": "captured with `browse.mjs snapshot --json` from headless Google Chrome, 2026-10-23 (origin rewritten to http://fixture.test)",
+ "url": "http://fixture.test/cookie-banner.html?dismissed=1&done=1",
+ "title": "News — Fixture",
+ "text": "Weekly news Subscribe to get the weekly digest. Read more Subscribed. Thanks!",
+ "viewport": {
+  "w": 756,
+  "h": 469
+ },
+ "scrollY": 0,
+ "elements": [
+  {
+   "index": 0,
+   "role": "link",
+   "label": "Read more",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 40,
+    "y": 133,
+    "w": 78,
+    "h": 18
+   },
+   "inViewport": true,
+   "formControl": false
+  }
+ ]
+}

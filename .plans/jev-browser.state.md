@@ -16,7 +16,7 @@ Status: active
 
 Estimate: 1 session
 Sessions used: 1
-Reviewer runs: 2
+Reviewer runs: 3
 
 _The budget lines above are read by the mission-budget hook every turn.
 `Estimate: 1` = the one brief S1 (no `phases`, owner L1; the one-shot
@@ -61,8 +61,8 @@ version **1.69.0**.
 _Glyphs: `[ ]` not started · `[~]` in-flight / deferred / awaiting owner · `[x]`
 done (verified, not merely written)._
 
-- [~] S1 — `tools/browse.mjs` (run/step/snapshot/doctor; CDP attach + launch with a plugin-owned profile; one Jev request per step, D3 gates, secrets by reference with redact-before-send, D5 exit codes, private JSONL trace), `skills/browse/SKILL.md`, prompt lines in frontend/reviewer/researcher (+ routing line in marketing/business), WORKFLOW §10 row + §3 clause + verify.md/README clauses, six fixture pages + recorded answers + `tools/browse-test.mjs` wired into `tools/lint.mjs`, CHANGELOG 1.69.0 + both manifests, OB-34 row text reported, pre-merge Closing rows fired (branch `feat/jev-browser`)
-- [ ] Checkpoint ckpt-s1 — one-shot `reviewer` on **Fable** (boundary-class: `tools/` + `templates/`) over `main..HEAD`, red-team list from the sessions file (secret paths, off-head reads, gates, DONE check, default profile, trace location, no new Bash rule, keyless no-op), plain-report read of the skill/doctor/exit strings; APPROVE → staging verify → PR ready, human merges
+- [x] S1 — `tools/browse.mjs` (run/step/snapshot/doctor; CDP attach + launch with a plugin-owned profile; one Jev request per step, D3 gates, secrets by reference with redact-before-send, D5 exit codes, private JSONL trace), `skills/browse/SKILL.md`, prompt lines in frontend/reviewer/researcher (+ routing line in marketing/business), WORKFLOW §10 row + §3 clause + verify.md/README clauses, six fixture pages + recorded answers + `tools/browse-test.mjs` wired into `tools/lint.mjs`, CHANGELOG 1.69.0 + both manifests, OB-34 row text reported, pre-merge Closing rows fired (branch `feat/jev-browser`)
+- [~] Checkpoint ckpt-s1 — one-shot `reviewer` on **Fable** (boundary-class: `tools/` + `templates/`) over `main..HEAD`, red-team list from the sessions file (secret paths, off-head reads, gates, DONE check, default profile, trace location, no new Bash rule, keyless no-op), plain-report read of the skill/doctor/exit strings; APPROVE → staging verify → PR ready, human merges
 
 ## Open questions
 
@@ -78,8 +78,8 @@ before execution starts._
 
 ## Closing
 
-- [ ] version bumped + stamped · added 2026-10-23 (planner, pre-merge) — do: bump `plugins/agentic-workflow/.claude-plugin/plugin.json` and `plugins/agentic-workflow/package.json` `version` to 1.69.0 (§10 Version pin) and stamp this mission's CHANGELOG entry with it — when: this mission's CHANGELOG entry names a version — probe: `grep '"version"' plugins/agentic-workflow/.claude-plugin/plugin.json plugins/agentic-workflow/package.json`
-- [ ] docs/record synced · added 2026-10-23 (planner, pre-merge) — do: CHANGELOG `[1.69.0]` entry, `skills/browse/SKILL.md`, the frontend/reviewer/researcher/marketing/business prompt lines, `templates/WORKFLOW.md` §10 Browser verification row + §3 clause, `commands/verify.md` clause, README row — when: those are on the branch and `node tools/lint.mjs` is clean — probe: `grep -n "1.69.0" CHANGELOG.md` + `grep -c "Browser verification" plugins/agentic-workflow/templates/WORKFLOW.md` + `test -f plugins/agentic-workflow/skills/browse/SKILL.md`
+- [x] version bumped + stamped · added 2026-10-23 (planner, pre-merge) — do: bump `plugins/agentic-workflow/.claude-plugin/plugin.json` and `plugins/agentic-workflow/package.json` `version` to 1.69.0 (§10 Version pin) and stamp this mission's CHANGELOG entry with it — when: this mission's CHANGELOG entry names a version — probe: `grep '"version"' plugins/agentic-workflow/.claude-plugin/plugin.json plugins/agentic-workflow/package.json` · fired 2026-10-22 (plugin.json + package.json at 1.69.0, CHANGELOG [1.69.0] entry (S1 builder, verified by orchestrator grep))
+- [x] docs/record synced · added 2026-10-23 (planner, pre-merge) — do: CHANGELOG `[1.69.0]` entry, `skills/browse/SKILL.md`, the frontend/reviewer/researcher/marketing/business prompt lines, `templates/WORKFLOW.md` §10 Browser verification row + §3 clause, `commands/verify.md` clause, README row — when: those are on the branch and `node tools/lint.mjs` is clean — probe: `grep -n "1.69.0" CHANGELOG.md` + `grep -c "Browser verification" plugins/agentic-workflow/templates/WORKFLOW.md` + `test -f plugins/agentic-workflow/skills/browse/SKILL.md` · fired 2026-10-22 (CHANGELOG, skills/browse/SKILL.md, 5 agent prompts, templates/WORKFLOW.md §3+§10 row, commands/verify.md, README updated in S1; lint clean)
 - [ ] live-verify browse · added 2026-10-23 (planner, post-merge) — do: promote to `.plans/OBLIGATIONS.md` as OB-34 verbatim (text in `.plans/jev-browser.sessions.md` S1 Do 9): `browse.mjs doctor` against BrowserOS neo (paste its `tools/list`, note whether its debug port answers) and one live `run` with the key against a real login flow; record per-step Jev ms, hand-off rate, exit-2 rate, zero resolved secrets in the trace — when: v1.69.0 is installed from `main` (plugin update + reload, after the merge) — probe: manual → OB-34
 - [ ] branch + worktree cleanup · added 2026-10-23 (planner, post-merge) — do: delete `feat/jev-browser` and `plan/jev-browser` (local and remote) and prune any stale worktree — when: the feature PR is merged into `main` — probe: `gh pr list --state merged --head feat/jev-browser`
 - [ ] repo WORKFLOW sync · added 2026-10-23 (planner, post-merge) — do: run `/agentic-workflow:sync` on this repo so `docs/WORKFLOW.md` carries the §10 Browser verification row at stamp v1.69.0 (folds into OB-33's sync if that is still open) — when: v1.69.0 is installed and the feature PR is merged — probe: `grep -c "protocol-master: v1.69.0" docs/WORKFLOW.md`
@@ -90,8 +90,10 @@ before execution starts._
 
 ## Handoff log (newest first)
 
+- 2026-10-22 S1 done: browse-test 69/69 (70 with live Chrome smoke, temp profile removed), lint clean, plugin validate passed; CI pinned to Node 22 (setup-node v7.1.0 by SHA) so browser tests can't silently skip; OB-34 appended; ckpt-s1 Fable reviewer spawned on origin/main..HEAD
+
 - 2026-10-23 plan-judge REVISE folded: `step` never resolves secrets (exit 3 `needs_secret`); secrets resolved once into a vault closure that builds `redact()` (raw/URL/HTML forms); two-sided secret test via the driver's act log; live smoke on `BROWSE_PROFILE_DIR` tmp dir + mock-keychain/basic-store/no-extensions flags; `--trace` in the worktree refused; `BROWSE_FAKE_NODE` loopback-gated; OQ-2 locked (feat from plan branch); OQ-1 still with the owner.
 
 - 2026-10-23 planned: trio authored from `docs/product/decisions/2026-10-23-jev-browser-brief.md` + memos D1/D2-CDP/D3/D4/D5/D7 + counsel #3/#4/#5/#6/#8; build branch `feat/jev-browser` from main 495bcc2; OQ-1..2 to the owner before S1.
 
-Next up: S1
+Next up: ckpt-s1 (Fable reviewer in flight)

@@ -243,7 +243,8 @@ inside it run.
 4. **Gates, not logs.** Verification returns a signal (green/red + first error),
    never pasted build output. The project's gates are in §10.
 5. **Verify live, in a real client.** Anything with a runtime surface gets
-   exercised end-to-end — for web UI a real browser, not a status-code ping.
+   exercised end-to-end — for web UI a real browser, not a status-code ping
+   — via the `browse` skill when a Jev key is set, else Bash-driven Playwright.
 6. **Independence at the gates.** Work is reviewed by an agent that did not write
    it (fresh context) at every checkpoint and before any risky merge. Self-review
    only for Task-altitude changes, labeled "Self-QA (non-independent)".
@@ -1042,6 +1043,7 @@ concrete values.
 | **Runtimes** | _(which agent runtimes this repo can spawn. `claude` (the Agent tool) is always the default. `codex: connected` once the repo is trusted in `~/.codex/config.toml` and `.codex/rules/agentic-workflow.rules` is committed (via `/agentic-workflow:connect codex`); `codex: not connected` otherwise. A role runs on Codex only when its tune or a brief's `runtime:` field names it — read-only roles get a network-off sandbox, builder roles get workspace-write. `claude-p` (Haiku preset rows, `tools/run-claude.mjs`) needs only `claude`. `claude only` → no foreign runtime configured)_ |
 | **Tune preset** | _(`<name> (applied YYYY-MM-DD)` — `lean` · `balanced` · `rigorous` · `unattended` · `isolated`, set by bootstrap/adopt or `/agentic-workflow:tune preset`; unanswered → `balanced (default, applied YYYY-MM-DD)`; readers take the first token as the name)_ |
 | **Test users / auth access** | _(`docs/AUTH.md` — seeded dev/staging app credentials, per-surface sign-in flows, AND the access recipes for DBs/remote servers (`templates/auth.md`): agents read it instead of asking or digging through transcripts. Seed-derived values only; everything real by env NAME; production never. `none` → nothing to authenticate to)_ |
+| **Browser verification** | _(how agents drive a real browser: `node ${CLAUDE_PLUGIN_ROOT}/tools/browse.mjs` (skill `browse`) when `TYPESAFE_API_KEY` is set — launched Chrome, `--cdp <url>` to a running Chromium incl. BrowserOS neo, or `step` hand-back for Claude-only surfaces; else Bash-driven Playwright. Secrets by reference from the Test users row)_ |
 | **Deploy + live-verify** | _(how it ships and how you confirm on the deployed instance)_ |
 | **Eval suite** (behavioral, if any) | _(e.g. `node evals/run.mjs` — run before releases; see `/agentic-workflow:release`)_ |
 | **High-impact files** (docs-reminder targets) | _(conventions file, schema, architecture docs…)_ |

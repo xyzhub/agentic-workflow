@@ -96,7 +96,7 @@ as what it does.
 | `reviewer` | Checkpoints | Fresh-context review — four pillars + QA + architecture; APPROVE / REQUEST CHANGES + scorecard; re-runs all gates itself | Merges; pushes; edits code; trusts a handoff claim |
 | `chronicler` | Session close, checkpoints | The catalog's `features.md` rows (rewritten in place) + derived files, then CHANGELOG, the JOURNEY narrative, the live owner status page | Touches product code; re-reads source "to verify"; writes a `benefit` (marketing's column) |
 | `backend` | Build | Server-side slices — data integrity, idempotency, additive migrations | Self-approves; merges |
-| `frontend` | Build | UI slices — owns the UX pillar; verifies in a real browser | Self-approves; introduces parallel styling systems |
+| `frontend` | Build | UI slices — owns the UX pillar; verifies in a real browser (Jev-fast when keyed) | Self-approves; introduces parallel styling systems |
 | `security` | Hardening | Fail-closed config guards, auth, rate limits, secret handling, CI pinning — and proves each guard blocks | Marks its own work approved |
 | `devops` | V2, V5 | CI/CD, deploy config, releases, rollback — prepares the path to production | Fires irreversible deploys or merges |
 | `curator` | Portfolio (§13) | Owns the commons lifecycle — harvests reusable first-party material, brokers the single-best-match (k=1), keeps entries fresh, routes improvements back as delegable bookkeeping PRs | Decides product direction; ships product code into a venture; merges |

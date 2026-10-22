@@ -1,0 +1,127 @@
+[
+ {
+  "answers": {
+   "operation": {
+    "choice": "SCROLL_DOWN",
+    "confidence": 0.88,
+    "probabilities": {
+     "CLICK": 0.0138,
+     "TYPE": 0.0138,
+     "SELECT": 0.0138,
+     "SCROLL_UP": 0.0138,
+     "SCROLL_DOWN": 0.89,
+     "ENTER": 0.0138,
+     "WAIT": 0.0138,
+     "DONE": 0.0138,
+     "BLOCKED": 0.0138
+    }
+   },
+   "click_target": {
+    "choice": "[3] checkbox Option 4",
+    "confidence": 0.4,
+    "probabilities": {
+     "[3] checkbox Option 4": 0.41
+    }
+   },
+   "done": {
+    "probability": 0.03
+   },
+   "irreversible": {
+    "probability": 0.03
+   },
+   "bot_check": {
+    "probability": 0.03
+   },
+   "cookie_banner": {
+    "probability": 0.03
+   },
+   "error": {
+    "probability": 0.03
+   }
+  },
+  "usage": {
+   "input_tokens": 1100
+  }
+ },
+ {
+  "answers": {
+   "operation": {
+    "choice": "CLICK",
+    "confidence": 0.97,
+    "probabilities": {
+     "CLICK": 0.98,
+     "TYPE": 0.0025,
+     "SELECT": 0.0025,
+     "SCROLL_UP": 0.0025,
+     "SCROLL_DOWN": 0.0025,
+     "ENTER": 0.0025,
+     "WAIT": 0.0025,
+     "DONE": 0.0025,
+     "BLOCKED": 0.0025
+    }
+   },
+   "click_target": {
+    "choice": "[100] button Save notification settings",
+    "confidence": 0.97,
+    "probabilities": {
+     "[100] button Save notification settings": 0.98
+    }
+   },
+   "done": {
+    "probability": 0.03
+   },
+   "irreversible": {
+    "probability": 0.03
+   },
+   "bot_check": {
+    "probability": 0.03
+   },
+   "cookie_banner": {
+    "probability": 0.03
+   },
+   "error": {
+    "probability": 0.03
+   }
+  },
+  "usage": {
+   "input_tokens": 1100
+  }
+ },
+ {
+  "answers": {
+   "operation": {
+    "choice": "DONE",
+    "confidence": 0.97,
+    "probabilities": {
+     "CLICK": 0.0025,
+     "TYPE": 0.0025,
+     "SELECT": 0.0025,
+     "SCROLL_UP": 0.0025,
+     "SCROLL_DOWN": 0.0025,
+     "ENTER": 0.0025,
+     "WAIT": 0.0025,
+     "DONE": 0.98,
+     "BLOCKED": 0.0025
+    }
+   },
+   "done": {
+    "probability": 0.95
+   },
+   "irreversible": {
+    "probability": 0.03
+   },
+   "bot_check": {
+    "probability": 0.03
+   },
+   "cookie_banner": {
+    "probability": 0.03
+   },
+   "error": {
+    "probability": 0.03
+   }
+  },
+  "usage": {
+   "input_tokens": 1100
+  }
+ }
+]

@@ -8,6 +8,51 @@ has no tags — each version-stamped commit on `main` IS the release.
 
 _(empty)_
 
+## [1.69.0] — 2026-10-23
+### Added — fast, accurate browser use (Jev)
+- **`tools/browse.mjs`** (zero deps, Node ≥ 22): `run` drives a short goal
+  through a real browser with one Jev request per step and no model call in
+  the loop; `step` returns the next action for surfaces only the agent can
+  drive (Claude in Chrome, computer use, MCP browsers); `snapshot` prints the
+  numbered element table; `doctor` reports Node, key (set/unset), Chrome, the
+  CDP port and a BrowserOS neo probe (debug port + MCP `tools/list`). Backend:
+  raw CDP — launched Chrome with a plugin-owned profile (never the default
+  one) or `--cdp <url>` to any running Chromium, BrowserOS neo included.
+- **Gates**: act only at confidence ≥ 0.70 on the operation and its target;
+  only the chosen operation's target head is read; bot check → hand-off;
+  one cookie-banner click; irreversible action → exit 4 with `proposed`
+  unless `--allow-irreversible`; DONE is checked independently (`--until-url`
+  / `--until-text`, else a second Jev question) → exit 0 or 2; stuck and
+  WAIT-loop guards; 80-row element window with SCROLL offered when rows are
+  hidden. Exit codes 0–6; no `TYPESAFE_API_KEY` → exit 6 with one line and
+  today's Playwright path.
+- **Secrets by reference**: `{{secret:<user>.<field>}}` resolved once at `run`
+  start from `docs/AUTH.md` Test users into a closure; raw, URL-encoded and
+  HTML-escaped forms redacted before every Jev request, trace line, stdout and
+  stderr write; password values never serialized; `step` never resolves a
+  secret. Private trace under `<git dir>/agentic-workflow/browse/traces/`
+  (0700/0600), never in the worktree.
+- **Skill `browse`** — when to use it, goal-writing rules, the exit-code table
+  with the caller's move per code, surfaces, secrets rule, trace location.
+- **Fixtures + `tools/browse-test.mjs`** (wired into `node tools/lint.mjs`):
+  six local pages incl. a 130-control page, element tables captured from
+  headless Chrome, synthetic recorded Jev answers (no key on the build
+  machine — they prove gate plumbing, not accuracy); a two-sided secret test
+  (the page receives the value; Jev, stdout, stderr and the trace see only the
+  reference); opt-in live CDP smoke (`BROWSE_LIVE_SMOKE=1`).
+### Changed
+- `frontend` and `reviewer` prefer `browse.mjs` when the key is set (exit 2 →
+  verify yourself, exit 5/6 → Playwright as before); `researcher` gains a
+  Browsing paragraph; `marketing` and `business` route browser walks through
+  the `researcher` (no shell grant).
+- `templates/WORKFLOW.md`: §3 principle 5 names the `browse` skill; new §10
+  **Browser verification** row. `commands/verify.md` and the README
+  `frontend` row mention it.
+### Deferred
+- MCP-client backends (Playwright MCP, Chrome DevTools MCP, a neo adapter),
+  the live accuracy/latency report, replayable scripts — live numbers come
+  from OB-34.
+
 ## [1.68.0] — 2026-10-20
 ### Added — any session is safe to compact
 - **Pre-compact snapshot** (`hooks/lib/pre-compact.sh`, `PreCompact`, both

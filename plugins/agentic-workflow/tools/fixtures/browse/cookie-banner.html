@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>News — Fixture</title>
+<style>body{font:16px system-ui;margin:40px}#banner{position:fixed;left:0;right:0;bottom:0;background:#eee;padding:16px}</style></head>
+<body>
+<h1>Weekly news</h1>
+<p>Subscribe to get the weekly digest.</p>
+<p><button id="sub" onclick="location.search='?dismissed=1&amp;done=1'">Subscribe</button> <a href="#more">Read more</a></p>
+<p id="ok" hidden>Subscribed. Thanks!</p>
+<div id="banner" role="dialog" aria-label="Cookie consent">
+  <p>We use cookies to improve this site.</p>
+  <button onclick="location.search='?dismissed=1'">Accept all</button>
+  <button onclick="location.search='?dismissed=1'">Reject all</button>
+</div>
+<script>
+const q = new URLSearchParams(location.search);
+if (q.get('dismissed')) document.getElementById('banner').remove();
+if (q.get('done')) { document.getElementById('sub').remove(); document.getElementById('ok').hidden = false; }
+</script>
+</body></html>

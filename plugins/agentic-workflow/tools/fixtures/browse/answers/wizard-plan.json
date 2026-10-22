@@ -1,0 +1,141 @@
+[
+ {
+  "answers": {
+   "operation": {
+    "choice": "SELECT",
+    "confidence": 0.97,
+    "probabilities": {
+     "CLICK": 0.0025,
+     "TYPE": 0.0025,
+     "SELECT": 0.98,
+     "SCROLL_UP": 0.0025,
+     "SCROLL_DOWN": 0.0025,
+     "ENTER": 0.0025,
+     "WAIT": 0.0025,
+     "DONE": 0.0025,
+     "BLOCKED": 0.0025
+    }
+   },
+   "select_target": {
+    "choice": "[0] combobox Billing plan · Choose…",
+    "confidence": 0.97,
+    "probabilities": {
+     "[0] combobox Billing plan · Choose…": 0.98
+    }
+   },
+   "type_value": {
+    "choice": "{{goal:1}}",
+    "confidence": 0.95,
+    "probabilities": {
+     "{{goal:1}}": 0.96
+    }
+   },
+   "click_target": {
+    "choice": "[1] button Continue",
+    "confidence": 0.99,
+    "probabilities": {
+     "[1] button Continue": 1
+    }
+   },
+   "done": {
+    "probability": 0.03
+   },
+   "irreversible": {
+    "probability": 0.03
+   },
+   "bot_check": {
+    "probability": 0.03
+   },
+   "cookie_banner": {
+    "probability": 0.03
+   },
+   "error": {
+    "probability": 0.03
+   }
+  },
+  "usage": {
+   "input_tokens": 1100
+  }
+ },
+ {
+  "answers": {
+   "operation": {
+    "choice": "CLICK",
+    "confidence": 0.97,
+    "probabilities": {
+     "CLICK": 0.98,
+     "TYPE": 0.0025,
+     "SELECT": 0.0025,
+     "SCROLL_UP": 0.0025,
+     "SCROLL_DOWN": 0.0025,
+     "ENTER": 0.0025,
+     "WAIT": 0.0025,
+     "DONE": 0.0025,
+     "BLOCKED": 0.0025
+    }
+   },
+   "click_target": {
+    "choice": "[1] button Continue",
+    "confidence": 0.98,
+    "probabilities": {
+     "[1] button Continue": 0.99
+    }
+   },
+   "done": {
+    "probability": 0.03
+   },
+   "irreversible": {
+    "probability": 0.03
+   },
+   "bot_check": {
+    "probability": 0.03
+   },
+   "cookie_banner": {
+    "probability": 0.03
+   },
+   "error": {
+    "probability": 0.03
+   }
+  },
+  "usage": {
+   "input_tokens": 1100
+  }
+ },
+ {
+  "answers": {
+   "operation": {
+    "choice": "DONE",
+    "confidence": 0.97,
+    "probabilities": {
+     "CLICK": 0.0025,
+     "TYPE": 0.0025,
+     "SELECT": 0.0025,
+     "SCROLL_UP": 0.0025,
+     "SCROLL_DOWN": 0.0025,
+     "ENTER": 0.0025,
+     "WAIT": 0.0025,
+     "DONE": 0.98,
+     "BLOCKED": 0.0025
+    }
+   },
+   "done": {
+    "probability": 0.95
+   },
+   "irreversible": {
+    "probability": 0.03
+   },
+   "bot_check": {
+    "probability": 0.03
+   },
+   "cookie_banner": {
+    "probability": 0.03
+   },
+   "error": {
+    "probability": 0.03
+   }
+  },
+  "usage": {
+   "input_tokens": 1100
+  }
+ }
+]

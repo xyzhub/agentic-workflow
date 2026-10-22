@@ -52,9 +52,10 @@ test credentials and never grep transcripts for them. Missing/stale AUTH.md →
 say so and name it as the fix (its rows anchor to the seed scripts).
 
 Exercise the core user journey **on the deployed instance** in a real client —
-Bash-driven Playwright (the same path the `frontend` and `reviewer` agents
-use): the changed flow end to end, console clean, UI truthful (no state claimed
-that the backend doesn't confirm). A status-code ping is not verification. If
+Bash-driven Playwright (or the `browse` skill when `TYPESAFE_API_KEY` is set;
+the same path the `frontend` and `reviewer` agents use): the changed flow end
+to end, console clean, UI truthful (no state claimed that the backend doesn't
+confirm). A status-code ping is not verification. If
 browser automation isn't possible against this target, list the exact manual
 steps and report them as **NOT VERIFIED** — never imply a check you didn't run.
 
