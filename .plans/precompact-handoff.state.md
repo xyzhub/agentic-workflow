@@ -76,17 +76,21 @@ before execution starts._
 
 ## Closing
 
-- [ ] version bumped + stamped · added 2026-10-20 (planner, pre-merge) — do: bump `plugins/agentic-workflow/.claude-plugin/plugin.json` and `plugins/agentic-workflow/package.json` `version` to 1.68.0 (§10 Version pin) and stamp this mission's CHANGELOG entry with it — when: this mission's CHANGELOG entry names a version — probe: `grep '"version"' plugins/agentic-workflow/.claude-plugin/plugin.json plugins/agentic-workflow/package.json`
-- [ ] docs/record synced · added 2026-10-20 (planner, pre-merge) — do: CHANGELOG `[1.68.0]` entry, README sentence, `templates/WORKFLOW.md` hook rows + §3/§6.2 prose, `commands/doctor.md` row, `commands/handoff.md` + `templates/session-handoff.md` name the local canonical file — when: those are on the branch and `node tools/lint.mjs` is clean — probe: `grep -n "1.68.0" CHANGELOG.md` + `grep -c "Pre-compact snapshot\|Handoff gate" plugins/agentic-workflow/templates/WORKFLOW.md`
-- [ ] live-verify at 400k · added 2026-10-20 (planner, post-merge) — do: promote to `.plans/OBLIGATIONS.md` as OB-32 verbatim (text in `.plans/precompact-handoff.sessions.md` S1 Do 10): a real session on orderly-agents with `CLAUDE_CODE_AUTO_COMPACT_WINDOW=400000` auto-compacts, the snapshot exists under the git dir, compact-resume names it, the doctor row is green, the observed auto-compact point is recorded against `DEFAULT_WINDOW`/`DEFAULT_PCT` — when: v1.68.0 is installed from `main` (plugin update + reload, after the merge) — probe: manual
-- [ ] branch + worktree cleanup · added 2026-10-20 (planner, post-merge) — do: delete `feat/precompact-handoff` (local and remote) and prune any stale worktree — when: the feature PR is merged into `main` — probe: `gh pr list --state merged --head feat/precompact-handoff`
-- [ ] repo WORKFLOW sync · added 2026-10-20 (planner, post-merge) — do: run `/agentic-workflow:sync` on this repo so `docs/WORKFLOW.md` carries the new hook rows at stamp v1.68.0 (OQ-3) — when: v1.68.0 is installed and the feature PR is merged — probe: `grep -c "protocol-master: v1.68.0" docs/WORKFLOW.md`
+- [x] version bumped + stamped · added 2026-10-20 (planner, pre-merge) — do: bump `plugins/agentic-workflow/.claude-plugin/plugin.json` and `plugins/agentic-workflow/package.json` `version` to 1.68.0 (§10 Version pin) and stamp this mission's CHANGELOG entry with it — when: this mission's CHANGELOG entry names a version — probe: `grep '"version"' plugins/agentic-workflow/.claude-plugin/plugin.json plugins/agentic-workflow/package.json` · fired 2026-10-22 (1.68.0 in plugin.json + package.json, CHANGELOG [1.68.0], merged in PR #165)
+- [x] docs/record synced · added 2026-10-20 (planner, pre-merge) — do: CHANGELOG `[1.68.0]` entry, README sentence, `templates/WORKFLOW.md` hook rows + §3/§6.2 prose, `commands/doctor.md` row, `commands/handoff.md` + `templates/session-handoff.md` name the local canonical file — when: those are on the branch and `node tools/lint.mjs` is clean — probe: `grep -n "1.68.0" CHANGELOG.md` + `grep -c "Pre-compact snapshot\|Handoff gate" plugins/agentic-workflow/templates/WORKFLOW.md` · fired 2026-10-22 (CHANGELOG, README, templates/WORKFLOW.md, doctor.md, handoff.md, session-handoff.md updated in PR #165 (ckpt-s1 DX 3/3))
+- [~] live-verify at 400k · added 2026-10-20 (planner, post-merge) — do: promote to `.plans/OBLIGATIONS.md` as OB-32 verbatim (text in `.plans/precompact-handoff.sessions.md` S1 Do 10): a real session on orderly-agents with `CLAUDE_CODE_AUTO_COMPACT_WINDOW=400000` auto-compacts, the snapshot exists under the git dir, compact-resume names it, the doctor row is green, the observed auto-compact point is recorded against `DEFAULT_WINDOW`/`DEFAULT_PCT` — when: v1.68.0 is installed from `main` (plugin update + reload, after the merge) — probe: manual → OB-32
+- [x] branch + worktree cleanup · added 2026-10-20 (planner, post-merge) — do: delete `feat/precompact-handoff` (local and remote) and prune any stale worktree — when: the feature PR is merged into `main` — probe: `gh pr list --state merged --head feat/precompact-handoff` · fired 2026-10-22 (PR #165 merged 2026-10-21, main CI green at 93264fb; feat/precompact-handoff deleted local + remote, worktree prune)
+- [~] repo WORKFLOW sync · added 2026-10-20 (planner, post-merge) — do: run `/agentic-workflow:sync` on this repo so `docs/WORKFLOW.md` carries the new hook rows at stamp v1.68.0 (OQ-3) — when: v1.68.0 is installed and the feature PR is merged — probe: `grep -c "protocol-master: v1.68.0" docs/WORKFLOW.md` → OB-33
+
+Closed: 2026-10-22
 
 ## Deviations
 
 (none)
 
 ## Handoff log (newest first)
+
+- 2026-10-22 Closed out: PR #165 merged 2026-10-21 (v1.68.0, main CI green 93264fb). Sessions used 1 / Estimate 1. Pre-merge Closing rows were fired late (at bookkeeping, not before ckpt-s1) — process miss, evidence from the merged PR. Live check → OB-32; repo WORKFLOW sync → promoted.
 
 - 2026-10-21 CI green on e371d32 (lint run 39618874948); PR #165 opened to main, awaiting owner merge
 
@@ -96,4 +100,4 @@ before execution starts._
 
 - 2026-10-20 planned: trio authored from `docs/product/decisions/2026-10-20-precompact-handoff-brief.md`; branch `feat/precompact-handoff` at 92c886b; OQ-1..3 to the owner before S1.
 
-Next up: owner merges PR #165 → bookkeeping PR (settle, OB-32 stays open until live check)
+Next up: none — mission closed
