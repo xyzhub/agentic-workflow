@@ -14,8 +14,8 @@ everything since the last one — §12 LA-6)._
 
 Status: active
 
-Estimate: 1 session
-Sessions used: 1
+Estimate: 2 sessions
+Sessions used: 2
 Reviewer runs: 3
 
 _The budget lines above are read by the mission-budget hook every turn.
@@ -90,10 +90,12 @@ before execution starts._
 
 ## Handoff log (newest first)
 
+- 2026-10-22 ckpt-s1 REQUEST CHANGES (Fable): blocking 1 banner branch bypasses error/irreversible gates, 2 secret typing lacks origin/field binding, 3 AUTH.md $VAR resolves any env var; advisories 4–9. Scorecard Sec 1 · QA 2 · DX 3 · Eff 3 · Arch 2. LOCKED 2026-10-23 (owner): "Fix it: 1 more session" — Estimate revised 1 → 2; S1-fix runs blockers 1–3 + advisories 4–7 (+8 min-length refusal)
+
 - 2026-10-22 S1 done: browse-test 69/69 (70 with live Chrome smoke, temp profile removed), lint clean, plugin validate passed; CI pinned to Node 22 (setup-node v7.1.0 by SHA) so browser tests can't silently skip; OB-34 appended; ckpt-s1 Fable reviewer spawned on origin/main..HEAD
 
 - 2026-10-23 plan-judge REVISE folded: `step` never resolves secrets (exit 3 `needs_secret`); secrets resolved once into a vault closure that builds `redact()` (raw/URL/HTML forms); two-sided secret test via the driver's act log; live smoke on `BROWSE_PROFILE_DIR` tmp dir + mock-keychain/basic-store/no-extensions flags; `--trace` in the worktree refused; `BROWSE_FAKE_NODE` loopback-gated; OQ-2 locked (feat from plan branch); OQ-1 still with the owner.
 
 - 2026-10-23 planned: trio authored from `docs/product/decisions/2026-10-23-jev-browser-brief.md` + memos D1/D2-CDP/D3/D4/D5/D7 + counsel #3/#4/#5/#6/#8; build branch `feat/jev-browser` from main 495bcc2; OQ-1..2 to the owner before S1.
 
-Next up: ckpt-s1 (Fable reviewer in flight)
+Next up: S1-fix (corrective) → narrow ckpt-s1 re-review → push → CI → PR
