@@ -1,0 +1,77 @@
+{
+ "source": "captured with `browse.mjs snapshot --json` from headless Google Chrome, 2026-10-23 (origin rewritten to http://fixture.test)",
+ "url": "http://fixture.test/cookie-banner.html",
+ "title": "News — Fixture",
+ "text": "Weekly news Subscribe to get the weekly digest. Subscribe Read more We use cookies to improve this site. Accept all Reject all",
+ "viewport": {
+  "w": 756,
+  "h": 469
+ },
+ "scrollY": 0,
+ "elements": [
+  {
+   "index": 0,
+   "role": "button",
+   "label": "Subscribe",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 40,
+    "y": 133,
+    "w": 75,
+    "h": 21
+   },
+   "inViewport": true,
+   "formControl": false
+  },
+  {
+   "index": 1,
+   "role": "link",
+   "label": "Read more",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 119,
+    "y": 133,
+    "w": 78,
+    "h": 18
+   },
+   "inViewport": true,
+   "formControl": false
+  },
+  {
+   "index": 2,
+   "role": "button",
+   "label": "Accept all",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 16,
+    "y": 432,
+    "w": 74,
+    "h": 21
+   },
+   "inViewport": true,
+   "formControl": false
+  },
+  {
+   "index": 3,
+   "role": "button",
+   "label": "Reject all",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 94,
+    "y": 432,
+    "w": 71,
+    "h": 21
+   },
+   "inViewport": true,
+   "formControl": false
+  }
+ ]
+}

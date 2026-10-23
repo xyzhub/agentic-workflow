@@ -1,0 +1,46 @@
+{
+ "source": "captured with `browse.mjs snapshot --json` from headless Google Chrome, 2026-10-23 (origin rewritten to http://fixture.test)",
+ "url": "http://fixture.test/wizard.html?step=3",
+ "title": "Setup wizard — Fixture",
+ "text": "Set up your account Step 3 of 3 — Terms I agree to the terms Finish",
+ "viewport": {
+  "w": 756,
+  "h": 469
+ },
+ "scrollY": 0,
+ "elements": [
+  {
+   "index": 0,
+   "role": "checkbox",
+   "label": "I agree to the terms",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 44,
+    "y": 150,
+    "w": 13,
+    "h": 13
+   },
+   "inViewport": true,
+   "formControl": true,
+   "checked": false
+  },
+  {
+   "index": 1,
+   "role": "button",
+   "label": "Finish",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 40,
+    "y": 182,
+    "w": 52,
+    "h": 21
+   },
+   "inViewport": true,
+   "formControl": false
+  }
+ ]
+}

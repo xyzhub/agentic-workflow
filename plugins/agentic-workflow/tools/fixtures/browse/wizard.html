@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Setup wizard — Fixture</title>
+<style>body{font:16px system-ui;margin:40px}section{display:none}section.on{display:block}label{display:block;margin:8px 0}</style></head>
+<body>
+<h1>Set up your account</h1>
+<section id="s1"><h2>Step 1 of 3 — Your name</h2>
+  <label for="name">Full name</label><input id="name" type="text">
+  <p><button onclick="location.search='?step=2'">Continue</button></p></section>
+<section id="s2"><h2>Step 2 of 3 — Plan</h2>
+  <label for="plan">Billing plan</label>
+  <select id="plan"><option value="">Choose…</option><option value="monthly">Monthly</option><option value="annual">Annual</option></select>
+  <p><button onclick="location.search='?step=3'">Continue</button></p></section>
+<section id="s3"><h2>Step 3 of 3 — Terms</h2>
+  <label><input id="agree" type="checkbox"> I agree to the terms</label>
+  <p><button onclick="location.search='?step=done'">Finish</button></p></section>
+<section id="sdone"><h2>All set</h2><p>Your account is ready.</p></section>
+<script>
+const step = new URLSearchParams(location.search).get('step') || '1';
+document.getElementById(step === 'done' ? 'sdone' : 's' + step).classList.add('on');
+</script>
+</body></html>

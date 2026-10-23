@@ -1,0 +1,53 @@
+[
+ {
+  "answers": {
+   "operation": {
+    "choice": "TYPE",
+    "confidence": 0.97,
+    "probabilities": {
+     "CLICK": 0.0025,
+     "TYPE": 0.98,
+     "SELECT": 0.0025,
+     "SCROLL_UP": 0.0025,
+     "SCROLL_DOWN": 0.0025,
+     "ENTER": 0.0025,
+     "WAIT": 0.0025,
+     "DONE": 0.0025,
+     "BLOCKED": 0.0025
+    }
+   },
+   "type_target": {
+    "choice": "[0] textbox Full name",
+    "confidence": 0.98,
+    "probabilities": {
+     "[0] textbox Full name": 0.99
+    }
+   },
+   "type_value": {
+    "choice": "none",
+    "confidence": 0.9,
+    "probabilities": {
+     "none": 0.91
+    }
+   },
+   "done": {
+    "probability": 0.03
+   },
+   "irreversible": {
+    "probability": 0.03
+   },
+   "bot_check": {
+    "probability": 0.03
+   },
+   "cookie_banner": {
+    "probability": 0.03
+   },
+   "error": {
+    "probability": 0.03
+   }
+  },
+  "usage": {
+   "input_tokens": 1100
+  }
+ }
+]

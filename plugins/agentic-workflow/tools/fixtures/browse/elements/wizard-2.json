@@ -1,0 +1,63 @@
+{
+ "source": "captured with `browse.mjs snapshot --json` from headless Google Chrome, 2026-10-23 (origin rewritten to http://fixture.test)",
+ "url": "http://fixture.test/wizard.html?step=2",
+ "title": "Setup wizard — Fixture",
+ "text": "Set up your account Step 2 of 3 — Plan Billing plan Choose… Monthly Annual Continue",
+ "viewport": {
+  "w": 756,
+  "h": 469
+ },
+ "scrollY": 0,
+ "elements": [
+  {
+   "index": 0,
+   "role": "combobox",
+   "label": "Billing plan",
+   "ops": [
+    "SELECT"
+   ],
+   "rect": {
+    "x": 40,
+    "y": 174,
+    "w": 78,
+    "h": 19
+   },
+   "inViewport": true,
+   "formControl": true,
+   "value": "Choose…",
+   "options": [
+    {
+     "index": 0,
+     "label": "Choose…",
+     "value": ""
+    },
+    {
+     "index": 1,
+     "label": "Monthly",
+     "value": "monthly"
+    },
+    {
+     "index": 2,
+     "label": "Annual",
+     "value": "annual"
+    }
+   ]
+  },
+  {
+   "index": 1,
+   "role": "button",
+   "label": "Continue",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 40,
+    "y": 209,
+    "w": 69,
+    "h": 21
+   },
+   "inViewport": true,
+   "formControl": false
+  }
+ ]
+}

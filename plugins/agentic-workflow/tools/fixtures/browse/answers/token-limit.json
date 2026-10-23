@@ -1,0 +1,43 @@
+[
+ {
+  "http": 400,
+  "body": "{\"error\":\"input exceeds the token limit\"}"
+ },
+ {
+  "answers": {
+   "operation": {
+    "choice": "WAIT",
+    "confidence": 0.3,
+    "probabilities": {
+     "CLICK": 0.0862,
+     "TYPE": 0.0862,
+     "SELECT": 0.0862,
+     "SCROLL_UP": 0.0862,
+     "SCROLL_DOWN": 0.0862,
+     "ENTER": 0.0862,
+     "WAIT": 0.31,
+     "DONE": 0.0862,
+     "BLOCKED": 0.0862
+    }
+   },
+   "done": {
+    "probability": 0.03
+   },
+   "irreversible": {
+    "probability": 0.03
+   },
+   "bot_check": {
+    "probability": 0.03
+   },
+   "cookie_banner": {
+    "probability": 0.03
+   },
+   "error": {
+    "probability": 0.03
+   }
+  },
+  "usage": {
+   "input_tokens": 1100
+  }
+ }
+]

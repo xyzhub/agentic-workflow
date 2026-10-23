@@ -1,0 +1,53 @@
+[
+ {
+  "answers": {
+   "operation": {
+    "choice": "CLICK",
+    "confidence": 0.97,
+    "probabilities": {
+     "CLICK": 0.98,
+     "TYPE": 0.002,
+     "SELECT": 0.002,
+     "SCROLL_UP": 0.002,
+     "SCROLL_DOWN": 0.002,
+     "ENTER": 0.002,
+     "WAIT": 0.002,
+     "DONE": 0.002,
+     "BLOCKED": 0.002
+    }
+   },
+   "click_target": {
+    "choice": "[0] button Delete account",
+    "confidence": 0.95,
+    "probabilities": {
+     "[0] button Delete account": 0.96
+    }
+   },
+   "banner_target": {
+    "choice": "[0] button Delete account",
+    "confidence": 0.95,
+    "probabilities": {
+     "[0] button Delete account": 0.96
+    }
+   },
+   "done": {
+    "probability": 0.03
+   },
+   "irreversible": {
+    "probability": 0.99
+   },
+   "bot_check": {
+    "probability": 0.03
+   },
+   "cookie_banner": {
+    "probability": 0.9
+   },
+   "error": {
+    "probability": 0.03
+   }
+  },
+  "usage": {
+   "input_tokens": 1100
+  }
+ }
+]

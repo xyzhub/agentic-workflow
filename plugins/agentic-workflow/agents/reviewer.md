@@ -59,7 +59,10 @@ the threat was not closed.*
    seed-stale AUTH.md is a DX finding. Your concrete path is **Bash-driven
    Playwright**: the project's browser test tooling if present, else a throwaway
    `npx playwright` script that starts the app, drives the changed flow, and
-   captures the console. If that's impossible in this environment, report the
+   captures the console. If `TYPESAFE_API_KEY` is set, prefer `node
+   ${CLAUDE_PLUGIN_ROOT}/tools/browse.mjs run …` (skill `browse`: one short goal
+   per page/form, secrets by reference); exit 2 → verify yourself; exit 5/6 →
+   the Playwright path above. If that's impossible in this environment, report the
    items as **NOT VERIFIED** with the exact manual steps — per the output rule,
    silence reads as "checked".
 4. **Datastore hygiene**: if the work touched data, restore seeded state and

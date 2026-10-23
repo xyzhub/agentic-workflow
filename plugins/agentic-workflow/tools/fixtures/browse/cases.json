@@ -1,0 +1,429 @@
+{
+ "answers": "synthetic (no key on the build machine, 2026-10-23) — F1-shaped Jev answers written by hand; they prove gate plumbing, not accuracy (live numbers: OB-34)",
+ "elements": "captured with `browse.mjs snapshot --json` from headless Google Chrome (temp profile), 2026-10-23",
+ "cases": [
+  {
+   "name": "login",
+   "fixture": "login.html",
+   "start": "login",
+   "goal": "sign in as {{secret:alice.login}} with password {{secret:alice.password}}",
+   "args": [
+    "--until-text",
+    "Welcome back",
+    "--origin",
+    "http://fixture.test"
+   ],
+   "transitions": [
+    {
+     "op": "CLICK",
+     "label": "Sign in",
+     "to": "login-done"
+    }
+   ],
+   "expected": [
+    {
+     "op": "TYPE",
+     "label": "Email"
+    },
+    {
+     "op": "TYPE",
+     "label": "Password"
+    },
+    {
+     "op": "CLICK",
+     "label": "Sign in"
+    }
+   ],
+   "exit": 0
+  },
+  {
+   "name": "login-jev",
+   "fixture": "login.html",
+   "start": "login",
+   "goal": "sign in as {{secret:alice.login}} with password {{secret:alice.password}}",
+   "args": [
+    "--origin",
+    "http://fixture.test"
+   ],
+   "transitions": [
+    {
+     "op": "CLICK",
+     "label": "Sign in",
+     "to": "login-done"
+    }
+   ],
+   "expected": [
+    {
+     "op": "TYPE",
+     "label": "Email"
+    },
+    {
+     "op": "TYPE",
+     "label": "Password"
+    },
+    {
+     "op": "CLICK",
+     "label": "Sign in"
+    }
+   ],
+   "exit": 0
+  },
+  {
+   "name": "login-unverified",
+   "fixture": "login.html",
+   "start": "login",
+   "goal": "sign in as {{secret:alice.login}} with password {{secret:alice.password}}",
+   "args": [
+    "--until-text",
+    "Admin console",
+    "--origin",
+    "http://fixture.test"
+   ],
+   "transitions": [
+    {
+     "op": "CLICK",
+     "label": "Sign in",
+     "to": "login-done"
+    }
+   ],
+   "expected": [
+    {
+     "op": "TYPE",
+     "label": "Email"
+    },
+    {
+     "op": "TYPE",
+     "label": "Password"
+    },
+    {
+     "op": "CLICK",
+     "label": "Sign in"
+    }
+   ],
+   "exit": 2,
+   "reason": "done-unverified"
+  },
+  {
+   "name": "cookie",
+   "fixture": "cookie-banner.html",
+   "start": "cookie-banner",
+   "goal": "subscribe to the weekly digest",
+   "args": [
+    "--until-text",
+    "Subscribed"
+   ],
+   "transitions": [
+    {
+     "op": "CLICK",
+     "label": "Accept all",
+     "to": "cookie-banner-dismissed"
+    },
+    {
+     "op": "CLICK",
+     "label": "Subscribe",
+     "to": "cookie-banner-done"
+    }
+   ],
+   "expected": [
+    {
+     "op": "CLICK",
+     "label": "Accept all"
+    },
+    {
+     "op": "CLICK",
+     "label": "Subscribe"
+    }
+   ],
+   "exit": 0
+  },
+  {
+   "name": "wizard-name",
+   "fixture": "wizard.html",
+   "start": "wizard-1",
+   "goal": "enter the name \"Jane Doe\" and continue",
+   "args": [
+    "--until-text",
+    "Step 2 of 3"
+   ],
+   "transitions": [
+    {
+     "op": "CLICK",
+     "label": "Continue",
+     "to": "wizard-2"
+    }
+   ],
+   "expected": [
+    {
+     "op": "TYPE",
+     "label": "Full name"
+    },
+    {
+     "op": "CLICK",
+     "label": "Continue"
+    }
+   ],
+   "exit": 0
+  },
+  {
+   "name": "wizard-plan",
+   "fixture": "wizard.html",
+   "start": "wizard-2",
+   "goal": "choose the \"Annual\" plan and continue",
+   "args": [
+    "--until-text",
+    "Step 3 of 3"
+   ],
+   "transitions": [
+    {
+     "op": "CLICK",
+     "label": "Continue",
+     "to": "wizard-3"
+    }
+   ],
+   "expected": [
+    {
+     "op": "SELECT",
+     "label": "Billing plan"
+    },
+    {
+     "op": "CLICK",
+     "label": "Continue"
+    }
+   ],
+   "exit": 0
+  },
+  {
+   "name": "wizard-terms",
+   "fixture": "wizard.html",
+   "start": "wizard-3",
+   "goal": "agree to the terms and finish",
+   "args": [
+    "--until-text",
+    "Your account is ready"
+   ],
+   "transitions": [
+    {
+     "op": "CLICK",
+     "label": "Finish",
+     "to": "wizard-done"
+    }
+   ],
+   "expected": [
+    {
+     "op": "CLICK",
+     "label": "I agree to the terms"
+    },
+    {
+     "op": "CLICK",
+     "label": "Finish"
+    }
+   ],
+   "exit": 0
+  },
+  {
+   "name": "big",
+   "fixture": "big.html",
+   "start": "big",
+   "goal": "click \"Save notification settings\"",
+   "args": [
+    "--until-text",
+    "Saved."
+   ],
+   "transitions": [
+    {
+     "op": "SCROLL_DOWN",
+     "to": "big-scrolled"
+    },
+    {
+     "op": "CLICK",
+     "label": "Save notification settings",
+     "to": "big-done"
+    }
+   ],
+   "expected": [
+    {
+     "op": "SCROLL_DOWN",
+     "label": null
+    },
+    {
+     "op": "CLICK",
+     "label": "Save notification settings"
+    }
+   ],
+   "exit": 0
+  },
+  {
+   "name": "irreversible",
+   "fixture": "irreversible.html",
+   "start": "irreversible",
+   "goal": "delete my account",
+   "args": [],
+   "expected": [],
+   "exit": 4,
+   "reason": "irreversible"
+  },
+  {
+   "name": "irreversible-allowed",
+   "fixture": "irreversible.html",
+   "start": "irreversible",
+   "goal": "delete my account",
+   "args": [
+    "--allow-irreversible"
+   ],
+   "expected": [
+    {
+     "op": "CLICK",
+     "label": "Delete account"
+    }
+   ],
+   "exit": 0
+  },
+  {
+   "name": "error",
+   "fixture": "error.html",
+   "start": "error",
+   "goal": "place the order",
+   "args": [],
+   "expected": [],
+   "exit": 3,
+   "reason": "error"
+  },
+  {
+   "name": "stuck",
+   "fixture": "error.html",
+   "start": "error",
+   "goal": "retry the checkout",
+   "args": [],
+   "expected": [
+    {
+     "op": "CLICK",
+     "label": "Retry"
+    },
+    {
+     "op": "CLICK",
+     "label": "Retry"
+    }
+   ],
+   "exit": 3,
+   "reason": "stuck"
+  },
+  {
+   "name": "low-confidence",
+   "fixture": "error.html",
+   "start": "error",
+   "goal": "retry the checkout",
+   "args": [],
+   "expected": [],
+   "exit": 3,
+   "reason": "low_confidence"
+  },
+  {
+   "name": "bot",
+   "fixture": "error.html",
+   "start": "error",
+   "goal": "retry the checkout",
+   "args": [],
+   "expected": [],
+   "exit": 3,
+   "reason": "bot"
+  },
+  {
+   "name": "needs-value",
+   "fixture": "wizard.html",
+   "start": "wizard-1",
+   "goal": "fill in the name and continue",
+   "args": [],
+   "expected": [],
+   "exit": 3,
+   "reason": "needs_value"
+  },
+  {
+   "name": "jev-down",
+   "fixture": "login.html",
+   "start": "login",
+   "goal": "sign in",
+   "args": [],
+   "expected": [],
+   "exit": 5,
+   "reason": "jev"
+  },
+  {
+   "name": "token-limit",
+   "fixture": "big.html",
+   "start": "big",
+   "goal": "click \"Save notification settings\"",
+   "args": [],
+   "expected": [],
+   "exit": 3,
+   "reason": "low_confidence"
+  },
+  {
+   "name": "max-steps",
+   "fixture": "error.html",
+   "start": "error",
+   "goal": "wait for the page",
+   "args": [
+    "--max-steps",
+    "2"
+   ],
+   "expected": [
+    {
+     "op": "WAIT",
+     "label": null
+    },
+    {
+     "op": "WAIT",
+     "label": null
+    }
+   ],
+   "exit": 3,
+   "reason": "max_steps"
+  },
+  {
+   "name": "banner-irreversible",
+   "fixture": "irreversible.html",
+   "start": "irreversible",
+   "goal": "dismiss the cookie banner",
+   "args": [],
+   "expected": [],
+   "exit": 3,
+   "reason": "low_confidence"
+  },
+  {
+   "name": "secret-cross-origin",
+   "fixture": "login.html",
+   "start": "login-evil",
+   "goal": "sign in as {{secret:alice.login}} with password {{secret:alice.password}}",
+   "args": [
+    "--url",
+    "http://fixture.test/login.html"
+   ],
+   "expected": [],
+   "exit": 3,
+   "reason": "needs_secret"
+  },
+  {
+   "name": "secret-wrong-field",
+   "fixture": "login.html",
+   "start": "login",
+   "goal": "sign in as {{secret:alice.login}} with password {{secret:alice.password}}",
+   "args": [
+    "--origin",
+    "http://fixture.test"
+   ],
+   "expected": [],
+   "exit": 3,
+   "reason": "needs_secret"
+  },
+  {
+   "name": "unknown-shape",
+   "fixture": "error.html",
+   "start": "error",
+   "goal": "retry the checkout",
+   "args": [],
+   "expected": [],
+   "exit": 3,
+   "reason": "error"
+  }
+ ]
+}

@@ -20,6 +20,8 @@ smoke, and the `frontend`/`backend` live-verify steps._
 - **Anything real is an env-var NAME, never a value** (`$STAGING_ADMIN_PW`),
   same rule as the §12 owner-channel row. **Production credentials never
   appear here in any form.**
+- The `browse` tool types only env NAMES matching `TEST_*`, `BROWSE_TEST_*`
+  or `*_TEST_PASSWORD` (e.g. `$TEST_ADMIN_PW`); any other name is refused.
 - Rewrite rows in place when seeds change (§6.1 conventions discipline — the
   seed anchor makes staleness checkable); a session that changes a seed
   updates this file in the same PR.

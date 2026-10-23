@@ -126,6 +126,9 @@ flow, capture console messages, assert on them) — a clean console means no
 hydration mismatch and no errors. If neither is possible in this environment,
 list the exact manual steps as explicit **NOT VERIFIED** items for the
 checkpoint's live verification — never imply a browser check you didn't run.
+If `TYPESAFE_API_KEY` is set, prefer `node ${CLAUDE_PLUGIN_ROOT}/tools/browse.mjs run …`
+(skill `browse`: one short goal per page/form, secrets by reference); exit 2 →
+verify yourself; exit 5/6 → the Playwright path above.
 Then stop:
 - return a **bounded** hand-off (§6.2): what changed (paths), what you verified
   in-browser (the signal), and what still needs an independent reviewer or a

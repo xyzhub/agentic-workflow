@@ -1,0 +1,45 @@
+{
+ "source": "captured with `browse.mjs snapshot --json` from headless Google Chrome, 2026-10-23 (origin rewritten to http://fixture.test)",
+ "url": "http://fixture.test/error.html",
+ "title": "Checkout — Fixture",
+ "text": "Checkout Something went wrong (error 500). Your order was not placed. Retry Back to cart",
+ "viewport": {
+  "w": 756,
+  "h": 469
+ },
+ "scrollY": 0,
+ "elements": [
+  {
+   "index": 0,
+   "role": "button",
+   "label": "Retry",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 40,
+    "y": 133,
+    "w": 48,
+    "h": 21
+   },
+   "inViewport": true,
+   "formControl": false
+  },
+  {
+   "index": 1,
+   "role": "link",
+   "label": "Back to cart",
+   "ops": [
+    "CLICK"
+   ],
+   "rect": {
+    "x": 92,
+    "y": 133,
+    "w": 87,
+    "h": 18
+   },
+   "inViewport": true,
+   "formControl": false
+  }
+ ]
+}
