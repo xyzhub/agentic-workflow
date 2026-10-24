@@ -8,6 +8,17 @@ has no tags — each version-stamped commit on `main` IS the release.
 
 _(empty)_
 
+## [1.69.1] — 2026-10-25
+### Fixed — handoff gate blocked at 39 % context
+- **`hooks/lib/handoff-lib.sh` `hl_tokens`** read token usage only from the
+  transcript's last 256 KiB. Large tool results and subagent hand-backs can
+  sit 300–700 KB past the last assistant usage line, so the read came back
+  empty and the gate fell back to the byte bands — a 16.7 MB transcript at
+  ~390k of 1M tokens was blocked as "urgent". The read now widens to the last
+  8 MiB (~0.4 s of jq, inside the gate's 5 s timeout) before falling back to
+  bytes. Regression test in `tools/hook-test.mjs` (red on the old lib, green
+  on the fix).
+
 ## [1.69.0] — 2026-10-23
 ### Added — fast, accurate browser use (Jev)
 - **`tools/browse.mjs`** (zero deps, Node ≥ 22): `run` drives a short goal

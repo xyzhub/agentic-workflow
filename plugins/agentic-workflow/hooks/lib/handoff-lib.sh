@@ -20,8 +20,11 @@
 #   hl_tokens TRANSCRIPT  → context tokens in use: the LAST non-sidechain
 #                           `assistant` line's .message.usage (input_tokens +
 #                           cache_read_input_tokens + cache_creation_input_tokens)
-#                           within the transcript's last 256 KiB; empty on ANY
-#                           failure (no jq, no usage line, shape drift).
+#                           within the transcript's last 256 KiB, widened to the
+#                           last 8 MiB when that tail holds none (big tool results
+#                           and subagent hand-backs can sit 300–700 KB past the
+#                           last usage line); empty on ANY failure (no jq, no
+#                           usage line, shape drift).
 #   hl_threshold          → the auto-compact point in tokens:
 #                           CLAUDE_CODE_AUTO_COMPACT_WINDOW (else HL_DEFAULT_WINDOW)
 #                           × CLAUDE_AUTOCOMPACT_PCT_OVERRIDE (else HL_DEFAULT_PCT) / 100.
@@ -70,7 +73,8 @@ HL_ADVISORY_PCT=70
 HL_URGENT_PCT=85
 HL_ADVISORY_BYTES=3700000 # = handoff-budget.sh ADVISORY_BYTES (harness pins both)
 HL_URGENT_BYTES=5380000   # = handoff-budget.sh URGENT_BYTES
-HL_TAIL_BYTES=262144      # token parse reads at most the last 256 KiB
+HL_TAIL_BYTES=262144      # token parse reads the last 256 KiB first …
+HL_TAIL_MAX_BYTES=8388608 # … then the last 8 MiB (~0.4 s jq) before bytes
 HL_REPARSE_BYTES=65536    # the gate re-parses only after ≥ 64 KiB of growth
 HL_FAIL_OPEN=6            # the 6th consecutive block degrades to a nudge (5 blocks)
 
@@ -162,13 +166,15 @@ hl_mput() {
 
 hl_tokens() {
   [ -f "$1" ] && [ -r "$1" ] || return 0
-  local t
-  t=$(tail -c "$HL_TAIL_BYTES" "$1" 2>/dev/null | jq -Rr '
-      fromjson? | select(type == "object" and .type == "assistant" and ((.isSidechain // false) | not))
-      | .message.usage | select(type == "object" and (.input_tokens | type) == "number")
-      | [.input_tokens, (.cache_read_input_tokens // 0), (.cache_creation_input_tokens // 0)]
-      | map(if type == "number" then . else 0 end) | add | floor' 2>/dev/null | tail -1)
-  hl_num "$t" && printf '%s' "$t"
+  local t n
+  for n in "$HL_TAIL_BYTES" "$HL_TAIL_MAX_BYTES"; do
+    t=$(tail -c "$n" "$1" 2>/dev/null | jq -Rr '
+        fromjson? | select(type == "object" and .type == "assistant" and ((.isSidechain // false) | not))
+        | .message.usage | select(type == "object" and (.input_tokens | type) == "number")
+        | [.input_tokens, (.cache_read_input_tokens // 0), (.cache_creation_input_tokens // 0)]
+        | map(if type == "number" then . else 0 end) | add | floor' 2>/dev/null | tail -1)
+    hl_num "$t" && { printf '%s' "$t"; return 0; }
+  done
 }
 
 hl_threshold() {

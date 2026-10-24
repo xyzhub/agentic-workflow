@@ -2313,6 +2313,16 @@ const CLOSING_NONE_DUE = {
     check('handoff gate: after PreCompact, the next call re-parses (cache dropped) — 90k tokens → not blocked', b.code === 2 && r.code === 0, `${why(b)} | ${why(r)}`);
   });
 
+  withDir((d) => { // a big tool result past the last usage line (> the 256 KiB first tail) still reads tokens, not bytes
+    const s = hsid('wide');
+    const t = 'x'.repeat(5_400_000) + '\n' + asst(390_000) + '\n'
+      + JSON.stringify({ type: 'user', message: { content: [{ type: 'tool_result', content: 'p'.repeat(700_000) }] } }) + '\n';
+    const r = gate(d, s, 'Bash', { command: 'ls' }, t);
+    const band = existsSync(mark(d, s, 'band')) ? readFileSync(mark(d, s, 'band'), 'utf8').trim().split(/\s+/) : [];
+    check('handoff gate: a 700 KB tool result after the last usage line → 390k tokens read (widened tail), not the 6 MB byte fallback → not blocked',
+      r.code === 0 && band[2] === 'tokens' && band[4] === '390000', `${why(r)} band=${band.join(' ')}`);
+  });
+
   // ── AC-4 token bands ──
   withDir((d) => {
     const at = (tokens, env, extra = {}) => gate(d, hsid('band'), 'Bash', { command: 'ls' }, mkTranscript({ tokens, ...extra }), env).code;
