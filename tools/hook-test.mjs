@@ -570,6 +570,53 @@ const GATED_CKPT_X = ledger(
         && hb.code === 0 && /Handoff budget/.test(hb.stdout),
       `stop=${JSON.stringify(stop.stdout)} pre=${JSON.stringify(pre.stdout)} cmp=${JSON.stringify(cmp.stdout)} hb=${JSON.stringify(hb.stdout)}`);
   }
+  // 20. Closed on the integration branch, open in this worktree (orderly,
+  //     2026-10): guest-theme-colors kept printing "session 7/7" after the
+  //     mission shipped — the feature worktree's copy predated the `Closed:`
+  //     stamp on v5. The default/§10 Staging branch's copy wins.
+  {
+    const d = mkdtempSync(path.join(tmpdir(), 'hooktest-up-'));
+    try {
+      const g = (...a) => spawnSync('git', ['-c', 'user.email=t@t', '-c', 'user.name=t', ...a], { cwd: d, encoding: 'utf8' });
+      g('init', '-q', '-b', 'main');
+      mkdirSync(path.join(d, '.plans')); mkdirSync(path.join(d, 'docs'));
+      writeFileSync(path.join(d, 'docs/WORKFLOW.md'), '| **Staging** | `v5` → https://staging.example.com |\n');
+      const open = 'Status: active\nEstimate: 7 sessions\nSessions used: 7\n- [ ] rendered check\nNext up: rendered check → merge → staging → promote\n';
+      writeFileSync(path.join(d, '.plans/gtc.state.md'), open);
+      g('add', '-A'); g('commit', '-qm', 'plan');
+      g('switch', '-qc', 'v5');
+      writeFileSync(path.join(d, '.plans/gtc.state.md'), open + 'Closed: 2026-10-20\n');
+      g('commit', '-qam', 'close');
+      g('switch', '-qc', 'feat/gtc', 'main');
+      const mb = () => runHook({ event: 'UserPromptSubmit', desc: MB, input: {}, dir: d });
+      const closedOnStaging = mb();
+      g('branch', '-D', 'v5');
+      const openEverywhere = mb();
+      check('mission-budget: ledger open in this worktree but `Closed:` on the §10 Staging branch → silent; open everywhere → status line',
+        closedOnStaging.code === 0 && closedOnStaging.stdout === '' && /🧵 Mission gtc — session 7\/7/.test(openEverywhere.stdout),
+        `closed=${JSON.stringify(closedOnStaging.stdout)} open=${JSON.stringify(openEverywhere.stdout)}`);
+    } finally { rmSync(d, { recursive: true, force: true }); }
+  }
+}
+
+// ── Router (D2): only a human prompt is nudged ────────────────────────────
+// orderly, 2026-10: the nudge fired on subagent hand-backs, task notifications,
+// peer messages and system notices — mostly false positives, so the
+// orchestrator learned to ignore it even when it was right.
+{
+  const route = (prompt) => runHook({ event: 'UserPromptSubmit', desc: 'Router (D2)', input: { prompt },
+    files: { 'docs/WORKFLOW.md': { content: '# x\n' } } }).stdout;
+  const skipped = {
+    task: '<task-notification>\n<task-id>a1</task-id>\n<summary>Apply fix and test</summary>\n</task-notification>',
+    system: '[SYSTEM NOTIFICATION - NOT USER INPUT]\n<task-notification><summary>build the feature</summary></task-notification>',
+    peer: 'Another Claude session sent a message:\n<cross-session-message from="bridge:session_x" from-name="orderly-next">Please fix the router nudge</cross-session-message>',
+    handback: '[Subagent hand-back] implemented the fix, tests pass',
+    reminder: '  <system-reminder>add a feature flag</system-reminder>',
+  };
+  const fired = Object.entries(skipped).filter(([, p]) => route(p) !== '').map(([k]) => k);
+  const human = route('please fix the login bug');
+  check('router: silent on task notifications, system notices, peer messages, subagent hand-backs and system reminders; a human work request still nudges',
+    fired.length === 0 && /looks like a work request/.test(human), `fired=${fired.join(',')} human=${JSON.stringify(human)}`);
 }
 
 // ── SessionStart:compact re-read directive ───────────────────────────────

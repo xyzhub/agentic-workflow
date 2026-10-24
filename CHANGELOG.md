@@ -19,6 +19,20 @@ _(empty)_
   bytes. Regression test in `tools/hook-test.mjs` (red on the old lib, green
   on the fix).
 
+### Fixed — hook noise reported by orderly-next
+- **Router nudge fired on non-owner turns** — task notifications, system
+  notices, cross-session peer messages, subagent hand-backs and system
+  reminders all tripped "This looks like a work request…" when they mentioned
+  a word like "fix", so the orchestrator learned to ignore it. The router now
+  stays silent on any prompt that opens with `<` or `[` or with the peer
+  preamble ("Another Claude session sent a message:").
+- **Mission status line showed a closed mission** — `active_ledger`
+  (`hooks/lib/active-ledger.sh`) read only the worktree's own copy, so a
+  feature worktree kept printing a mission stamped `Closed:` on the default or
+  §10 Staging branch. A `Closed:` stamp on either branch's copy (local or
+  origin ref) now stops it, for every hook that uses the predicate.
+- Tests for both (red on the old hooks, green on the fix).
+
 ## [1.69.0] — 2026-10-23
 ### Added — fast, accurate browser use (Jev)
 - **`tools/browse.mjs`** (zero deps, Node ≥ 22): `run` drives a short goal
