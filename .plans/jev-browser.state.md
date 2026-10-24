@@ -80,15 +80,19 @@ before execution starts._
 
 - [x] version bumped + stamped · added 2026-10-23 (planner, pre-merge) — do: bump `plugins/agentic-workflow/.claude-plugin/plugin.json` and `plugins/agentic-workflow/package.json` `version` to 1.69.0 (§10 Version pin) and stamp this mission's CHANGELOG entry with it — when: this mission's CHANGELOG entry names a version — probe: `grep '"version"' plugins/agentic-workflow/.claude-plugin/plugin.json plugins/agentic-workflow/package.json` · fired 2026-10-22 (plugin.json + package.json at 1.69.0, CHANGELOG [1.69.0] entry (S1 builder, verified by orchestrator grep))
 - [x] docs/record synced · added 2026-10-23 (planner, pre-merge) — do: CHANGELOG `[1.69.0]` entry, `skills/browse/SKILL.md`, the frontend/reviewer/researcher/marketing/business prompt lines, `templates/WORKFLOW.md` §10 Browser verification row + §3 clause, `commands/verify.md` clause, README row — when: those are on the branch and `node tools/lint.mjs` is clean — probe: `grep -n "1.69.0" CHANGELOG.md` + `grep -c "Browser verification" plugins/agentic-workflow/templates/WORKFLOW.md` + `test -f plugins/agentic-workflow/skills/browse/SKILL.md` · fired 2026-10-22 (CHANGELOG, skills/browse/SKILL.md, 5 agent prompts, templates/WORKFLOW.md §3+§10 row, commands/verify.md, README updated in S1; lint clean)
-- [ ] live-verify browse · added 2026-10-23 (planner, post-merge) — do: promote to `.plans/OBLIGATIONS.md` as OB-34 verbatim (text in `.plans/jev-browser.sessions.md` S1 Do 9): `browse.mjs doctor` against BrowserOS neo (paste its `tools/list`, note whether its debug port answers) and one live `run` with the key against a real login flow; record per-step Jev ms, hand-off rate, exit-2 rate, zero resolved secrets in the trace — when: v1.69.0 is installed from `main` (plugin update + reload, after the merge) — probe: manual → OB-34
-- [ ] branch + worktree cleanup · added 2026-10-23 (planner, post-merge) — do: delete `feat/jev-browser` and `plan/jev-browser` (local and remote) and prune any stale worktree — when: the feature PR is merged into `main` — probe: `gh pr list --state merged --head feat/jev-browser`
-- [ ] repo WORKFLOW sync · added 2026-10-23 (planner, post-merge) — do: run `/agentic-workflow:sync` on this repo so `docs/WORKFLOW.md` carries the §10 Browser verification row at stamp v1.69.0 (folds into OB-33's sync if that is still open) — when: v1.69.0 is installed and the feature PR is merged — probe: `grep -c "protocol-master: v1.69.0" docs/WORKFLOW.md`
+- [~] live-verify browse · added 2026-10-23 (planner, post-merge) — do: promote to `.plans/OBLIGATIONS.md` as OB-34 verbatim (text in `.plans/jev-browser.sessions.md` S1 Do 9): `browse.mjs doctor` against BrowserOS neo (paste its `tools/list`, note whether its debug port answers) and one live `run` with the key against a real login flow; record per-step Jev ms, hand-off rate, exit-2 rate, zero resolved secrets in the trace — when: v1.69.0 is installed from `main` (plugin update + reload, after the merge) — probe: manual → OB-34 → OB-34
+- [x] branch + worktree cleanup · added 2026-10-23 (planner, post-merge) — do: delete `feat/jev-browser` and `plan/jev-browser` (local and remote) and prune any stale worktree — when: the feature PR is merged into `main` — probe: `gh pr list --state merged --head feat/jev-browser` · fired 2026-10-24 (feat/jev-browser + plan/jev-browser deleted locally; remote heads already auto-deleted at merge of #167 (2bceb55); worktree list clean)
+- [~] repo WORKFLOW sync · added 2026-10-23 (planner, post-merge) — do: run `/agentic-workflow:sync` on this repo so `docs/WORKFLOW.md` carries the §10 Browser verification row at stamp v1.69.0 (folds into OB-33's sync if that is still open) — when: v1.69.0 is installed and the feature PR is merged — probe: `grep -c "protocol-master: v1.69.0" docs/WORKFLOW.md` → OB-33
+
+Closed: 2026-10-24
 
 ## Deviations
 
 (none)
 
 ## Handoff log (newest first)
+
+- 2026-10-24 PR #167 merged 2026-10-23 (2bceb55); branches deleted; live-verify → OB-34 (already promoted), repo WORKFLOW sync folds into OB-33; mission closed via bookkeeping PR
 
 - 2026-10-22 CI green on 253eeb0 (run 39869413852); PR opened to main, awaiting owner merge
 
@@ -106,4 +110,4 @@ before execution starts._
 
 - 2026-10-23 planned: trio authored from `docs/product/decisions/2026-10-23-jev-browser-brief.md` + memos D1/D2-CDP/D3/D4/D5/D7 + counsel #3/#4/#5/#6/#8; build branch `feat/jev-browser` from main 495bcc2; OQ-1..2 to the owner before S1.
 
-Next up: owner merges the PR → bookkeeping PR; OB-34 live check after install
+Next up: none — mission closed; owner follow-ups OB-33, OB-34
