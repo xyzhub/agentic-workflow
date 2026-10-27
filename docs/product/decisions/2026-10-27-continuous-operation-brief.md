@@ -206,3 +206,20 @@ proceed-smaller, Est 5). Counsel: `2026-10-27-continuous-operation-memos.md`
   committed); OQ-4 the model fidelity job runs on `workflow_dispatch` only with
   a `CLAUDE_CODE_OAUTH_TOKEN` CI secret; OQ-5 `feat/continuous-operation`
   branches from `plan/continuous-operation`. Start: later — the owner fires S0.
+
+## P0 probe record (2026-10-27)
+
+Facts only, `claude --version` = 2.1.311 (Claude Code) on the owner's Mac.
+(a)(b)(e) ran headless in scratch repos (evidence: `/private/tmp/claude-501/-Users-baker-Playground-venture-workflow-plugin/97ebcd45-20da-4a71-8662-bb06fec5cabc/scratchpad/probeA.Mnz1`,
+`probeB.4EPB`, `probeE.aP5D`); (b-background)(c) ran in the orchestrator's
+interactive session (auto permission mode). OB-32 is pending (owner on
+orderly-agents).
+
+| probe | invocation (verbatim) | observed | decides |
+|---|---|---|---|
+| (a) settings `env` → hooks | scratch `.claude/settings.json` `{"env":{"CLAUDE_CODE_AUTO_COMPACT_WINDOW":"400000"},"hooks":{"UserPromptSubmit":[…"env \| grep AUTO_COMPACT > $CLAUDE_PROJECT_DIR/probe-a.txt"…]}}`; `claude -p --max-budget-usd 0.50 "say ok"` | exit 0; probe-a.txt = `CLAUDE_CODE_AUTO_COMPACT_WINDOW=400000`; no trust/approval prompt, first run of a new session | reaches hooks: **yes** → S2 sets the 200k window via project settings `env`. A running session picking up a change: not tested (`-p` always starts fresh) |
+| (b) plugin-file reads | `claude -p --output-format stream-json --verbose --permission-mode acceptEdits --permission-prompts none --max-budget-usd 0.50 "Read <plugin root>/agents/reviewer.md lines 1-5 and print them"`; same via an Agent-tool subagent (foreground); and an interactive background Agent subagent reading the same lines | all three: read succeeded, `subtype:"success"`, `permission_denials:[]` | **no refusal** in 2.1.311 (incl. background subagent in auto mode). EGM's refusal was under default permissions → S2's plugin-read allow hook stays conditional on a refusal seen in the 24h run |
+| (c) wake path | interactive Bash `sleep 120; echo woke` with `run_in_background: true`, turn ended; repeat with `sleep 1200`; foreground `sleep 600` with `timeout: 600000` | 120 s: a new turn arrived ≈ 7 s after exit (05:28:18 → 05:28:25 UTC), no prompt; 1200 s: new turn ≈ 17 s after exit (05:48:30 → 05:48:47); foreground 600 s returned cleanly (05:28:46 → 05:38:46) | **child exit wakes the parent** → S2 `commands/run.md` uses background child + `runner.mjs wait` exit as the wake path (no CronCreate) |
+| (d) scheduled fire vs typed prompt | not run | could not verify: needs a UserPromptSubmit dump hook added to the live session's settings; not edited without the owner | does not change the design: L1 already accepts answers only from the channel transport, never from a prompt |
+| (e) `continue:false` under `-p` | scratch PreToolUse hook (matcher Bash) printing `{"continue":false,"stopReason":"probe"}`; `claude -p --output-format stream-json --verbose --max-budget-usd 0.50 "run ls"`; then "use the Agent tool to have a subagent run ls, then tell me what it reported" | direct: exit 0, `subtype:"success"`, `is_error:false`, `terminal_reason:"hook_stopped"`, stopReason text absent, and **`ls` still ran** before the stop; subagent: only the subagent stopped (parent got "ended without delivering a report"), parent resumed it and finished, exit 0 | S2 `handoff-gate.sh` unattended uses the **marker** + a blocking deny of the tool, not the JSON stop; the runner reads the LAST `result` event's `terminal_reason`, never `subtype` |
+| (f) budget flag | `claude --help \| grep -i budget` | `--max-budget-usd <amount>` | spelling confirmed |
