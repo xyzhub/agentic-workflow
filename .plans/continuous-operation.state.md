@@ -114,6 +114,8 @@ before execution starts._
 
 ## Handoff log (newest first)
 
+- 2026-10-27 S0 probes recorded in the brief (P0 probe record): (a) settings env reaches hooks; (b) no plugin-read refusal; (c) child exit wakes parent (7 s / 17 s); (d) not run (needs session settings edit; design unaffected); (e) continue:false does not block the tool, ends run with success + terminal_reason hook_stopped → marker + deny; (f) --max-budget-usd. OB-32 pending owner.
+
 - 2026-10-27 S0 started: feat/continuous-operation from plan/continuous-operation (OQ-5); probes (c)(d)(e-subagent) run by the orchestrator (they need an interactive session), (a)(b)(e -p)(f) by a devops agent in a scratch repo; OB-32 needs the owner on orderly-agents
 
 - 2026-10-27 plan-judge REVISE (5 fixes: §5 fence, resume never executed by parent, no account check, hook-test anchor, brief anchors) → planner revised once → narrow re-judge APPROVE (Fable)
