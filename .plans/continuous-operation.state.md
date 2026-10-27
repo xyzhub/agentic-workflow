@@ -15,10 +15,10 @@ everything since the last one — §12 LA-6). The docs are the source of truth
 decision docs and the handoff are the only memory a round or a resumed
 session rebuilds from._
 
-Status: planned
+Status: active
 
 Estimate: 6 sessions
-Sessions used: 0
+Sessions used: 1
 Reviewer runs: 1
 
 _The budget lines above are read by the mission-budget hook every turn.
@@ -73,7 +73,7 @@ value is a deviation. No API key reaches a child in v1 (L3).
 _Glyphs: `[ ]` not started · `[~]` in-flight / deferred / awaiting owner · `[x]`
 done (verified, not merely written)._
 
-- [ ] S0 — OB-32 fired on orderly-agents (four observations + `· fired` line; `HL_DEFAULT_PCT` corrected if the observed point disagrees); probes (a) settings env → hooks, (b) plugin-file reads in `-p` children and background subagents, (c) child-exit wake path + foreground `--max` fallback, (d) cron fire vs typed prompt, (e) `continue:false` under `-p` incl. the subagent case, (f) `--max-budget-usd` spelling — recorded as a `## P0 probe record` table in the brief with verbatim invocations; ckpt-s0 (Fable) APPROVE (branch `feat/continuous-operation`)
+- [~] S0 — OB-32 fired on orderly-agents (four observations + `· fired` line; `HL_DEFAULT_PCT` corrected if the observed point disagrees); probes (a) settings env → hooks, (b) plugin-file reads in `-p` children and background subagents, (c) child-exit wake path + foreground `--max` fallback, (d) cron fire vs typed prompt, (e) `continue:false` under `-p` incl. the subagent case, (f) `--max-budget-usd` spelling — recorded as a `## P0 probe record` table in the brief with verbatim invocations; ckpt-s0 (Fable) APPROVE (branch `feat/continuous-operation`)
 - [ ] S1 — `tools/runner.mjs` next/round/wait/stop/pause/resume/status with the exit contract (0/10/20/21/22/30/40/75/1), lock + stale reclaim, STOP file, daily 5M cap from reported usage, tick/mission/overrun parity with `mission-budget.sh` (shared fixture), idle backoff 5→15→60 + ≤4 operate/day, crash-loop stop on the 3rd, no-progress stop on the 2nd, `22 no-record` docs check, docs-only round prompt with the Docs-vs-code rule, `round:` line + `rounds/<n>.events.jsonl` 0600 under the git common dir; `tools/redact.mjs` (hl_redact parity + exact-value scrub + five-canary negative test); `templates/runner-config.json`; child env `UNATTENDED=1`, no `CHILD`, no `ANTHROPIC_API_KEY`; `headless.mjs run` on `roundOnce()`; `tools/runner-test.mjs` + lint `checkRunnerHarness`; ckpt-s1 APPROVE
 - [ ] S2 — `commands/run.md` thin parent (background wake or foreground `--max` per probe (c)); `hl_unattended`; unattended handoff gate fails CLOSED (JSON stop or marker per probe (e); never for an `Agent` block; managed byte-identical); `runner.mjs` → `21` + the one `handoff-failed` deviation write + the 1/2/3 ladder; compact-resume branch 3 unattended wording; `hl_threshold` effective window (env → settings env → autoCompactWindow → default); `handoff.md` managed copy; bootstrap/sync write settings `env` 200000 adopt-never-overwrite + §10 **Compaction window** row + doctor bullet; §6.2 `unattended-ask` fenced rule + 15 pointer sentences + `RULES` entry + lint-test cases; `plugin-read.sh` allow hook iff probe (b) showed refusals; hook-test block; ckpt-s2 APPROVE
 - [ ] S3 — `tools/fidelity.mjs` extract/compare/restate-prompt/score; fixtures (seed, handoff, ledger, rubric, six red cases incl. `window-mismatch` and `docs-only`); `tools/fidelity-test.mjs` paths (a) compaction via pre-compact + compact-resume and (b) restart via `roundPrompt`; all red cases red in one run; lint `checkFidelityHarness`; `.github/workflows/fidelity-model.yml` `workflow_dispatch` only, haiku, skip-green without the secret; ckpt-s3 APPROVE
@@ -113,6 +113,8 @@ before execution starts._
 (none)
 
 ## Handoff log (newest first)
+
+- 2026-10-27 S0 started: feat/continuous-operation from plan/continuous-operation (OQ-5); probes (c)(d)(e-subagent) run by the orchestrator (they need an interactive session), (a)(b)(e -p)(f) by a devops agent in a scratch repo; OB-32 needs the owner on orderly-agents
 
 - 2026-10-27 plan-judge REVISE (5 fixes: §5 fence, resume never executed by parent, no account check, hook-test anchor, brief anchors) → planner revised once → narrow re-judge APPROVE (Fable)
 
