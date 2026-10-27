@@ -199,3 +199,10 @@ proceed-smaller, Est 5). Counsel: `2026-10-27-continuous-operation-memos.md`
 - **L5 — Priority and gates:** next mission, ahead of xyz-rebrand and
   provider-adaptive; strict posture — a Fable checkpoint per phase + a security
   pass; the owner merges.
+- **L6 — Planner open questions OQ-1..5: "Accept all"** (owner, 2026-10-27).
+  OQ-1 an expired gate closes as `closed-expired` and a new gate opens — it
+  never counts as yes or no; OQ-2 runner config in `.claude/runner.json` plus
+  one §10 Runner row; OQ-3 runner state under the git common dir (never
+  committed); OQ-4 the model fidelity job runs on `workflow_dispatch` only with
+  a `CLAUDE_CODE_OAUTH_TOKEN` CI secret; OQ-5 `feat/continuous-operation`
+  branches from `plan/continuous-operation`. Start: later — the owner fires S0.
