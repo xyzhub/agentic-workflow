@@ -112,7 +112,6 @@ before execution starts._
 
 - 2026-10-29 build branch renamed `feat/continuous-operation` → `feat/continuous-op`: the "Lock branches" ruleset (all branches: verified signatures required, no force-push) rejected the branch's four unsigned commits; they were re-signed with the agent key (`git identity`, key `agent-xyzhub-agentic-workflow`) onto origin/main and pushed under the new name. Deleting the old remote branch needs the owner (blocked for the agent); it holds no unique work — reap it with the mission's branch cleanup.
 
-(none)
 
 ## Handoff log (newest first)
 
