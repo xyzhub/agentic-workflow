@@ -223,3 +223,33 @@ orderly-agents).
 | (d) scheduled fire vs typed prompt | not run | could not verify: needs a UserPromptSubmit dump hook added to the live session's settings; not edited without the owner | does not change the design: L1 already accepts answers only from the channel transport, never from a prompt |
 | (e) `continue:false` under `-p` | scratch PreToolUse hook (matcher Bash) printing `{"continue":false,"stopReason":"probe"}`; `claude -p --output-format stream-json --verbose --max-budget-usd 0.50 "run ls"`; then "use the Agent tool to have a subagent run ls, then tell me what it reported" | direct: exit 0, `subtype:"success"`, `is_error:false`, `terminal_reason:"hook_stopped"`, stopReason text absent, and **`ls` still ran** before the stop; subagent: only the subagent stopped (parent got "ended without delivering a report"), parent resumed it and finished, exit 0 | S2 `handoff-gate.sh` unattended uses the **marker** + a blocking deny of the tool, not the JSON stop; the runner reads the LAST `result` event's `terminal_reason`, never `subtype` |
 | (f) budget flag | `claude --help \| grep -i budget` | `--max-budget-usd <amount>` | spelling confirmed |
+
+- **L7 — Per-project credentials (owner, 2026-10-29, verbatim: "we need a
+  per-project token and key").** Each project the workflow drives has its own
+  GitHub token and its own commit-signing key, separate from the owner's own;
+  nothing is shared across projects, so one client's credentials can be
+  revoked or rotated alone. Keys and tokens are never written to a tracked
+  file, ledger, handoff, log or the runner's state.
+  - **macOS (the owner's machines): the owner's `git identity` tool**
+    (`~/.local/bin/git-identity`, run as `git identity --agent` in the clone).
+    Signing key: a Secretive (Secure Enclave) key named
+    `agent-<owner>-<repo>` with authentication off — signs without Touch ID,
+    cannot be copied off the machine; written inline into the repo's
+    `.git/config` and the allowed-signers file. Token: a fine-grained token
+    scoped to that one repo, held in the login Keychain as
+    `github.com/<owner>/<repo>@agent`; git authenticates through the
+    `!git-identity cred` credential helper, and `gh` runs as
+    `GH_TOKEN="$(git identity token)" gh …`. `git identity show` reports the
+    state without printing the token. First applied to this repo on
+    2026-10-29 (key `agent-xyzhub-agentic-workflow`).
+  - **Linux client containers (no Secretive, no Keychain):** a per-project
+    ed25519 key file readable only by the runner's user, and the per-project
+    fine-grained token in the container's own secret store (an env file
+    readable only by that user), delivered to the child as `GH_TOKEN`. S5's
+    runbook documents creating, rotating and revoking both.
+  - **Build impact:** the runner (S1) refuses to start a round when the
+    project has no token or no working signing config, with one plain line
+    naming what is missing; `/agentic-workflow:doctor` (S5) reports both by
+    name only (on macOS via `git identity show`); `gh` calls in the runner and
+    commands take the token from `git identity token` when that tool is
+    present, else from `GH_TOKEN`.
