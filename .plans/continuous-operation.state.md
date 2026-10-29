@@ -110,9 +110,13 @@ before execution starts._
 
 ## Deviations
 
+- 2026-10-29 build branch renamed `feat/continuous-operation` → `feat/continuous-op`: the "Lock branches" ruleset (all branches: verified signatures required, no force-push) rejected the branch's four unsigned commits; they were re-signed with the agent key (`git identity`, key `agent-xyzhub-agentic-workflow`) onto origin/main and pushed under the new name. Deleting the old remote branch needs the owner (blocked for the agent); it holds no unique work — reap it with the mission's branch cleanup.
+
 (none)
 
 ## Handoff log (newest first)
+
+- 2026-10-29 signing required on every branch: PR #172 replaced by signed #173; mission branch re-signed as feat/continuous-op (old feat/continuous-operation left for the owner to delete); L7 rewritten for git identity (Secretive agent key + Keychain token)
 
 - 2026-10-27 S0 probes recorded in the brief (P0 probe record): (a) settings env reaches hooks; (b) no plugin-read refusal; (c) child exit wakes parent (7 s / 17 s); (d) not run (needs session settings edit; design unaffected); (e) continue:false does not block the tool, ends run with success + terminal_reason hook_stopped → marker + deny; (f) --max-budget-usd. OB-32 pending owner.
 
