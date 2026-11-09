@@ -110,6 +110,7 @@ before execution starts._
 
 ## Deviations
 
+- 2026-11-09 OB-32 ran on the owner's Mac in this repo, not orderly-agents (owner: "can we run the autocompact test on this project?"), as a headless `claude -p` with a 200k window (the L1 operating window) instead of 400k; finding: compaction at ≈ window − 33k → S1 corrects `hl_threshold` (was window × 95 %).
 - 2026-10-29 build branch renamed `feat/continuous-operation` → `feat/continuous-op`: the "Lock branches" ruleset (all branches: verified signatures required, no force-push) rejected the branch's four unsigned commits; they were re-signed with the agent key (`git identity`, key `agent-xyzhub-agentic-workflow`) onto origin/main and pushed under the new name. Deleting the old remote branch needs the owner (blocked for the agent); it holds no unique work — reap it with the mission's branch cleanup.
 
 

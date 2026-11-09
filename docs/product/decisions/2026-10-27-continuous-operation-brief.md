@@ -212,8 +212,7 @@ proceed-smaller, Est 5). Counsel: `2026-10-27-continuous-operation-memos.md`
 Facts only, `claude --version` = 2.1.311 (Claude Code) on the owner's Mac.
 (a)(b)(e) ran headless in scratch repos (evidence: `/private/tmp/claude-501/-Users-baker-Playground-venture-workflow-plugin/97ebcd45-20da-4a71-8662-bb06fec5cabc/scratchpad/probeA.Mnz1`,
 `probeB.4EPB`, `probeE.aP5D`); (b-background)(c) ran in the orchestrator's
-interactive session (auto permission mode). OB-32 is pending (owner on
-orderly-agents).
+interactive session (auto permission mode). OB-32 ran 2026-11-09 (last row).
 
 | probe | invocation (verbatim) | observed | decides |
 |---|---|---|---|
@@ -223,6 +222,7 @@ orderly-agents).
 | (d) scheduled fire vs typed prompt | not run | could not verify: needs a UserPromptSubmit dump hook added to the live session's settings; not edited without the owner | does not change the design: L1 already accepts answers only from the channel transport, never from a prompt |
 | (e) `continue:false` under `-p` | scratch PreToolUse hook (matcher Bash) printing `{"continue":false,"stopReason":"probe"}`; `claude -p --output-format stream-json --verbose --max-budget-usd 0.50 "run ls"`; then "use the Agent tool to have a subagent run ls, then tell me what it reported" | direct: exit 0, `subtype:"success"`, `is_error:false`, `terminal_reason:"hook_stopped"`, stopReason text absent, and **`ls` still ran** before the stop; subagent: only the subagent stopped (parent got "ended without delivering a report"), parent resumed it and finished, exit 0 | S2 `handoff-gate.sh` unattended uses the **marker** + a blocking deny of the tool, not the JSON stop; the runner reads the LAST `result` event's `terminal_reason`, never `subtype` |
 | (f) budget flag | `claude --help \| grep -i budget` | `--max-budget-usd <amount>` | spelling confirmed |
+| OB-32 live auto-compaction (2026-11-09, Claude Code 2.1.319, owner-approved on the Mac in this repo instead of orderly-agents; 200k window = the L1 operating window, not 400k) | `CLAUDE_CODE_AUTO_COMPACT_WINDOW=200000 claude -p --model sonnet --max-turns 150 --allowedTools Read Glob Grep --output-format stream-json --verbose "<read large plugin files one per turn until auto-compaction, then quote the resume note>"` | `compact_boundary` trigger `auto`, `pre_tokens` 166,703 → `post_tokens` 38,239; last uncompacted request 165,639. Snapshot `.git/agentic-workflow/snapshots/903f047f-….md` written (trigger auto); the compact-resume note named it verbatim; doctor Handoff row: hooks registered 🟢, handoff untracked 🟢, freshness 🟡 (no agent handoff written — expected; J2/J3 add it). 17 turns, 54 s | **the compaction point is NOT window × 95 %**: observed ≈ 83 % of 200k (≈ window − 33k). `hl_threshold` (window × `HL_DEFAULT_PCT` 95) puts the urgent band at 190k, above the real point, so at a 200k window the handoff gate never fires before compaction. S1 fixes `hl_threshold` to `window − reserve` (reserve ≈ 33k, re-measured at 1M in the 24h run) |
 
 - **L7 — Per-project credentials (owner, 2026-10-29, verbatim: "we need a
   per-project token and key").** Each project the workflow drives has its own
