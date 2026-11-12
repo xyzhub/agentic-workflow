@@ -533,6 +533,9 @@ APPROVE → `[x]`, `Next up: S1b`.
   2. **`run-claude.mjs` (AC-33)**: `resolveRun` resolves `advisor` (CLI
      `--advisor <model>|off` > role frontmatter `advisor:` > off);
      `buildArgv` adds the launch option exactly as the probe row spells it,
+     always together with an explicit `--model <main>` (owner 2026-11-12:
+     the advisor pairing is checked against the main model, so the main
+     model is never left to a default when `--advisor` is passed),
      only when resolved and only when NOT (`resume` AND the resumed
      thread's last reported input side > `maxAdvisorContext`); on the
      rejection text of probe row (ii) relaunch ONCE without it; the
