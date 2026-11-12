@@ -19,7 +19,7 @@ Status: active
 
 Estimate: 8 sessions
 Sessions used: 1
-Reviewer runs: 3
+Reviewer runs: 4
 
 _The budget lines above are read by the mission-budget hook every turn.
 `Estimate: 6` = the six briefs S0–S5 (mode `phases`, owner-locked in brief
@@ -95,7 +95,7 @@ done (verified, not merely written)._
 
 ## Open questions
 
-**Answered 2026-11-12 (owner, AskUserQuestion — dated locks):** OQ-6 "Yes, 8 sessions" (Estimate 6 → 8; overrun stop at 12); OQ-8 enforcement "Fingerprint check" (in-memory digest of the protected files at round start, rechecked before recording, `30 state-tampered`; owner-side writes refuse while a round holds the lock; stated limit: a same-user round can still rewrite the enforcing code or schedule cron/launchd); OQ-7, OQ-8 channel (generic signed `http` channel now), OQ-9 (policy read and recorded, never acts in v1), OQ-10 (`advisor:` key; 100,000-token cap checked in S1b), OQ-12 (threshold fix in S2) — "Accept all". **OQ-11 still open** (owner asked for more context).
+**Answered 2026-11-12 (owner, AskUserQuestion — dated locks):** OQ-6 "Yes, 8 sessions" (Estimate 6 → 8; overrun stop at 12); OQ-8 enforcement "Fingerprint check" (in-memory digest of the protected files at round start, rechecked before recording, `30 state-tampered`; owner-side writes refuse while a round holds the lock; stated limit: a same-user round can still rewrite the enforcing code or schedule cron/launchd); OQ-7, OQ-8 channel (generic signed `http` channel now), OQ-9 (policy read and recorded, never acts in v1), OQ-10 (`advisor:` key; 100,000-token cap checked in S1b), OQ-12 (threshold fix in S2) — "Accept all". OQ-11 "run it" (2026-11-12).
 
 _OQ-1..OQ-5 were answered 2026-10-27 — "Accept all" (brief L6 `:202–208`;
 master plan Locked decisions). The seven below come from the 2026-11-12
@@ -143,6 +143,8 @@ S1; OQ-10 before S1b; the rest of OQ-8 and OQ-9 before S4._
 
 
 ## Handoff log (newest first)
+
+- 2026-11-12 ckpt-s0 spawned (Fable, fresh, one-shot) over the brief's P0 probe record + S0 commits on feat/continuous-op; owner OQ-11 "run it".
 
 - 2026-11-12 plan-judge re-check (Fable) at 843722c: **APPROVE**. Six one-clause amendments owed, each before its brief (the builder applies them, cited here): (1) before S1/S4 — `gate.mjs poll` and `/connect approver` writes refuse while the round lock is held (else a real owner answer reads as `30 state-tampered`), one harness case; (2) before S1b — delete an inherited `CLAUDE_CODE_DISABLE_ADVISOR_TOOL` whenever `--advisor` is passed (`run-claude.mjs:261` copies the parent env), a run-claude-test case, a ckpt-s1b line; (3) before S1b — a below-rank pairing probe in row (ii), and tune refuses/warns from the doc's pairing table; (4) before S1 — OQ-8/OB-37 text: a same-user round can also rewrite `runner.mjs`, `gate.mjs`, `gate-guard.sh`, `hooks.json` or schedule cron/launchd; (5) before S4 — the codex.rules mirror is unconditional (prefix rules can't read `AGENTIC_WORKFLOW_UNATTENDED`); (6) ckpt-s5 `AC-1..AC-41` → `AC-1..AC-42` (sessions :1490, master :1331, state :94) and master :1183–1186 stale anchors.
 
