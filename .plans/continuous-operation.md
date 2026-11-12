@@ -480,14 +480,21 @@ release (S5).
      merge-guard group `:83–93`): BLOCKS (exit 2) any Bash command whose
      text contains `gate.mjs` followed by `record`, `answer`, `approve`,
      `expire --force` or a write to `pending-gates.md`/`decision-log.md` via
-     `>`/`sed -i`/`tee` naming those files; a `gate.mjs open|status|poll` is
-     silent. `templates/codex.rules` gains the matching `prefix` rule with a
+     `>`/`sed -i`/`tee` naming those files; a `gate.mjs open|status` is
+     silent. **Amended 2026-11-12 (plan-judge):** `gate.mjs poll` and every
+     `runner.mjs` verb except `status` are BLOCKED from Bash when
+     `AGENTIC_WORKFLOW_UNATTENDED=1` — `poll` is run only by the runner
+     process, never by a round (a round that could run it could feed it a
+     fake transport). `templates/codex.rules` gains the matching `prefix` rule with a
      `# covers:` line; `tools/run-codex-test.mjs` cross-check stays green.
      **Prior art:** `hooks/hooks.json:83–93` (merge-guard wrapper, fail
      closed), `hooks/lib/publish-guard.sh`, `templates/codex.rules:150–245`.
    - AC-22 **Tests.** `tools/gate-test.mjs` (new, ~300 lines; a FAKE
-     transport via `GATE_TRANSPORT_URL` pointing at a local
-     `http.createServer` fixture — no network): the matrix route × class ×
+     transport on a local `http.createServer` fixture — no network.
+     **Amended 2026-11-12:** there is NO `GATE_TRANSPORT_URL` and no flag:
+     the transport base URL is a parameter of the exported `poll(deps)` /
+     `open(deps)` functions that only the harness passes by importing the
+     module; the CLI always uses the real hosts): the matrix route × class ×
      sender (owner / client-allowed / client-not-allowed / unlisted) ×
      answer (yes / no reason / hold / junk / duplicate / late-after-expiry);
      outbox flush order and the `(delayed …)` prefix; row written before the
@@ -583,11 +590,11 @@ release (S5).
      `handoff-lib.sh:28–31` and `:71`; `handoff-budget.sh:15–16` (comment);
      `hooks/hooks.json:43` (description "1000000 × 95%");
      `templates/WORKFLOW.md:280` ("assumed 1,000,000 × 95% when unset" —
-     replaced at the same byte count ± 10); `tools/hook-test.mjs:2087–2089`
-     (`THR = 950_000`), `:2148` (the constants assertion), `:2383–2384`
-     (807,500 and the 400k case 323,000) and `:2393–2395` (665,000 /
-     807,500 / "950000-token") — branch line numbers, + 10 after the
-     `main` merge. This is the
+     replaced at the same byte count ± 10); `tools/hook-test.mjs:2097–2099`
+     (`THR = 950_000`), `:2158` (the constants assertion), `:2387–2388`
+     (the band fixtures: the 400k literals 323,000 / 322,999) with their
+     check text at `:2393`, and `:2403–2405` (665,000 / 807,500 /
+     "950000-token") — measured after the `main` merge (bf90c06). This is the
      constants fix AC-1 owed; it lands in S2 beside AC-13 (one function, one
      test block) — no round runs before S2, so nothing depends on it sooner.
    - AC-29 **Round logic without a spawn (S1).** `runner.mjs` exposes the
@@ -622,8 +629,12 @@ release (S5).
      `external` refuses with a usage error, so the runner's own child is
      still launched from the container's login with the two key variables
      deleted — AC-8 and L3 are unchanged. `classify` maps an
-     authentication failure of ANY account kind to `75` from the result
-     text (the AC-8 pattern plus `invalid api key`, `run-claude.mjs:398`).
+     authentication failure of ANY account kind to `75` only when BOTH
+     hold, as `run-claude.mjs:398` does: the turn did not succeed (no
+     `result` event, or its `subtype` is not `success`) AND stderr or the
+     result text matches the auth pattern (AC-8's plus `invalid api key`).
+     A successful turn that merely mentions "authentication" or "401" is
+     never `75`.
    - AC-31 **Per-project credentials preflight (S1; brief L7 `:250–255`).**
      `next` refuses to start a round when the project has no GitHub token
      or no working signing configuration, with ONE plain line naming what is
@@ -634,40 +645,59 @@ release (S5).
      closed set). The child's `gh` calls take the token the same way
      (`git identity token`, else `GH_TOKEN`) — stated in the round prompt.
 8. **P1b — the launch layer: advisor, tune contract, `headless.mjs` (S1b).**
-   - AC-32 **Advisor probe first.** `claude --help` on 2.1.322 lists no
-     advisor flag (planner, 2026-11-12), so nothing about it is locked. S1b
-     opens by appending `## Advisor probe record (2026-…)` to the brief
-     (after L7) with verbatim invocations and observed output for: (i) the
-     exact way a `claude -p` launch is given an advisor model (flag
-     spelling, or the setting that does it) and that one consult completes
-     end to end; (ii) the exit code and stderr of a pairing the CLI rejects
-     and of a launch without the Fable consent — the texts the fallback
-     keys on; (iii) whether an Agent-tool subagent inside that child can
-     consult; (iv) whether advisor tokens appear in the `result` event's
-     `usage` / `modelUsage`; (v) `claude --version`. **If (i) cannot be made
-     to succeed under `-p`, AC-33, AC-34 and AC-35's doctor and consult
-     parts are struck in the hand-off with the row cited** — the
+   - AC-32 **Advisor probe first — only what is still unobserved.**
+     Already known (see the `Assumed` line in Locked decisions): the
+     option is `--advisor <model>`; it is deliberately not in `claude
+     --help`; `-p` needs Claude Code ≥ 2.1.260; `claude -p --model sonnet
+     --advisor fable …` launched and exited 0 on 2.1.322. S1b opens by
+     appending `## Advisor probe record (2026-…)` to the brief (after L7)
+     with verbatim invocations and observed output for the five things no
+     one has seen: (i) ONE completed consult under `-p` on a real task,
+     and what in the stream-json shows the advisor was attached and
+     called; (ii) the exit code and stderr of each launch-time rejection
+     the documentation lists that can be produced without changing the
+     owner's account (an advisor model that cannot advise; a main model
+     that does not support one) — the Fable-consent case is `could not
+     verify` unless the account is already in that state; (iii) whether an
+     Agent-tool subagent inside that child consults (the documentation
+     says subagents inherit); (iv) whether advisor tokens appear in the
+     LAST `result` event's `usage` / `modelUsage`; (v) whether a launch
+     with NO `--advisor` still gets an advisor from the user's
+     `advisorModel` setting, and that `CLAUDE_CODE_DISABLE_ADVISOR_TOOL=1`
+     in the child env stops it. Plus `claude --version`. **If (i) cannot
+     be made to succeed under `-p`, AC-33, AC-34 and AC-35's doctor and
+     consult parts are struck in the hand-off with the row cited** — the
      corrective-retry measure and the `headless.mjs` step still ship.
    - AC-33 **Launch, cap and fallback.** Two launch sites, Claude engines
      only: the round child (`runner.mjs begin`/`round`, from `runner.json`
      `"advisor": { "model": null, "max_context_tokens": <n> }`, default
      off) and a role launched as its own `claude -p` (`run-claude.mjs`
      `buildArgv` `:236–257`, from the role's effective `advisor`, AC-34).
-     Claude Code has no per-call cap, so the cap is **per launch**: a
-     launch that resumes a thread (`--resume`) whose last reported input
-     side is above `max_context_tokens` goes WITHOUT an advisor (each
-     consult re-reads the whole transcript uncached). A launch the CLI
-     rejects (probe row (ii)) is retried ONCE without the advisor and the
-     round line carries a trailing `adv=off(<reason>)`; a normal round
-     carries `adv=<model>` or `adv=off`. If probe row (iv) shows advisor
-     tokens in the reported usage they count toward AC-5's daily cap with
-     no change; if not, `status` and the README say the cap excludes them.
+     `--advisor <model>` is always passed together with an explicit
+     `--model <main>` (owner 2026-11-12: the pairing is checked against
+     the main model, so it is never left to a default). **Off means
+     off:** a launch without an advisor sets
+     `CLAUDE_CODE_DISABLE_ADVISOR_TOOL=1` in the child env, so a user-level
+     `advisorModel` cannot attach one behind the runner's back. Claude Code
+     has no per-call cap, so the cap is **per launch**: a launch that
+     resumes a thread (`--resume`) whose last reported input side is above
+     `max_context_tokens` goes WITHOUT an advisor (each consult re-reads
+     the whole transcript uncached). A launch that exits with one of the
+     documented launch errors (probe row (ii)) is retried ONCE without the
+     advisor and the round line carries a trailing `adv=off(<reason>)`; a
+     normal round carries `adv=<model>` (requested and launched) or
+     `adv=off`. A pairing the API refuses produces no error — Claude Code
+     silently continues without the advisor — so `adv=<model>` means
+     "requested", and `/doctor` reports "attached" only from the signal
+     probe row (i) found. If probe row (iv) shows advisor tokens in the
+     reported usage they count toward AC-5's daily cap with no change; if
+     not, `status` and the README say the cap excludes them.
    - AC-34 **`advisor:` tune field — a wrapper contract.**
      `commands/tune.md` gains `/agentic-workflow:tune <agent> advisor
      <model>|off` (after the effort section `:114–125`; banner kind
-     `advisor`; refused for a codex runtime, and for any pairing probe
-     row (ii) showed the CLI rejects — the refusal quotes that row; no
-     other pairing rule is invented). `tools/agents.mjs` reports
+     `advisor`; refused for a codex runtime, and for a pairing the
+     documentation or probe row (ii) says is rejected at launch — the
+     refusal quotes its source; no other pairing rule is invented). `tools/agents.mjs` reports
      `effective.advisor` (string or null) and lists `advisor` in an
      override's `kind`; `templates/agents-registry.schema.json` gains the
      property in `effective` (`:27–41`, added to `required`) and in the
@@ -701,10 +731,18 @@ release (S5).
      `open --type <t>`, else derived from the class — `merge`,
      `staging-merge`, `deploy` → `release`; `spend` → `money`; `publish` →
      `publish`; `scope`, `kill` → `direction`; `decision` → `other`);
-     `answerer` (always `owner` in S4); `source` (`owner via
-     <channel>:<message id>` — the only value v1 writes; `rule:<id>` and
-     `agent:<name>` are reserved); `proof` (`channel-identity:<transport
-     user id>` for Slack and Telegram); `predicted` and `predictor` (empty).
+     `answerer` (always `owner` in S4 — whose authority the gate is
+     under); `source` — WHO actually answered: `owner via <channel>:<message
+     id>` when the verified sender is in `owner_ids`, `client via
+     <channel>:<message id>` when the sender is in `client_ids` and the
+     class is in `client_may` (AC-20) — a client's answer is never recorded
+     as the owner's; `rule:<id>` and `agent:<name>` are reserved; `proof`
+     (`channel-identity:<transport user id>` for Slack and Telegram);
+     `predicted` and `predictor` (empty); and `nonce` — 16 random bytes,
+     hex, made by `open` (`crypto.randomBytes(16)`), stored on the row and
+     sent with the gate; it is the single-use token AC-19 "consumes": the
+     first valid answer marks it used in the answer store, and any later
+     answer for the same nonce gets the "already answered" receipt.
      The transports sit behind ONE channel interface `{ name, send,
      fetchReplies, verify, receipt }`; `verify` returns `{ user, proof }` or
      nothing, and a reply without a proof is never an answer. Slack and
@@ -712,7 +750,11 @@ release (S5).
    - AC-37 **Owner-written policy and shadow predictions (S4b).**
      `.claude/gate-policy.json` (optional, committed, owner-written; schema
      `<plugin>/templates/gate-policy.schema.json`): per type `{ "answerer":
-     "owner" | "rule" | "agent:<name>", "limits": {…}, "rules": […] }`. No
+     "owner" | "rule" | "agent:<name>", "limits": <object>, "rules":
+     <array> }` — `limits` and `rules` are **reserved and opaque in v1**:
+     the schema accepts any object / any array, `gate.mjs` stores and
+     shows them but never reads inside, and their inner shape is NOT part
+     of contract version 1 (Part 2 defines it with a version bump). No
      file, or no entry for a type → `owner`. `gate.mjs policy show` prints
      the resolved table. **v1 never auto-answers:** an entry other than
      `owner` is validated and shown, the row records `answerer: owner
@@ -729,11 +771,20 @@ release (S5).
      `approver.channels[]` as `{ "kind": "http", "url_env": "<NAME>",
      "token_env": "<NAME>", "owner_keys": [{ "id": "…", "ed25519":
      "<public key>" }], "client_keys": […] }`. `send` = `POST
-     <url>/gates` with the gate record; `fetchReplies` = `GET
-     <url>/gates/<id>/answers` → `[{ answer, reason, answered_at, key_id,
-     signature }]`; `verify` accepts an answer only when `signature` is a
-     valid ed25519 signature (`node:crypto`, zero deps) by a listed key
-     over `<id>\n<nonce>\n<answer>\n<reason>\n<answered_at>`; `proof` =
+     <url>/gates` with the gate record (including its `nonce`);
+     `fetchReplies` = `GET <url>/gates/<id>/answers` → `[{ answer, reason,
+     answered_at, key_id, signature }]`; `verify` accepts an answer only
+     when `signature` is a valid ed25519 signature (`node:crypto`, zero
+     deps) by a listed key over the UTF-8 bytes of
+     `JSON.stringify([id, nonce, answer, reason, answered_at])` — a JSON
+     array, so a newline or any other character in `reason` cannot make
+     two different answers sign the same bytes (`reason` is `""` when
+     absent; `answered_at` is the ISO-8601 UTC string as sent).
+     Encodings: a public key is the raw 32-byte Ed25519 key in base64url
+     without padding (the JWK `x` value; loaded with
+     `crypto.createPublicKey({ key: { kty: "OKP", crv: "Ed25519", x },
+     format: "jwk" })`); a signature is the raw 64 bytes in base64url
+     without padding. `proof` =
      `signature:<key_id>`; `receipt` = `POST <url>/gates/<id>/receipt`. An
      unsigned answer, an unknown key or a bad signature is ignored, logged
      and alerted once — exactly the unlisted-sender path of AC-19. A gate
@@ -762,11 +813,20 @@ release (S5).
 10. **Replan 2026-11-12 — release additions (S5).**
    - AC-40 **L7 surfaces and the wider threat list.** `commands/doctor.md`
      Runner bullet also reports the project token and signing key by NAME
-     (`git identity show` on macOS; the key file path and the env file path
-     on Linux, never a value); `templates/engineering-runbook.md`
+     (`git identity show` on macOS; on Linux the value of `git config
+     user.signingkey` — a key-file path, not a secret — and whether
+     `GH_TOKEN` is set; never a value); `templates/engineering-runbook.md`
      `## Unattended run` gains the Linux create / rotate / revoke steps for
      the per-project ed25519 key file and the per-project token env file
-     (brief L7 `:245–249`). The AC-24 security pass also covers: an `http`
+     (brief L7 `:245–249`). The brief names NO path for either file: the
+     runbook writes them as `<key file>` and `<env file>`, chosen by the
+     operator, and the plugin never reads the env file's location. The
+     AC-24 security pass also covers: every item of AC-42 (a write that is
+     on no list — `node -e`, `python`, `git checkout -- <file>`, `git
+     apply` — to who-may-answer or to a counter; `runner.mjs begin|record
+     --from <forged file>` run from inside a round; a round that feeds
+     `poll` a transport of its own; a process that outlives its round); a
+     client answer recorded as the owner's; an `http`
      answer accepted without a valid signature; a policy entry that lifts
      an L2 class; a prediction that changes an answer or is read by `poll`;
      `auth: external` reaching `round`; a `begin` lock that never expires;
@@ -783,6 +843,47 @@ release (S5).
      "driving rounds from your own supervisor". A fourth post-merge Closing
      row promotes as **OB-38**: every wrapper that pins this plugin
      re-pins to 1.70.0 and runs its contract tests (the OB-30 precedent).
+
+11. **Revision 2026-11-12 (plan-judge) — what an unattended round can never do (S1, S4, S4b).**
+   - AC-42 **An unattended round cannot change who may answer, an answer,
+     or the runner's counters — by any write.** This is a property, not a
+     list of command shapes; the gate-guard's shapes (AC-21, AC-39) are
+     defence in depth only. Mechanism (recommended; OQ-8 picks):
+     (a) **A digest the round cannot reach.** `begin` hashes (sha256) the
+     protected set — `.claude/runner.json`; in the state dir `daily.json`,
+     `backoff.json`, `rounds.log` (not `STOP`: the owner may pause during a round, and a round that writes it only stops itself); from S4 the answer store
+     `answers.jsonl`; from S4b `.claude/gate-policy.json` — keeps the
+     file contents and the digest in the memory of the process that
+     started the round (`round` itself; on the split path it returns
+     `state_digest` to the supervisor, which holds it) and never writes
+     the digest to disk. `record` requires `--digest`, recomputes before
+     writing anything, and on a mismatch records no progress, restores
+     the pre-round contents (`round`) or names the changed file
+     (split path), writes `STOP`, alerts once and exits `30
+     state-tampered` (a new word in AC-6's outcome set). `round` ends the
+     child's whole process group before it recomputes.
+     (b) **Answers live where a row edit cannot reach.** The answer store
+     `<state>/answers.jsonl` is written only by `poll`; the
+     `pending-gates.md` row and the decision-log row are projections
+     `poll` rewrites from it; unit pick and `20` read only the store. An
+     edited row answers nothing.
+     (c) **A round cannot run the runner.** Under
+     `AGENTIC_WORKFLOW_UNATTENDED=1` the guard blocks `gate.mjs poll` and
+     every `runner.mjs` verb except `status` from Bash, and `begin` /
+     `record` refuse when that variable is set in their own environment —
+     so `record --from <forged file>` from inside a round fails even if
+     the guard is bypassed.
+     Tests (a write on NO shape list): in `runner-test.mjs` a fake child
+     that calls `fs.writeFileSync` on `daily.json`, and one on
+     `runner.json` → `30 state-tampered`, contents restored, no `round:`
+     line counted as progress; `record` with a wrong or missing digest →
+     refused; `begin` / `record` with `UNATTENDED=1` in env → refused. In
+     `gate-test.mjs` a pending row hand-edited to "answered yes" → the
+     gate is still open and nothing proceeds; a fake child that rewrites
+     `answers.jsonl` → `30 state-tampered`. **Stated limit:** a process
+     with the round's OS user that survives the process-group kill is
+     outside this check; running rounds under a separate OS user closes
+     it and is deferred by L1 (container provisioning) — OB-37 notes it.
 
 ## Value sourcing
 
@@ -846,7 +947,7 @@ release (S5).
 | AC-31 | the runner refuses a round without a per-project token and signing key; the token comes from `git identity token` when that tool is present, else `GH_TOKEN` | locked decision | 2026-10-29 brief L7 (`:250–255`) |
 | AC-31 | "working signing config" = `commit.gpgsign` true and `user.signingkey` set | derivation | brief L7 `:236–238` (the key is "written inline into the repo's `.git/config`"); the two-key test is the planner's reading of "working" |
 | AC-31 | exit `75`, outcome `creds-missing` | derivation | AC-4's `75` = "auth failed, expired or absent"; the outcome word is new in AC-6's closed set |
-| AC-32, AC-33 | the advisor launch invocation, its failure texts, subagent reach, usage accounting | assumption | NOT in `claude --help` 2.1.322 (planner 2026-11-12, `grep -ic advis` → 0); AC-32's probe decides before any code |
+| AC-32, AC-33 | a completed consult, the launch-rejection texts, subagent reach, usage accounting, the attached-signal | assumption | unobserved; AC-32's probe decides before any code |
 | AC-33 | `max_context_tokens` default | open question | OQ-10 — no source names a number |
 | AC-33 | per-launch cap (not per-call); fall back to no advisor on a rejected launch; Claude engines only | locked decision | owner 2026-11-12 "fold it in" (ledger Deviations; commits 09a4179, c085895) |
 | AC-34 | field name `advisor:`; values a model id or `off`; default off | open question | OQ-10 (collides with the existing `advisor` role, `tools/agents.mjs:35`) |
@@ -862,6 +963,16 @@ release (S5).
 | AC-38 | wire shapes `POST /gates`, `GET /gates/<id>/answers`, `POST /gates/<id>/receipt` | assumption | planner's; frozen by AC-39, confirmed with OQ-8 |
 | AC-39 | projection fields (id, class, type, question, choices, state, answer, by, source, proof, time, channel) | derivation | AC-19 + AC-36 fields; the wrapper's gate projection (missions-engine `:304–306`) |
 | AC-41 | OB-38 | derivation | `.plans/OBLIGATIONS.md` ends at OB-34; OB-35..37 are AC-27's; OB-30 is the precedent row |
+| AC-36 | `source: client via <channel>:<message id>` for a client's answer | derivation | AC-20 (`client_ids`, `client_may`) + gate-delegation record `:77–78` ("every answer records its source") |
+| AC-36 | `nonce` = 16 random bytes, hex, on the row and in the sent gate | derivation | AC-19 ("consumes the nonce on the first valid answer") left it undefined; `crypto.randomBytes(16)` is the planner's size, frozen by AC-39 |
+| AC-37 | `limits`, `rules` inner shape | open question | reserved and opaque in contract version 1; Part 2 (not planned here) defines them — gate-delegation record `:73–76`, `:88–90` |
+| AC-38 | signed bytes = UTF-8 of `JSON.stringify([id, nonce, answer, reason, answered_at])` | derivation | planner's canonical form (a JSON array is unambiguous for any `reason`); frozen by AC-39; confirmed with OQ-8 |
+| AC-38 | public key = raw 32-byte Ed25519 in base64url (JWK `x`); signature = raw 64 bytes in base64url | derivation | RFC 8037 (OKP / Ed25519 JWK) as implemented by `node:crypto` `createPublicKey({format:"jwk"})` and `crypto.verify(null, …)`; frozen by AC-39 |
+| AC-40 | Linux key-file and env-file locations | input | the operator's choice — brief L7 `:245–249` names none; the runbook uses `<key file>` / `<env file>`; doctor shows `git config user.signingkey` and whether `GH_TOKEN` is set |
+| AC-40 | the threat-list additions | derivation | AC-36..AC-39, AC-42 and the 2026-11-12 plan-judge findings (ledger handoff log) |
+| AC-42 | protected set; `30 state-tampered` | derivation | AC-5 (the counters behind L4's cap), AC-20 (who may answer), AC-19 (answers); the digest-in-memory mechanism is the planner's — OQ-8 |
+| AC-42 | sha256 | derivation | `node:crypto` `createHash("sha256")`, zero deps |
+| AC-32, AC-33 | `--advisor <model>`; hidden from `--help`; `-p` ≥ 2.1.260; the four launch errors; `advisorModel`; `CLAUDE_CODE_DISABLE_ADVISOR_TOOL=1` | assumption | https://code.claude.com/docs/en/advisor.md (read 2026-11-12) + the pre-probe line in the ledger Deviations; a consult is still unobserved |
 
 ## Locked decisions
 
@@ -992,14 +1103,31 @@ release (S5).
 - 2026-11-12 (planner) — `gate-guard.sh` is still the only new refusing
   hook body (the 2026-10-27 lock stands); S4b adds shapes to it and one
   more matcher group (`Write|Edit|MultiEdit`) that runs the same body.
+- 2026-11-12 (planner, after the plan-judge's REVISE) — `gate.mjs` has no
+  transport-URL override reachable from a command line or the
+  environment; `poll` is never run by a round; the answer store, not the
+  markdown row, is what the runner trusts (AC-21, AC-22 as amended; AC-42).
 - 2026-11-12 (planner) — the gate contract is frozen LAST (AC-39 in S4b),
   after the delegation fields and the `http` channel exist, so the frozen
   shape never needs a second version inside this mission.
-- Assumed 2026-11-12 (planner) — a `claude -p` launch can be given an
-  advisor model, a rejected pairing or a missing consent ends the launch
-  with a recognisable error, and the advisor's tokens are reported. **Not
-  run by any spike; absent from `claude --help` 2.1.322.** AC-32 decides;
-  every advisor AC is conditional on it.
+- Assumed 2026-11-12 (planner; sources: https://code.claude.com/docs/en/advisor.md
+  read 2026-11-12, and the orchestrator's pre-probe in the ledger
+  Deviations) — the launch option is `--advisor <model>` (`fable`, `opus`,
+  `sonnet` or a full id), hidden from `claude --help` by design; `-p`
+  support needs Claude Code ≥ 2.1.260; the launch exits with an error when
+  the main model does not support an advisor, the requested model cannot
+  advise, an `availableModels` allowlist excludes it, or Fable still needs
+  the usage-credits consent; a pairing the API refuses is NOT an error
+  (the request is resent without the advisor); subagents inherit the
+  advisor; `advisorModel` in user settings applies when no flag is given;
+  `CLAUDE_CODE_DISABLE_ADVISOR_TOOL=1` turns it off; a session with
+  feature-flag fetching off (e.g. `DISABLE_TELEMETRY`) has no advisor.
+  **Observed so far (ledger Deviations, 2026-11-12, 2.1.322):** `claude -p
+  --model sonnet --advisor fable --max-turns 1 --output-format stream-json
+  --verbose "Reply with the single word ok."` → exit 0, result success,
+  **no consult happened**. So the spelling and the launch are seen; a
+  completed consult, the rejection texts, subagent reach and usage
+  accounting are not — AC-32 owes exactly those. Not a lock until then.
 - Assumed 2026-11-12 (planner) — the reserve is 33,000 tokens at every
   window, including 1,000,000 (measured only at 200k). OB-35 re-measures.
 - Assumed 2026-11-12 (planner) — a wrapper can hold an ed25519 private key
@@ -1083,8 +1211,8 @@ release (S5).
 
 _OQ-1..OQ-5 below were **answered 2026-10-27 — "Accept all"** (brief L6;
 see Locked decisions); they stay for the record. OQ-6..OQ-12 are open:
-OQ-6, OQ-7, OQ-11 and OQ-12 before S1; OQ-10 before S1b; OQ-8 and OQ-9
-before S4._
+OQ-6, OQ-7, OQ-11, OQ-12 and OQ-8's enforcement part before S1; OQ-10
+before S1b; the rest of OQ-8 and OQ-9 before S4._
 
 - **OQ-1 — gate expiry semantics (AC-19).** Memos: expiry counts as
   reject. Journeys: expired = nothing happened, ask again, never
@@ -1140,6 +1268,16 @@ before S4._
   The weaker choice (trust the server's statement of who answered, behind
   a bearer token) would make L1 false and is not recommended. Deferring
   the channel blocks the wrapper's acceptance runs.
+  **Also decide how AC-42 is enforced** ("an unattended round cannot
+  change who may answer or the runner's counters by any write"):
+  (1) the in-memory digest + answer store + runner refusal of AC-42 —
+  **recommended for v1**, with its stated limit; (2) additionally read
+  `runner.json` `approver` and `gate-policy.json` only as committed on the
+  default branch at origin (the merge-guard precedent), so who-may-answer
+  changes only through a PR the owner merges — stronger, slower to set
+  up; (3) run rounds under a separate OS user — complete, but L1 deferred
+  container provisioning. This part must be answered before **S1**
+  (the digest is built there).
 - **OQ-9 — how much of the policy runs in v1 (AC-36, AC-37).**
   **Recommendation:** the file is parsed, validated, shown and recorded on
   every gate, and every gate still goes to the owner; `rule` and agent
@@ -1202,6 +1340,17 @@ The three `Assumed 2026-10-27` lines are settled by the probe record.
 checkpoints `ckpt-s1 … ckpt-s5` plus `ckpt-s1b`, `ckpt-s4b` and the
 security pass stay one-shot spawns inside their sessions. `Estimate: 6`
 is unchanged in the ledger until the owner's dated lock.
+
+**Revision after the plan-judge (same day, reviewed at da4febe).** REVISE
+with seven fixes, applied once: `poll` unreachable from a round and no
+transport-URL override (AC-21, AC-22); a stated integrity property with a
+non-listed-write test (new AC-42; OQ-8 picks the mechanism); a client's
+answer recorded as the client's (AC-36); reserved `limits` / `rules`, the
+nonce, key and signature encodings and an unambiguous signed form (AC-36..
+AC-38), AC-40 sourced; `75` only on a failed turn (AC-30); the advisor
+facts pre-resolved from the documentation and the pre-probe, AC-32
+narrowed; stale anchors and wording in the briefs. `main` is merged
+(bf90c06) and lint is green. The estimate proposal is unchanged at 8.
 
 **Version.** Still 1.70.0 — a minor bump already; the registry field and
 the two contract schemas each get a CHANGELOG line.
