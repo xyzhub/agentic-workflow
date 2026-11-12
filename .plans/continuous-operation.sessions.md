@@ -235,9 +235,13 @@ an unambiguous pick for S2. APPROVE → ledger `[x]`; `Next up: S1`.
   field; default off, `fable` recommended for builders); `/doctor` reports
   the advisor state; builder prompts ask for one advisor consult before
   reporting done; the ledger records the corrective-retry rate so the gain
-  is measured. Cap: no advisor call above a context threshold the runner
-  sets (each call re-reads the whole transcript uncached; Fable bills to
-  usage credits). Claude engines only.
+  is measured. Cost control: Claude Code has no per-call cap (the model
+  decides when to consult), so rounds that resume above a context threshold
+  launch WITHOUT `--advisor` (each call re-reads the whole transcript
+  uncached; Fable bills to usage credits). Launch exits on a bad pairing or
+  missing Fable consent — the runner must fall back to no advisor. Claude
+  engines only. Needs a `replan` before S1 (no AC, reads or test yet; an
+  `advisor:` tune field is a contract with the Missions app).
 - **Suits**: `backend` (one zero-dep Node CLI + a redaction module + a
   harness; a refactor of one existing tool). Runtime: `claude`.
 - **Reads** (≈ 1,420 lines):
