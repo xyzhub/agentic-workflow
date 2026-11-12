@@ -230,6 +230,14 @@ an unambiguous pick for S2. APPROVE → ledger `[x]`; `Next up: S1`.
 ### S1 — `tools/runner.mjs`, `redact.mjs`, `runner.json`, harness, `headless.mjs run` on the core
 
 - **ACs**: AC-4, AC-5, AC-6, AC-7, AC-8, AC-9
+- **Advisor (owner 2026-11-12, "fold it in")**: the runner's `claude -p`
+  launch passes `--advisor <model>` read from the role's tune (`advisor:`
+  field; default off, `fable` recommended for builders); `/doctor` reports
+  the advisor state; builder prompts ask for one advisor consult before
+  reporting done; the ledger records the corrective-retry rate so the gain
+  is measured. Cap: no advisor call above a context threshold the runner
+  sets (each call re-reads the whole transcript uncached; Fable bills to
+  usage credits). Claude engines only.
 - **Suits**: `backend` (one zero-dep Node CLI + a redaction module + a
   harness; a refactor of one existing tool). Runtime: `claude`.
 - **Reads** (≈ 1,420 lines):
