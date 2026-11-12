@@ -10,6 +10,16 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+// Hermetic git: an operator's global `commit.gpgsign true` (or a signing key
+// that needs a hardware agent) must not leak into the throwaway repos this
+// harness commits in. GIT_CONFIG_* overrides every config scope for every
+// child git process.
+Object.assign(process.env, {
+  GIT_CONFIG_COUNT: '2',
+  GIT_CONFIG_KEY_0: 'commit.gpgsign', GIT_CONFIG_VALUE_0: 'false',
+  GIT_CONFIG_KEY_1: 'tag.gpgsign', GIT_CONFIG_VALUE_1: 'false',
+});
+
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const PLUGIN = path.join(ROOT, 'plugins/agentic-workflow');
 const TOOL = path.join(PLUGIN, 'tools/ledger.mjs');
