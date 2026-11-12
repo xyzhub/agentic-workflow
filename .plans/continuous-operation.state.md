@@ -110,6 +110,7 @@ before execution starts._
 
 ## Deviations
 
+- 2026-11-12 more from missions (now `missions-engine`, L6 route B — no OpenMausBot): the start-up login check must accept API-key and GLM (z.ai) accounts; `gate.mjs` parked questions need a server channel so the Missions app can answer them — fold into the pending replan.
 - 2026-11-12 dependency raised by missions-on-openmausbot (owner locked L5 in xyzhub/missions-server): the runner must offer its round logic without starting `claude -p` itself (a spawn-free `next` / `classify`) and freeze the `gate.mjs` contract before that mission's P3 — fold into the pending replan.
 - 2026-11-12 probe (d) skipped by the owner ("skip d for now"); design unaffected — L1 accepts answers only from the channel transport.
 - 2026-11-12 owner "fold it in": Claude Code advisor tool (`--advisor`) added to S1's scope (launch flag from the tune, doctor row, consult-before-done, corrective-retry measure, context cap).
