@@ -110,6 +110,7 @@ before execution starts._
 
 ## Deviations
 
+- 2026-11-12 dependency raised by missions-on-openmausbot (owner locked L5 in xyzhub/missions-server): the runner must offer its round logic without starting `claude -p` itself (a spawn-free `next` / `classify`) and freeze the `gate.mjs` contract before that mission's P3 — fold into the pending replan.
 - 2026-11-12 probe (d) skipped by the owner ("skip d for now"); design unaffected — L1 accepts answers only from the channel transport.
 - 2026-11-12 owner "fold it in": Claude Code advisor tool (`--advisor`) added to S1's scope (launch flag from the tune, doctor row, consult-before-done, corrective-retry measure, context cap).
 - 2026-11-09 OB-32 ran on the owner's Mac in this repo, not orderly-agents (owner: "can we run the autocompact test on this project?"), as a headless `claude -p` with a 200k window (the L1 operating window) instead of 400k; finding: compaction at ≈ window − 33k → S1 corrects `hl_threshold` (was window × 95 %).
