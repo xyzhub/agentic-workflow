@@ -110,6 +110,7 @@ before execution starts._
 
 ## Deviations
 
+- 2026-11-12 owner "go": gate delegation part 1 joins the replan — `gate.mjs` carries a gate type, an owner-written per-type policy (default `owner`), an answer-source field, owner-answer proof, and shadow-prediction logging from day one (`docs/product/decisions/2026-11-12-gate-delegation.md`); part 2 (answering agents, owner's twin, MCP channel) is a later plan.
 - 2026-11-12 more from missions (now `missions-engine`, L6 route B — no OpenMausBot): the start-up login check must accept API-key and GLM (z.ai) accounts; `gate.mjs` parked questions need a server channel so the Missions app can answer them — fold into the pending replan.
 - 2026-11-12 dependency raised by missions-on-openmausbot (owner locked L5 in xyzhub/missions-server): the runner must offer its round logic without starting `claude -p` itself (a spawn-free `next` / `classify`) and freeze the `gate.mjs` contract before that mission's P3 — fold into the pending replan.
 - 2026-11-12 probe (d) skipped by the owner ("skip d for now"); design unaffected — L1 accepts answers only from the channel transport.
