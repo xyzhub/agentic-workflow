@@ -19,7 +19,7 @@ Status: active
 
 Estimate: 6 sessions
 Sessions used: 1
-Reviewer runs: 2
+Reviewer runs: 3
 
 _The budget lines above are read by the mission-budget hook every turn.
 `Estimate: 6` = the six briefs S0–S5 (mode `phases`, owner-locked in brief
