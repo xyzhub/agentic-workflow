@@ -17,7 +17,7 @@ session rebuilds from._
 
 Status: active
 
-Estimate: 6 sessions
+Estimate: 8 sessions
 Sessions used: 1
 Reviewer runs: 3
 
@@ -94,6 +94,8 @@ done (verified, not merely written)._
 - [ ] S5 — one-shot `security` pass over `main..HEAD` (AC-24 + AC-40 threat list) with HIGH/MEDIUM fixed in-session; README `## Run 24/7`; runbook `## Unattended run` incl. the Linux per-project key + token steps (L7); doctor **Runner** bullet incl. credentials by name; `plugin.json` + `package.json` → 1.70.0; CHANGELOG `[1.70.0]` incl. one line per probe fact and the AC-41 contract lines; OB-35/36/37/38 row texts reported; pre-merge Closing rows fired; ckpt-s5 (Fable, AC-1..AC-41) APPROVE → staging verify → PR to `main` ready; human merges
 
 ## Open questions
+
+**Answered 2026-11-12 (owner, AskUserQuestion — dated locks):** OQ-6 "Yes, 8 sessions" (Estimate 6 → 8; overrun stop at 12); OQ-8 enforcement "Fingerprint check" (in-memory digest of the protected files at round start, rechecked before recording, `30 state-tampered`; owner-side writes refuse while a round holds the lock; stated limit: a same-user round can still rewrite the enforcing code or schedule cron/launchd); OQ-7, OQ-8 channel (generic signed `http` channel now), OQ-9 (policy read and recorded, never acts in v1), OQ-10 (`advisor:` key; 100,000-token cap checked in S1b), OQ-12 (threshold fix in S2) — "Accept all". **OQ-11 still open** (owner asked for more context).
 
 _OQ-1..OQ-5 were answered 2026-10-27 — "Accept all" (brief L6 `:202–208`;
 master plan Locked decisions). The seven below come from the 2026-11-12
