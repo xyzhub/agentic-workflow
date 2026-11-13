@@ -521,7 +521,7 @@ APPROVE → `[x]`, `Next up: S1b`.
   round prompt shape seen live)
 - **Suits**: `backend` (three small Node tools + their harnesses, one
   command section, four one-sentence role edits). Runtime: `claude`.
-- **Reads** (≈ 1,430 lines — near the limit; read nothing unlisted. The
+- **Reads** (≈ 1,435 lines — near the limit; read nothing unlisted. The
   2026-11-13 amendments on AC-6, AC-9, AC-29, AC-33 and AC-35 only
   summarise this brief — skip them in the master plan):
   1. Master plan Task 8 (AC-32..AC-35) + Value sourcing rows AC-32..AC-35 +
@@ -534,7 +534,7 @@ APPROVE → `[x]`, `Next up: S1b`.
      `classify` 591–606 (where `tokens` is summed, `usageSum` `:589`) ≈ 18,
      the retry-mark comment 653–667 + `record` 669–690 and 740–746 (the
      shortcut and the mark write — the lines the carry-in names) ≈ 45,
-     `roundOnce` 749–781 ≈ 33, the `record` case in `main` 871–877 ≈ 7;
+     the lock check 715–720 ≈ 6, `roundOnce` 749–781 ≈ 33, the `record` case in `main` 871–877 ≈ 7;
      `<plugin>/templates/runner-config.json` whole (10);
      `tools/runner-test.mjs` 530–540 + 584–597 (the two cases that name
      "already recorded") ≈ 25 — never the rest of the body.
@@ -579,6 +579,13 @@ APPROVE → `[x]`, `Next up: S1b`.
     `runner-test.mjs`: the "retried record" case (`:584–597`) becomes
     "a retried record → 30 + STOP"; add ONE case: tamper + a planted
     `rounds/<n>.recorded` mark → `30` + `STOP` (the mark is ignored).
+    **Same step (plan-judge PJ-B3):** at `record` a lock that is missing
+    or is not this round's is `30 state-tampered` — STOP, the day
+    forfeited on the split path — even when the digest matches; today
+    that case throws a usage error (`:719`). One more case: digest
+    intact + the lock removed → `30` + `STOP`. S2's lock leg of
+    `hl_unattended` relies on this: a round that deletes the lock to look
+    attended is caught here.
     Harness green, then commit alone: `fix(runner): no retry mark — a
     repeated record is state-tampered (ckpt-s1 S3)`.
   0. **One live round (G5; ≤ $1) — before the advisor probe.** The
@@ -614,8 +621,8 @@ APPROVE → `[x]`, `Next up: S1b`.
      `daily.json` raised. Add ONE row to the brief's P0 probe record,
      after its last row (`:225`), same columns, with the verbatim
      invocation, `claude --version` and the three observations; commit it
-     alone: `docs(continuous-operation): live round probe`. **If (1) or
-     (3) fails: stop here and hand back with the row** — nothing else in
+     alone: `docs(continuous-operation): live round probe`. **If ANY of the three fails — (2) the sources rule included — stop
+     here and hand back with the row** — nothing else in
      this brief is built on an unproven round.
   1. **Probe first (AC-32) — before any code.** Already known — do not
      re-derive: the option is `--advisor <model>` (`fable` | `opus` |
@@ -781,8 +788,8 @@ APPROVE → `[x]`, `Next up: S1b`.
     → 0 lines (`tools/agents.mjs:9` already says "the Missions app" — S5
     rewords it; do not count it here).
   - Catalog: none.
-- **Read budget**: ≈ 1,430 lines (plan/brief 120 · runner + config + its
-  test 298 · run-claude 191 · agents + schema + test 322 · tune 50 ·
+- **Read budget**: ≈ 1,435 lines (plan/brief 120 · runner + config + its
+  test 304 · run-claude 191 · agents + schema + test 322 · tune 50 ·
   headless + test 198 · roles 75 · doctor/mission/ledger/template/lint
   181) — near the limit. Order if time runs short: carry-in → live round →
   probe record → `run-claude.mjs` + `agents.mjs` + schema + their
@@ -802,7 +809,7 @@ nothing to a ledger but the `handoff-failed` line; the existing
 `headless-test.mjs` checks are byte-identical and the two `run` cases
 exist; **ckpt-s1 finding S3 is closed** — no retry mark, no "already
 recorded" path, a repeated `record` and a planted `.recorded` file both
-end `30` + `STOP`; the live-round row shows the three observations (not
+end `30` + `STOP`, and so does a `record` whose lock is gone; the live-round row shows the three observations (not
 only an exit code); advisor tokens are charged where the probe found
 them. If the probe struck the advisor: confirm nothing of it
 shipped. APPROVE → `[x]`, `Next up: S2`.
@@ -881,7 +888,13 @@ shipped. APPROVE → `[x]`, `Next up: S2`.
      in ms (the bash port of `lockStale`, `runner.mjs:297`; no lock, no
      git dir or an unreadable line → not live). The runner's own
      `refuseUnattended` (`runner.mjs:522`) stays env-only — `record` runs
-     while the lock is held.
+     while the lock is held. **Two limits, stated (plan-judge):** (a) a
+     round can delete the lock and turn this leg off for itself — the
+     variable is still set in every child the runner spawns, and S1b's
+     carry-in makes a missing lock at `record` a `30 state-tampered`, so
+     it is caught, not prevented; (b) the lock leg is NOT scoped to the
+     round's process tree: while a round is live EVERY session of the
+     repo (all worktrees share the git common dir) is unattended.
      constants `:70–71`: `HL_DEFAULT_PCT=95` → `HL_DEFAULT_RESERVE=33000`
      (comment cites the 2026-11-09 observation, brief `:225`);
      `hl_threshold` (`:180–186`) = effective window − reserve, where the
@@ -975,7 +988,10 @@ shipped. APPROVE → `[x]`, `Next up: S2`.
      path is exactly what S4's gate-guard blocks; S4 adds what `resume`
      asks for after a `state-tampered` stop — `run.md` prints the runner's
      own stop line, which names it). **While a round holds the lock the
-     parent's own session is unattended too** (`hl_unattended`, step 1):
+     parent's own session is unattended too — and so is every other
+     session in the repo; `run.md` says it in one sentence ("pause the
+     runner before you work in this repo yourself")** (`hl_unattended`,
+     step 1):
      it needs only `status`, `stop` and `pause` then (S4's guard leaves
      those three open), and if the handoff gate blocks the parent it
      writes the handoff and ends — the owner starts `/run` again (S5's
@@ -1193,25 +1209,31 @@ docs; the harness never touches this repo's own git dir. APPROVE → `[x]`,
 
 ### S4 — `gate.mjs` open/poll/status/expire behind one channel interface, delegation fields on every row, `runner.json` approvers, gate-guard hook + codex rule, runner wiring, harness
 
-- **ACs**: AC-19, AC-20, AC-21, AC-22, AC-36, AC-23 (the runner wiring
-  and the §5 block only — its connect / §12 / §10 / gate-classes surfaces
-  are S4b's), AC-42 (the answer store, `poll` unreachable from a round,
+- **ACs**: AC-19, AC-20, AC-21, AC-22, AC-36, AC-23 (the runner wiring only — the §5 block and the connect / §12 /
+  §10 / gate-classes surfaces are S4b's), AC-42 (the answer store, `poll` unreachable from a round,
   the protected set extended)
 - **Starts only when**: OQ-8 and OQ-9 are answered in the ledger (the
   channel array, the row fields and the answer store are shaped by them).
 - **Not here**: the policy file, `predict`, the `http` channel, the
-  contract schema, `connect approver` (all S4b). Part 2 of the
+  contract schema, `connect approver`, and — moved 2026-11-13 so this
+  brief holds its size — alert delivery, the `expire --force` verb and
+  the §5 `unattended-ask` block (all S4b). Part 2 of the
   gate-delegation record is never built.
 - **Suits**: `security` (a decision tool whose whole point is who may answer;
   one refusing hook; an execpolicy rule). Runtime: `claude`.
-- **Reads** (≈ 1,440 lines — near the limit; read nothing unlisted. The
-  2026-11-13 amendments on AC-19..AC-23 and AC-42 only summarise Do 1–4 —
-  this brief is the full text; skip them in the master plan):
+- **Reads** (≈ 1,305 lines — recounted by range 2026-11-13; read nothing
+  unlisted):
   1. Brief 163–183 (L1 channel-only + L2) + 202–208 (L6 — OQ-1's answer:
      `closed-expired`, a new gate) ≈ 30; gate-delegation record 67–84
-     (Part 1) ≈ 18; master plan Task 5 (with the 2026-11-13 amendments) +
-     AC-36 in Task 9 + **Task 11 (AC-42, with its 2026-11-13 amendment)**
-     + Value sourcing AC-19..AC-23, AC-36, AC-42 + Locked decisions ≈ 345.
+     (Part 1) ≈ 18; master plan, by line (the `Amended 2026-11-13`
+     paragraphs between these ranges are NOT read — this brief is their
+     full text): Task 5 464–491, 516–537, 542–555, 564–580, 586–601
+     (AC-19..AC-23) ≈ 97; AC-36 839–860 ≈ 22; **AC-42 970–1015** ≈ 46;
+     Value sourcing rows 1089–1107, 1110–1114, 1134–1136, 1144–1145,
+     1151–1152 ≈ 31; Locked decisions 1216–1220 (the one refusing hook),
+     1273–1290 (gate delegation, no local answer path, contract frozen
+     last), 1323–1344 (the assumed names, the Telegram facts, the lock
+     scope) ≈ 45 — ≈ 241.
   2. Memos 338–366 (D5 core + the L2 reading), 368–372 (option A), 393–398
      (files), 642–662 (counsel 1) ≈ 70.
   3. Journeys 116–160 (J4 — drop the relay row and the local `gate answer`
@@ -1239,9 +1261,8 @@ docs; the harness never touches this repo's own git dir. APPROVE → `[x]`,
   7. `tools/hook-test.mjs` 30–70 + 2542–2557 ≈ 56; `tools/lint.mjs` 519–536
      + 1400–1405 ≈ 25; `tools/runner-test.mjs` 1–40 (harness header style)
      ≈ 40.
-  8. `<plugin>/templates/WORKFLOW.md` the §5 `unattended-ask` block (grep
-     the fence; ≈ 12) + 858–880 (§6.2 pointer) ≈ 34; `<plugin>/templates/decision-log.md`
-     whole (15) — the row the recorded decision appends.
+    8. `<plugin>/templates/decision-log.md` whole (15) — the row the
+     recorded decision appends.
 - **Prior art** (permission gate — this brief adds ONE refusing hook and
   ONE execpolicy rule): `hooks/hooks.json:83–93` (merge-guard: wrapper
   passes only exit 0/2, missing script = BLOCK a merge-shaped command) —
@@ -1314,9 +1335,10 @@ docs; the harness never touches this repo's own git dir. APPROVE → `[x]`,
      message returned by `conversations.replies` (its `bot_id` / `user` =
      this token's `auth.test` identity); Telegram — the
      `reply_to_message` / `callback_query.message` object of the first
-     update that references it (`from.id` = `getMe`; the Bot API has no
-     fetch-by-id — confirm in its reference, else report `could not
-     verify`); when `poll` itself sent the message (outbox flush) it
+     update that references it (`from.id` = `getMe`; the Bot API has no fetch-by-id method, keeps an update at most 24 h
+     and drops it once `getUpdates` is called with a higher `offset` —
+     https://core.telegram.org/bots/api, read 2026-11-13 — so `poll`
+     advances the offset only AFTER the answer is in the store); when `poll` itself sent the message (outbox flush) it
      snapshots what it sent. **What the snapshot holds:** `q` is always
      the FULL 64-hex hash — recomputed from the outbox line's `question`
      and accepted only when its first 16 hex equal the bot message's
@@ -1349,18 +1371,10 @@ docs; the harness never touches this repo's own git dir. APPROVE → `[x]`,
      `yes` / `no <reason>` from an allowed sender on the same message
      answers it. **`expire`** = the TTL pass `poll` runs each tick
      (reminders, then `closed-expired` at 72 h), runnable alone;
-     **`expire --force <id>`** = an owner shell line that closes an OPEN
-     gate `closed-expired` now (withdraw a question — never a yes or a
-     no); the guard blocks it from model Bash always. **Alerts (G6):**
-     the runner and `gate.mjs` only append to `<state>/alerts.log`
-     (`runner.mjs:348`); `poll` DELIVERS them — every line past the
-     offset in `<state>/alerts.sent` goes through the outbox (`kind:
-     "alert"`) to every `route: "owner"` channel, so S1's stop / auth
-     alerts reach the owner from this brief on. `alerts.log` stays
-     OUTSIDE the protected set (the runner appends to it mid-round): a
-     round can add a line, which gives it nothing it lacks — it already
-     holds the bot token, the stated same-user limit — so `poll` delivers
-     only lines that start `alert: `, redacted, cut to 500 characters. **Exit codes:** `0` done
+     the `expire --force <id>` verb is S4b's (the guard here already
+     blocks its text). **Alerts:** in this brief `gate.mjs` only appends
+     to `<state>/alerts.log` (`runner.mjs:348`), as the runner does;
+     delivering them to the owner is S4b's. **Exit codes:** `0` done
      (`open`: row written; `poll`, `status`, `expire`: ran) · `1` usage
      or validation error, nothing written · `2` refused — unknown id or
      a gate not in the needed state · `40` busy — a round holds the lock
@@ -1374,8 +1388,8 @@ docs; the harness never touches this repo's own git dir. APPROVE → `[x]`,
      nothing else writes the store; `poll` writes nothing and exits
      busy while `runner.mjs`'s `roundHeld(cwd)` is true (AC-42,
      amendment 1; a `gate-test.mjs` case); unit pick and `20` read only the
-     store; add `answers.jsonl` and `telegram.offset` to the runner's
-     `PROTECTED` list.
+     store; add `answers.jsonl`, `telegram.offset` and `TAMPERED` (Do 2) to the
+     runner's `PROTECTED` list.
      `pending-gates.md` row written BEFORE the send; outbox
      `<state>/outbox.jsonl` flushed in order; verification = sender id ∈
      `owner_ids` or (`client_ids` AND class ∈ `client_may`); grammar
@@ -1400,18 +1414,38 @@ docs; the harness never touches this repo's own git dir. APPROVE → `[x]`,
      reads `questions.jsonl` or an `ask.mjs answer` as a gate answer.
      **`resume` after tampering (G2):** on the split path nothing is
      restored, so a forged `answers.jsonl` line or an approver id written
-     into `runner.json` would survive `30` + `resume`. After EVERY `state-tampered` stop — whatever file `STOP` names: on
-     the split path the names come from size / mtime hints a round can
-     fake — `resume` first (a) calls `gate.mjs`'s exported `reconcile({ cwd })` — it
-     re-verifies from the channel every `opened` snapshot of a
-     still-open gate and every `answered` line with no `acted` line,
-     exactly as `poll` would, and appends a `void` event for each one it
-     cannot verify (listed on stdout, one alert) — and (b) prints
+     into `runner.json` would survive `30` + `resume`. Four rules (plan-judge PJ-B1, PJ-B2):
+     (a) **Sticky.** On ANY `state-tampered` outcome — whatever file it
+     names: on the split path the names come from size / mtime hints a
+     round can fake — `record` also writes `<state>/TAMPERED` (`round`,
+     UTC, the names, the baseline of (b)); it is in the protected set.
+     While it exists `next` / `begin` stop `30 state-tampered`, plain
+     `resume` exits 1, and `stop` / `pause` never overwrite a `STOP`
+     that reads `state-tampered` (they print that the runner is already
+     stopped). The tampered state no longer lives in `STOP`'s text alone.
+     (b) **The scope does not come from the forged file.** `begin`
+     appends the byte length and sha256 of `answers.jsonl` to the
+     `state_digest` string it returns (`<sha256>.<length>.<sha256>` —
+     still ONE opaque string to the caller and to the contract schema;
+     the full-set hash is compared as today). On a mismatch `record`
+     copies that baseline from the digest the caller passed into
+     `TAMPERED`. `gate.mjs`'s exported `reconcile({ cwd, baseline })`
+     then re-verifies from the channel EVERY line after the baseline —
+     `opened`, `answered`, `acted`, `held`, whatever status it claims,
+     exactly as `poll` would — and the WHOLE store when the baseline is
+     absent or the first `<length>` bytes no longer hash to it. A line
+     it cannot verify gets a `void` event (listed on stdout, one alert).
+     A Telegram answer can never be re-verified (its update is consumed):
+     after the baseline it always goes `void` and the gate is asked
+     again — say so in the printed list.
+     (c) **`resume` without the flag is a dry run:** it prints
      `approver.route`, every channel's kind and route, `owner_ids`,
-     `client_ids` and `client_may`, and exits 1 without touching `STOP`
-     unless `--confirm-approvers` is passed. `gate.mjs reconcile` is also
-     a CLI verb for the owner's shell; the guard blocks it from model
-     Bash.
+     `client_ids`, `client_may`, and the lines the reconcile WOULD void;
+     it writes nothing and exits 1. (d) **`resume --confirm-approvers`**
+     runs the reconcile for real (the `void` events), removes `TAMPERED`
+     and `STOP`, resets the backoff, exits 0. `gate.mjs reconcile` is
+     also a dry-run CLI verb for the owner's shell; the guard blocks it
+     from model Bash.
   3. **`hooks/lib/gate-guard.sh`** + the hooks.json group after `:93`
      (AC-21 as amended; **one file, ≤ 90 lines** — the 50-line cap could not
      hold these shapes, and a second lib file would split one rule):
@@ -1444,12 +1478,16 @@ docs; the harness never touches this repo's own git dir. APPROVE → `[x]`,
      same gate id and a different question → `q` differs from the
      snapshot → a yes on it answers nothing. **G2:** a forged
      `answered` line appended to `answers.jsonl` → `30 state-tampered` →
-     `runner.mjs resume` (no flag) exits 1 and `STOP` stays → `resume
-     --confirm-approvers` reconciles: the forged line is `void`, the gate
-     is still open, and a genuine unacted answer survives. `hold` then
+     `runner.mjs resume` (no flag) exits 1, writes nothing, `STOP` and
+     `TAMPERED` stay → `resume --confirm-approvers` reconciles: the
+     forged line is `void`, the gate is still open, and a genuine Slack
+     answer written after the baseline survives. **PJ-B2:** a forged
+     `answered` + `acted` PAIR → both `void`, the gate still open; a
+     forged `rounds/<n>.begin.json` cannot move the baseline (it is read
+     from `TAMPERED`, which `record` filled from the caller's digest); a
+     Telegram answer after the baseline → `void`, re-asked. `hold` then
      `yes` on the same message → answered, one nonce use; `open` with no
-     channel → row + outbox, exit 0, `20`; an alert line in `alerts.log`
-     is delivered once to the owner route; each exit code once; **a client's `yes` on `decision` is
+     channel → row + outbox, exit 0, `20`; each exit code once; **a client's `yes` on `decision` is
      recorded `source: client via …` and the owner copy says the client
      answered**; **a `pending-gates.md` row hand-edited to "answered yes"
      answers nothing — the gate is still open in `status` and unit pick**;
@@ -1472,12 +1510,13 @@ docs; the harness never touches this repo's own git dir. APPROVE → `[x]`,
      + a live lock → still BLOCKED; unattended `runner.mjs stop` silent;
      `gate.mjs reconcile` BLOCKED (thirteen cases). `runner-test.mjs`:
      a fake child that rewrites `answers.jsonl` → `30 state-tampered`;
-     `resume` after that stop without the flag → exit 1, `STOP` kept.
+     `resume` after that stop without the flag → exit 1, `STOP` kept;
+     **PJ-B1:** `30` → `runner.mjs stop` → `resume` (no flag) still exits
+     1 and `next` still stops `30` (`TAMPERED` survives the `stop`);
+     `resume --confirm-approvers` → `TAMPERED` and `STOP` gone.
      `tools/lint.mjs` `checkGateHarness` after `checkFidelityHarness`.
-  5. **The §5 block only** (AC-23; the other surfaces are S4b's): the
-     `unattended-ask` block now names `gate.mjs open --class decision`
-     (same byte count ± 50); `commands/mission.md:46` sentence mentions the
-     gate tool for the overrun decision under `-p`. A verified
+    5. **The merge-guard case** (the §5 `unattended-ask` block and the
+     `mission.md:46` sentence moved to S4b Do 7). A verified
      `staging-merge` yes authorises the merge but the command still passes
      the merge-guard hook (`hooks.json:83–93`, §10 Merge policy cell) — the
      reply never bypasses it (a harness case, not prose).
@@ -1493,8 +1532,8 @@ docs; the harness never touches this repo's own git dir. APPROVE → `[x]`,
     `wc -l <plugin>/hooks/lib/gate-guard.sh` ≤ 90;
     `node tools/run-codex-test.mjs` green (the `covers` cross-check names
     the new rules); `node tools/runner-test.mjs` green.
-  - `node tools/lint.mjs` → `lint: clean`; `wc -c <plugin>/templates/WORKFLOW.md`
-    within ± 50 B of its size after S2 (report both numbers).
+  - `node tools/lint.mjs` → `lint: clean`; `templates/WORKFLOW.md` is
+    untouched by this brief (`git diff --stat` shows no line for it).
   - `for f in type= answerer= source= proof= nonce= predicted= predictor=;
     do grep -q -- "$f" <plugin>/tools/gate.mjs || echo "MISSING $f"; done`
     prints nothing (seven fields, each checked — a line count proves
@@ -1504,15 +1543,14 @@ docs; the harness never touches this repo's own git dir. APPROVE → `[x]`,
   - `node <plugin>/tools/gate.mjs status` in this repo → `no open gates`
     (no network call without a route configured — assert it exits 0 fast).
   - Catalog: none.
-- **Read budget**: ≈ 1,440 lines — near the limit, and the build grew
-  with G1 / G2 (see the master plan's Revision 2026-11-13 note on
-  session pressure). Order if time runs short:
+- **Read budget**: ≈ 1,305 lines (plan/brief/record 289 · memos 70 ·
+  journeys 45 · connect + WORKFLOW §12 53 · runner + ask + publish-gate +
+  handoff-lib 240 · hooks + codex + wrappers + run-codex-test 290 ·
+  harness heads 121 · the rest ≈ 197) — inside. Order of work:
   `gate.mjs` open/poll with the fields, the snapshot binding and the
   channel interface + harness (the self-approval surface) → gate-guard +
-  codex rule + hook-test → `resume` / `reconcile` → runner wiring → alert
-  delivery → the §5 block last (a corrective may carry the prose and
-  alert delivery, never the guard, the binding, the reconcile or the
-  fields — S4b freezes the row shape).
+  codex rule + hook-test → `TAMPERED` / `resume` / `reconcile` → runner
+  wiring. Nothing here is optional: S4b freezes the row shape.
 
 **Checkpoint ckpt-s4** — one-shot `reviewer` on **Fable** inside S4 (the
 mission's sharpest boundary): enumerate every path by which a gate row can
@@ -1525,10 +1563,14 @@ write must not move any gate; the codex rule must cover the same
 shapes; `record()` cannot be reached without a channel proof; every row
 carries the delegation fields and the nonce; **G1** — class, nonce and
 message id are never read from a row after first sight, and never from
-a row alone at first sight; a yes on any message other than the
+a row alone at first sight (Telegram: the row supplies only the pinned
+message id, class / nonce / `q` stay null and no answer is accepted
+until the first update fills them); a yes on any message other than the
 snapshot's bot-authored one answers nothing; **G2** — after a
 `state-tampered` stop no forged answer or approver survives a `resume`
-without the owner's flag; **G3** — the guard is on with the variable
+without the owner's flag — the state is sticky across `stop` / `pause`,
+and a forged `answered` + `acted` pair is voided because the scope comes
+from the begin-time baseline, not from the store; **G3** — the guard is on with the variable
 unset (live lock) and with `AGENTIC_WORKFLOW_CHILD=1`; no code path writes
 `answerer` other than `owner`; a client's answer is never recorded as the
 owner's; **AC-42**: `poll` is unreachable from a round by any command form
@@ -1543,16 +1585,17 @@ budgets. APPROVE → `[x]`, `Next up: S4b`.
 
 ### S4b — `gate-policy.json` + `predict`, the generic `http` channel with signature proof, `gate-contract.schema.json`, guard shapes, `connect approver`, §12/§10 text
 
-- **ACs**: AC-37, AC-38, AC-39, AC-23 (its connect / §12 / §10 /
-  gate-classes surfaces), AC-42 (`gate-policy.json` joins the protected
-  set)
+- **ACs**: AC-37, AC-38, AC-39, AC-23 (the §5 block and its connect /
+  §12 / §10 / gate-classes surfaces), AC-19 (alert delivery and `expire
+  --force` — moved from S4, 2026-11-13), AC-42 (`gate-policy.json` joins
+  the protected set)
 - **Suits**: `security` (a second answer path and its proof; two more
   guard shapes; a frozen public shape). Runtime: `claude`.
 - **Starts only when**: OQ-8 and OQ-9 are answered in the ledger. If the
   owner chose NOT to build the channel, AC-38 is struck in the hand-off
   with the answer cited and the contract (AC-39) freezes without the
   `http` shapes.
-- **Reads** (≈ 1,180 lines):
+- **Reads** (≈ 1,225 lines):
   1. Gate-delegation record 67–84 (Part 1 — and nothing of Part 2) ≈ 18;
      brief 163–183 (L1, L2) ≈ 21; master plan Task 9 (AC-37..AC-39) + AC-23
      + Value sourcing AC-36..AC-39 + Locked decisions (the 2026-11-12
@@ -1577,7 +1620,11 @@ budgets. APPROVE → `[x]`, `Next up: S4b`.
   6. `<plugin>/templates/WORKFLOW.md` 1185–1252 (§12 — rules 1–5 + multi-
      project) + 1054 (Owner channel row) ≈ 70; `<plugin>/commands/connect.md`
      76–123 (Slack path + Record + Output — the round-trip idiom) ≈ 48;
-     `<plugin>/templates/gate-classes.md` 20–60 ≈ 40.
+     `<plugin>/templates/gate-classes.md` 20–60 ≈ 40; for the three
+     items moved from S4: `<plugin>/templates/WORKFLOW.md` the §5
+     `unattended-ask` block (grep the fence; ≈ 12) + 858–880 (§6.2
+     pointer) ≈ 34; `<plugin>/commands/mission.md` 43–49 ≈ 7;
+     `runner.mjs` `alert` / `alertedToday` 348–351 ≈ 4.
 - **Prior art** (permission gate — this brief EXTENDS S4's one refusing
   hook and its execpolicy mirror; it adds no second hook body):
   `hooks/lib/gate-guard.sh` + its `hooks.json` group (S4) — add shapes to
@@ -1647,8 +1694,9 @@ budgets. APPROVE → `[x]`, `Next up: S4b`.
      disagree, the schema is wrong. `gate.mjs --help` ends
      with the freeze sentence (a shape change needs a `contract_version`
      bump and a CHANGELOG line).
-  5. **Guard shapes (AC-39)**: `gate-guard.sh` (still one file, ≤ 90
-     lines) also BLOCKS, when unattended (`hl_unattended` — the variable
+    5. **Guard shapes (AC-39)**: `gate-guard.sh` (still one file, ≤ 90
+     lines — if the shapes do not fit, report the line count; never drop
+     a shape to fit the cap) also BLOCKS, when unattended (`hl_unattended` — the variable
      OR a live round lock, S2 / S4), `gate.mjs approver` and a Bash write (`>`, `>>`, `tee`, `sed
      -i`, `cp`, `mv`) to `.claude/gate-policy.json` or `.claude/runner.json`
      and — through a second `Write|Edit|MultiEdit` matcher group running
@@ -1685,7 +1733,25 @@ budgets. APPROVE → `[x]`, `Next up: S4b`.
      Edit of `pending-gates.md` BLOCKED; attended write to `runner.json`
      silent; `gate.mjs predict` silent; unattended `gate.mjs approver`
      BLOCKED). `run-codex-test.mjs` green.
-  7. **Surfaces (AC-23)**: `connect.md` new section after `:123`
+    7. **Moved from S4 (2026-11-13).** (a) **Alert delivery (AC-19):**
+     the runner and `gate.mjs` only append to `<state>/alerts.log`
+     (`runner.mjs:348`); `poll` DELIVERS them — every line past the
+     offset in `<state>/alerts.sent` goes through the outbox (`kind:
+     "alert"`) to every `route: "owner"` channel, so the runner's stop /
+     auth alerts reach the owner. `alerts.log` stays OUTSIDE the
+     protected set (the runner appends to it mid-round): a round can add
+     a line, which gives it nothing it lacks — it already holds the bot
+     token, the stated same-user limit — so `poll` delivers only lines
+     that start `alert: `, redacted, cut to 500 characters. gate-test:
+     one line delivered once; a line without the prefix never. (b)
+     **`expire --force <id>` (AC-19):** an owner shell line that closes
+     an OPEN gate `closed-expired` now (withdraw a question — never a yes
+     or a no); exit 2 on any other state; S4's guard already blocks it
+     from model Bash. gate-test: one case each. (c) **The §5 block
+     (AC-23):** the `unattended-ask` block now names `gate.mjs open
+     --class decision` (same byte count ± 50); the `commands/mission.md:46`
+     sentence mentions the gate tool for the overrun decision under `-p`.
+     **Surfaces (AC-23)**: `connect.md` new section after `:123`
      (`approver owner|client`: ids and public keys are not secrets; each
      channel entry's `route`; the reaction / button → answer table and
      what `hold` does, in one line each;
@@ -1707,7 +1773,7 @@ budgets. APPROVE → `[x]`, `Next up: S4b`.
      frozen gate contract, guard shapes, connect approver (S4b)` +
      Attribution; push. Never edit `.plans/`.
 - **Verify**:
-  - `node tools/gate-test.mjs` exits 0 — report the case count (≥ 58) and
+  - `node tools/gate-test.mjs` exits 0 — report the case count (≥ 62) and
     name the unsigned-answer case, the re-post case, the L2-lift case and
     the schema case.
   - `node tools/hook-test.mjs`, `tools/run-codex-test.mjs`,
@@ -1722,7 +1788,7 @@ budgets. APPROVE → `[x]`, `Next up: S4b`.
   - `node tools/lint.mjs` → `lint: clean`; `wc -c <plugin>/templates/WORKFLOW.md`
     ≤ 119,600 (report); `connect.md` ≤ 19,100.
   - Catalog: none.
-- **Read budget**: ≈ 1,180 lines — inside. Order if time runs short: the
+- **Read budget**: ≈ 1,225 lines — inside. Order if time runs short: the
   `http` channel + its negative cases (the new answer path) → guard shapes
   + codex rules → policy + `predict` → the contract schema → surfaces last
   (a corrective may carry the prose, never the proof check or the guard).
@@ -1824,7 +1890,9 @@ shipped; byte budgets. APPROVE → `[x]`, `Next up: S5`.
      re-attaches and types `/agentic-workflow:run` again (state is in the
      runner state dir and the ledgers; a stale lock is reclaimed); the
      sign that it is down is `runner.mjs status` showing no round since
-     the last due time (the block may grow to ≤ 2,600 B).
+     the last due time; and one line on the lock's reach — while a round
+     is live every session in the repo is treated as unattended, so pause
+     the runner before working there by hand (the block may grow to ≤ 2,600 B).
   4. **`commands/doctor.md`** §1 **Runner** bullet after the Compaction
      window bullet (≤ 450 B): `runner.json` present + valid; a login present
      (`claude -p` dry call refused → 🔴 "not logged in"; skipped under

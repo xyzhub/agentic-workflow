@@ -207,7 +207,7 @@ release (S5).
      live `runner.mjs round` on a scratch mission (≤ $1) at the start of S1b:
      the command body expanded, the sources rule was obeyed, and a `round:`
      line and the counters were written — recorded as a row of the brief's P0
-     probe record. A failed observation stops S1b.
+     probe record. ANY failed observation — (1), (2) or (3) — stops S1b.
    - AC-7 **Redaction.** `<plugin>/tools/redact.mjs` (new, ≤ 80 lines) ports
      `hl_redact` (`handoff-lib.sh:225–234`, seven shapes) and adds an
      **exact-value scrub** of every env var whose NAME matches
@@ -710,7 +710,12 @@ release (S5).
      mark and no quiet retry — `recordMac`, `rounds/<n>.recorded` and the
      "already recorded" answer are deleted in S1b's carry-in step; a repeated
      `record` ends `30 state-tampered` with the day forfeited, and a planted
-     mark changes nothing (one runner-test case). `classify`'s output gains
+     mark changes nothing (one runner-test case). In the same step
+     (plan-judge PJ-B3): a lock that is missing or no longer this round's
+     at `record` is `30 state-tampered` even when the digest matches —
+     never a usage error (`runner.mjs:719`) — with one runner-test case;
+     AC-11's lock leg relies on it (a round that removes the lock to look
+     attended is caught at `record`). `classify`'s output gains
      `advisor_off` (AC-33).
    - AC-30 **Login check is skippable when the caller supplies the account
      (S1).** `runner.json` gains `"auth": "login" | "external"` (default
@@ -1019,6 +1024,26 @@ release (S5).
      `hl_unattended` — the variable OR a live round lock; `begin` /
      `record`'s own refusal stays on the variable alone (`record` runs under
      the lock). The protected set gains `<state>/telegram.offset` (S4).
+     **Amended 2026-11-13 (plan-judge PJ-B1, PJ-B2):** *Sticky.* The
+     tampered state is its own marker, `<state>/TAMPERED`, written by
+     `record` beside `STOP` and in the protected set; while it exists
+     `next` / `begin` stop `30` and plain `resume` exits 1; only `resume
+     --confirm-approvers` removes it; `stop` / `pause` never overwrite a
+     `STOP` that reads `state-tampered`. Case: `30` → `stop` → `resume`
+     (no flag) still exits 1. *Scope not taken from the forged file.*
+     `begin` puts the byte length and sha256 of `answers.jsonl` into the
+     `state_digest` string the caller holds (still one opaque string);
+     on a mismatch `record` copies that baseline into `TAMPERED`, and
+     the reconcile re-verifies EVERY line after it, whatever status the
+     line claims — and the whole store when the baseline is absent or the
+     prefix no longer hashes to it. Case: a forged `answered` + `acted`
+     pair → both `void`, the gate still open. *Two forms.* `resume`
+     without the flag is a dry run: it prints the approver table and what
+     would go `void`, writes nothing, exits 1; with the flag it writes the
+     `void` events, removes `TAMPERED` and `STOP`, resets the backoff,
+     exits 0. *Telegram.* A consumed update cannot be read again (Bot API
+     reference), so a Telegram answer after the baseline cannot be
+     re-verified: it goes `void` and the gate is asked again.
 
 ## Value sourcing
 
@@ -1075,6 +1100,11 @@ release (S5).
 | AC-11, AC-21 | unattended = the variable OR a live round lock for the cwd; wins over `AGENTIC_WORKFLOW_CHILD` | derivation | goldfish G3; the lock line and its staleness rule, `runner.mjs:288–297` |
 | AC-42 | `resume --confirm-approvers`; `gate.mjs reconcile` | assumption | planner's names 2026-11-13 (goldfish G2) |
 | AC-23 | `gate.mjs approver --set '<json>'` (owner shell line) | assumption | planner's 2026-11-13; the `resume` pattern of AC-10 |
+| AC-19 | alert delivery filter: only lines starting `alert: `, redacted, cut to 500 characters | assumption | planner's 2026-11-13; `alerts.log` is round-writable (`runner.mjs:348`), the filter bounds what a forged line can carry |
+| AC-11 | a `21` round is charged its reported tokens, or the whole tick budget (750,000) when no `result` event exists | derivation | `classify`'s existing default, `runner.mjs:605` (`used == null ? cfg.budgets.tick_tokens : used`); AC-5's tick budget |
+| AC-23, AC-25, AC-40 | raised byte caps: `connect.md` approver section ≤ 2,800 B (was 2,200) and file ≤ 19,100 B (was 18,500); README `## Run 24/7` ≤ 3,000 B (was 2,800); runbook `## Unattended run` ≤ 2,600 B (was 2,000) | assumption | planner's 2026-11-13 — each raise is the size of the clause the goldfish revision added (route / reaction / `hold` lines; the `--confirm-approvers` clause; "what keeps `/run` alive"); no lint budget moves (the per-file 24,000 B budget still holds) |
+| AC-42 | `<state>/TAMPERED`; the `answers.jsonl` length + sha256 carried inside `state_digest` | assumption | planner's 2026-11-13 (plan-judge PJ-B1, PJ-B2); `state_digest` stays one opaque string in `runner-contract.schema.json` |
+| AC-19 | Telegram: no fetch-by-id method; updates kept ≤ 24 h and gone once confirmed by a higher `offset`; `reply_to_message` and `CallbackQuery.message` carry the bot's message | derivation | https://core.telegram.org/bots/api (read 2026-11-13): "Getting updates" intro, `getUpdates` `offset`, `Message.reply_to_message`, `CallbackQuery.message` |
 | AC-6 | one live round on a scratch mission, ≤ $1 (`budgets.round_usd: 1`) | locked decision | owner 2026-11-13 "Fix all" (goldfish G5, ledger Handoff log) |
 | AC-33 | `--advisor-max-context`, `--resume-input`, `advisor_off`, `adv=` as the last field; `tokens` = max(`usage` sum, `modelUsage` sum) | assumption | planner's names 2026-11-13; which usage block holds advisor tokens is AC-32 row (iv) |
 | AC-19 | reply grammar `yes \| no <reason> \| hold`; junk hint; duplicate receipt | locked decision | journeys J4 |
@@ -1298,10 +1328,20 @@ release (S5).
   reaction and button names, `<state>/telegram.offset`,
   `<state>/alerts.sent`. The builder may rename one with a line in its
   hand-off; S4b freezes what S4 shipped.
-- Assumed 2026-11-13 (planner) — the Telegram Bot API cannot fetch a
-  message by id, so the gate message is verified from the
-  `reply_to_message` / `callback_query.message` object of an update; S4
-  confirms it in the API reference before relying on it.
+- 2026-11-13 (planner; https://core.telegram.org/bots/api, read
+  2026-11-13 — a fact from the reference, not a run) — the Telegram Bot
+  API has no method that fetches a message by id; an update is kept at
+  most 24 h and is gone once `getUpdates` is called with a higher
+  `offset`; `Message.reply_to_message` and `CallbackQuery.message` carry
+  the bot's own message. So the gate message is verified from the update
+  that carries the reply, `poll` advances the offset only after the
+  answer is in the store, and a reconcile cannot re-read a Telegram
+  answer (it goes `void`; the gate is asked again).
+- Assumed 2026-11-13 (planner; plan-judge advisory) — a live round lock
+  makes EVERY session of the repo unattended (all worktrees share the
+  git common dir): the lock leg is not scoped to the round's own
+  process tree. `run.md` and the runbook say so — pause the runner
+  before working attended in that repo.
 - Assumed 2026-11-13 (planner) — `ccp run` on `roundOnce` loses its live
   tool-by-tool rendering (the round stream goes to a file). If the owner
   wants it kept, S1b step 6 leaves `headless.mjs` untouched instead.
@@ -1575,6 +1615,27 @@ decision. S4's order-if-short line names what a corrective may carry.
 describes OB-35 by its two 2026-11-12 clauses; the full text is S5 Do 8
 and the row says "verbatim", so nothing breaks — the orchestrator may
 reword the row.
+
+## Revision 2026-11-13 (plan-judge)
+
+_Narrow plan-judge REVISE on db3153d..a6432f1 — the one revision pass.
+No AC added; `Estimate:` unchanged._
+
+| Item | Landed |
+|---|---|
+| PJ-B1 sticky tampered state (`<state>/TAMPERED`; `stop` / `pause` never overwrite) | AC-42 second amendment; S4 Do 2, Do 4 |
+| PJ-B2 reconcile scope from a begin-time baseline inside `state_digest` | AC-42 second amendment; S4 Do 2, Do 4 |
+| PJ-B3 missing or rewritten lock at `record` = `30 state-tampered` | AC-29 amendment; S1b carry-in; S2 Do 1 |
+| PJ-B4 any failed observation stops S1b | AC-6 amendment; S1b step 0 |
+| PJ-B5 S4 Reads by line range, recounted | S4 Reads 1 |
+| PJ-B6 value rows (alert filter, `21` charge, byte caps) | Value sourcing |
+| Advisories | alert delivery, `expire --force` and the §5 block move S4 → S4b, and the pre-booked "a corrective may carry" line is gone; the lock leg covers every session of the repo (stated, not scoped); Telegram facts settled from the Bot API reference; `resume` with / without the flag; ckpt-s4 Telegram carve-out; S4b reports if the 90-line cap cannot hold |
+
+The sessions-file line numbers in the goldfish note above predate this
+pass (the file moved by ≈ 30–50 lines below S1b); grep the quoted phrase.
+
+Read budgets: S1b ≈ 1,435 · S2 ≈ 1,465 · S3 ≈ 1,065 · S4 ≈ 1,305 · S4b
+≈ 1,225 · S5 ≈ 1,060.
 
 ---
 _The `.plans/continuous-operation.sessions.md` briefs execute these tasks;
