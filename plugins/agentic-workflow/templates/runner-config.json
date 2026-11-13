@@ -1,5 +1,5 @@
 {
-  "$comment": "Template for <project>/.claude/runner.json (committed, non-secret) — read by tools/runner.mjs. NOT here, ever: tokens, keys, ids that carry a secret, or any account field (the runner uses whatever login the container has; no account check, brief L3). Optional keys with no default: budgets.round_usd (adds --max-budget-usd to the child), permission_mode (default acceptEdits), max_turns (default 150, the OB-32 probe invocation).",
+  "$comment": "Template for <project>/.claude/runner.json (committed, non-secret) — read by tools/runner.mjs. NOT here, ever: tokens, keys, ids that carry a secret, or any account field (the runner uses whatever login the container has; no account check, brief L3). Optional keys with no default: budgets.round_usd (adds --max-budget-usd to the child), permission_mode (default acceptEdits), max_turns (default 150, the OB-32 probe invocation), stage (`below-v6` → the autopilot unit, `v6` → operate cycles; absent → neither).",
   "schema_version": 1,
   "project": "<slug>",
   "auth": "login",

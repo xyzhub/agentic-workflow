@@ -49,6 +49,7 @@ const BASE_ENV = {
   GH_TOKEN: GH_VALUE,
   FAKE_SLACK_BOT_TOKEN: SLACK_VALUE,
   FAKE_LOG,
+  FAKE_RUNNER: RUNNER,
   // Planted so the child env can be proven clean of them:
   ANTHROPIC_API_KEY: 'sk-ant-FAKEKEY-must-not-reach-child',
   ANTHROPIC_AUTH_TOKEN: 'fake-auth-token-must-not-reach-child',
@@ -112,6 +113,18 @@ switch (sc) {
   case 'hook': advance(); ok({ terminal_reason: 'hook_stopped' }); break;
   case 'gate': fs.appendFileSync(require('path').join(process.cwd(), '.plans/pending-gates.md'), '- [ ] G-1 merge PR #12 — open\\n'); ok(); break;
   case 'budget': advance(); out({ type: 'result', subtype: 'error_max_budget_usd', is_error: true, session_id: 'sess-1', usage }); break;
+  case 'forge': (async () => { // an in-round record with a self-computed digest, UNATTENDED unset
+    advance();
+    const R = await import(require('url').pathToFileURL(e.FAKE_RUNNER).href);
+    const sd = R.stateDir(process.cwd());
+    const n = Number(fs.readFileSync(sd + '/lock', 'utf8').split(' ')[2]);
+    const f = sd + '/forged.json';
+    fs.writeFileSync(f, JSON.stringify({ contract_version: 1, round: n, code: 0, outcome: 'done', reason: 'forged', tokens: 0, session_id: null }));
+    const env = { ...e }; delete env.AGENTIC_WORKFLOW_UNATTENDED;
+    const r = require('child_process').spawnSync('node', [e.FAKE_RUNNER, 'record', '--round', String(n), '--from', f, '--digest', R.snapshotProtected(process.cwd(), sd, n).digest], { env, encoding: 'utf8' });
+    fs.writeFileSync(sd + '/forge-result.txt', String(r.status));
+    ok();
+  })(); break;
   case 'tamper': advance(); fs.writeFileSync(e.FAKE_TAMPER_FILE, e.FAKE_TAMPER_TEXT || '{}'); ok(); break;
   default: ok();
 }
@@ -188,6 +201,17 @@ try {
     const d = mkRepo();
     const r = run(d, ['round'], { FAKE_SCENARIO: sc });
     check(`exit table: ${sc} round → ${code} ${outcome}`, r.code === code && lastLine(d).includes(` ${outcome} `), `${r.code} ${r.out} ${r.err} | ${lastLine(d)}`);
+  }
+  {
+    const d = mkRepo();
+    run(d, ['round'], { FAKE_SCENARIO: 'login' });
+    const al = read(path.join(SD(d), 'alerts.log')) || '';
+    check('75 on a fake `Login expired` result alerts the approver once (J1 text, no key clause)', /auth-expired/.test(lastLine(d)) && /run `claude \/login`\. No work is lost/.test(al) && !/API/.test(al), al);
+    const d2 = mkRepo();
+    run(d2, ['next'], { FAKE_LOGIN: '0' }); run(d2, ['next'], { FAKE_LOGIN: '0' });
+    check('no login at next → one auth-expired alert per day', (read(path.join(SD(d2), 'alerts.log')) || '').split('\n').filter((l) => l.includes('auth-expired')).length === 1);
+    check('--help prints the header and exits 0', (() => { const h = run(d2, ['--help']); return h.code === 0 && /Exit codes/.test(h.out); })());
+    check('roundPrompt(unit, cfg) works with the brief\'s two arguments', R.roundPrompt('/agentic-workflow:operate', R.readConfig(d2)).includes('/agentic-workflow:operate'));
   }
   {
     const d = mkRepo({ ledger: null });
@@ -406,8 +430,8 @@ try {
     check('classify → 75 on a fake `invalid api key` result', c.code === 75 && c.outcome === 'auth-expired', JSON.stringify(c));
     const ok = R.classify(d, { round: b.round, eventsPath: writeEv(d, { type: 'result', subtype: 'success', result: 'Invalid API key handling fixed', usage: { input_tokens: 1 } }) });
     check('classify: the same text on a succeeded turn is never 75', ok.code !== 75, JSON.stringify(ok));
-    const hs = R.classify(d, { round: b.round, eventsPath: writeEv(d, { type: 'result', subtype: 'error_during_execution', terminal_reason: 'hook_stopped' }, { type: 'result', subtype: 'success', terminal_reason: 'hook_stopped' }) });
-    check('classify: the handoff stop keys on the LAST result terminal_reason, not subtype', hs.code === 21, JSON.stringify(hs));
+    const hs = R.classify(d, { round: b.round, eventsPath: writeEv(d, { type: 'result', subtype: 'success' }, { type: 'result', subtype: 'error_during_execution', terminal_reason: 'hook_stopped' }) });
+    check('classify: the handoff stop keys on the LAST result terminal_reason, not subtype (non-success + hook_stopped → 21)', hs.code === 21, JSON.stringify(hs));
   }
 
   // ── credentials preflight (AC-31) ────────────────────────────────────────
@@ -441,6 +465,24 @@ try {
     const r2 = run(d2, ['round'], { FAKE_SCENARIO: 'tamper', FAKE_TAMPER_FILE: path.join(d2, '.claude/runner.json'), FAKE_TAMPER_TEXT: '{"project":"demo","budgets":{"daily_tokens":999999999}}' });
     check('state-tampered: the same on .claude/runner.json → 30, file restored', r2.code === 30 && /runner\.json/.test(r2.out) && read(path.join(d2, '.claude/runner.json')) === cfgBefore, `${r2.code} ${r2.out}`);
     check('state-tampered: next stays stopped (30) until resume', run(d2, ['next']).code === 30);
+    const d3 = mkRepo();
+    const r3 = run(d3, ['round'], { FAKE_SCENARIO: 'tamper', FAKE_TAMPER_FILE: path.join(SD(d3), 'rounds/1.begin.json'), FAKE_TAMPER_TEXT: '{"round":1,"start_ms":0,"ledger":null,"gates":99}' });
+    check('state-tampered: a child rewriting rounds/<n>.begin.json → 30, the snapshot restored', r3.code === 30 && /begin\.json/.test(r3.out) && JSON.parse(read(path.join(SD(d3), 'rounds/1.begin.json'))).gates === 0, `${r3.code} ${r3.out}`);
+    const d4 = mkRepo();
+    const r4 = run(d4, ['round'], { FAKE_SCENARIO: 'forge' });
+    check('state-tampered: an in-round record with a self-computed digest and UNATTENDED unset → the round still ends 30',
+      r4.code === 30 && /state-tampered/.test(r4.out) && read(path.join(SD(d4), 'forge-result.txt')) === '0', `${r4.code} ${r4.out} forge=${read(path.join(SD(d4), 'forge-result.txt'))}`);
+  }
+  {
+    const d = mkRepo();
+    const b = JSON.parse(run(d, ['begin', '--json', '--pid', String(process.pid)]).out);
+    const daily0 = read(path.join(SD(d), 'daily.json'));
+    writeFileSync(path.join(TMP, 'neg.json'), JSON.stringify({ contract_version: 1, round: b.round, code: 0, outcome: 'done', reason: 'x', tokens: -5000000, session_id: null }));
+    const neg = run(d, ['record', '--round', String(b.round), '--from', path.join(TMP, 'neg.json'), '--digest', b.state_digest]);
+    check('record: negative tokens refused (1), daily total untouched', neg.code === 1 && /non-negative/.test(neg.err) && read(path.join(SD(d), 'daily.json')) === daily0, neg.err);
+    writeFileSync(path.join(TMP, 'mis.json'), JSON.stringify({ contract_version: 1, round: b.round, code: 0, outcome: 'crashed', reason: 'x', tokens: 5, session_id: null }));
+    const mis = run(d, ['record', '--round', String(b.round), '--from', path.join(TMP, 'mis.json'), '--digest', b.state_digest]);
+    check('record: a code that does not match its outcome is refused (1)', mis.code === 1 && /does not match/.test(mis.err), mis.err);
   }
   {
     const d = mkRepo();
@@ -525,6 +567,7 @@ try {
       ['all three', { used: 9, est: 5, tb: 750000, tt: 800000, mb: 2250000 }],
       ['no Tick budget', { used: 1, est: 4, tt: 999999999, mb: 999999999 }],
       ['Tick budget 0', { used: 1, est: 4, tb: 0, tt: 5, mb: 5 }],
+      ['Tick budget 00', { used: 1, est: 4, tb: '00', tt: 5, mb: 5 }],
     ];
     const bad = [];
     for (const [name, f] of FIX) {
@@ -577,6 +620,16 @@ try {
     run(d, ['round'], { FAKE_SCENARIO: 'noprog' });
     const t0 = Date.now();
     const w2 = run(d, ['wait', '--max', '1']);
+    const di = mkRepo({ ledger: null });
+    run(di, ['next']);
+    const t1 = Date.now();
+    const wi = run(di, ['wait', '--max', '2']);
+    check('wait: idle (nothing to run) blocks until --max instead of waking at once', wi.code === 0 && Date.now() - t1 >= 1800 && /max reached/.test(wi.out), `${wi.out} ${Date.now() - t1}ms`);
+    const dg = mkRepo();
+    writeFileSync(path.join(dg, '.plans/pending-gates.md'), '- [ ] G-1 decide — open\n');
+    const t2 = Date.now();
+    const wg = run(dg, ['wait', '--max', '1']);
+    check('wait: an open gate keeps it waiting', wg.code === 0 && Date.now() - t2 >= 900 && /gate-pending/.test(wg.out), wg.out);
     check('wait: not due → blocks, then returns 0 at --max', w2.code === 0 && Date.now() - t0 >= 900, `${w2.code} ${Date.now() - t0}ms`);
   }
 

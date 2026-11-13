@@ -229,7 +229,7 @@ export function ledgerBudget(text) {
   return {
     estimate: est === '' ? null : Number(est),
     sessions_used: used === '' ? 0 : Number(used),
-    tick_budget: tb === '' || Number(tb) === 0 ? null : Number(tb),
+    tick_budget: tb === '' || tb === '0' ? null : Number(tb), // the hook unsets only a literal 0
     tick_tokens: tt === '' ? 0 : Number(tt),
     mission_budget: mb === '' ? null : Number(mb),
   };
@@ -313,9 +313,12 @@ function releaseLock(sd, round) {
 function protectedFiles(cwd, sd) {
   return PROTECTED.map((p) => ({ name: p.rel, file: path.join(p.root === 'project' ? cwd : sd, p.rel) }));
 }
-export function snapshotProtected(cwd, sd) {
+// The round's own records join the set: rounds/<n>.begin.json (classify and
+// record trust its snapshot) and the lock (record trusts its round number).
+const roundFiles = (sd, n) => (n ? [{ name: `rounds/${n}.begin.json`, file: path.join(sd, 'rounds', `${n}.begin.json`) }, { name: 'lock', file: path.join(sd, 'lock') }] : []);
+export function snapshotProtected(cwd, sd, round = null) {
   const h = createHash('sha256');
-  const held = protectedFiles(cwd, sd).map(({ name, file }) => {
+  const held = [...protectedFiles(cwd, sd), ...roundFiles(sd, round)].map(({ name, file }) => {
     let buf = null;
     try { buf = readFileSync(file); } catch (e) { if (e.code !== 'ENOENT') throw e; }
     h.update(`${name}\0`);
@@ -341,6 +344,11 @@ function writeStop(sd, reason, now = Date.now()) { write0600(path.join(sd, 'STOP
 function alert(sd, body, now = Date.now()) { append0600(path.join(sd, 'alerts.log'), `${redact(`alert: ${utcSec(now)} ${body}`)}\n`); }
 function alertedToday(sd, word, now) {
   try { return readFileSync(path.join(sd, 'alerts.log'), 'utf8').split('\n').some((l) => l.startsWith(`alert: ${utcDate(now)}`) && l.includes(word)); } catch { return false; }
+}
+
+function alertAuth(sd, cfg, now) {
+  if (alertedToday(sd, 'auth-expired', now)) return;
+  alert(sd, `🛑 ${cfg.project} cannot run: its Claude login expired (auth-expired). On the container run \`claude /login\`. No work is lost. Runner retries every 15 min and starts by itself once it works.`, now);
 }
 
 // ── credentials / login ────────────────────────────────────────────────────
@@ -396,7 +404,7 @@ export function childArgv(prompt, cfg) {
 export const SOURCES_RULE = (handoff) => `Rebuild your context ONLY from \`docs/product/\`, the \`.plans/\` ledgers and \`.plans/OBLIGATIONS.md\`, and the handoff at \`${handoff}\` — never a transcript, a compaction summary or a memory folder. Before you end, write what the next round needs into those files. Docs vs code: a mismatch is never resolved silently — report it as a \`## Deviations\` line; intent (a locked decision, an AC, a rule) → the doc wins, fix the code or open a decision gate before the decision changes; a description of current behaviour (a path, a threshold, how a hook/tool works) → the code wins, update the doc.`;
 export const GH_RULE = 'Run `gh` as `GH_TOKEN="$(git identity token)" gh …` when the `git identity` tool exists, else with the `GH_TOKEN` already in the environment.';
 
-export function roundPrompt(unit, cfg, { handoff }) {
+export function roundPrompt(unit, cfg, { handoff = handoffPath(process.cwd()) } = {}) {
   return [SOURCES_RULE(handoff), GH_RULE, `This round's unit — run it now as the slash command:\n${unit}`, HEADLESS_ASK_NOTE].join('\n\n');
 }
 
@@ -445,10 +453,9 @@ async function pollGates(cwd) {
   return typeof m.poll === 'function' ? m.poll({ cwd }) : null;
 }
 
-export async function preflight(cwd, cfg, { auth = null, unit = null, now = Date.now() } = {}) {
+// probe=false (wait): no login / credentials spawn — those run in next.
+function gather(cwd, cfg, { mode, unit, now, probe }) {
   const sd = stateDir(cwd);
-  const mode = auth || cfg.auth;
-  if (!['login', 'external'].includes(mode)) throw new UsageError(`--auth must be login or external, got ${mode}`);
   const l = readLock(sd);
   const s = { lock: l && !lockStale(l, now) ? l : null, stop: readStop(sd) };
   const rel = activeLedger(cwd);
@@ -458,8 +465,8 @@ export async function preflight(cwd, cfg, { auth = null, unit = null, now = Date
   const b = backoffFor(bo.codes, cfg);
   const due = bo.at ? Math.max(0, Math.ceil((Date.parse(bo.at) + b.delay_s * 1000 - now) / 1000)) : 0;
   Object.assign(s, {
-    login: s.lock || s.stop || mode === 'external' ? null : loginPresent(cwd, cfg),
-    creds: s.lock || s.stop ? [] : credsMissing(cwd),
+    login: !probe || s.lock || s.stop || mode === 'external' ? null : loginPresent(cwd, cfg),
+    creds: !probe || s.lock || s.stop ? [] : credsMissing(cwd),
     daily: { total: dailyTotal({ daily: readJson(path.join(sd, 'daily.json'), {}) }, now), cap: cfg.budgets.daily_tokens },
     budget: fields ? budgetVerdict(fields) : null,
     backoff: { stop: b.stop, due_in_s: due },
@@ -470,9 +477,17 @@ export async function preflight(cwd, cfg, { auth = null, unit = null, now = Date
     venture: cfg.stage || null,
     operate: { ...operateToday(sd, now), per_day: cfg.idle.operate_per_day },
   });
+  return { s, sd, rel, fields, due };
+}
+
+export async function preflight(cwd, cfg, { auth = null, unit = null, now = Date.now() } = {}) {
+  const mode = auth || cfg.auth;
+  if (!['login', 'external'].includes(mode)) throw new UsageError(`--auth must be login or external, got ${mode}`);
+  const { s, sd, rel, fields, due } = gather(cwd, cfg, { mode, unit, now, probe: true });
   // Gate hook point: a no-op until S4 ships gate.mjs (and fills s.gate_answer).
   if (pickUnit(s).code === 0) await pollGates(cwd);
   const p = pickUnit(s);
+  if (p.code === 75 && s.login === false) alertAuth(sd, cfg, now);
   const line = p.code === 0 ? `unit: ${p.unit}` : `stop: ${p.code} ${p.reason}`;
   return {
     contract_version: CONTRACT_VERSION, line, code: p.code, unit: p.unit, reason: p.reason,
@@ -536,9 +551,10 @@ export async function begin(cwd, cfg, { holder = null, lease = null, pid = proce
   const ledger = ledgerProbe(cwd, activeLedger(cwd));
   const cv = spawnSync(bin(), ['--version'], { encoding: 'utf8', timeout: 15000, env: childEnv(process.env, cfg) });
   const cliVersion = cv.status === 0 ? (cv.stdout.trim().split(/\s+/)[0] || '?') : '?';
-  const snap = snapshotProtected(cwd, sd);
-  const rec = { round: n, unit: u, start_ms: now, ledger, gates: openGates(cwd), cli_version: cliVersion, handoff: handoffPath(cwd), hints: hintsOf(snap.held) };
+  const pre = snapshotProtected(cwd, sd);
+  const rec = { round: n, unit: u, start_ms: now, ledger, gates: openGates(cwd), cli_version: cliVersion, handoff: handoffPath(cwd), hints: hintsOf(pre.held) };
   write0600(path.join(sd, 'rounds', `${n}.begin.json`), `${JSON.stringify(rec, null, 2)}\n`);
+  const snap = snapshotProtected(cwd, sd, n); // begin.json + lock included; the digest stays in memory
   const out = {
     contract_version: CONTRACT_VERSION, round: n, unit: u, prompt: roundPrompt(u, cfg, { handoff: rec.handoff }),
     env: childEnvAdditions(cfg), events_path: path.join(sd, 'rounds', `${n}.events.jsonl`), state_digest: snap.digest,
@@ -569,10 +585,12 @@ export function classify(cwd, { round, eventsPath, exitCode = null, stderrPath =
   const resultText = r && typeof r.result === 'string' ? r.result : '';
   // The one place classify reads subtype: 75 only when the turn did not succeed.
   if ((!r || r.subtype !== 'success') && AUTH_RE.test(`${stderr}\n${resultText}`)) return out(75, 'auth-expired', 'the child could not authenticate — run `claude /login`');
+  // The handoff stop keys on terminal_reason, never subtype (P0 probe (e)).
+  if (r && r.terminal_reason === 'hook_stopped') return out(21, 'handoff-failed', 'a hook stopped the child (terminal_reason hook_stopped)');
   if (!r) return out(1, 'crashed', `no result event (exit ${exitCode ?? '?'})`);
+  // The two budget subtypes and any other failure (run-claude.mjs:428 precedent).
   if (r.subtype === 'error_max_budget_usd' || r.subtype === 'error_max_turns') return out(30, 'budget-stop', r.subtype);
   if (r.subtype !== 'success') return out(1, 'crashed', `result ${r.subtype || 'without a subtype'}`);
-  if (r.terminal_reason === 'hook_stopped') return out(21, 'handoff-failed', 'a hook stopped the child (terminal_reason hook_stopped)');
   if (openGates(cwd) > (b.gates || 0)) return out(20, 'gate-pending', 'the round opened a gate');
   const after = b.ledger ? ledgerProbe(cwd, b.ledger.path) : null;
   if (b.ledger && after && after.next_up === b.ledger.next_up && after.sessions === b.ledger.sessions) {
@@ -599,12 +617,27 @@ function commitCounters(cwd, sd, cfg, { line, tokens, code, now }) {
   return { today: daily[today], backoff: backoffFor(codes, cfg) };
 }
 
+// The only code ↔ outcome pairs classify can produce (AC-4 exit table).
+export const CLASSIFY_TABLE = { 0: 'done', 1: 'crashed', 20: 'gate-pending', 21: 'handoff-failed', 22: 'no-progress', 30: 'budget-stop', 75: 'auth-expired' };
+
+// Which guard carries the weight (AC-42): the re-hash of the protected set
+// (incl. this round's begin.json and lock) BEFORE any write, against a digest
+// held only in the supervising process's memory — on `round` that is the
+// runner itself, which re-checks after the child's process group is dead, so a
+// forged in-round `record` (even with a self-computed digest) changes
+// rounds.log and the real record ends 30 state-tampered. The lock refuses a
+// second begin and every owner-side writer (roundHeld). The
+// AGENTIC_WORKFLOW_UNATTENDED refusal is defence in depth only: a child can
+// unset it. The sha256 is unkeyed: a same-user round that rewrites this file,
+// gate.mjs, gate-guard.sh or hooks.json, or schedules cron/launchd, is outside
+// the check (the OQ-8 stated limit).
 export function record(cwd, { round, classified, digest, held = null, inProcess = false, now = Date.now() }) {
   refuseUnattended('record');
   if (!digest) throw new UsageError('record needs --digest <state_digest> (the value begin printed)');
   const n = Number(round);
   if (!classified || Number(classified.round) !== n) throw new UsageError(`the classify result is not for round ${n}`);
-  if (!Number.isInteger(classified.code) || !OUTCOMES.includes(classified.outcome) || !Number.isFinite(classified.tokens)) throw new UsageError('the classify result has no valid code/outcome');
+  if (!Number.isInteger(classified.tokens) || classified.tokens < 0) throw new UsageError('the classify result needs tokens as a non-negative integer');
+  if (CLASSIFY_TABLE[classified.code] !== classified.outcome) throw new UsageError(`the classify result's code ${classified.code} does not match outcome ${classified.outcome}`);
   const sd = stateDir(cwd);
   const l = readLock(sd);
   if (!inProcess && (!l || l.round !== n)) throw new UsageError(`round ${n} does not hold the lock`);
@@ -612,7 +645,7 @@ export function record(cwd, { round, classified, digest, held = null, inProcess 
   const b = readJson(path.join(sd, 'rounds', `${n}.begin.json`), null);
   if (!b) throw new UsageError(`no rounds/${n}.begin.json`);
   // Recompute BEFORE any write.
-  const snap = snapshotProtected(cwd, sd);
+  const snap = snapshotProtected(cwd, sd, n);
   if (snap.digest !== digest) {
     let changed;
     if (held) {
@@ -637,6 +670,7 @@ export function record(cwd, { round, classified, digest, held = null, inProcess 
   }));
   const c = commitCounters(cwd, sd, cfg, { line, tokens: classified.tokens, code: classified.code, now });
   let stop = null;
+  if (classified.code === 75) alertAuth(sd, cfg, now);
   if (c.backoff.stop) {
     stop = c.backoff.stop;
     writeStop(sd, stop, now);
@@ -661,13 +695,18 @@ export async function roundOnce(cwd, cfg, deps = {}) {
   chmodSync(out.events_path, 0o600); chmodSync(errPath, 0o600);
   let exitCode;
   let child;
+  // A signal to the runner ends the child's group too (SIGKILL to the runner
+  // cannot be caught: the orphan is then outside the lock — the stale-lock
+  // reclaim logs the round crashed).
+  const onSig = (sig) => { if (child && child.pid) { try { process.kill(-child.pid, 'SIGKILL'); } catch { /* gone */ } } process.exit(sig === 'SIGINT' ? 130 : 143); };
+  process.once('SIGINT', onSig); process.once('SIGTERM', onSig);
   try {
     child = spawn(bin(), childArgv(out.prompt, cfg), { cwd, env: childEnv(process.env, cfg), detached: true, stdio: ['ignore', ev, er] });
     exitCode = await new Promise((res) => {
       child.on('error', () => res(127));
       child.on('close', (code, sig) => res(sig ? 128 : code ?? 1));
     });
-  } finally { closeSync(ev); closeSync(er); }
+  } finally { closeSync(ev); closeSync(er); process.removeListener('SIGINT', onSig); process.removeListener('SIGTERM', onSig); }
   // End the child's whole process group before re-hashing the protected set.
   if (child && child.pid) { try { process.kill(-child.pid, 'SIGKILL'); } catch { /* already gone */ } }
   const c = classify(cwd, { round: out.round, eventsPath: out.events_path, exitCode, stderrPath: errPath });
@@ -675,20 +714,21 @@ export async function roundOnce(cwd, cfg, deps = {}) {
   return { code: r.code, line: r.line, record: r };
 }
 
+// Due = the spawn-free part of the pick yields a unit (backoff elapsed, work
+// present, no gate pending). STOP or a counter stop → 40. Idle / gate-pending /
+// not-due / daily-cap keep waiting (zero model turns) until --max.
 export async function wait(cwd, cfg, { maxS = Infinity, tickS = 60, sleep = (s) => new Promise((r) => setTimeout(r, s * 1000)), now = Date.now } = {}) {
-  const sd = stateDir(cwd);
   const t0 = now();
   for (;;) {
-    const st = readStop(sd);
-    if (st) return { code: 40, line: `stop: 40 killed ${st.reason} since ${st.at}` };
     await pollGates(cwd);
-    const bo = readJson(path.join(sd, 'backoff.json'), { codes: [], at: null });
-    const b = backoffFor(bo.codes, cfg);
-    if (b.stop) return { code: 40, line: `stop: 40 ${b.stop}` };
-    const due = bo.at ? Math.ceil((Date.parse(bo.at) + b.delay_s * 1000 - now()) / 1000) : 0;
+    const { s } = gather(cwd, cfg, { mode: cfg.auth, unit: null, now: now(), probe: false });
+    const p = pickUnit(s);
+    if (p.code === 0) return { code: 0, line: 'wait: due' };
+    if (p.code === 40 && s.stop) return { code: 40, line: `stop: 40 ${p.reason}` };
+    if (p.code === 30 && (s.stop || (s.backoff && s.backoff.stop))) return { code: 40, line: `stop: 40 ${p.reason}` };
     const left = maxS - (now() - t0) / 1000;
-    if (due <= 0 || left <= 0) return { code: 0, line: 'wait: due' };
-    await sleep(Math.max(1, Math.min(tickS, due, left)));
+    if (left <= 0) return { code: 0, line: `wait: --max reached (${p.reason})` };
+    await sleep(Math.max(1, Math.min(tickS, s.backoff.due_in_s || tickS, left)));
   }
 }
 
@@ -719,7 +759,13 @@ function statusText(s) {
 // ── CLI ────────────────────────────────────────────────────────────────────
 const emit = (o, obj, line) => say(o.json ? JSON.stringify(obj) : line);
 
+export function helpText() {
+  const lines = readFileSync(SELF, 'utf8').split('\n');
+  return lines.slice(1, lines.findIndex((l) => l.startsWith('import '))).map((l) => l.replace(/^\/\/ ?/, '')).join('\n').trimEnd();
+}
+
 export async function main(argv = process.argv.slice(2)) {
+  if (!argv.length || argv.includes('--help') || argv.includes('-h') || argv[0] === 'help') { console.log(helpText()); return 0; }
   const o = parseArgs(argv);
   const cwd = path.resolve(o.cwd || process.cwd());
   const cfg = readConfig(cwd);
