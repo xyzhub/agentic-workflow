@@ -19,7 +19,7 @@ Status: active
 
 Estimate: 8 sessions
 Sessions used: 3
-Reviewer runs: 5
+Reviewer runs: 6
 
 _The budget lines above are read by the mission-budget hook every turn.
 `Estimate: 6` = the six briefs S0–S5 (mode `phases`, owner-locked in brief
@@ -143,6 +143,10 @@ S1; OQ-10 before S1b; the rest of OQ-8 and OQ-9 before S4._
 
 
 ## Handoff log (newest first)
+
+- 2026-11-13 2026-11-13 ckpt-s1 narrow re-review spawned (same Fable reviewer, resumed) over `2a1fd1a..405f8f0`.
+
+- 2026-11-13 2026-11-13 S1-fix returned **done**: 405f8f0 — B1 re-hash before any early exit on both paths + split-path record journal rollback; B2 budget-stop sticky (STOP); B3 stop/pause/resume before readConfig; B4 integer code; A1 lock via temp+link; A2 preflight 75 sets 15-min retry; AC-5 clause amended. Probe (claude 2.1.323): prose-first `-p` did not expand the command body (model called the Skill tool, budget ran out at $0.80) → prompt switched to the headless.mjs shape (slash command alone; sources rule via `--append-system-prompt`; contract `begin` gains `append_system_prompt`). Harness 119 cases clean, lint clean. Builder risks: a forged `lock.lost.<n>` downgrades record to a plain refusal; split-path direct counter edits detected but not restored; new prompt shape not yet probed live.
 
 - 2026-11-13 2026-11-13 S1-fix started (write-ahead; Sessions used 2 → 3): S1 builder resumed on B1–B4 + A1, A2 + AC-5 amendment + the `-p` slash-command probe.
 
