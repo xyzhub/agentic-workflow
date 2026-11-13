@@ -808,7 +808,8 @@ release (S5).
      `.claude/runner.json` (who may answer) by Bash or by the Write/Edit
      tools, and a Write/Edit of `.plans/pending-gates.md`; in an attended
      session the two config files stay writable, because `/connect
-     approver` writes them with the owner present. `gate.mjs predict` is
+     approver` writes them with the owner present — and refuses while
+     `roundHeld(cwd)` is true (AC-42). `gate.mjs predict` is
      allowed (it cannot change an answer).
 10. **Replan 2026-11-12 — release additions (S5).**
    - AC-40 **L7 surfaces and the wider threat list.** `commands/doctor.md`
@@ -862,6 +863,11 @@ release (S5).
      (split path), writes `STOP`, alerts once and exits `30
      state-tampered` (a new word in AC-6's outcome set). `round` ends the
      child's whole process group before it recomputes.
+     Owner-side writes to the protected set (`gate.mjs poll`, `/connect
+     approver`, `runner.mjs resume`) refuse while a round holds the lock —
+     they call `runner.mjs`'s exported `roundHeld(cwd)` (the lock's own
+     staleness rules) — so a real owner answer never reads as `30
+     state-tampered` (plan-judge amendment 1, 2026-11-12).
      (b) **Answers live where a row edit cannot reach.** The answer store
      `<state>/answers.jsonl` is written only by `poll`; the
      `pending-gates.md` row and the decision-log row are projections
@@ -882,7 +888,9 @@ release (S5).
      gate is still open and nothing proceeds; a fake child that rewrites
      `answers.jsonl` → `30 state-tampered`. **Stated limit:** a process
      with the round's OS user that survives the process-group kill is
-     outside this check; running rounds under a separate OS user closes
+     outside this check, and a same-user round can also rewrite
+     `runner.mjs`, `gate.mjs`, `gate-guard.sh`, `hooks.json`, or schedule
+     cron/launchd; running rounds under a separate OS user closes
      it and is deferred by L1 (container provisioning) — OB-37 notes it.
 
 ## Value sourcing

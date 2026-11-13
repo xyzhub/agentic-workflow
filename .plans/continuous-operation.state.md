@@ -95,7 +95,7 @@ done (verified, not merely written)._
 
 ## Open questions
 
-**Answered 2026-11-12 (owner, AskUserQuestion — dated locks):** OQ-6 "Yes, 8 sessions" (Estimate 6 → 8; overrun stop at 12); OQ-8 enforcement "Fingerprint check" (in-memory digest of the protected files at round start, rechecked before recording, `30 state-tampered`; owner-side writes refuse while a round holds the lock; stated limit: a same-user round can still rewrite the enforcing code or schedule cron/launchd); OQ-7, OQ-8 channel (generic signed `http` channel now), OQ-9 (policy read and recorded, never acts in v1), OQ-10 (`advisor:` key; 100,000-token cap checked in S1b), OQ-12 (threshold fix in S2) — "Accept all". OQ-11 "run it" (2026-11-12).
+**Answered 2026-11-12 (owner, AskUserQuestion — dated locks):** OQ-6 "Yes, 8 sessions" (Estimate 6 → 8; overrun stop at 12); OQ-8 enforcement "Fingerprint check" (in-memory digest of the protected files at round start, rechecked before recording, `30 state-tampered`; owner-side writes refuse while a round holds the lock; stated limit: a same-user round can also rewrite `runner.mjs`, `gate.mjs`, `gate-guard.sh`, `hooks.json`, or schedule cron/launchd); OQ-7, OQ-8 channel (generic signed `http` channel now), OQ-9 (policy read and recorded, never acts in v1), OQ-10 (`advisor:` key; 100,000-token cap checked in S1b), OQ-12 (threshold fix in S2) — "Accept all". OQ-11 "run it" (2026-11-12).
 
 _OQ-1..OQ-5 were answered 2026-10-27 — "Accept all" (brief L6 `:202–208`;
 master plan Locked decisions). The seven below come from the 2026-11-12

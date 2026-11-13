@@ -403,6 +403,12 @@ an unambiguous pick for S2. APPROVE → ledger `[x]`; `Next up: S1`.
      recompute. `begin` and `record` exit 1 when
      `AGENTIC_WORKFLOW_UNATTENDED=1` is in their OWN environment (a round
      can never run them). Add `state_digest` to the contract schema.
+     Export `roundHeld(cwd)` (the lock check with the lock's staleness
+     rules): every owner-side write to the protected set — `resume` here,
+     `gate.mjs poll` (S4), `/connect approver` (S4b) — refuses while it is
+     true, so a real owner answer never reads as `30 state-tampered`
+     (plan-judge amendment 1); harness case: an owner-side write during a
+     held lock is refused and the round's `record` still passes.
   5. **`tools/runner-test.mjs`** (AC-9; `headless-test.mjs` style, fake
      `claude` on `CLAUDE_BIN` writing canned stream-json incl. a `result`
      with `usage`): the AC-4 exit-code table row by row (fixtures per
@@ -1072,7 +1078,9 @@ docs; the harness never touches this repo's own git dir. APPROVE → `[x]`,
      CLI always talks to the real hosts. **Answer store (AC-42):** `poll`
      appends every accepted answer to `<state>/answers.jsonl` and then
      rewrites the `pending-gates.md` row and the decision-log row FROM it;
-     nothing else writes the store; unit pick and `20` read only the
+     nothing else writes the store; `poll` writes nothing and exits
+     busy while `runner.mjs`'s `roundHeld(cwd)` is true (AC-42,
+     amendment 1; a `gate-test.mjs` case); unit pick and `20` read only the
      store; add `answers.jsonl` to the runner's `PROTECTED` list.
      `pending-gates.md` row written BEFORE the send; outbox
      `<state>/outbox.jsonl` flushed in order; verification = sender id ∈
@@ -1279,7 +1287,7 @@ budgets. APPROVE → `[x]`, `Next up: S4b`.
      depth: the PROPERTY is AC-42's digest, which catches a write no shape
      names; outside unattended mode those
      two config files stay writable (`/connect approver` writes them with
-     the owner present). `gate.mjs predict` is allowed. `codex.rules`: the
+     the owner present, and refuses while `roundHeld(cwd)` is true — AC-42). `gate.mjs predict` is allowed. `codex.rules`: the
      mirrored rules with `# covers:` lines.
   6. **Tests**: `gate-test.mjs` — a key pair generated in the test
      (`crypto.generateKeyPairSync('ed25519')`; no key is committed): a
@@ -1456,7 +1464,7 @@ shipped; byte budgets. APPROVE → `[x]`, `Next up: S5`.
      the text. A fourth row, OB-38, follows the three.)
      `- [ ] OB-35 · added <date> (promoted from `.plans/continuous-operation.state.md` `## Closing` row "24h live run", planner, 2026-10-27) — do: on one client LXC container logged in with that client's subscription, with `runner.json` configured and an approver route round-trip-verified, run `/agentic-workflow:run` for ≥ 24 h wall clock on one real mission; record per metrics §2: rounds, ≥ 2 compactions/restarts (counted from the round log), handoff writes and latency, gate events with request→answer latency, budget stops with approver notified y/n, tokens per round (`tokens=`), daily total vs the 5M cap, owner corrections about lost context tagged by a human reader (must be 0), and the fidelity `score` at each compaction/restart against the live handoff; the mission reaches its planned checkpoint or a budget stop — when: v1.70.0 is installed from `main` on a client container and a mission ledger is active there — probe: manual`
      `- [ ] OB-36 · added <date> (promoted from `.plans/continuous-operation.state.md` `## Closing` row "OB-1 fold-in", planner, 2026-10-27) — do: once the 24 h run's compaction records (≥ 2) join OB-32's (1) in the corpus, OB-1's condition (≥ 3 new true-compaction records) is met: re-measure the handoff-budget byte bands (bytes/token anchor, trigger threshold) against those records, record the numbers on OB-1 and fire it, and keep or retire the n=1 caveat in `hooks/lib/handoff-lib.sh` header accordingly — when: OB-35 is fired with ≥ 2 compaction records listed — probe: manual`
-     `- [ ] OB-37 · added <date> (promoted from `.plans/continuous-operation.state.md` `## Closing` row "runner on a real client container", planner, 2026-10-27) — do: on a client container under that client's own claude.ai subscription (L3): confirm `runner.mjs next` starts with no account check, children carry no `ANTHROPIC_API_KEY`/`ANTHROPIC_AUTH_TOKEN` (`status --json` child env names), `tokens=` lines are attributable to that container, and a deliberate `claude /logout` makes the next round exit `75 auth-expired` with one approver alert and no work lost — when: v1.70.0 is installed on a client container — probe: manual`
+     `- [ ] OB-37 · added <date> (promoted from `.plans/continuous-operation.state.md` `## Closing` row "runner on a real client container", planner, 2026-10-27) — do: on a client container under that client's own claude.ai subscription (L3): confirm `runner.mjs next` starts with no account check, children carry no `ANTHROPIC_API_KEY`/`ANTHROPIC_AUTH_TOKEN` (`status --json` child env names), `tokens=` lines are attributable to that container, and a deliberate `claude /logout` makes the next round exit `75 auth-expired` with one approver alert and no work lost; record the AC-42 stated limit: a process with the round's OS user that outlives the process-group kill is outside the digest check, and a same-user round can also rewrite `runner.mjs`, `gate.mjs`, `gate-guard.sh`, `hooks.json`, or schedule cron/launchd (a separate OS user per round closes it; deferred by L1) — when: v1.70.0 is installed on a client container — probe: manual`
      `- [ ] OB-38 · added <date> (promoted from `.plans/continuous-operation.state.md` `## Closing` row "wrapper contract re-pin", planner, 2026-11-12) — do: in every repo that pins this plugin and validates its JSON shapes (xyzhub/missions, xyzhub/missions-server), move the pin to 1.70.0 through that repo's own updater, refresh its copies of `agents-registry.schema.json`, `runner-contract.schema.json` and `gate-contract.schema.json`, run its contract tests, and record the command and result here — when: v1.70.0 is on `main` — probe: manual`
   9. Commit `release(continuous-operation): 1.70.0 — security pass, run
      24/7 docs, doctor runner row` + Attribution; push; the orchestrator
