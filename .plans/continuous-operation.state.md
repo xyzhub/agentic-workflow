@@ -18,7 +18,7 @@ session rebuilds from._
 Status: active
 
 Estimate: 8 sessions
-Sessions used: 2
+Sessions used: 3
 Reviewer runs: 5
 
 _The budget lines above are read by the mission-budget hook every turn.
@@ -144,6 +144,10 @@ S1; OQ-10 before S1b; the rest of OQ-8 and OQ-9 before S4._
 
 ## Handoff log (newest first)
 
+- 2026-11-13 2026-11-13 S1-fix started (write-ahead; Sessions used 2 → 3): S1 builder resumed on B1–B4 + A1, A2 + AC-5 amendment + the `-p` slash-command probe.
+
+- 2026-11-13 2026-11-13 **ckpt-s1 (Fable) REQUEST CHANGES** on 3dc5d5a..af0dab4 — scorecard Security 1, QA 2, Architecture 2, Efficiency 2, DX 3. Blocking (runner.mjs): **B1** split-path `record` checks the lock (:643) before re-hashing (:648) — removing the lock + rewriting daily.json or a forged record escapes `30 state-tampered` (AC-42 fail); **B2** a classify `30 budget-stop` is not sticky (no STOP, zero backoff, AC-5 fail); **B3** `pause`/`stop` fail when runner.json is unreadable (:771); **B4** string `code` accepted (:640), skips crash-loop. Advisory A1 lock-create race (:548), A2 preflight 75 records no backoff, A3 tokens read from child-writable events file (inside OQ-8), A4 any 401 in stderr → 75, A5 no CI run on af0dab4 itself. Builder choices all accepted; AC-5 "every stop writes STOP" needs a one-clause amendment (daily-cap/ledger budgets re-check on `next`); slash-command-after-prose probe owed before S2. All gates green.
+
 - 2026-11-13 2026-11-13 ckpt-s1 spawned (Fable, fresh, one-shot) over `3dc5d5a..af0dab4` on feat/continuous-op; lint clean at af0dab4 (orchestrator re-run).
 
 - 2026-11-13 2026-11-13 S1 builder returned **done**: 22af415 (plan-judge amendments 1 + 4), 277838d (runner.mjs, redact.mjs, runner-config, runner contract schema, runner-test, lint wiring), af0dab4 (3 MEDIUM security-scan findings fixed: begin.json + lock in the digest, digest held in supervisor memory, record input checks). Harness 108 cases clean, lint clean (builder). 10 builder choices for the reviewer to rule on, incl. STOP not written on daily-cap/ledger-budget stops (AC-5 says every stop) and slash command no longer first in the round prompt.
@@ -172,4 +176,4 @@ S1; OQ-10 before S1b; the rest of OQ-8 and OQ-9 before S4._
 
 - 2026-10-27 planned: trio authored from `docs/product/decisions/2026-10-27-continuous-operation-brief.md` (L1–L5 + the Source-of-truth and Docs-vs-code principles; L3 as refined: per-client subscription, NO account check, no API key) + memos D1-A/D2/D3-B/D4-C/D5-A/D6-A/D7-B as far as L1 allows + the EGM borrows + counsel; mode `phases`, Estimate 6 (owner lock; checkpoints inside sessions), build branch `feat/continuous-operation`, version 1.70.0; OQ-1..5 to the owner before S0; S1 gated on OB-32 fired (S0).
 
-Next up: ckpt-s1 — fresh Fable reviewer over `3dc5d5a..af0dab4` (S1 runner core); then S1b → S2 → S3 → S4 → S4b → S5. ckpt-s0 A1/A2 resolved 2026-11-13 (A1 → OB-35, A2 stated assumption).
+Next up: S1-fix — corrective for ckpt-s1 B1–B4 (+A1, A2, AC-5 amendment, `-p` slash-command probe); then a narrow ckpt-s1 re-review; then S1b → S2 → S3 → S4 → S4b → S5.
