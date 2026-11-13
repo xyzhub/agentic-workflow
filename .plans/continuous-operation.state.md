@@ -19,7 +19,7 @@ Status: active
 
 Estimate: 8 sessions
 Sessions used: 4
-Reviewer runs: 12
+Reviewer runs: 13
 
 _The budget lines above are read by the mission-budget hook every turn.
 `Estimate: 6` = the six briefs S0–S5 (mode `phases`, owner-locked in brief
@@ -143,6 +143,10 @@ S1; OQ-10 before S1b; the rest of OQ-8 and OQ-9 before S4._
 
 
 ## Handoff log (newest first)
+
+- 2026-11-13 2026-11-13 narrow plan-judge spawned (Fable, fresh, one-shot) over db3153d..a6432f1 only.
+
+- 2026-11-13 2026-11-13 planner goldfish revision returned: a6432f1 (+735/−133 lines across the master plan and sessions file; no AC added/renumbered, all `Amended 2026-11-13` clauses; map at master `## Revision 2026-11-13 (goldfish)`; lint clean). Wider than asked: G2 resume reconciles after EVERY state-tampered stop (`--confirm-approvers`); G3 guard leaves `runner.mjs status|stop|pause` open under unattended. Assumed (not locks): `ccp run` loses tool-by-tool live rendering on the runner core; new names `--confirm-approvers`, `gate.mjs reconcile|approver --set`, `expire --force <id>`, `--advisor-max-context`, `--resume-input`, Slack no/hold reactions; Telegram verified from the reply update (no fetch-by-id). Pressure: S1b and S4 heavier, read budgets S1b≈1,430 S2≈1,465 S4≈1,440 near the 1,500 cap; 4 used + 6 pending = 10 vs Estimate 8 (stop 12).
 
 - 2026-11-13 2026-11-13 owner (AskUserQuestion, locked): ckpt-s1 S3 → "Delete it, first step of S1b" — the S1b builder deletes the N3 retry mark (recordMac, canon, shortcut :685–688, write :744, main special case) + adds the planted-mark harness case as its first step; ckpt-s1b confirms S3 closed; S1 row flips [x] when ckpt-s1b APPROVEs. No extra session.
 
