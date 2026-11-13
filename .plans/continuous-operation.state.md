@@ -144,6 +144,8 @@ S1; OQ-10 before S1b; the rest of OQ-8 and OQ-9 before S4._
 
 ## Handoff log (newest first)
 
+- 2026-11-13 2026-11-13 **ckpt-s1 re-review (Fable) REQUEST CHANGES** on 2a1fd1a..405f8f0 — Security 1, QA 2, Architecture 2, Efficiency 3, DX 3. B2/B3/B4/A1/A2 + AC-5 amendment verified fixed; B1 original repros fixed. New blocking (split path only; `round` path sound): **N1** the `lock.lost.<n>` early exit (:690) runs before the re-hash — rm lock + touch lock.lost + zero daily.json → plain exit 1, no STOP; **N2** `rollbackForged` (:660–676) trusts the child-writable `rounds/<n>.record.json` — a planted journal wipes the day total (4.9M → 0) and the alert hides it (also the security-scan finding). Advisory N3 (retried record erases a genuine one; gone with N2), A-doc (AC-29 / AC-6 text stale vs the new prompt shape). Prompt-shape contract change accepted. Second failure → surfaced to owner (one-corrective-retry rule). CI green on 405f8f0.
+
 - 2026-11-13 2026-11-13 ckpt-s1 narrow re-review spawned (same Fable reviewer, resumed) over `2a1fd1a..405f8f0`.
 
 - 2026-11-13 2026-11-13 S1-fix returned **done**: 405f8f0 — B1 re-hash before any early exit on both paths + split-path record journal rollback; B2 budget-stop sticky (STOP); B3 stop/pause/resume before readConfig; B4 integer code; A1 lock via temp+link; A2 preflight 75 sets 15-min retry; AC-5 clause amended. Probe (claude 2.1.323): prose-first `-p` did not expand the command body (model called the Skill tool, budget ran out at $0.80) → prompt switched to the headless.mjs shape (slash command alone; sources rule via `--append-system-prompt`; contract `begin` gains `append_system_prompt`). Harness 119 cases clean, lint clean. Builder risks: a forged `lock.lost.<n>` downgrades record to a plain refusal; split-path direct counter edits detected but not restored; new prompt shape not yet probed live.
@@ -180,4 +182,4 @@ S1; OQ-10 before S1b; the rest of OQ-8 and OQ-9 before S4._
 
 - 2026-10-27 planned: trio authored from `docs/product/decisions/2026-10-27-continuous-operation-brief.md` (L1–L5 + the Source-of-truth and Docs-vs-code principles; L3 as refined: per-client subscription, NO account check, no API key) + memos D1-A/D2/D3-B/D4-C/D5-A/D6-A/D7-B as far as L1 allows + the EGM borrows + counsel; mode `phases`, Estimate 6 (owner lock; checkpoints inside sessions), build branch `feat/continuous-operation`, version 1.70.0; OQ-1..5 to the owner before S0; S1 gated on OB-32 fired (S0).
 
-Next up: S1-fix — corrective for ckpt-s1 B1–B4 (+A1, A2, AC-5 amendment, `-p` slash-command probe); then a narrow ckpt-s1 re-review; then S1b → S2 → S3 → S4 → S4b → S5.
+Next up: OWNER — ckpt-s1 failed twice (N1, N2 split-path holes); decide: second small fix pass / fold into S1b / ship as is. Then S1b → S2 → S3 → S4 → S4b → S5.
