@@ -165,8 +165,11 @@ release (S5).
      `operate` cycles per UTC day and none after an empty one. (iv)
      **Crash loop**: consecutive `1` exits back off 30 s → 2 → 8 → 15 min;
      the 3rd consecutive → `30 crash-loop` + alert. (v) **No progress**: two
-     consecutive `22` → `30 no-progress` + alert. Every stop writes `STOP`
-     (reason + UTC) and nothing runs until `resume`.
+     consecutive `22` → `30 no-progress` + alert. Daily-cap and
+     ledger-budget stops re-check on every `next` (the UTC rollover clears
+     the cap) instead of writing `STOP`; every other stop, including
+     classify's `budget-stop`, writes `STOP` (reason + UTC) and nothing runs
+     until `resume` (ckpt-s1 S1-fix, 2026-11-13).
    - AC-6 **Round log and secrets.** State lives in
      `$(git rev-parse --git-common-dir)/agentic-workflow/runner/` (0700;
      `lock`, `STOP`, `rounds.log`, `rounds/<n>.events.jsonl` 0600, `daily.json`,

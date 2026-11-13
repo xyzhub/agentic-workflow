@@ -22,7 +22,9 @@
 //       lease has passed), allots the round number, snapshots the ledger's
 //       `Next up:` / `Sessions used:` and the open-gate count into
 //       rounds/<n>.begin.json, and prints {contract_version, round, unit,
-//       prompt, env, events_path, state_digest}. `env` = the variables the
+//       prompt, append_system_prompt, env, events_path, state_digest}: run the
+//       turn as `claude -p --append-system-prompt <append_system_prompt> <prompt>`
+//       (the prompt is the slash command alone). `env` = the variables the
 //       caller adds to the child env (it also deletes CLAUDECODE,
 //       CLAUDE_CODE_ENTRYPOINT, AGENTIC_WORKFLOW_CHILD and both Anthropic key
 //       variables). Keep `state_digest` in memory: it is never written to disk.
@@ -63,10 +65,10 @@
 // Everything printed or logged passes through tools/redact.mjs.
 
 import { spawn, spawnSync } from 'node:child_process';
-import { createHash } from 'node:crypto';
+import { createHash, randomBytes } from 'node:crypto';
 import {
-  appendFileSync, chmodSync, closeSync, existsSync, mkdirSync, openSync, readFileSync, readdirSync,
-  realpathSync, renameSync, rmSync, statSync, writeFileSync, writeSync, accessSync, constants as FS,
+  appendFileSync, chmodSync, closeSync, existsSync, linkSync, mkdirSync, openSync, readFileSync, readdirSync,
+  realpathSync, renameSync, rmSync, statSync, writeFileSync, accessSync, constants as FS,
 } from 'node:fs';
 import { homedir } from 'node:os';
 import path from 'node:path';
@@ -391,12 +393,13 @@ export function childEnv(parent, cfg) {
   if ('AGENTIC_WORKFLOW_CHILD' in env) throw new Error('child env carries AGENTIC_WORKFLOW_CHILD');
   return env;
 }
-export function childArgv(prompt, cfg) {
+export function childArgv(prompt, cfg, note = null) {
   const a = ['-p', '--output-format', 'stream-json', '--verbose', '--permission-mode', cfg.permission_mode || 'acceptEdits',
     '--permission-prompts', 'none', '--max-turns', String(cfg.max_turns || 150)];
   if (cfg.budgets && cfg.budgets.round_usd != null) a.push('--max-budget-usd', String(cfg.budgets.round_usd));
+  if (note) a.push('--append-system-prompt', note);
   a.push(prompt);
-  const bad = a.slice(0, -1).filter((x) => FORBIDDEN.includes(x) || x === '--restricted' || x === '--tools');
+  const bad = a.slice(0, -1).filter((x, i, arr) => arr[i - 1] !== '--append-system-prompt').filter((x) => FORBIDDEN.includes(x) || x === '--restricted' || x === '--tools');
   if (bad.length) throw new Error(`refusing child argv: ${bad.join(' ')}`);
   return a;
 }
@@ -404,8 +407,15 @@ export function childArgv(prompt, cfg) {
 export const SOURCES_RULE = (handoff) => `Rebuild your context ONLY from \`docs/product/\`, the \`.plans/\` ledgers and \`.plans/OBLIGATIONS.md\`, and the handoff at \`${handoff}\` — never a transcript, a compaction summary or a memory folder. Before you end, write what the next round needs into those files. Docs vs code: a mismatch is never resolved silently — report it as a \`## Deviations\` line; intent (a locked decision, an AC, a rule) → the doc wins, fix the code or open a decision gate before the decision changes; a description of current behaviour (a path, a threshold, how a hook/tool works) → the code wins, update the doc.`;
 export const GH_RULE = 'Run `gh` as `GH_TOKEN="$(git identity token)" gh …` when the `git identity` tool exists, else with the `GH_TOKEN` already in the environment.';
 
-export function roundPrompt(unit, cfg, { handoff = handoffPath(process.cwd()) } = {}) {
-  return [SOURCES_RULE(handoff), GH_RULE, `This round's unit — run it now as the slash command:\n${unit}`, HEADLESS_ASK_NOTE].join('\n\n');
+// The child's turn is the slash command ALONE (it expands only when it opens
+// the prompt — probe 2026-11-13: after a preamble the model had to reach it
+// through the Skill tool); the rules travel as --append-system-prompt, the
+// headless.mjs claudeArgs shape.
+export function roundNote(cfg, { handoff = handoffPath(process.cwd()) } = {}) {
+  return [SOURCES_RULE(handoff), GH_RULE, HEADLESS_ASK_NOTE].join('\n\n');
+}
+export function roundPrompt(unit) {
+  return String(unit);
 }
 
 const unitTag = (unit) => {
@@ -421,7 +431,9 @@ export function roundLine(f) {
 
 // ── preflight + unit pick ──────────────────────────────────────────────────
 // STOP reasons the runner writes itself (exit 30); any other reason is a kill/pause (40).
-const COUNTER_STOPS = ['crash-loop', 'no-progress', 'state-tampered'];
+// Daily-cap and the ledger budgets are NOT here: they re-check on every next
+// (the UTC rollover clears the cap) instead of writing STOP.
+const COUNTER_STOPS = ['crash-loop', 'no-progress', 'state-tampered', 'budget-stop'];
 // Pure: first match wins.
 export function pickUnit(s) {
   const stop = (code, reason) => ({ code, unit: null, reason });
@@ -488,6 +500,12 @@ export async function preflight(cwd, cfg, { auth = null, unit = null, now = Date
   if (pickUnit(s).code === 0) await pollGates(cwd);
   const p = pickUnit(s);
   if (p.code === 75 && s.login === false) alertAuth(sd, cfg, now);
+  // A preflight 75 (login / credentials) sets the 15-min retry so wait does not spin.
+  if (p.code === 75) {
+    const bp = path.join(sd, 'backoff.json');
+    const bo = readJson(bp, { codes: [], at: null });
+    write0600(bp, `${JSON.stringify({ codes: [...(bo.codes || []), 75].slice(-20), at: new Date(now).toISOString() })}\n`);
+  }
   const line = p.code === 0 ? `unit: ${p.unit}` : `stop: ${p.code} ${p.reason}`;
   return {
     contract_version: CONTRACT_VERSION, line, code: p.code, unit: p.unit, reason: p.reason,
@@ -538,15 +556,18 @@ export async function begin(cwd, cfg, { holder = null, lease = null, pid = proce
   if (l0 && lockStale(l0, now)) reclaimStale(cwd, sd, cfg, now);
   const pf = await preflight(cwd, cfg, { auth, unit, now });
   if (pf.code !== 0) return { stop: pf };
-  let fd;
-  try { fd = openSync(path.join(sd, 'lock'), 'wx', 0o600); } catch (e) {
+  // The lock appears whole or not at all: written to a temp file, then
+  // link()ed into place (EEXIST = someone else holds it).
+  const n = nextRound(sd);
+  const tmp = path.join(sd, `lock.tmp.${process.pid}.${randomBytes(4).toString('hex')}`);
+  write0600(tmp, `${holder ? process.pid : pid} ${utcSec(now)} ${n} ${holder || '-'} ${leaseS ? now + leaseS * 1000 : '-'}\n`);
+  try { linkSync(tmp, path.join(sd, 'lock')); } catch (e) {
+    rmSync(tmp, { force: true });
     if (e.code !== 'EEXIST') throw e;
     const l = readLock(sd);
     return { stop: { ...pf, code: 40, unit: null, reason: `busy round #${l ? l.round : '?'} holds the lock`, line: `stop: 40 busy round #${l ? l.round : '?'} holds the lock` } };
   }
-  const n = nextRound(sd);
-  writeSync(fd, `${holder ? process.pid : pid} ${utcSec(now)} ${n} ${holder || '-'} ${leaseS ? now + leaseS * 1000 : '-'}\n`);
-  closeSync(fd);
+  rmSync(tmp, { force: true });
   const u = unit || pf.unit;
   const ledger = ledgerProbe(cwd, activeLedger(cwd));
   const cv = spawnSync(bin(), ['--version'], { encoding: 'utf8', timeout: 15000, env: childEnv(process.env, cfg) });
@@ -556,7 +577,7 @@ export async function begin(cwd, cfg, { holder = null, lease = null, pid = proce
   write0600(path.join(sd, 'rounds', `${n}.begin.json`), `${JSON.stringify(rec, null, 2)}\n`);
   const snap = snapshotProtected(cwd, sd, n); // begin.json + lock included; the digest stays in memory
   const out = {
-    contract_version: CONTRACT_VERSION, round: n, unit: u, prompt: roundPrompt(u, cfg, { handoff: rec.handoff }),
+    contract_version: CONTRACT_VERSION, round: n, unit: u, prompt: roundPrompt(u), append_system_prompt: roundNote(cfg, { handoff: rec.handoff }),
     env: childEnvAdditions(cfg), events_path: path.join(sd, 'rounds', `${n}.events.jsonl`), state_digest: snap.digest,
   };
   return { out, held: snap.held };
@@ -620,47 +641,82 @@ function commitCounters(cwd, sd, cfg, { line, tokens, code, now }) {
 // The only code ↔ outcome pairs classify can produce (AC-4 exit table).
 export const CLASSIFY_TABLE = { 0: 'done', 1: 'crashed', 20: 'gate-pending', 21: 'handoff-failed', 22: 'no-progress', 30: 'budget-stop', 75: 'auth-expired' };
 
-// Which guard carries the weight (AC-42): the re-hash of the protected set
-// (incl. this round's begin.json and lock) BEFORE any write, against a digest
-// held only in the supervising process's memory — on `round` that is the
-// runner itself, which re-checks after the child's process group is dead, so a
-// forged in-round `record` (even with a self-computed digest) changes
-// rounds.log and the real record ends 30 state-tampered. The lock refuses a
-// second begin and every owner-side writer (roundHeld). The
-// AGENTIC_WORKFLOW_UNATTENDED refusal is defence in depth only: a child can
-// unset it. The sha256 is unkeyed: a same-user round that rewrites this file,
-// gate.mjs, gate-guard.sh or hooks.json, or schedules cron/launchd, is outside
-// the check (the OQ-8 stated limit).
+// Which guard carries the weight (AC-42), on both paths: `record` re-hashes
+// the protected set — incl. this round's begin.json and lock — BEFORE any
+// check that could exit early or any write, against a digest held only in the
+// supervising process's memory (`round`: the runner itself, after the child's
+// process group is dead; split path: the supervisor that called begin). A
+// mismatch — a changed counter, a removed or replaced lock, or a forged
+// in-round `record` that already wrote its line (it, too, rewrote rounds.log
+// and the lock) — ends the round 30 state-tampered with STOP and one alert;
+// `round` restores the held bytes, the split path rolls back what a forged
+// record committed (its rounds/<n>.record.json journal) and names the rest.
+// The only plain refusal is a lock reclaimed after its lease (lock.lost.<n>).
+// The lock refuses a second begin and every owner-side writer (roundHeld).
+// The AGENTIC_WORKFLOW_UNATTENDED refusal is defence in depth only: a child
+// can unset it. The sha256 is unkeyed: a same-user round that rewrites this
+// file, gate.mjs, gate-guard.sh or hooks.json, or schedules cron/launchd, is
+// outside the check (the OQ-8 stated limit).
+function rollbackForged(sd, n) {
+  const jp = path.join(sd, 'rounds', `${n}.record.json`);
+  const j = readJson(jp, null);
+  if (!j) return false;
+  const lp = path.join(sd, 'rounds.log');
+  const lines = (read(lp) || '').split('\n');
+  const k = lines.lastIndexOf(j.line);
+  if (k >= 0) { lines.splice(k, 1); write0600(lp, lines.join('\n')); }
+  const dp = path.join(sd, 'daily.json');
+  const daily = readJson(dp, {});
+  if (daily[j.date] != null) { daily[j.date] = Math.max(0, Number(daily[j.date]) - Number(j.tokens || 0)); write0600(dp, `${JSON.stringify(daily)}\n`); }
+  const bp = path.join(sd, 'backoff.json');
+  const bo = readJson(bp, { codes: [], at: null });
+  if (Array.isArray(bo.codes) && bo.codes[bo.codes.length - 1] === j.code) { bo.codes.pop(); write0600(bp, `${JSON.stringify({ codes: bo.codes, at: j.prev_at ?? null })}\n`); }
+  rmSync(jp, { force: true });
+  return true;
+}
+const read = (p) => { try { return readFileSync(p, 'utf8'); } catch { return null; } };
+
 export function record(cwd, { round, classified, digest, held = null, inProcess = false, now = Date.now() }) {
   refuseUnattended('record');
   if (!digest) throw new UsageError('record needs --digest <state_digest> (the value begin printed)');
   const n = Number(round);
-  if (!classified || Number(classified.round) !== n) throw new UsageError(`the classify result is not for round ${n}`);
+  if (!Number.isInteger(n) || n < 1) throw new UsageError('--round must be a positive integer');
+  if (!classified || classified.round !== n) throw new UsageError(`the classify result is not for round ${n}`);
+  if (!Number.isInteger(classified.code)) throw new UsageError('the classify result needs code as an integer');
   if (!Number.isInteger(classified.tokens) || classified.tokens < 0) throw new UsageError('the classify result needs tokens as a non-negative integer');
   if (CLASSIFY_TABLE[classified.code] !== classified.outcome) throw new UsageError(`the classify result's code ${classified.code} does not match outcome ${classified.outcome}`);
   const sd = stateDir(cwd);
-  const l = readLock(sd);
-  if (!inProcess && (!l || l.round !== n)) throw new UsageError(`round ${n} does not hold the lock`);
   const cfg = readConfig(cwd);
-  const b = readJson(path.join(sd, 'rounds', `${n}.begin.json`), null);
-  if (!b) throw new UsageError(`no rounds/${n}.begin.json`);
-  // Recompute BEFORE any write.
+  // A lease that expired and was reclaimed: the round was already logged crashed.
+  if (!inProcess && existsSync(path.join(sd, `lock.lost.${n}`))) throw new UsageError(`round ${n} lost its lock (lease expired; logged crashed) — nothing recorded`);
+  // Re-hash FIRST — before the lock check and before any write.
   const snap = snapshotProtected(cwd, sd, n);
   if (snap.digest !== digest) {
     let changed;
     if (held) {
       changed = held.filter((h, i) => !(h.buf ? snap.held[i].buf && h.buf.equals(snap.held[i].buf) : !snap.held[i].buf)).map((h) => h.name);
       for (const h of held) { if (h.buf) writeFileSync(h.file, h.buf); else rmSync(h.file, { force: true }); }
+      rmSync(path.join(sd, 'rounds', `${n}.record.json`), { force: true });
     } else {
+      const b0 = readJson(path.join(sd, 'rounds', `${n}.begin.json`), {}) || {};
       const now2 = hintsOf(snap.held);
-      changed = (b.hints || []).filter((h, i) => now2[i] && (h.size !== now2[i].size || h.mtime_ms !== now2[i].mtime_ms)).map((h) => h.name);
+      changed = (b0.hints || []).filter((h, i) => now2[i] && (h.size !== now2[i].size || h.mtime_ms !== now2[i].mtime_ms)).map((h) => h.name);
+      if (!existsSync(path.join(sd, 'lock'))) changed.push('lock');
+      if (rollbackForged(sd, n)) changed.push('forged-record');
+      // The forged record released the lock; nothing may hold this round's lock now.
+      const l = readLock(sd);
+      if (l && l.round === n) rmSync(path.join(sd, 'lock'), { force: true });
     }
-    const what = changed.length ? changed.join(',') : 'a-protected-file';
+    const what = changed.length ? [...new Set(changed)].join(',') : 'a-protected-file';
     writeStop(sd, `state-tampered ${what}`, now);
     alert(sd, `🛑 ${cfg.project} stopped: round #${n} changed ${what} (state-tampered). Nothing was recorded as progress; the runner stays stopped until \`runner.mjs resume\`.`, now);
     releaseLock(sd, n);
     return { contract_version: CONTRACT_VERSION, round: n, code: 30, outcome: 'state-tampered', line: `stop: 30 state-tampered ${what}`, today_tokens: dailyTotal({ daily: readJson(path.join(sd, 'daily.json'), {}) }, now), stop: `state-tampered ${what}` };
   }
+  const l = readLock(sd);
+  if (!inProcess && (!l || l.round !== n)) throw new UsageError(`round ${n} does not hold the lock`);
+  const b = readJson(path.join(sd, 'rounds', `${n}.begin.json`), null);
+  if (!b) throw new UsageError(`no rounds/${n}.begin.json`);
   const after = b.ledger ? ledgerProbe(cwd, b.ledger.path) : null;
   const tick = cfg.budgets.tick_tokens;
   const line = redact(roundLine({
@@ -668,13 +724,16 @@ export function record(cwd, { round, classified, digest, held = null, inProcess 
     tokens: classified.tokens, tick_budget: tick, next: after ? after.next_up : classified.reason,
     ledger: b.ledger ? b.ledger.path : null, version: `${pluginVersion()}/${b.cli_version}`,
   }));
+  const prevAt = (readJson(path.join(sd, 'backoff.json'), { at: null }) || {}).at ?? null;
+  write0600(path.join(sd, 'rounds', `${n}.record.json`), `${JSON.stringify({ line, tokens: classified.tokens, code: classified.code, date: utcDate(now), prev_at: prevAt })}\n`);
   const c = commitCounters(cwd, sd, cfg, { line, tokens: classified.tokens, code: classified.code, now });
-  let stop = null;
+  let stop;
   if (classified.code === 75) alertAuth(sd, cfg, now);
-  if (c.backoff.stop) {
-    stop = c.backoff.stop;
+  const why = { 'crash-loop': '3 crashed rounds in a row', 'no-progress': '2 rounds in a row made no progress', 'budget-stop': 'the round hit its turn or spend budget' };
+  stop = c.backoff.stop || (classified.code === 30 ? 'budget-stop' : null);
+  if (stop) {
     writeStop(sd, stop, now);
-    alert(sd, `🛑 ${cfg.project} stopped: ${stop === 'crash-loop' ? '3 crashed rounds in a row' : '2 rounds in a row made no progress'} (${stop}). Last round: ${line}`, now);
+    alert(sd, `🛑 ${cfg.project} stopped: ${why[stop]} (${stop}). Last round: ${line}`, now);
   }
   if (c.today >= cfg.budgets.daily_tokens && !alertedToday(sd, 'daily-cap', now)) {
     alert(sd, `🛑 ${cfg.project} stopped for today: ${c.today} of ${cfg.budgets.daily_tokens} tokens used (daily-cap). Nothing is lost; rounds start again after 00:00 UTC.`, now);
@@ -701,7 +760,7 @@ export async function roundOnce(cwd, cfg, deps = {}) {
   const onSig = (sig) => { if (child && child.pid) { try { process.kill(-child.pid, 'SIGKILL'); } catch { /* gone */ } } process.exit(sig === 'SIGINT' ? 130 : 143); };
   process.once('SIGINT', onSig); process.once('SIGTERM', onSig);
   try {
-    child = spawn(bin(), childArgv(out.prompt, cfg), { cwd, env: childEnv(process.env, cfg), detached: true, stdio: ['ignore', ev, er] });
+    child = spawn(bin(), childArgv(out.prompt, cfg, out.append_system_prompt), { cwd, env: childEnv(process.env, cfg), detached: true, stdio: ['ignore', ev, er] });
     exitCode = await new Promise((res) => {
       child.on('error', () => res(127));
       child.on('close', (code, sig) => res(sig ? 128 : code ?? 1));
@@ -764,12 +823,34 @@ export function helpText() {
   return lines.slice(1, lines.findIndex((l) => l.startsWith('import '))).map((l) => l.replace(/^\/\/ ?/, '')).join('\n').trimEnd();
 }
 
+function brake(o, cwd, sd) {
+  switch (o._[0]) {
+    case 'stop': case 'pause': {
+      const reason = o._[0] === 'pause' ? 'human' : (o.reason || 'stopped');
+      writeStop(sd, reason);
+      say(`🛑 — STOP written (${reason}); no new round starts until \`runner.mjs resume\`.`);
+      return 0;
+    }
+    case 'resume': {
+      const l = roundHeld(cwd);
+      if (l) { say(`stop: 40 busy round #${l.round} holds the lock — resume after it records`); return 40; }
+      rmSync(path.join(sd, 'STOP'), { force: true });
+      write0600(path.join(sd, 'backoff.json'), `${JSON.stringify({ codes: [], at: null })}\n`);
+      say('✅ — STOP removed and the backoff reset; the next `runner.mjs next` may start a round.');
+      return 0;
+    }
+  }
+  return 1;
+}
+
 export async function main(argv = process.argv.slice(2)) {
   if (!argv.length || argv.includes('--help') || argv.includes('-h') || argv[0] === 'help') { console.log(helpText()); return 0; }
   const o = parseArgs(argv);
   const cwd = path.resolve(o.cwd || process.cwd());
-  const cfg = readConfig(cwd);
   const sd = stateDir(cwd);
+  // The owner's brakes work even when .claude/runner.json is unreadable.
+  if (['stop', 'pause', 'resume'].includes(o._[0])) return brake(o, cwd, sd);
+  const cfg = readConfig(cwd);
   switch (o._[0]) {
     case 'next': { const p = await preflight(cwd, cfg, { auth: o.auth || null }); emit(o, p, p.line); return p.code; }
     case 'begin': {
@@ -793,20 +874,6 @@ export async function main(argv = process.argv.slice(2)) {
     }
     case 'round': { const r = await roundOnce(cwd, cfg, { unit: o.unit || null, auth: o.auth || null }); say(r.line); return r.code; }
     case 'wait': { const w = await wait(cwd, cfg, { maxS: o.max ? Number(o.max) : Infinity }); say(w.line); return w.code; }
-    case 'stop': case 'pause': {
-      const reason = o._[0] === 'pause' ? 'human' : (o.reason || 'stopped');
-      writeStop(sd, reason);
-      say(`🛑 — STOP written (${reason}); no new round starts until \`runner.mjs resume\`.`);
-      return 0;
-    }
-    case 'resume': {
-      const l = roundHeld(cwd);
-      if (l) { say(`stop: 40 busy round #${l.round} holds the lock — resume after it records`); return 40; }
-      rmSync(path.join(sd, 'STOP'), { force: true });
-      write0600(path.join(sd, 'backoff.json'), `${JSON.stringify({ codes: [], at: null })}\n`);
-      say('✅ — STOP removed and the backoff reset; the next `runner.mjs next` may start a round.');
-      return 0;
-    }
     case 'status': { const s = status(cwd, cfg); if (o.json) say(JSON.stringify(s)); else for (const l of statusText(s)) say(l); return 0; }
     default:
       console.error('usage: runner.mjs next|round|begin|classify|record|wait|stop|pause|resume|status … (see the header)');

@@ -17,7 +17,7 @@
 // NAME `user.signingkey` out of the creds-missing line, by design.)
 
 import {
-  chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, utimesSync, writeFileSync,
+  chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, utimesSync, writeFileSync,
 } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
@@ -247,6 +247,8 @@ try {
     const argv = c.argv || [];
     check('child argv: -p stream-json --verbose acceptEdits, prompts none, max-turns', argv[0] === '-p' && argv.includes('stream-json') && argv.includes('--verbose')
       && argv[argv.indexOf('--permission-mode') + 1] === 'acceptEdits' && argv[argv.indexOf('--permission-prompts') + 1] === 'none' && argv.includes('--max-turns'), argv.join(' '));
+    check('child argv: the unit slash command is the prompt (last), the round rules via --append-system-prompt',
+      argv[argv.length - 1] === '/agentic-workflow:mission demo continue' && /^Rebuild your context ONLY from/.test(argv[argv.indexOf('--append-system-prompt') + 1] || ''), argv.slice(-3).join(' | '));
     const { FORBIDDEN } = await import(pathToFileURL(path.join(PLUGIN, 'tools/run-claude.mjs')).href);
     check('child argv: nothing in FORBIDDEN, no --restricted, no --tools, no --max-budget-usd by default',
       !argv.some((x) => FORBIDDEN.includes(x) || x === '--restricted' || x === '--tools' || x === '--max-budget-usd'), argv.join(' '));
@@ -264,15 +266,17 @@ try {
   {
     const d = mkRepo();
     const b = JSON.parse(run(d, ['begin', '--json', '--pid', String(process.pid)]).out);
-    const p = b.prompt;
+    const p = b.append_system_prompt;
     const sources = p.split(' — never')[0];
-    check('round prompt opens with the sources rule naming docs/product/, .plans/, OBLIGATIONS.md and the handoff path',
+    check('round prompt: the turn is the slash command alone (it opens the prompt); the rules ride --append-system-prompt', b.prompt === '/agentic-workflow:mission demo continue', b.prompt);
+    check('round note opens with the sources rule naming docs/product/, .plans/, OBLIGATIONS.md and the handoff path',
       p.startsWith('Rebuild your context ONLY from') && sources.includes('docs/product/') && sources.includes('.plans/') && sources.includes('.plans/OBLIGATIONS.md')
       && sources.includes(path.join('.git', 'agentic-workflow', 'session-handoff.md')), sources);
     check('round prompt: the sources segment names no transcript/summary/memory, nowhere `.remember`',
       !/transcript|summary|memory|\.remember/i.test(sources) && !p.includes('.remember') && /never a transcript, a compaction summary or a memory folder/.test(p));
     check('round prompt carries Docs vs code, the gh rule and the unit', /Docs vs code: a mismatch is never resolved silently/.test(p)
-      && p.includes('GH_TOKEN="$(git identity token)" gh') && p.includes('/agentic-workflow:mission demo continue') && p.includes('AskUserQuestion is unavailable'));
+      && p.includes('GH_TOKEN="$(git identity token)" gh') && p.includes('AskUserQuestion is unavailable'));
+    check('begin leaves no lock temp file (the lock is linked into place whole)', !require0(SD(d)).some((f) => f.startsWith('lock.tmp.')) && /^\d+ \S+ 1 - -$/.test(read(path.join(SD(d), 'lock')).trim()));
   }
 
   // ── lock: busy, stale reclaim, holder lease ──────────────────────────────
@@ -378,6 +382,10 @@ try {
     const d = mkRepo();
     const r = run(d, ['next'], { FAKE_LOGIN: '0' });
     check('auth: no login → next 75 auth-expired', r.code === 75 && /auth-expired/.test(r.out), r.out);
+    const t0 = Date.now();
+    const wa = run(d, ['wait', '--max', '1']);
+    check('auth: a preflight 75 sets the 15-min retry, so wait blocks instead of reporting due', wa.code === 0 && Date.now() - t0 >= 900 && /max reached/.test(wa.out), `${wa.out} ${Date.now() - t0}ms`);
+    age(d);
     const e = run(d, ['next', '--auth', 'external'], { FAKE_LOGIN: '0' });
     check('auth: next --auth external passes with no login', e.code === 0 && /^unit: /.test(e.out), e.out);
     const rr = run(d, ['round', '--auth', 'external']);
@@ -402,7 +410,7 @@ try {
     // The supervisor runs the turn itself.
     const env = { ...BASE_ENV, FAKE_LEDGER: ledgerOf(d), FAKE_SCENARIO: 'done', ...b.env };
     delete env.ANTHROPIC_API_KEY; delete env.ANTHROPIC_AUTH_TOKEN; delete env.AGENTIC_WORKFLOW_CHILD; delete env.CLAUDECODE;
-    const t = spawnSync(FAKE, ['-p', '--output-format', 'stream-json', '--verbose', b.prompt], { cwd: d, env, encoding: 'utf8' });
+    const t = spawnSync(FAKE, ['-p', '--output-format', 'stream-json', '--verbose', '--append-system-prompt', b.append_system_prompt, b.prompt], { cwd: d, env, encoding: 'utf8' });
     writeFileSync(b.events_path, t.stdout);
     const calls = fakeCalls().length;
     const cOut = run(d, ['classify', '--round', String(b.round), '--events', b.events_path, '--exit', String(t.status), '--json']);
@@ -445,6 +453,7 @@ try {
     check('creds: no token → stop: 75 creds-missing naming GH_TOKEN', r2.code === 75 && r2.out === 'stop: 75 creds-missing GH_TOKEN', r2.out);
     const gi = path.join(TMP, 'gi-bin'); mkdirSync(gi);
     writeFileSync(path.join(gi, 'git-identity'), `#!/bin/sh\n[ "$1" = token ] && { echo ${GH_VALUE}; exit \${FAKE_GI_RC:-0}; }\nexit 0\n`); chmodSync(path.join(gi, 'git-identity'), 0o755);
+    age(d2);
     const r3 = run(d2, ['next'], { GH_TOKEN: '', PATH: `${gi}:${BASE_ENV.PATH}` });
     check('creds: `git identity token` on PATH succeeding → unit (GH_TOKEN not needed)', r3.code === 0, r3.out);
     const r4 = run(d2, ['next'], { GH_TOKEN: '', PATH: `${gi}:${BASE_ENV.PATH}`, FAKE_GI_RC: '1' });
@@ -495,6 +504,74 @@ try {
     check('record without --digest → refused (1), nothing written', miss.code === 1 && snap() === s0 && existsSync(path.join(SD(d), 'lock')), miss.err);
     const wrong = run(d, ['record', '--round', String(b.round), '--from', path.join(TMP, 'c2.json'), '--digest', 'f'.repeat(64)]);
     check('record with a wrong --digest → refused (30 state-tampered), no progress written', wrong.code === 30 && snap() === s0 && /state-tampered/.test(wrong.out), wrong.out);
+  }
+  {
+    // B1: split path — the re-hash runs before the lock check.
+    const d = mkRepo();
+    run(d, ['round'], { FAKE_SCENARIO: 'done' }); age(d);
+    const daily0 = read(path.join(SD(d), 'daily.json'));
+    const b = JSON.parse(run(d, ['begin', '--json', '--holder', 'sup-1', '--lease', '300']).out);
+    writeFileSync(path.join(SD(d), 'daily.json'), '{}');
+    rmSync(path.join(SD(d), 'lock'));
+    writeFileSync(b.events_path, `${JSON.stringify({ type: 'result', subtype: 'success', usage: { input_tokens: 5 } })}\n`);
+    writeFileSync(path.join(TMP, 'b1.json'), run(d, ['classify', '--round', String(b.round), '--events', b.events_path, '--json']).out);
+    const r = run(d, ['record', '--round', String(b.round), '--from', path.join(TMP, 'b1.json'), '--digest', b.state_digest]);
+    check('split path: daily.json overwritten + lock removed → record 30 state-tampered (not a plain refusal), STOP + alert',
+      r.code === 30 && /daily\.json/.test(r.out) && /lock/.test(r.out) && /state-tampered/.test(read(path.join(SD(d), 'STOP')) || '') && /state-tampered/.test(read(path.join(SD(d), 'alerts.log')) || ''), `${r.code} ${r.out} ${r.err}`);
+    check('split path: the tampered cap is named, never counted as progress', daily0 !== null && roundsLog(d).trim().split('\n').length === 1);
+  }
+  {
+    // B1: a forged in-round record (UNATTENDED unset, self-computed digest) on the split path.
+    const d = mkRepo();
+    run(d, ['round'], { FAKE_SCENARIO: 'done' }); age(d);
+    const daily0 = read(path.join(SD(d), 'daily.json'));
+    const bo0 = JSON.parse(read(path.join(SD(d), 'backoff.json'))).codes.join();
+    const b = JSON.parse(run(d, ['begin', '--json', '--pid', String(process.pid)]).out);
+    writeFileSync(path.join(TMP, 'forged.json'), JSON.stringify({ contract_version: 1, round: b.round, code: 0, outcome: 'done', reason: 'forged', tokens: 0, session_id: null }));
+    const self = R.snapshotProtected(d, SD(d), b.round).digest;
+    const f = run(d, ['record', '--round', String(b.round), '--from', path.join(TMP, 'forged.json'), '--digest', self]);
+    writeFileSync(b.events_path, `${JSON.stringify({ type: 'result', subtype: 'success', usage: { input_tokens: 5000 } })}\n`);
+    writeFileSync(path.join(TMP, 'real.json'), run(d, ['classify', '--round', String(b.round), '--events', b.events_path, '--json']).out);
+    const r = run(d, ['record', '--round', String(b.round), '--from', path.join(TMP, 'real.json'), '--digest', b.state_digest]);
+    check('split path: a forged in-round record ends the round 30 and its line + counters are rolled back',
+      f.code === 0 && r.code === 30 && /forged-record/.test(r.out) && roundsLog(d).trim().split('\n').length === 1
+      && read(path.join(SD(d), 'daily.json')).trim() === daily0.trim() && JSON.parse(read(path.join(SD(d), 'backoff.json'))).codes.join() === bo0 && !existsSync(path.join(SD(d), 'lock')),
+      `${f.code} ${r.code} ${r.out} | ${roundsLog(d)} | ${read(path.join(SD(d), 'backoff.json'))}`);
+  }
+  {
+    // B1: the one plain refusal — a lease that expired and was reclaimed.
+    const d = mkRepo();
+    const b = JSON.parse(run(d, ['begin', '--json', '--holder', 'sup-1', '--lease', '1']).out);
+    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 1300);
+    run(d, ['begin', '--json', '--holder', 'sup-2', '--lease', '30']); // reclaims round 1 → crashed
+    writeFileSync(b.events_path, `${JSON.stringify({ type: 'result', subtype: 'success', usage: { input_tokens: 5 } })}\n`);
+    writeFileSync(path.join(TMP, 'b3.json'), run(d, ['classify', '--round', String(b.round), '--events', b.events_path, '--json']).out);
+    const r = run(d, ['record', '--round', String(b.round), '--from', path.join(TMP, 'b3.json'), '--digest', b.state_digest]);
+    check('split path: a record after its lease was reclaimed is a plain refusal (1, no STOP)', r.code === 1 && /lost its lock/.test(r.err) && !existsSync(path.join(SD(d), 'STOP')), `${r.code} ${r.err}`);
+  }
+  {
+    // B2: classify's budget-stop is sticky.
+    const d = mkRepo();
+    const r = run(d, ['round'], { FAKE_SCENARIO: 'budget' });
+    age(d);
+    const n = run(d, ['next']);
+    check('budget-stop from classify writes STOP: the next begin does not start (30 budget-stop until resume)', r.code === 30 && /budget-stop/.test(read(path.join(SD(d), 'STOP')) || '') && n.code === 30 && /budget-stop/.test(n.out), `${r.code} ${n.out}`);
+    // B4: a string code is refused.
+    const b = JSON.parse(run(mkRepo(), ['begin', '--json', '--pid', String(process.pid)]).out);
+    const d4 = path.dirname(path.dirname(path.dirname(path.dirname(path.dirname(b.events_path)))));
+    writeFileSync(path.join(TMP, 'str.json'), JSON.stringify({ contract_version: 1, round: b.round, code: '1', outcome: 'crashed', reason: 'x', tokens: 5, session_id: null }));
+    const s = run(d4, ['record', '--round', String(b.round), '--from', path.join(TMP, 'str.json'), '--digest', b.state_digest]);
+    check('record: a string code ("1") is refused (1), nothing lands in backoff.json', s.code === 1 && /integer/.test(s.err) && !existsSync(path.join(SD(d4), 'backoff.json')), `${s.code} ${s.err}`);
+  }
+  {
+    // B3: the brakes work with an unreadable runner.json.
+    const d = mkRepo();
+    writeFileSync(path.join(d, '.claude/runner.json'), '{broken');
+    const p = run(d, ['pause']);
+    const s = run(d, ['stop', '--reason', 'x']);
+    const n = run(d, ['next']);
+    const rs = run(d, ['resume']);
+    check('pause / stop / resume work when .claude/runner.json is `{broken` (next fails closed: 1)', p.code === 0 && s.code === 0 && rs.code === 0 && n.code === 1 && !existsSync(path.join(SD(d), 'STOP')), `${p.code} ${s.code} ${n.code} ${rs.code} ${p.err}`);
   }
   {
     const d = mkRepo();
@@ -639,6 +716,7 @@ try {
   rmSync(TMP, { recursive: true, force: true });
 }
 
+function require0(dir) { return readdirSync(dir); }
 function writeEv(d, ...events) {
   const p = path.join(TMP, `ev-${Math.random().toString(36).slice(2)}.jsonl`);
   writeFileSync(p, events.map((e) => JSON.stringify(e)).join('\n'));

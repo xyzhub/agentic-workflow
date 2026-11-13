@@ -59,12 +59,13 @@
       "description": "runner.mjs begin --json: the round is started and the lock is held.",
       "type": "object",
       "additionalProperties": false,
-      "required": ["contract_version", "round", "unit", "prompt", "env", "events_path", "state_digest"],
+      "required": ["contract_version", "round", "unit", "prompt", "append_system_prompt", "env", "events_path", "state_digest"],
       "properties": {
         "contract_version": { "type": "integer", "enum": [1] },
         "round": { "type": "integer" },
         "unit": { "type": "string" },
-        "prompt": { "description": "The exact prompt for the child turn.", "type": "string" },
+        "prompt": { "description": "The child turn's prompt: the unit slash command alone (it expands only when it opens the prompt).", "type": "string" },
+        "append_system_prompt": { "description": "The round rules (docs are the source of truth, Docs vs code, the gh token rule, the ask note); pass as --append-system-prompt.", "type": "string" },
         "env": {
           "description": "Variables the caller adds to the child env (it also deletes CLAUDECODE, CLAUDE_CODE_ENTRYPOINT, AGENTIC_WORKFLOW_CHILD and the two Anthropic key variables).",
           "type": "object",
