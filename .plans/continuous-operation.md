@@ -202,6 +202,12 @@ release (S5).
      decisions change only with the owner's approval); when the doc
      **describes current behaviour** (a path, a threshold, how a hook or
      tool works) the code wins and the doc is stale — update the doc.
+     **Amended 2026-11-13 (goldfish G5):** the round prompt shape (the slash
+     command alone; the rules as `--append-system-prompt`) is proven by ONE
+     live `runner.mjs round` on a scratch mission (≤ $1) at the start of S1b:
+     the command body expanded, the sources rule was obeyed, and a `round:`
+     line and the counters were written — recorded as a row of the brief's P0
+     probe record. A failed observation stops S1b.
    - AC-7 **Redaction.** `<plugin>/tools/redact.mjs` (new, ≤ 80 lines) ports
      `hl_redact` (`handoff-lib.sh:225–234`, seven shapes) and adds an
      **exact-value scrub** of every env var whose NAME matches
@@ -249,6 +255,13 @@ release (S5).
      to `runner.mjs`'s exported `roundOnce()` so the two unattended loops
      cannot drift (`ccp run` keeps its CLI and the ask.mjs page);
      `headless-test.mjs` stays green.
+     **Amended 2026-11-13 (G6):** `ccp run` keeps its CLI, tick count, ask
+     page, messages, exit codes and its ask.mjs note (`roundNote`'s `ask:
+     'page'`); from `roundOnce` it takes the lock, the docs-only note, the
+     counters and the `round:` line; it no longer renders a tick live
+     (Assumed 2026-11-13). `headless-test.mjs` had no `run` case, so "stays
+     green" proved nothing: the existing checks stay byte-identical and two
+     `run` cases are added.
 3. **P2 — `/agentic-workflow:run`, mode-aware handoff, effective window, settings env, HITL-ask audit (S2).**
    - AC-10 **`<plugin>/commands/run.md` (new, ≤ 9,000 B).** The thin parent:
      `run` (start), `run status`, `run stop|pause` (never `resume` — a human
@@ -318,6 +331,18 @@ release (S5).
      child runs, ends the child, and maps it to `21`; `classify` (AC-29)
      maps the same marker, or a LAST `result` event with
      `terminal_reason: "hook_stopped"`, to `21` — never `subtype`.
+     **Amended 2026-11-13 (G3):** `hl_unattended()` is true when the variable
+     is `1` OR a live round lock exists for the cwd (`<git common
+     dir>/agentic-workflow/runner/lock`; the bash port of `lockStale`), and
+     it is tested BEFORE the `AGENTIC_WORKFLOW_CHILD` exit in
+     `handoff-gate.sh` and `compact-resume.sh` — unattended wins;
+     `AGENTIC_WORKFLOW_CHILD=1` alone stays silent. Exit `21` is decided only
+     after `record`'s re-hash (a planted marker plus a protected-file edit is
+     `30 state-tampered`) and a `21` round is still charged. hook-test: CHILD
+     + UNATTENDED → not silent; a live lock with no variable → unattended; a
+     dead-pid lock → managed. runner-test: marker + a `daily.json` edit →
+     `30`. `run.md` tells a supervisor on the split path to pass
+     `--append-system-prompt` from `begin` (G4).
    - AC-12 **Managed handoff copy.** `commands/handoff.md:62–68` `## Then`:
      "handoff written; keep working — compaction will carry it (the
      pre-compact snapshot + compact-resume re-read it verbatim); `/clear` is
@@ -410,6 +435,13 @@ release (S5).
      and the handoff; the transcript and memory folder are never named as
      a source). `tools/lint.mjs` gains `checkFidelityHarness` wired after `checkRunnerHarness`. $0, no secret,
      runs in `lint.yml` unchanged.
+     **Amended 2026-11-13 (G4, advisory):** path (b) asserts on `roundNote`
+     and on `begin`'s JSON (`append_system_prompt` equals the note and names
+     the handoff path, `.plans/` and `docs/product/`; `prompt` is the slash
+     command alone) — not on `roundPrompt`. The docs-only check reads:
+     outside its one "never" clause the note names no transcript and no
+     memory folder, and `.remember` appears nowhere. AC-18's
+     `fidelity-model.yml` installs an exactly pinned CLI version.
    - AC-18 **Naive-reader check (EGM Comprehension Goldfish).** `fidelity.mjs
      restate-prompt <handoff> <ledger>` prints the prompt a fresh, read-only
      agent gets (ONLY the handoff, the ledger, `.plans/OBLIGATIONS.md` and
@@ -457,6 +489,30 @@ release (S5).
      closed `expired`, nothing proceeds, and the next round that needs the
      decision opens a NEW gate with a new id (OQ-1 decides the exact
      semantics).
+     **Amended 2026-11-13 (G1, G6):** (1) *One word:* a gate past its TTL has
+     row state `closed-expired` (L6); "`expired`" and "OQ-1 decides" above
+     are closed by it. (2) *Binding (G1):* the sent message ends with a
+     machine line carrying the gate id, class, nonce and a question hash; on
+     first sight of a row `poll` writes an `opened` snapshot to the protected
+     answer store and afterwards reads class, nonce, question hash and
+     message ids ONLY from it; those values enter the snapshot from the
+     bot-authored channel message, never from the row; a reply counts only on
+     the snapshot's bot-authored message carrying its gate id + nonce; a
+     message id is single-use across gates; a row that disagrees with its own
+     message is `void` (one alert, never answerable); the snapshot keeps
+     the full 64-hex question hash and its own first-sight time (the TTL
+     clock); an `http` gate is posted only by `poll`, so its snapshot is
+     what was posted. (3) *Defined in S4,
+     documented by S4b:* the `pending-gates.md` row, `answers.jsonl` event
+     and `outbox.jsonl` event grammars; exit codes `0 / 1 / 2 / 40`; `hold`
+     (blocks, stops reminders and the clock, keeps the nonce; a later yes /
+     no answers); `expire` (the TTL pass) and `expire --force <id>` (owner
+     shell: close an open gate `closed-expired`); `open` with no channel (row
+     + outbox, exit 0, the gate waits); Slack reactions `white_check_mark` /
+     `x` / `raised_hand` and Telegram buttons → `yes` / `no` / `hold`; the
+     Telegram offset in `<state>/telegram.offset` (protected); `poll`
+     delivers `alerts.log` lines to the owner route. Brief § S4 Do 1 holds
+     the exact shapes.
    - AC-20 **Who may answer; owner-only classes (L2).** `.claude/runner.json`
      `approver`: `{ "route": "owner|client", "transport": "slack|telegram",
      "owner_ids": ["U…"], "client_ids": ["U…"], "client_may": ["decision",
@@ -479,6 +535,10 @@ release (S5).
      "token_env": "<NAME>", "chat_env": "<NAME>" }, …]` (S4), so S4b adds
      the `http` entry of AC-38 without changing the reader; `owner_ids`,
      `client_ids` and `client_may` are unchanged.
+     **Amended 2026-11-13 (G6):** each `channels[]` entry also carries
+     `"route": "owner" | "client"`; a gate goes to the channels of
+     `approver.route`, the owner copy to every `route: "owner"` channel
+     (`open` exits 1 on the client route when there is none).
    - AC-21 **No self-approval by shape.** `hooks/hooks.json` PreToolUse Bash
      group (body `hooks/lib/gate-guard.sh`, ≤ 50 lines; placed after the
      merge-guard group `:83–93`): BLOCKS (exit 2) any Bash command whose
@@ -493,6 +553,14 @@ release (S5).
      `# covers:` line; `tools/run-codex-test.mjs` cross-check stays green.
      **Prior art:** `hooks/hooks.json:83–93` (merge-guard wrapper, fail
      closed), `hooks/lib/publish-guard.sh`, `templates/codex.rules:150–245`.
+     **Amended 2026-11-13 (G3, G6):** the body is ONE file of ≤ 90 lines (the
+     50-line cap could not hold the shapes; no second lib file). "Unattended"
+     is `hl_unattended` (the variable OR a live round lock), tested before
+     any `AGENTIC_WORKFLOW_CHILD` exit. Under it `runner.mjs status`, `stop`
+     and `pause` stay open (the `/run` parent needs them while a round is
+     live; a round that stops the runner only stops itself) and `gate.mjs
+     expire` is blocked; `gate.mjs reconcile` is blocked from model Bash
+     always.
    - AC-22 **Tests.** `tools/gate-test.mjs` (new, ~300 lines; a FAKE
      transport on a local `http.createServer` fixture — no network.
      **Amended 2026-11-12:** there is NO `GATE_TRANSPORT_URL` and no flag:
@@ -510,6 +578,11 @@ release (S5).
      → 0; gate-guard hook-test cases: `gate.mjs record` BLOCKED, `gate.mjs
      open` silent, `tee .plans/pending-gates.md` BLOCKED. `tools/lint.mjs`
      gains `checkGateHarness`.
+     **Amended 2026-11-13 (G1, G2):** adds the re-pointed-row case, the
+     re-classed-row case (after first sight → the snapshot's class; before →
+     `void`), the same-id-different-question case, and: a forged
+     `answers.jsonl` line → `30` → `resume` refuses → reconcile → the gate is
+     still open. The gate-guard block has thirteen cases (brief § S4 Do 4).
    - AC-23 **Surfaces.** `runner.mjs next`/`wait` call `gate.mjs poll`
      (AC-4's hook point); a recorded answer makes the owning unit the next
      pick; `20` while a blocking gate is open. `commands/connect.md` gains
@@ -526,6 +599,12 @@ release (S5).
      canonical §5 block is edited to name `gate.mjs open --class decision`
      (ask.mjs stays the `ccp run` surface). `docs/WORKFLOW.md` is NOT
      re-synced in this mission (post-merge row).
+     **Amended 2026-11-13 (G4, advisory):** the gate note lands in
+     `roundNote` (`ask: 'gate'`, the runner's default; `'page'` keeps the
+     ask.mjs note for `ccp run`) — never in `roundPrompt`, which is the slash
+     command alone. From an unattended session `/connect approver` writes
+     nothing: it prints an owner-run shell line (`gate.mjs approver --set
+     …`), the `resume` pattern.
 6. **P5 — security pass, 24 h live-run setup, release (S5).**
    - AC-24 **Security pass.** A one-shot `security` agent (Opus) over
      `main..HEAD` with this threat list, findings fixed in S5 before the
@@ -627,6 +706,12 @@ release (S5).
      `round` and `begin` → fake turn → `classify` → `record` write the SAME
      `round:` line for the same fixture. No name of any wrapper appears in
      the tool.
+     **Amended 2026-11-13 (owner; ckpt-s1 finding S3):** there is no retry
+     mark and no quiet retry — `recordMac`, `rounds/<n>.recorded` and the
+     "already recorded" answer are deleted in S1b's carry-in step; a repeated
+     `record` ends `30 state-tampered` with the day forfeited, and a planted
+     mark changes nothing (one runner-test case). `classify`'s output gains
+     `advisor_off` (AC-33).
    - AC-30 **Login check is skippable when the caller supplies the account
      (S1).** `runner.json` gains `"auth": "login" | "external"` (default
      `login`; `next --auth external` overrides for one call). `external`
@@ -698,6 +783,16 @@ release (S5).
      probe row (i) found. If probe row (iv) shows advisor tokens in the
      reported usage they count toward AC-5's daily cap with no change; if
      not, `status` and the README say the cap excludes them.
+     **Amended 2026-11-13 (G6, advisory):** `maxAdvisorContext` =
+     `--advisor-max-context` > `runner.json` `advisor.max_context_tokens` >
+     100,000 (OQ-10); the resumed thread's input side is passed as
+     `--resume-input <n>` (the prior distillate's `usage.input_tokens`), and
+     a resume without it launches with no advisor. `adv=` is the round line's
+     LAST field, after `v=`. `classify` reports a launch rejection as
+     `advisor_off: <reason>`. `tokens` = the larger of the `usage` sum and
+     the `modelUsage` sum, so advisor tokens count into `tokens=` and the
+     daily cap wherever probe row (iv) found them; the "cap excludes them"
+     sentence above applies only if the row shows them in neither.
    - AC-34 **`advisor:` tune field — a wrapper contract.**
      `commands/tune.md` gains `/agentic-workflow:tune <agent> advisor
      <model>|off` (after the effort section `:114–125`; banner kind
@@ -728,6 +823,11 @@ release (S5).
      rate is `Correctives ÷ Sessions used`, compared between missions run
      with the advisor on and off. The runner never writes it (the
      "only ledger write" lock stands).
+     **Amended 2026-11-13 (G6):** `/doctor` reads "the last launch fell back"
+     only from `adv=off(<reason>)` on the last `round:` line; roles are
+     reported as configured. An existing ledger gets `Correctives: 0` the way
+     it got `Reviewer runs:` — the verb refuses and names the line to add; no
+     migration.
    - AC-9's last clause (`headless.mjs run` on `roundOnce()`) is built here,
      not in S1.
 9. **Replan 2026-11-12 — gate additions: delegation part 1, a generic server channel, a frozen contract (S4, S4b).**
@@ -782,7 +882,8 @@ release (S5).
      answered_at, key_id, signature }]`; `verify` accepts an answer only
      when `signature` is a valid ed25519 signature (`node:crypto`, zero
      deps) by a listed key over the UTF-8 bytes of
-     `JSON.stringify([id, nonce, answer, reason, answered_at])` — a JSON
+     `JSON.stringify([id, nonce, class, q, answer, reason, answered_at])`
+     (the seven-element form — amended 2026-11-13, see below) — a JSON
      array, so a newline or any other character in `reason` cannot make
      two different answers sign the same bytes (`reason` is `""` when
      absent; `answered_at` is the ISO-8601 UTC string as sent).
@@ -798,6 +899,11 @@ release (S5).
      the nonce and the others get the receipt. The server is trusted to
      carry bytes, never to say who answered: a process that holds the
      bearer token still cannot answer. Nothing here names an app.
+     **Amended 2026-11-13 (G1 — before AC-39 freezes the form):** `class` and
+     `q` (the 64-hex sha256 of the question as sent in `POST /gates`) are in
+     the signed array and are taken from the `opened` snapshot, never from
+     the answer body or the row. A gate re-posted with another text or class
+     cannot be answered (a gate-test case).
    - AC-39 **Frozen `gate.mjs` contract (S4b, after AC-36..AC-38 exist).**
      `<plugin>/templates/gate-contract.schema.json` (`contract_version: 1`,
      strict): the `open --json`, `poll --json`, `status --json` shapes
@@ -817,6 +923,10 @@ release (S5).
      approver` writes them with the owner present — and refuses while
      `roundHeld(cwd)` is true (AC-42). `gate.mjs predict` is
      allowed (it cannot change an answer).
+     **Amended 2026-11-13 (G6):** the schema documents the three grammars and
+     the four exit codes S4 defined; it designs none. `gate.mjs approver`
+     joins the shapes blocked when unattended, and "under
+     `AGENTIC_WORKFLOW_UNATTENDED=1`" above reads `hl_unattended`.
 10. **Replan 2026-11-12 — release additions (S5).**
    - AC-40 **L7 surfaces and the wider threat list.** `commands/doctor.md`
      Runner bullet also reports the project token and signing key by NAME
@@ -898,6 +1008,17 @@ release (S5).
      `runner.mjs`, `gate.mjs`, `gate-guard.sh`, `hooks.json`, or schedule
      cron/launchd; running rounds under a separate OS user closes
      it and is deferred by L1 (container provisioning) — OB-37 notes it.
+     **Amended 2026-11-13 (G2, G3):** (d) **A tampered stop is not cleared
+     blind.** After EVERY `30 state-tampered` stop — whatever file it
+     names (on the split path the names come from size / mtime hints a
+     round can fake) — `runner.mjs resume` re-verifies from the channel every open snapshot and
+     every unacted answer (unverifiable → `void`), prints who may answer
+     (ids, routes, `client_may`, keys, the policy table) and exits 1 with
+     `STOP` kept unless `--confirm-approvers` is passed; gate-test: forged
+     line → `30` → `resume` → the gate is still open. In (c) the guard reads
+     `hl_unattended` — the variable OR a live round lock; `begin` /
+     `record`'s own refusal stays on the variable alone (`record` runs under
+     the lock). The protected set gains `<state>/telegram.offset` (S4).
 
 ## Value sourcing
 
@@ -942,7 +1063,20 @@ release (S5).
 | AC-18 | model job `workflow_dispatch` only; `haiku`; skip without secret | locked decision | brief L1 ("model job on `workflow_dispatch` only"); memos D4-B (Haiku = the owner's floor); OQ-4 names the secret |
 | AC-19 | gate id `G-<project>-<4 hex>`; row before send; outbox; receipt | locked decision | `docs/WORKFLOW.md:1197–1232` §12 rules 3 + multi-project; memos D5 core |
 | AC-19 | TTL 72 h, reminders 24 h / 48 h | locked decision | brief L1 ("72h expiry"); memos D5 "Timeouts (gap 2)" |
-| AC-19 | expiry semantics (reject vs closed-expired + new gate) | open question | memos ("Expiry counts as reject") vs journeys J4 ("Never auto-approve, never auto-reject-and-proceed"); OQ-1 |
+| AC-19 | expiry: row state `closed-expired`, then a new gate — never a yes or a no | locked decision | brief L6 `:203–205` (owner 2026-10-27, OQ-1 "Accept all") |
+| AC-19 | machine line `Gate <id> · <class> · <nonce> · q=<16 hex of sha256(question)>`; the `opened` snapshot; single-use message ids | derivation | goldfish G1 (ledger Handoff log 2026-11-13) — the row is child-writable (AC-42), the bot-authored message is what the owner saw; the line's shape is the planner's, frozen by AC-39 |
+| AC-19 | the three grammars (`pending-gates.md` row, `answers.jsonl` event, `outbox.jsonl` event) | assumption | planner's 2026-11-13 (brief § S4 Do 1); S4 defines them, AC-39 freezes them |
+| AC-19 | `gate.mjs` exit codes `0 / 1 / 2 / 40` | derivation | `40` = the runner's busy code (`runner.mjs` `pickUnit`, AC-4); `2` = AC-37's `predict` refusal; `1` usage, as `runner.mjs` |
+| AC-19 | Slack reactions `white_check_mark` / `x` / `raised_hand`; Telegram `callback_data` `yes:` / `no:` / `hold:<id>` | assumption | `commands/connect.md:97–103` verifies a ✅ reaction and names "Telegram's buttons"; the ❌ / ✋ names and the callback form are the planner's |
+| AC-19 | `hold`: blocks, stops reminders and the clock, keeps the nonce, a later yes / no answers | derivation | journeys J4 "Answered hold" row, minus its `resume <id>` word (outside the locked grammar `yes \| no <reason> \| hold`) |
+| AC-19 | `expire --force <id>`; `open` with no channel → row + outbox, exit 0; `<state>/telegram.offset`; `<state>/alerts.sent` | assumption | planner's 2026-11-13 (goldfish G6 asked for each to be named) |
+| AC-20 | per-channel `route: owner \| client` | derivation | `approver.route` (`templates/runner-config.json:6`) + journeys J4 (the owner copy on the client route) |
+| AC-21 | `gate-guard.sh` ≤ 90 lines, one file | assumption | planner's 2026-11-13 (was ≤ 50; `publish-guard.sh` is 109 lines, `merge-guard.sh` 176) |
+| AC-11, AC-21 | unattended = the variable OR a live round lock for the cwd; wins over `AGENTIC_WORKFLOW_CHILD` | derivation | goldfish G3; the lock line and its staleness rule, `runner.mjs:288–297` |
+| AC-42 | `resume --confirm-approvers`; `gate.mjs reconcile` | assumption | planner's names 2026-11-13 (goldfish G2) |
+| AC-23 | `gate.mjs approver --set '<json>'` (owner shell line) | assumption | planner's 2026-11-13; the `resume` pattern of AC-10 |
+| AC-6 | one live round on a scratch mission, ≤ $1 (`budgets.round_usd: 1`) | locked decision | owner 2026-11-13 "Fix all" (goldfish G5, ledger Handoff log) |
+| AC-33 | `--advisor-max-context`, `--resume-input`, `advisor_off`, `adv=` as the last field; `tokens` = max(`usage` sum, `modelUsage` sum) | assumption | planner's names 2026-11-13; which usage block holds advisor tokens is AC-32 row (iv) |
 | AC-19 | reply grammar `yes \| no <reason> \| hold`; junk hint; duplicate receipt | locked decision | journeys J4 |
 | AC-19 | Slack read = `conversations.replies` + `reactions.get`; Telegram = `getUpdates` | derivation | `docs/WORKFLOW.md:1187–1196` §12 rule 1 + `commands/connect.md:97–103` (reactions verified against `SLACK_OWNER_ID`) |
 | AC-20 | owner-only classes `merge`(prod) `deploy` `spend` `publish` `kill` `scope`; client may get `decision`, `staging-merge` | locked decision | brief L2; memos D5 "Who may answer (gap 4)" (spend/kill/scope owner-only always) |
@@ -962,7 +1096,7 @@ release (S5).
 | AC-31 | "working signing config" = `commit.gpgsign` true and `user.signingkey` set | derivation | brief L7 `:236–238` (the key is "written inline into the repo's `.git/config`"); the two-key test is the planner's reading of "working" |
 | AC-31 | exit `75`, outcome `creds-missing` | derivation | AC-4's `75` = "auth failed, expired or absent"; the outcome word is new in AC-6's closed set |
 | AC-32, AC-33 | a completed consult, the launch-rejection texts, subagent reach, usage accounting, the attached-signal | assumption | unobserved; AC-32's probe decides before any code |
-| AC-33 | `max_context_tokens` default | open question | OQ-10 — no source names a number |
+| AC-33 | `max_context_tokens` default 100,000 | locked decision | OQ-10, owner 2026-11-12 "Accept all" (ledger Open questions) |
 | AC-33 | per-launch cap (not per-call); fall back to no advisor on a rejected launch; Claude engines only | locked decision | owner 2026-11-12 "fold it in" (ledger Deviations; commits 09a4179, c085895) |
 | AC-34 | field name `advisor:`; values a model id or `off`; default off | open question | OQ-10 (collides with the existing `advisor` role, `tools/agents.mjs:35`) |
 | AC-34 | minor bump + CHANGELOG line for the registry field | locked decision | owner 2026-11-12 ("an `advisor:` tune field is a contract with the Missions app"); `tools/agents.mjs:9–11` ("The JSON shape is a public interface") |
@@ -980,7 +1114,7 @@ release (S5).
 | AC-36 | `source: client via <channel>:<message id>` for a client's answer | derivation | AC-20 (`client_ids`, `client_may`) + gate-delegation record `:77–78` ("every answer records its source") |
 | AC-36 | `nonce` = 16 random bytes, hex, on the row and in the sent gate | derivation | AC-19 ("consumes the nonce on the first valid answer") left it undefined; `crypto.randomBytes(16)` is the planner's size, frozen by AC-39 |
 | AC-37 | `limits`, `rules` inner shape | open question | reserved and opaque in contract version 1; Part 2 (not planned here) defines them — gate-delegation record `:73–76`, `:88–90` |
-| AC-38 | signed bytes = UTF-8 of `JSON.stringify([id, nonce, answer, reason, answered_at])` | derivation | planner's canonical form (a JSON array is unambiguous for any `reason`); frozen by AC-39; confirmed with OQ-8 |
+| AC-38 | signed bytes = UTF-8 of `JSON.stringify([id, nonce, class, q, answer, reason, answered_at])`; `q` = 64-hex sha256 of the question as sent | derivation | planner's canonical form (a JSON array is unambiguous for any `reason`); `class` + `q` added 2026-11-13 (goldfish G1) so a re-posted gate cannot be answered; frozen by AC-39; confirmed with OQ-8 |
 | AC-38 | public key = raw 32-byte Ed25519 in base64url (JWK `x`); signature = raw 64 bytes in base64url | derivation | RFC 8037 (OKP / Ed25519 JWK) as implemented by `node:crypto` `createPublicKey({format:"jwk"})` and `crypto.verify(null, …)`; frozen by AC-39 |
 | AC-40 | Linux key-file and env-file locations | input | the operator's choice — brief L7 `:245–249` names none; the runbook uses `<key file>` / `<env file>`; doctor shows `git config user.signingkey` and whether `GH_TOKEN` is set |
 | AC-40 | the threat-list additions | derivation | AC-36..AC-39, AC-42 and the 2026-11-12 plan-judge findings (ledger handoff log) |
@@ -1146,6 +1280,31 @@ release (S5).
   window, including 1,000,000 (measured only at 200k). OB-35 re-measures.
 - Assumed 2026-11-12 (planner) — a wrapper can hold an ed25519 private key
   on the owner's device and sign an answer with it (AC-38). OQ-8.
+- 2026-11-13 (owner, AskUserQuestion; ledger Handoff log) — **"Keep S4b,
+  hold 8".** S4b is not deferred and `Estimate: 8` does not change; the
+  overrun stop at 12 forces the scope decision if it is reached.
+- 2026-11-13 (owner, AskUserQuestion; ledger Handoff log) — **"Fix all,
+  narrow judge".** Every goldfish must-fix (G1–G6) and advisory is applied
+  to the pending briefs in one pass (`## Revision 2026-11-13 (goldfish)`);
+  the plan-judge re-checks only that diff.
+- 2026-11-13 (owner, via the orchestrator; ckpt-s1 finding S3) — the
+  runner keeps **no retry mark**: a repeated `record` is `30
+  state-tampered`. Built as S1b's carry-in step (AC-29 amendment).
+- Assumed 2026-11-13 (planner) — every new name in the goldfish revision
+  is a planner's choice no run has exercised: `resume
+  --confirm-approvers`, `gate.mjs reconcile`, `gate.mjs approver --set`,
+  `gate.mjs expire --force <id>`, `--advisor-max-context`,
+  `--resume-input`, the machine line's shape, the three grammars, the
+  reaction and button names, `<state>/telegram.offset`,
+  `<state>/alerts.sent`. The builder may rename one with a line in its
+  hand-off; S4b freezes what S4 shipped.
+- Assumed 2026-11-13 (planner) — the Telegram Bot API cannot fetch a
+  message by id, so the gate message is verified from the
+  `reply_to_message` / `callback_query.message` object of an update; S4
+  confirms it in the API reference before relying on it.
+- Assumed 2026-11-13 (planner) — `ccp run` on `roundOnce` loses its live
+  tool-by-tool rendering (the round stream goes to a file). If the owner
+  wants it kept, S1b step 6 leaves `headless.mjs` untouched instead.
 - Ceremony: this repo's profile is `proposed` → every gate `required`:
   plan-judge, phase-reviewer (Fable, `security-boundary`: `hooks/`, `tools/`,
   `templates/`, `hooks.json`, `codex.rules` — `templates/gate-classes.md:32`),
@@ -1368,6 +1527,54 @@ narrowed; stale anchors and wording in the briefs. `main` is merged
 
 **Version.** Still 1.70.0 — a minor bump already; the registry field and
 the two contract schemas each get a CHANGELOG line.
+
+## Revision 2026-11-13 (goldfish)
+
+_Owner locks 2026-11-13: "Keep S4b, hold 8" and "Fix all, narrow judge".
+One pass over the PENDING briefs (S1b, S2, S3, S4, S4b, S5) and their ACs
+at `feat/continuous-op` db3153d. S0 / S1 history is untouched. No AC was
+added or renumbered — every change is a dated `Amended 2026-11-13` clause
+on an existing AC. `Estimate:` is unchanged. Line numbers are the
+sessions file's after this revision._
+
+| Item | What changed | Master plan | Sessions file |
+|---|---|---|---|
+| G1 — a yes bound to the gate the owner saw | machine line on the message; `opened` snapshot in the protected store on first sight; class / nonce / message id only from it; bot authorship + gate id + nonce; single-use message ids; `http` signed bytes gain `class` + `q`; three harness cases | AC-19 (2), AC-22, AC-38 + its Value sourcing row | S4 Do 1 `:1305`, Do 4 `:1435`; S4b Do 3 `:1620`, Do 6 `:1665`; ckpt-s4, ckpt-s4b |
+| G2 — a tampered stop is not cleared blind | after every `state-tampered` stop `resume` reconciles answers from the channel and needs `--confirm-approvers`; forged line → `30` → `resume` → gate still open | AC-42 (d), AC-22 | S4 Do 2 `:1401`, Do 4 `:1445`; S4b Do 1 `:1603`; S2 Do 6 + S5 Do 2 (the printed line) |
+| G3 — unattended does not hang on one variable | `hl_unattended` = variable OR live round lock; wins over `AGENTIC_WORKFLOW_CHILD`; `21` only after the re-hash, still charged; marker + `daily.json` edit → `30` | AC-11, AC-21, AC-42 (c) | S2 Do 1 `:874`, Do 2 `:899`, Do 3 `:924`, Do 4 `:942`; S4 Do 3 `:1416` |
+| G4 — the rules live in `roundNote` | S3 asserts on `roundNote` + `begin`'s `append_system_prompt`; S4 puts the gate note in `roundNote`; `run.md` tells a supervisor to pass `--append-system-prompt`; `begin` in S2 Reads | AC-17, AC-23, AC-11 | S3 Reads 5 `:1082`, Do 3 `:1125`; S4 Do 2 `:1393`; S2 Reads 4, Do 6 `:982` |
+| G5 — the prompt shape runs live once | S1b step 0: one `runner.mjs round` on a scratch mission (≤ $1), three observations in the probe table | AC-6 | S1b `:584` |
+| G6 — clarity | `ccp run` prompt + headless-test (`:737`, AC-9); the three grammars move into S4 (`:1287`), S4b documents (`:1645`); one word `closed-expired`; channel `route` (`:1279`); reactions / buttons / offset file (`:1339`); `hold`, `expire --force` (`:1345`); `open` with no channel; alert delivery (`:1354`); exit codes (`:1363`); AC-42 in S4 Reads (`:1213`); gate-guard ≤ 90 lines, one file (`:1416`); advisor data path (`:664`, `:721`); existing ledgers and `Correctives:` (`:731`); S4 verify counts fields (`:1498`); thirteen gate-guard cases | AC-9, AC-19 (1)(3), AC-20, AC-21, AC-33, AC-35, AC-39 | as cited |
+| Advisories | OB-35 text gains wake latency + the settings-only compaction point and may run from the staging install (`:1864`); runbook says what keeps `/run` alive (`:1819`); advisor tokens into `tokens=` and the daily cap (`:693`); exact CLI pin (`:1152`); approver writes as an owner shell line (`:1693`) | AC-33, AC-17, AC-23 | as cited |
+| Carry-in (owner, ckpt-s1 S3) | the retry mark is deleted first thing in S1b; a repeated `record` is `30 state-tampered`; one runner-test case; ckpt-s1b confirms | AC-29 | S1b `:570` |
+
+**Read budgets after the revision.** S1b ≈ 1,430 · S2 ≈ 1,465 · S3 ≈ 1,065
+· S4 ≈ 1,440 · S4b ≈ 1,180 · S5 ≈ 1,060 — all inside ≈ 1,500, three of
+them near the edge; each of those three briefs tells its builder to skip
+the 2026-11-13 AC amendments in this file (they summarise the brief),
+which is what keeps the count honest.
+
+**Checked by running it (2026-11-13, $0).** In a scratch repo with the
+ledger shape S1b step 0 names, `runner.mjs next` picked
+`/agentic-workflow:mission scratch continue`; `begin --json` with a stub
+`CLAUDE_BIN`, `commit.gpgsign`, a `user.signingkey` and `GH_TOKEN`
+returned `append_system_prompt` (exit 0) and stopped `75 creds-missing`
+without them — both briefs carry those requirements.
+
+**Session pressure (not acted on — the estimate is the owner's).** The
+fixes fit the six pending briefs, but they make two of them heavier:
+S4 grew from ≈ 450 to ≈ 600 lines of `gate.mjs` plus `reconcile` and the
+`resume` check, and S1b now opens with a runner fix and a live round
+before its own five jobs. Each is the likeliest to need a corrective,
+and a corrective counts as a session. The ledger already stands at 4
+used + 6 pending = 10 against `Estimate: 8` (stop at 12), so at most two
+correctives fit before the overrun stop asks the owner for the scope
+decision. S4's order-if-short line names what a corrective may carry.
+
+**Not changed here.** The ledger's `## Closing` row "24h live run" still
+describes OB-35 by its two 2026-11-12 clauses; the full text is S5 Do 8
+and the row says "verbatim", so nothing breaks — the orchestrator may
+reword the row.
 
 ---
 _The `.plans/continuous-operation.sessions.md` briefs execute these tasks;

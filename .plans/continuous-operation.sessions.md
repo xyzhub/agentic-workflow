@@ -516,17 +516,28 @@ APPROVE → `[x]`, `Next up: S1b`.
 
 ### S1b — advisor probe → launch, cap, fallback; `advisor:` tune field + registry schema; doctor row; `Correctives:`; `headless.mjs run` on the core
 
-- **ACs**: AC-32, AC-33, AC-34, AC-35, AC-9 (its `headless.mjs` clause)
+- **ACs**: AC-32, AC-33, AC-34, AC-35, AC-9 (its `headless.mjs` clause),
+  AC-29 + AC-42 (the carry-in: the retry mark goes), AC-6 (step 0: the
+  round prompt shape seen live)
 - **Suits**: `backend` (three small Node tools + their harnesses, one
   command section, four one-sentence role edits). Runtime: `claude`.
-- **Reads** (≈ 1,270 lines):
+- **Reads** (≈ 1,430 lines — near the limit; read nothing unlisted. The
+  2026-11-13 amendments on AC-6, AC-9, AC-29, AC-33 and AC-35 only
+  summarise this brief — skip them in the master plan):
   1. Master plan Task 8 (AC-32..AC-35) + Value sourcing rows AC-32..AC-35 +
      the three advisor lines in Locked decisions (one `Assumed`) + OQ-10's
      answer in the ledger ≈ 110; brief 217–225 (the probe-record table —
      copy its column shape) ≈ 10.
   2. `node <plugin>/tools/runner.mjs --help` (≈ 70) + in `runner.mjs` the
      `begin` argv/env builder and `roundLine` only (grep `function begin`,
-     `function roundLine`; ≈ 90) — never the rest of the body.
+     `function roundLine`; ≈ 90); for the carry-in and steps 0 / 3 also
+     `classify` 591–606 (where `tokens` is summed, `usageSum` `:589`) ≈ 18,
+     the retry-mark comment 653–667 + `record` 669–690 and 740–746 (the
+     shortcut and the mark write — the lines the carry-in names) ≈ 45,
+     `roundOnce` 749–781 ≈ 33, the `record` case in `main` 871–877 ≈ 7;
+     `<plugin>/templates/runner-config.json` whole (10);
+     `tools/runner-test.mjs` 530–540 + 584–597 (the two cases that name
+     "already recorded") ≈ 25 — never the rest of the body.
   3. `<plugin>/tools/run-claude.mjs` 1–50, 160–195 (`resolveRun` — where
      `effort` is resolved; `advisor` resolves beside it), 236–270
      (`buildArgv`, `childEnv`, `FORBIDDEN`), 365–410 (launch + the
@@ -556,6 +567,56 @@ APPROVE → `[x]`, `Next up: S1b`.
   (`tools/shell-wrappers.mjs`, `templates/codex.rules`, `hooks/hooks.json`
   untouched).
 - **Do**:
+  - **Carry-in — first, before step 0 (owner 2026-11-13; ckpt-s1 finding
+    S3, ledger Handoff log).** Delete the N3 retry mark in
+    `<plugin>/tools/runner.mjs`: `recordMac`, `canon` (`:666–667`), the
+    "already recorded" shortcut (`:684–688`), the mark write (`:744`), the
+    `markP` uses, the comment that promises a quiet retry (`:656–661`),
+    the `--help` sentence (`:39–40`) and the exit-code special case in
+    `main` (`:876` → `return r.code`). A repeated `record` then finds the
+    lock gone and the protected set changed, and ends `30 state-tampered`
+    with the UTC day forfeited — there is no quiet answer.
+    `runner-test.mjs`: the "retried record" case (`:584–597`) becomes
+    "a retried record → 30 + STOP"; add ONE case: tamper + a planted
+    `rounds/<n>.recorded` mark → `30` + `STOP` (the mark is ignored).
+    Harness green, then commit alone: `fix(runner): no retry mark — a
+    repeated record is state-tampered (ckpt-s1 S3)`.
+  0. **One live round (G5; ≤ $1) — before the advisor probe.** The
+     `-p` prompt shape S1-fix chose (slash command alone + the rules as
+     `--append-system-prompt`) has never run live. In a scratch git repo
+     under the scratchpad dir: a one-brief mission trio
+     (`.plans/scratch.md`, `.sessions.md`, and a `.state.md` carrying
+     exactly what the runner's ledger pick needs — `Status: active`,
+     `Estimate: 2 sessions`, `Sessions used: 1` (a `0` is skipped),
+     one open `- [ ] S1 — …` row, a `## Deviations` section, `Next up:
+     S1`; S1 = "append one line to NOTES.md, tick S1, set `Next up:
+     done`"), `.claude/runner.json` `{ "budgets": { "round_usd": 1 } }`,
+     one commit. **First, at $0:** `node …/runner.mjs next` there must
+     print `unit: /agentic-workflow:mission scratch continue` (planner's
+     dry run 2026-11-13 with this ledger shape: it does). A `stop: 75
+     creds-missing <names>` names what the scratch repo lacks —
+     `user.signingkey` (copy this repo's `git config` value) and a
+     working `git identity token` there (or `GH_TOKEN` where the tool is
+     not installed); that first `75` also sets a 15-minute backoff, so
+     delete `<state>/backoff.json` after fixing. If the credentials
+     cannot be made to pass without the owner, hand back. Then run the
+     BRANCH's runner there: `node <this worktree>/plugins/agentic-workflow/tools/runner.mjs
+     round` (the unit `/agentic-workflow:mission scratch continue` expands
+     from the plugin the machine has installed — the command exists in
+     1.69.1; if no plugin is installed, stop and report). Pass = three
+     observations, not exit 0 — a `budget-stop` round still passes if all
+     three hold: (1) **the command body expanded** — the events file shows
+     no `Skill` tool call for the command and the first assistant turn acts
+     on the mission protocol; (2) **the sources rule was obeyed** — reads
+     of `.plans/` and the handoff, no Read of a `*.jsonl` transcript or a
+     `.remember/` file; (3) **a `round:` line and the record were written**
+     — one new line in `<state>/rounds.log` and today's total in
+     `daily.json` raised. Add ONE row to the brief's P0 probe record,
+     after its last row (`:225`), same columns, with the verbatim
+     invocation, `claude --version` and the three observations; commit it
+     alone: `docs(continuous-operation): live round probe`. **If (1) or
+     (3) fails: stop here and hand back with the row** — nothing else in
+     this brief is built on an unproven round.
   1. **Probe first (AC-32) — before any code.** Already known — do not
      re-derive: the option is `--advisor <model>` (`fable` | `opus` |
      `sonnet` | a full id), hidden from `claude --help` by design, `-p`
@@ -599,7 +660,15 @@ APPROVE → `[x]`, `Next up: S1b`.
      the advisor pairing is checked against the main model, so the main
      model is never left to a default when `--advisor` is passed),
      only when resolved and only when NOT (`resume` AND the resumed
-     thread's last reported input side > `maxAdvisorContext`); every
+     thread's last reported input side > `maxAdvisorContext`).
+     `maxAdvisorContext` = CLI `--advisor-max-context <n>` >
+     `.claude/runner.json` `advisor.max_context_tokens` (read with
+     `runner.mjs`'s exported `readConfig`) > 100,000 (OQ-10, owner
+     2026-11-12). The resumed thread's input side = CLI `--resume-input
+     <n>`, which the caller copies from the prior distillate's
+     `usage.input_tokens` (`:331` already sums input + cache read + cache
+     creation); `--resume` without it → treated as ABOVE the cap (no
+     advisor, `advisor_off: "resume-input-unknown"`). Every
      launch WITHOUT the option sets `CLAUDE_CODE_DISABLE_ADVISOR_TOOL=1`
      in `childEnv`, so "off" cannot be overridden by a user-level
      `advisorModel`; on the launch-error text of probe row (ii) relaunch
@@ -611,13 +680,28 @@ APPROVE → `[x]`, `Next up: S1b`.
      / `--model` always present beside `--advisor` / the disable variable
      set whenever the option is absent.
   3. **`runner.mjs` (AC-33)**: `runner.json` `advisor: { "model": null,
-     "max_context_tokens": <OQ-10 answer> }` in the template; `begin`
-     includes the option in the returned launch description when set;
-     `round` applies the same retry-once rule; `roundLine` gains the
-     trailing `adv=<model>|off|off(<reason>)` field after `v=`;
-     `runner-contract.schema.json` gains the field (still
+     "max_context_tokens": 100000 }` in the template (OQ-10); `begin`
+     includes the option in the returned launch description when set and
+     stores `advisor: <model>|null` in `rounds/<n>.begin.json`;
+     `round` applies the same retry-once rule; **`classify` output gains
+     `advisor_off: <reason>|null`** (the run-claude distillate's name; set
+     when the events / stderr carry probe row (ii)'s rejection text, so a
+     split-path supervisor sees it and relaunches once itself); `record`
+     builds the field from the two. `roundLine` gains
+     `adv=<model>|off|off(<reason>)` as its LAST field — after `v=`, which
+     stays where it is (the harness regex at `runner-test.mjs:428` is
+     extended, not reordered). **Advisor tokens count (advisory):**
+     `classify` `tokens` = the larger of `usageSum(result.usage)` and the
+     sum over every `result.modelUsage` entry of the token fields probe
+     row (iv) shows there (record their names in the row — they are not
+     assumed to match `usage`'s), so
+     the advisor's tokens reach `tokens=` and the 5M daily cap wherever
+     probe row (iv) found them; only if the row shows them in neither do
+     `status` and the README say the cap excludes them.
+     `runner-contract.schema.json` gains both fields (still
      `contract_version: 1` — nothing is released yet). Runner harness:
-     three cases.
+     four cases (adv on / off / off(reason) via classify; `modelUsage`
+     larger than `usage` → the larger is charged).
   4. **`agents.mjs` + schema + `tune.md` (AC-34)**: `effective.advisor`
      (`fmValue(src, 'advisor')` or null; `off` → null) at both sites
      (`:140–143`, `:194–197`); `overrideKind` (`:108–118`) adds `advisor`;
@@ -634,25 +718,56 @@ APPROVE → `[x]`, `Next up: S1b`.
   5. **Consult, doctor, measure (AC-35)**: the one sentence in the four
      role files (identical wording; check it against `lint.mjs:1145–1176`
      so it is not read as a rule restatement); `doctor.md` **Advisor**
-     bullet after `:54` (≤ 400 B); `mission-state.md` `Correctives: 0`
+     bullet after `:54` (≤ 400 B) — it reads "the last launch fell back"
+     from ONE place: the `adv=off(<reason>)` field of the last `round:`
+     line (`runner.mjs status --json` `rounds`); a role launch keeps no
+     record, so roles are reported as configured (`agents.mjs --json`
+     `effective.advisor`) and never 🟡; `mission-state.md` `Correctives: 0`
      under `Reviewer runs:` (`:18`) with one clause in the note `:28`;
      `ledger.mjs` verb `correctives +1|=N` (add to `VERBS` `:46`, mirror
      `:172`) + `ledger-test.mjs` cases mirroring `:179–186`;
      `mission.md` — where a corrective starts (`:172–176`, `:275`) add the
      bump command in a clause, never a restatement of the retry rule.
+     **Existing ledgers** get the line the way they got `Reviewer runs:`
+     (`ledger.mjs:176`): no migration — the verb refuses with "add
+     `Correctives: 0` under `Reviewer runs:`", and the `mission.md` clause
+     says the orchestrator adds that line once, then re-runs the verb.
   6. **`headless.mjs run` (AC-9)** (`:155–182`): replace the loop body with
-     `roundOnce` from `./runner.mjs` (keep the `answerPending` page, the
-     tick count and the `ccp` messages); `turn`/`claudeArgs` stay for
-     `chat`. `headless-test.mjs` must stay green unchanged. If it cannot be
-     made green, leave `headless.mjs` untouched and report it.
+     `roundOnce` from `./runner.mjs`; `turn`/`claudeArgs` stay for `chat`.
+     **What `ccp run` keeps** (G6): its CLI, the tick count, the
+     `answerPending` page, its messages and exit codes (`22` → its own
+     "no progress … Stopping." + exit 3; `20` → `answerPending` then the
+     next tick; `0` → next tick; any other code → stop with that code),
+     **its own unit** (`unit: '/agentic-workflow:mission <mission>
+     continue'` — never the runner's pick) and **its own ask note**:
+     `roundOnce(cwd, cfg, { unit, ask: 'page' })` →
+     `begin` → `roundNote(cfg, { handoff, ask })`, where `'page'` appends
+     `HEADLESS_ASK_NOTE` (today's text — and the only value until S4 adds
+     `'gate'` and makes it the runner's default). **What it takes from the
+     runner**: the lock, the docs-only note, the counters and the `round:`
+     line, printed per tick. **What it loses** (Assumed 2026-11-13 —
+     report it): the live tool-by-tool rendering of a tick (`roundOnce`
+     writes the stream to a file). `headless-test.mjs` has no `run` case
+     today (its 13 checks cover `chat` and the UI), so "green unchanged"
+     proved nothing: the existing checks stay byte-identical and TWO `run`
+     cases are added (a fake `claude`: one tick writes one `round:` line;
+     the child argv carries `--append-system-prompt` with the ask.mjs
+     note). If `run` cannot be made green, leave `headless.mjs` untouched
+     and report it.
   7. `node tools/lint.mjs`; commit `feat(advisor): advisor launch option
      with a per-launch cap and fallback, advisor tune field in the agent
      registry, Correctives counter; headless run on the runner core (S1b)`
      + Attribution; push. Never edit `.plans/`.
 - **Verify**:
-  - The probe record is committed BEFORE any advisor code (`git log
-    --oneline` order) and every row has a verbatim invocation; the option
-    spelling in `buildArgv` is character-identical to row (i).
+  - `git log --oneline` order: the carry-in fix, the live-round row, the
+    advisor probe record, then code. `grep -n "already recorded\|recordMac"
+    <plugin>/tools/runner.mjs tools/runner-test.mjs
+    <plugin>/templates/runner-contract.schema.json` → only the test's
+    "not already recorded" wording, no code. The live-round row states the
+    three observations.
+  - The probe record is committed BEFORE any advisor code and every row
+    has a verbatim invocation; the option spelling in `buildArgv` is
+    character-identical to row (i).
   - `node tools/run-claude-test.mjs`, `tools/agents-test.mjs`,
     `tools/runner-test.mjs`, `tools/ledger-test.mjs`,
     `tools/headless-test.mjs` all exit 0 — report each count and name the
@@ -666,13 +781,14 @@ APPROVE → `[x]`, `Next up: S1b`.
     → 0 lines (`tools/agents.mjs:9` already says "the Missions app" — S5
     rewords it; do not count it here).
   - Catalog: none.
-- **Read budget**: ≈ 1,270 lines (plan/brief 120 · runner 160 · run-claude 191
-  · agents + schema + test 322 · tune 50 · headless + test 198 · roles 75 ·
-  doctor/mission/ledger/template/lint 181) — inside. Order if time runs short: probe
-  record → `run-claude.mjs` + `agents.mjs` + schema + their harnesses (the
-  contract) → `Correctives:` → `tune.md` + doctor + role sentences →
-  `runner.mjs` field → the `headless.mjs` refactor last (this brief, not
-  S1, owns it).
+- **Read budget**: ≈ 1,430 lines (plan/brief 120 · runner + config + its
+  test 298 · run-claude 191 · agents + schema + test 322 · tune 50 ·
+  headless + test 198 · roles 75 · doctor/mission/ledger/template/lint
+  181) — near the limit. Order if time runs short: carry-in → live round →
+  probe record → `run-claude.mjs` + `agents.mjs` + schema + their
+  harnesses (the contract) → `Correctives:` → `tune.md` + doctor + role
+  sentences → `runner.mjs` fields → the `headless.mjs` refactor last (this
+  brief, not S1, owns it; it is the first thing a corrective may carry).
 
 **Checkpoint ckpt-s1b** — one-shot `reviewer` on **Fable** inside S1b
 (`tools/` + `templates/` are boundary-class): every advisor fact in the code
@@ -682,8 +798,13 @@ never appears without `--model`; the fallback retries once and never
 loops; a resumed launch above the cap carries no advisor; the registry
 output validates and `effective.advisor` is null everywhere by default; no
 preset sets it; the role sentence is one sentence; the runner still writes
-nothing to a ledger but the `handoff-failed` line; `headless-test.mjs` is
-byte-unchanged. If the probe struck the advisor: confirm nothing of it
+nothing to a ledger but the `handoff-failed` line; the existing
+`headless-test.mjs` checks are byte-identical and the two `run` cases
+exist; **ckpt-s1 finding S3 is closed** — no retry mark, no "already
+recorded" path, a repeated `record` and a planted `.recorded` file both
+end `30` + `STOP`; the live-round row shows the three observations (not
+only an exit code); advisor tokens are charged where the probe found
+them. If the probe struck the advisor: confirm nothing of it
 shipped. APPROVE → `[x]`, `Next up: S2`.
 
 ## Phase P2 — `/run`, mode-aware handoff, effective window, settings env, HITL-ask audit (branch: `feat/continuous-op`)
@@ -698,7 +819,8 @@ shipped. APPROVE → `[x]`, `Next up: S2`.
   (`:220`); the threshold is window − 33,000 (`:225`).
 - **Suits**: `backend` (bash hooks + hook-test, four command files, one
   template rule; the probe record decides two texts). Runtime: `claude`.
-- **Reads** (≈ 1,440 lines — recounted item by item 2026-11-12):
+- **Reads** (≈ 1,465 lines — recounted 2026-11-13; AC-11's 2026-11-13
+  amendment only summarises Do 1–4 and 6 — skip it in the master plan):
   1. Brief 60–78 + 163–208 + the P0 probe record 217–225 ≈ 75; master plan
      Task 3 (with the three 2026-11-12 amendments) + AC-28 in Task 7 +
      Value sourcing AC-10..AC-16, AC-28 + Locked decisions (the D3-B,
@@ -707,9 +829,12 @@ shipped. APPROVE → `[x]`, `Next up: S2`.
      set" — its band numbers are superseded by AC-28) ≈ 118.
   3. Journeys 76–95 (J2 table), 97–114 (J3 table) ≈ 40.
   4. `node <plugin>/tools/runner.mjs --help` (the header, ≈ 70 lines) — the
-     exit codes `run.md` reacts to; in the body only `classify` and
-     `record` (grep `function classify`, `function record`; ≈ 60) — the two
-     functions step 3 edits.
+     exit codes `run.md` reacts to, and the `begin` entry (its JSON:
+     `prompt`, `append_system_prompt`, `env`); in the body only `classify`
+     and `record` (grep `function classify`, `function record`; ≈ 60) —
+     the two functions step 3 edits — plus the lock helpers 288–303
+     (`readLock`, `lockStale`, `roundHeld` — the rule `hl_unattended`
+     ports to bash) ≈ 16 and the `begin` return 580–584 ≈ 5.
   5. `<plugin>/hooks/lib/handoff-gate.sh` whole (131);
      `<plugin>/hooks/lib/handoff-lib.sh` 1–50 (contract header), 70–79,
      180–209 ≈ 90; `<plugin>/hooks/lib/compact-resume.sh` 1–30 + 240–254
@@ -746,7 +871,17 @@ shipped. APPROVE → `[x]`, `Next up: S2`.
   new `unattended-ask` fence. `tools/shell-wrappers.mjs` and
   `templates/codex.rules` untouched.
 - **Do**:
-  1. **`handoff-lib.sh`**: add `hl_unattended()` after `hl_num` (`:81`);
+  1. **`handoff-lib.sh`**: add `hl_unattended()` after `hl_num` (`:81`) —
+     **true when `AGENTIC_WORKFLOW_UNATTENDED=1` OR a live round lock
+     exists for the cwd** (G3: the variable is something a supervisor
+     must remember to set). The lock is
+     `$(git rev-parse --git-common-dir)/agentic-workflow/runner/lock`, one
+     line `<pid> <start UTC> <round> <holder|-> <lease_until_ms|->`; live
+     = holder `-` → `kill -0 <pid>` succeeds, else `lease_until_ms` > now
+     in ms (the bash port of `lockStale`, `runner.mjs:297`; no lock, no
+     git dir or an unreadable line → not live). The runner's own
+     `refuseUnattended` (`runner.mjs:522`) stays env-only — `record` runs
+     while the lock is held.
      constants `:70–71`: `HL_DEFAULT_PCT=95` → `HL_DEFAULT_RESERVE=33000`
      (comment cites the 2026-11-09 observation, brief `:225`);
      `hl_threshold` (`:180–186`) = effective window − reserve, where the
@@ -761,8 +896,12 @@ shipped. APPROVE → `[x]`, `Next up: S2`.
      `templates/WORKFLOW.md:280` (same byte count ± 10). Grep
      `HL_DEFAULT_PCT` and `× 95` across `<plugin>/` and `tools/` → 0
      afterwards.
-  2. **`handoff-gate.sh:112–131`** per AC-11 (as amended): the unattended
-     last line; on `BLOCKS -ge HL_FAIL_OPEN` → managed: today's `⚠️ …
+  2. **Unattended wins over the child silencer (G3).** In
+     `handoff-gate.sh` the early exit `:36` and in `compact-resume.sh`
+     `:69` become "`AGENTIC_WORKFLOW_CHILD=1` AND NOT `hl_unattended` →
+     exit 0" (source the lib before the test); the other hooks' child
+     exits are untouched. **`handoff-gate.sh:112–131`** per AC-11 (as
+     amended): the unattended last line; on `BLOCKS -ge HL_FAIL_OPEN` → managed: today's `⚠️ …
      failed open` line byte-identical; unattended: the J3 5-block line to
      stderr, then `hl_mput "$HL_DIR/state/$SID.gate-stop" …` and exit 2 on
      this and every later call (the tool stays denied; the comment cites
@@ -782,8 +921,16 @@ shipped. APPROVE → `[x]`, `Next up: S2`.
      line to the active ledger's `## Deviations` when the code is `21` (the
      ONLY ledger write; refuse if the section is missing) and applies the
      ladder 1/2/3 → warn/`30`. So a supervisor on the split path gets the
-     same `21` and the same line. Runner harness: three cases (marker via
-     `round`, marker via `classify`, `hook_stopped` via `classify`).
+     same `21` and the same line. **`21` is decided only after the re-hash
+     and is still charged (G3):** the marker lives in a child-writable
+     dir, so `record` re-hashes the protected set FIRST (as today) and
+     only then writes the Deviations line, the ladder and the counters —
+     a round that plants the marker and edits `daily.json` ends `30
+     state-tampered`, never `21`; a `21` round is charged its reported
+     tokens, or the whole tick budget when no `result` event exists
+     (`classify`'s default). Runner harness: four cases (marker via
+     `round`, marker via `classify`, `hook_stopped` via `classify`, marker
+     + a `daily.json` edit → `30` not `21`).
   4. **`tools/hook-test.mjs`** — new block after the child-silence block
      (`:2542–2556`), before `:2557`,
      `// ── continuous-operation S2: unattended gate, effective window ──`:
@@ -792,7 +939,12 @@ shipped. APPROVE → `[x]`, `Next up: S2`.
      empty, and `⚠️ … failed open` appears nowhere; a 7th call → still
      exit 2; managed 6th block → byte-identical to today's line;
      unattended + `tool_name: Agent` 6th block → exit 2, no marker;
-     `AGENTIC_WORKFLOW_CHILD=1` → silent; compact-resume branch 3
+     `AGENTIC_WORKFLOW_CHILD=1` alone → silent (the existing case
+     `:2549` stays as it is); `AGENTIC_WORKFLOW_CHILD=1` +
+     `AGENTIC_WORKFLOW_UNATTENDED=1` → the unattended block, NOT silent;
+     no variable + a live lock file (the test's own pid) in the fixture
+     repo → the unattended line; a lock whose pid is dead → managed;
+     compact-resume branch 3
      unattended wording; `hl_threshold`: settings `env` 200000 and no env
      var → threshold 167,000, advisory at 116,900, urgent at 141,950; env
      var 400000 wins over the file (threshold 367,000); malformed file →
@@ -820,7 +972,18 @@ shipped. APPROVE → `[x]`, `Next up: S2`.
      `## Standing steers`); `run status|stop|pause` map to the runner verbs; `resume` is NOT a
      parent verb — the parent prints `node ${CLAUDE_PLUGIN_ROOT}/tools/runner.mjs
      resume` for the human to run at the shell (a STOP-file self-resume
-     path is exactly what S4's gate-guard blocks); the stop lines (`🛑 …`) verbatim from J1 minus systemd
+     path is exactly what S4's gate-guard blocks; S4 adds what `resume`
+     asks for after a `state-tampered` stop — `run.md` prints the runner's
+     own stop line, which names it). **While a round holds the lock the
+     parent's own session is unattended too** (`hl_unattended`, step 1):
+     it needs only `status`, `stop` and `pause` then (S4's guard leaves
+     those three open), and if the handoff gate blocks the parent it
+     writes the handoff and ends — the owner starts `/run` again (S5's
+     runbook says how). **One sentence for a supervisor that drives
+     `begin` / `classify` / `record` itself (G4):** the turn is `claude -p
+     --append-system-prompt "<append_system_prompt>" "<prompt>"` with
+     `env` added — all three from `begin`'s JSON; the prompt alone carries
+     no rules; the stop lines (`🛑 …`) verbatim from J1 minus systemd
      words. `autopilot.md:30–37` and `mission.md:298–308`: one sentence
      each pointing at `/agentic-workflow:run` for fresh context per tick.
   7. **Settings env + §10 row + doctor** (AC-14): `bootstrap.md` paragraph
@@ -846,9 +1009,10 @@ shipped. APPROVE → `[x]`, `Next up: S2`.
       unattended-ask rule (S2)` + Attribution; push. Never edit `.plans/`.
 - **Verify**:
   - `node tools/hook-test.mjs` green — report the new block's case names
-    (≥ 11), the three re-pinned band numbers, and that `failed open` and
-    `"continue"` appear in no unattended case output.
-  - `node tools/runner-test.mjs` green incl. the three `21` cases.
+    (≥ 14), the three re-pinned band numbers, and that `failed open` and
+    `"continue"` appear in no unattended case output; name the
+    CHILD + UNATTENDED case and the live-lock case.
+  - `node tools/runner-test.mjs` green incl. the four `21` cases.
   - `grep -rn "HL_DEFAULT_PCT\|950000\|950_000\|807500\|807,500\|665000\|× 95" plugins tools`
     → 0 lines; `ls <plugin>/hooks/lib/plugin-read.sh` → absent.
   - `node tools/lint-test.mjs` green incl. the `unattended-ask` cases;
@@ -863,8 +1027,8 @@ shipped. APPROVE → `[x]`, `Next up: S2`.
   - `claude --plugin-dir <plugin>` loads and `/agentic-workflow:run status`
     prints the runner's status line (or report skipped with the reason).
   - Catalog: none.
-- **Read budget**: ≈ 1,440 lines (brief/plan 335 · memos 118 · journeys
-  40 · runner 130 · hooks 271 · hook-test 91 · commands 258 · WORKFLOW 61 ·
+- **Read budget**: ≈ 1,465 lines (brief/plan 335 · memos 118 · journeys
+  40 · runner 151 · hooks 271 · hook-test 91 · commands 258 · WORKFLOW 61 ·
   lint + lint-test 88 · the rest ≈ 48) — near the limit; read nothing unlisted.
   The order of work if time runs short: steps 1–4 (hooks + tests, the
   mission's core) → 6 (`run.md`) → 5, 7 → 8. If step 8's 15 pointers cannot
@@ -874,7 +1038,10 @@ shipped. APPROVE → `[x]`, `Next up: S2`.
 
 **Checkpoint ckpt-s2** — one-shot `reviewer` on **Fable** inside S2 over
 `main..HEAD` against AC-10..AC-16 and AC-28: the unattended 6th block can
-never reach exit 0 and never fails open; no JSON stop exists anywhere; the
+never reach exit 0 and never fails open; a round child is unattended
+with the variable unset (live lock) and with `AGENTIC_WORKFLOW_CHILD=1`
+set; a planted marker cannot turn a tampered round into a `21`, and a
+`21` round is charged; no JSON stop exists anywhere; the
 managed line is byte-identical; an `Agent`-tool block never writes the
 marker; `hl_threshold` cannot read a non-numeric or a negative into
 arithmetic, and every band number equals (window − 33,000) × 70 / 85 %; at
@@ -892,7 +1059,7 @@ APPROVE → `[x]`, `Next up: S3`.
 - **ACs**: AC-17, AC-18
 - **Suits**: `backend` (Node harness over existing bash hooks; one GitHub
   workflow). Runtime: `claude`.
-- **Reads** (≈ 1,050 lines):
+- **Reads** (≈ 1,065 lines):
   1. Brief 60–78 (the sources rule — the fixture's "docs-only" case encodes
      it) + 163–180 (L1 fidelity clause) + 225 (the OB-32 row — where real
      compaction happens) ≈ 38; master plan Task 4 + AC-28 + Value
@@ -910,8 +1077,11 @@ APPROVE → `[x]`, `Next up: S3`.
      ≈ 30; `<plugin>/hooks/lib/handoff-lib.sh` 180–209 (the band the
      mismatch fixture tests) ≈ 30.
   5. `node <plugin>/tools/runner.mjs --help` (≈ 50) + `<plugin>/tools/runner.mjs`
-     the `roundPrompt` export only (grep it; ≈ 30 lines) — path (b) asserts
-     on it.
+     `SOURCES_RULE` … `roundPrompt` 411–421 (≈ 11) and `begin` 550–585
+     (≈ 36) — path (b) asserts on `roundNote` and on `begin`'s JSON.
+     **The rules are NOT in `roundPrompt`** (since S1-fix it returns the
+     slash command alone); they are in `roundNote`, which `begin` returns
+     as `append_system_prompt`.
   6. `tools/lint.mjs` 519–536 + 1400–1405 ≈ 25; `.github/workflows/lint.yml`
      whole (18) — the model workflow copies its pins; `tools/agents-test.mjs`
      1–40 ≈ 40.
@@ -935,8 +1105,10 @@ APPROVE → `[x]`, `Next up: S3`.
      same transcript is far below the advisory band, which is the
      mismatch the case proves), `docs-only/` (a
      transcript tail and a `.remember/now.md` carrying a newer, contradicting
-     next step — extracted fields must still equal the docs, and the
-     directive/round prompt must name neither as a source).
+     next step — extracted fields must still equal the docs, and neither
+     the directive nor the round note may offer them as a source: the
+     note's only mention of a transcript or a memory folder is inside its
+     "never" clause, and `.remember` appears in neither).
   2. **`<plugin>/tools/fidelity.mjs`** (~250 lines): `extract <handoff>
      <ledger> [--register <path>]` → JSON of every seeded field class;
      `compare <seed> <extracted>` → exit 0/1 with a per-field report;
@@ -950,18 +1122,38 @@ APPROVE → `[x]`, `Next up: S3`.
      path (a) drives `pre-compact.sh` then `compact-resume.sh` (`source:
      compact`) with the fixture ledger + handoff → snapshot exists;
      directive names the handoff and the ledger; freshness CURRENT; then
-     `extract` + `compare` → green; path (b) `roundPrompt(unit)` names the
-     ledger path, the handoff path and the sources rule; every `red/` case →
+     `extract` + `compare` → green; path (b) — `roundNote(cfg, { handoff })` contains the handoff
+     path, `.plans/` and `docs/product/` (the sources rule), and in a temp
+     repo `runner.mjs begin --json` returns `append_system_prompt` equal
+     to it and a `prompt` that is the slash command alone (starts with
+     `/agentic-workflow:`, names the mission whose ledger is active); the
+     lock it took is released by removing the temp repo. `begin` runs
+     the preflight, so the case needs (planner's dry run 2026-11-13 —
+     with these it exits 0, without them `75`): a stub on `CLAUDE_BIN`
+     that exits 0 for `auth status` and prints a version for `--version`
+     (CI has no `claude`); in the temp repo `git config commit.gpgsign
+     true` + any `user.signingkey`; `GH_TOKEN=x` with a `PATH` that has
+     no `git-identity`; and a fixture ledger with `Status: active`,
+     `Sessions used: 1`, one open `- [ ]` row and a `Next up:` line. Every `red/` case →
      `compare` exits 1 naming the field (`window-mismatch` asserts the gate
-     band via `hl_band`; `docs-only` asserts no `transcript`/`.remember`
-     token in the directive or the prompt and that `extract` ignores them);
+     band via `hl_band`; `docs-only` asserts that the note with its one
+     "never a transcript, a compaction summary or a memory folder" clause
+     removed contains no `transcript` / `memory` / `.remember` token, that
+     the `prompt` contains none, that path (a)'s directive — the
+     handoff-present branch — contains no `.remember` (branch 3,
+     `compact-resume.sh:249`, names `.remember/now.md` by design: that is
+     the `handoff-unnamed` case, not this one), and that `extract`
+     ignores both files);
      `score` on a hand-written good restatement → pass, on one with an
      invented id → fail. Print `fidelity harness: clean — N case(s)`.
   4. **`tools/lint.mjs`**: `checkFidelityHarness` after `checkRunnerHarness`.
   5. **`.github/workflows/fidelity-model.yml`**: `on: workflow_dispatch`
      only; same checkout/setup-node pins as `lint.yml`; installs the Claude
-     CLI (`npm i -g @anthropic-ai/claude-code` — record the exact package
-     name from `claude --version`'s package if different); `if: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN != '' }}`
+     CLI **pinned to an exact version** (`npm i -g
+     @anthropic-ai/claude-code@<the version `claude --version` prints in
+     this session>`, with a comment naming the date — a floating install
+     would let a CLI change read as a fidelity regression; record the
+     exact package name if different); `if: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN != '' }}`
      guard with an `echo "skipped: no secret"` step otherwise; job (a):
      `CLAUDE_CODE_AUTO_COMPACT_WINDOW=100000 claude -p --model haiku
      --output-format stream-json …` with the restate prompt after filler
@@ -978,12 +1170,14 @@ APPROVE → `[x]`, `Next up: S3`.
     `docs-only` case name.
   - `node tools/lint.mjs` → `lint: clean`.
   - `grep -n "on:" -A2 .github/workflows/fidelity-model.yml` shows
-    `workflow_dispatch` and nothing else; `grep -c pull_request` → 0.
+    `workflow_dispatch` and nothing else; `grep -c pull_request` → 0;
+    `grep -n "claude-code@" …` shows an exact version, no range.
   - `node <plugin>/tools/fidelity.mjs restate-prompt <fixture handoff>
     <fixture ledger>` prints a prompt that contains `docs/product/` and
-    `.plans/` and does not contain `transcript`, `summary` or `.remember`.
+    `.plans/`, never contains `.remember`, and contains `transcript` /
+    `summary` only inside its one "do not use" sentence.
   - Catalog: none.
-- **Read budget**: ≈ 1,050 lines — inside. Order if time runs short:
+- **Read budget**: ≈ 1,065 lines — inside. Order if time runs short:
   fixtures + `extract`/`compare` + the structural harness green → the red
   cases → `restate-prompt`/`score` → the workflow file last.
 
@@ -1010,11 +1204,14 @@ docs; the harness never touches this repo's own git dir. APPROVE → `[x]`,
   gate-delegation record is never built.
 - **Suits**: `security` (a decision tool whose whole point is who may answer;
   one refusing hook; an execpolicy rule). Runtime: `claude`.
-- **Reads** (≈ 1,290 lines):
+- **Reads** (≈ 1,440 lines — near the limit; read nothing unlisted. The
+  2026-11-13 amendments on AC-19..AC-23 and AC-42 only summarise Do 1–4 —
+  this brief is the full text; skip them in the master plan):
   1. Brief 163–183 (L1 channel-only + L2) + 202–208 (L6 — OQ-1's answer:
      `closed-expired`, a new gate) ≈ 30; gate-delegation record 67–84
-     (Part 1) ≈ 18; master plan Task 5 + AC-36 in Task 9 + Value sourcing
-     AC-19..AC-23, AC-36 + Locked decisions ≈ 270.
+     (Part 1) ≈ 18; master plan Task 5 (with the 2026-11-13 amendments) +
+     AC-36 in Task 9 + **Task 11 (AC-42, with its 2026-11-13 amendment)**
+     + Value sourcing AC-19..AC-23, AC-36, AC-42 + Locked decisions ≈ 345.
   2. Memos 338–366 (D5 core + the L2 reading), 368–372 (option A), 393–398
      (files), 642–662 (counsel 1) ≈ 70.
   3. Journeys 116–160 (J4 — drop the relay row and the local `gate answer`
@@ -1023,8 +1220,13 @@ docs; the harness never touches this repo's own git dir. APPROVE → `[x]`,
      verified against the owner id — the transport fact) ≈ 7;
      `<plugin>/templates/WORKFLOW.md` 1187–1232 (§12 rules 1–4 — read
      only; S4b edits them) ≈ 46.
-  5. `node <plugin>/tools/runner.mjs --help` (≈ 50) + the `poll` hook
-     points in `runner.mjs` (grep `gateTool`; ≈ 20); `<plugin>/tools/ask.mjs`
+  5. `node <plugin>/tools/runner.mjs --help` (≈ 50) + in `runner.mjs`
+     `PROTECTED` 91–97, `roundHeld` / `ownerWrite` 299–309, `alert` 348,
+     `roundNote` 411–418, `pollGates` 464–468 (the `poll` hook point —
+     there is no `gateTool` symbol), the tamper branch of `record` (grep
+     `state-tampered`; ≈ 35) and the `resume` case (grep `case 'resume'`;
+     ≈ 8) ≈ 85; `<plugin>/hooks/lib/handoff-lib.sh` `hl_unattended` (grep;
+     ≈ 15); `<plugin>/tools/ask.mjs`
      59–106 (`pendingOf`, `ask`, `answer` — the jsonl event idiom to mirror
      for the outbox) ≈ 50; `<plugin>/tools/publish-gate.mjs` 1–40 (the
      gate-tool header + claim-token style) ≈ 40.
@@ -1050,8 +1252,10 @@ docs; the harness never touches this repo's own git dir. APPROVE → `[x]`,
   denylist (a `sh -c "node gate.mjs record"` must still be caught: match
   the command TEXT, not the first token).
 - **Do**:
-  1. **`<plugin>/tools/gate.mjs`** (~450 lines): `open`, `poll`, `status`,
-     `expire` per AC-19; channels behind ONE interface `{ name, send,
+  1. **`<plugin>/tools/gate.mjs`** (~600 lines): `open`, `poll`, `status`,
+     `expire` per AC-19 (as amended 2026-11-13 — the grammars, the gate
+     binding and the semantics below are DEFINED here; S4b only writes
+     them into the contract schema); channels behind ONE interface `{ name, send,
      fetchReplies, verify, receipt }` (AC-36) — `verify(reply)` returns
      `{ user, proof }` or nothing, and `poll` treats a reply with no proof
      exactly like an unlisted sender; the registry is a plain object so
@@ -1070,8 +1274,97 @@ docs; the harness never touches this repo's own git dir. APPROVE → `[x]`,
      with the gate; the first valid answer marks it used), `predicted`,
      `predictor` (both empty). Channels are configured as an ARRAY from
      the start — `runner.json` `approver.channels[]`, each `{ "kind",
-     "token_env", "chat_env" }` (AC-20 as amended; never a single
-     `transport` key) — and read tokens by env NAME. **There is no
+     "token_env", "chat_env", "route": "owner" | "client" }` (AC-20 as
+     amended; never a single `transport` key) — and read tokens by env
+     NAME. **Routes (G6):** a gate goes to every channel whose `route`
+     equals `approver.route`; on the client route the one-line owner copy
+     (of the gate and of every client answer) goes to every `route:
+     "owner"` channel, and `open` exits 1 when there is none. **`open`
+     with no channel at all:** the row and the outbox line are still
+     written, `open` exits 0 and prints `no channel configured — this
+     gate waits; run /agentic-workflow:connect approver`; the gate blocks
+     (`20`) until a channel exists and the outbox flushes.
+     **Three grammars (G6 — defined here, one writer each):**
+     (i) `.plans/pending-gates.md` row, one line per gate, fields joined
+     by ` · `: `- <id> · <class> · type=<t> · state=<open|hold|answered|closed-expired>
+     · asked=<UTC> · ttl=72h · route=<owner|client> · answer=<yes|no|acknowledged|->
+     · answerer=owner · source=<…|-> · proof=<…|-> · nonce=<32 hex> ·
+     msg=<channel>:<message id>[,…]|- · predicted=<…|-> · predictor=<…|->
+     · unit="<slash command>" · what="<one line>"`;
+     (ii) `<state>/answers.jsonl`, one JSON object per line, `event` ∈
+     `opened` (`id, at, class, type, nonce, q, msgs, unit` — the
+     snapshot), `held`, `answered` (`id, at, answer, reason, user, source,
+     proof, channel, reply_id`), `acted` (`id, at, round` — written when
+     the runner picks the owning unit), `expired`, `void` (`id, at, why`);
+     (iii) `<state>/outbox.jsonl`, `{ seq, at, id, channel, kind: "gate" |
+     "reminder" | "receipt" | "owner-copy" | "alert", text, question,
+     sent_at, message_id }` (`question` on `kind: "gate"` only;
+     `sent_at` / `message_id` null until sent).
+     **One word for expiry: `closed-expired`** (L6) — the row state; the
+     store event is `expired`; nowhere a bare state `expired`.
+     **A yes is bound to the gate the owner saw (G1):** the sent message
+     ends with one machine line `Gate <id> · <class> · <nonce> · q=<first
+     16 hex of sha256(question)>` (`question` = the what / does / yes / no
+     lines joined by `\n`, UTF-8). The row is child-writable, so `poll`
+     trusts it only as a pointer: on FIRST sight of a row it appends the
+     `opened` snapshot and from then on reads class, nonce, `q` and the
+     message ids ONLY from the snapshot — a later row edit changes
+     nothing. Class, nonce and `q` enter the snapshot from the
+     bot-authored message itself, never from the row: Slack — the parent
+     message returned by `conversations.replies` (its `bot_id` / `user` =
+     this token's `auth.test` identity); Telegram — the
+     `reply_to_message` / `callback_query.message` object of the first
+     update that references it (`from.id` = `getMe`; the Bot API has no
+     fetch-by-id — confirm in its reference, else report `could not
+     verify`); when `poll` itself sent the message (outbox flush) it
+     snapshots what it sent. **What the snapshot holds:** `q` is always
+     the FULL 64-hex hash — recomputed from the outbox line's `question`
+     and accepted only when its first 16 hex equal the bot message's
+     machine line (the line shows 16 for the owner's eyes; the store
+     keeps 64); `at` is first sight, and the 72 h clock and reminders
+     count from it, never from the row's `asked=`. For Telegram the
+     `opened` event is written at first sight with `msgs` pinned and
+     `class`, `nonce`, `q` null, and no answer is accepted while they are
+     null — the update that carries the first reply fills them, then is
+     judged. A channel with no bot-authored message to read back (S4b's
+     `http`) is sent ONLY by `poll`, never by `open`, so its snapshot is
+     always "what `poll` sent". A reply counts only when the message it
+     hangs on is bot-authored, carries the snapshot's gate id + nonce in
+     its machine line, and has the snapshot's message id; a row whose
+     message lacks the line, or whose line disagrees with the row on
+     class or `q` at first sight, gets a `void` event + one alert and is
+     never answerable (the round opens a new gate). **Message ids are
+     single-use:** a message id already in the store under another gate
+     is refused.
+     **Answers (G6):** a typed reply in the thread / a reply-to follows
+     the grammar; Slack reactions on the gate message map
+     `white_check_mark` → `yes`, `x` → `no` (no reason), `raised_hand` →
+     `hold`; Telegram inline buttons carry `callback_data`
+     `yes:<id>` / `no:<id>` / `hold:<id>`; anything else is not an answer.
+     The Telegram update offset lives in `<state>/telegram.offset` (one
+     integer, 0600), in the protected set. **`hold`** (journeys J4,
+     minus its `resume <id>` word, which is outside the fixed grammar):
+     the row goes `state=hold`, the gate still blocks (`20`), reminders
+     and the 72 h clock stop, the nonce is NOT consumed, and a later
+     `yes` / `no <reason>` from an allowed sender on the same message
+     answers it. **`expire`** = the TTL pass `poll` runs each tick
+     (reminders, then `closed-expired` at 72 h), runnable alone;
+     **`expire --force <id>`** = an owner shell line that closes an OPEN
+     gate `closed-expired` now (withdraw a question — never a yes or a
+     no); the guard blocks it from model Bash always. **Alerts (G6):**
+     the runner and `gate.mjs` only append to `<state>/alerts.log`
+     (`runner.mjs:348`); `poll` DELIVERS them — every line past the
+     offset in `<state>/alerts.sent` goes through the outbox (`kind:
+     "alert"`) to every `route: "owner"` channel, so S1's stop / auth
+     alerts reach the owner from this brief on. `alerts.log` stays
+     OUTSIDE the protected set (the runner appends to it mid-round): a
+     round can add a line, which gives it nothing it lacks — it already
+     holds the bot token, the stated same-user limit — so `poll` delivers
+     only lines that start `alert: `, redacted, cut to 500 characters. **Exit codes:** `0` done
+     (`open`: row written; `poll`, `status`, `expire`: ran) · `1` usage
+     or validation error, nothing written · `2` refused — unknown id or
+     a gate not in the needed state · `40` busy — a round holds the lock
+     (`poll`, `expire`, `reconcile`). **There is no
      `GATE_TRANSPORT_URL`, no flag and no config key for the transport
      host**: `open(deps)` / `poll(deps)` take `deps.baseUrl` as a function
      argument that only the harness passes by importing the module; the
@@ -1081,29 +1374,55 @@ docs; the harness never touches this repo's own git dir. APPROVE → `[x]`,
      nothing else writes the store; `poll` writes nothing and exits
      busy while `runner.mjs`'s `roundHeld(cwd)` is true (AC-42,
      amendment 1; a `gate-test.mjs` case); unit pick and `20` read only the
-     store; add `answers.jsonl` to the runner's `PROTECTED` list.
+     store; add `answers.jsonl` and `telegram.offset` to the runner's
+     `PROTECTED` list.
      `pending-gates.md` row written BEFORE the send; outbox
      `<state>/outbox.jsonl` flushed in order; verification = sender id ∈
      `owner_ids` or (`client_ids` AND class ∈ `client_may`); grammar
      `yes|no <reason>|hold`; owner-only human-fired classes per AC-20
      (`open` on them posts the link notice; `poll` records a `yes` as
      `acknowledged`, never as `approved`); receipts; reminders 24/48 h;
-     expiry 72 h per OQ-1's answer; decision log row via the
+     `closed-expired` at 72 h (L6); decision log row via the
      `templates/decision-log.md` grammar with message id + user id + UTC;
      **no `answer`/`record` subcommand exists** — `record()` is an internal
      function `poll` alone calls, and it refuses a call without a `proof`.
-  2. **`runner.mjs`**: `next`/`wait` call `poll()`; a recorded answer →
-     the owning unit first; an open blocking gate → `20`; the `round`
+  2. **`runner.mjs`**: `next`/`wait` call `poll()` (`pollGates`
+     `:464`); a recorded answer → the owning unit first (and an `acted`
+     event); an open blocking gate → `20`; the `round`
      ledger probe treats a new `pending-gates.md` row as `gate-pending`.
-     `roundPrompt` swaps `HEADLESS_ASK_NOTE` for the gate note (the runner never
-     reads `questions.jsonl` or an `ask.mjs answer` as a gate answer) ("to ask the
-     owner a decision: `node ${CLAUDE_PLUGIN_ROOT}/tools/gate.mjs open
-     --class decision …`, record the id in the ledger, END the round").
+     **`roundNote`** (`:416` — NOT `roundPrompt`, which is the slash
+     command alone) takes `ask: 'gate' | 'page'`: `'gate'` appends the gate
+     note ("to ask the owner a decision: `node ${CLAUDE_PLUGIN_ROOT}/tools/gate.mjs
+     open --class decision …`, record the id in the ledger, END the
+     round") and becomes the default for `begin` / `round`; `'page'` keeps
+     `HEADLESS_ASK_NOTE` and is what `headless.mjs run` passes (S1b step
+     6; AC-23 "ask.mjs stays the `ccp run` surface"). The runner never
+     reads `questions.jsonl` or an `ask.mjs answer` as a gate answer.
+     **`resume` after tampering (G2):** on the split path nothing is
+     restored, so a forged `answers.jsonl` line or an approver id written
+     into `runner.json` would survive `30` + `resume`. After EVERY `state-tampered` stop — whatever file `STOP` names: on
+     the split path the names come from size / mtime hints a round can
+     fake — `resume` first (a) calls `gate.mjs`'s exported `reconcile({ cwd })` — it
+     re-verifies from the channel every `opened` snapshot of a
+     still-open gate and every `answered` line with no `acted` line,
+     exactly as `poll` would, and appends a `void` event for each one it
+     cannot verify (listed on stdout, one alert) — and (b) prints
+     `approver.route`, every channel's kind and route, `owner_ids`,
+     `client_ids` and `client_may`, and exits 1 without touching `STOP`
+     unless `--confirm-approvers` is passed. `gate.mjs reconcile` is also
+     a CLI verb for the owner's shell; the guard blocks it from model
+     Bash.
   3. **`hooks/lib/gate-guard.sh`** + the hooks.json group after `:93`
-     (AC-21 as amended): BLOCK on `gate.mjs` + (`record`|`answer`|`approve`|`expire
-     --force`), on `runner.mjs resume` from model Bash; when
-     `AGENTIC_WORKFLOW_UNATTENDED=1` also on `gate.mjs poll` and on every
-     `runner.mjs` verb except `status` (matched in the command TEXT, so
+     (AC-21 as amended; **one file, ≤ 90 lines** — the 50-line cap could not
+     hold these shapes, and a second lib file would split one rule):
+     BLOCK on `gate.mjs` + (`record`|`answer`|`approve`|`reconcile`|`expire
+     --force`), on `runner.mjs resume` from model Bash; when unattended —
+     **`hl_unattended` from `handoff-lib.sh` (the variable OR a live round
+     lock), tested before any `AGENTIC_WORKFLOW_CHILD` exit (G3)** — also
+     on `gate.mjs poll` and `gate.mjs expire` and on every `runner.mjs`
+     verb except `status`, `stop` and `pause` (a round that stops the
+     runner only stops itself; the `/run` parent needs the three while a
+     round is live) (matched in the command TEXT, so
      `sh -c`, `env X=… node …` and `node -e "…gate.mjs…"` forms are
      caught); and on
      `>`/`>>`/`tee`/`sed -i` targeting `pending-gates.md` or
@@ -1113,7 +1432,24 @@ docs; the harness never touches this repo's own git dir. APPROVE → `[x]`,
   4. **`tools/gate-test.mjs`** (AC-22; local `http.createServer` fixture as
      the transport, passed as `deps.baseUrl`; a clock injected): the
      matrix; every answered row carries `type`, `answerer: owner`,
-     `source`, `proof` and `nonce`; **a client's `yes` on `decision` is
+     `source`, `proof` and `nonce`; **G1, three cases:** (a) *re-pointed
+     row* — after the snapshot the row's `msg=` is edited to another
+     bot-authored message the owner said yes on → this gate is still
+     open; and a second gate whose row points at an already-used message
+     id is refused; (b) *re-classed row* — a `merge` row edited to
+     `staging-merge` after the send → the owner's yes is recorded
+     `acknowledged` (the snapshot's class), never `approved`; edited
+     BEFORE first sight → `void` + one alert; (c) *http re-post* is S4b's
+     (its channel) — here the Slack twin: a second bot message with the
+     same gate id and a different question → `q` differs from the
+     snapshot → a yes on it answers nothing. **G2:** a forged
+     `answered` line appended to `answers.jsonl` → `30 state-tampered` →
+     `runner.mjs resume` (no flag) exits 1 and `STOP` stays → `resume
+     --confirm-approvers` reconciles: the forged line is `void`, the gate
+     is still open, and a genuine unacted answer survives. `hold` then
+     `yes` on the same message → answered, one nonce use; `open` with no
+     channel → row + outbox, exit 0, `20`; an alert line in `alerts.log`
+     is delivered once to the owner route; each exit code once; **a client's `yes` on `decision` is
      recorded `source: client via …` and the owner copy says the client
      answered**; **a `pending-gates.md` row hand-edited to "answered yes"
      answers nothing — the gate is still open in `status` and unit pick**;
@@ -1131,8 +1467,12 @@ docs; the harness never touches this repo's own git dir. APPROVE → `[x]`,
      with `AGENTIC_WORKFLOW_UNATTENDED=1`: `node … gate.mjs poll` BLOCKED,
      `X=1 node … runner.mjs record --from f.json` BLOCKED, `runner.mjs
      status` silent; without the variable `gate.mjs poll` is silent (the
-     owner's `/connect approver` round-trip uses it). `runner-test.mjs`:
-     a fake child that rewrites `answers.jsonl` → `30 state-tampered`.
+     owner's `/connect approver` round-trip uses it); no variable + a
+     live lock file → `gate.mjs poll` BLOCKED; `AGENTIC_WORKFLOW_CHILD=1`
+     + a live lock → still BLOCKED; unattended `runner.mjs stop` silent;
+     `gate.mjs reconcile` BLOCKED (thirteen cases). `runner-test.mjs`:
+     a fake child that rewrites `answers.jsonl` → `30 state-tampered`;
+     `resume` after that stop without the flag → exit 1, `STOP` kept.
      `tools/lint.mjs` `checkGateHarness` after `checkFidelityHarness`.
   5. **The §5 block only** (AC-23; the other surfaces are S4b's): the
      `unattended-ask` block now names `gate.mjs open --class decision`
@@ -1146,25 +1486,33 @@ docs; the harness never touches this repo's own git dir. APPROVE → `[x]`,
      rule (S4)` + Attribution;
      push.
 - **Verify**:
-  - `node tools/gate-test.mjs` exits 0 — report the case count (≥ 30), the
-    `SECRET` grep case and the "unlisted sender gets nothing" case.
-  - `node tools/hook-test.mjs` green incl. the five gate-guard cases;
+  - `node tools/gate-test.mjs` exits 0 — report the case count (≥ 38), the
+    `SECRET` grep case, the "unlisted sender gets nothing" case, the three
+    G1 cases and the G2 forged-line case by name.
+  - `node tools/hook-test.mjs` green incl. the thirteen gate-guard cases;
+    `wc -l <plugin>/hooks/lib/gate-guard.sh` ≤ 90;
     `node tools/run-codex-test.mjs` green (the `covers` cross-check names
     the new rules); `node tools/runner-test.mjs` green.
   - `node tools/lint.mjs` → `lint: clean`; `wc -c <plugin>/templates/WORKFLOW.md`
     within ± 50 B of its size after S2 (report both numbers).
-  - `grep -c "type\|answerer\|source\|proof\|predicted" <plugin>/tools/gate.mjs`
-    ≥ 5, and a row written by the harness shows all six fields.
+  - `for f in type= answerer= source= proof= nonce= predicted= predictor=;
+    do grep -q -- "$f" <plugin>/tools/gate.mjs || echo "MISSING $f"; done`
+    prints nothing (seven fields, each checked — a line count proves
+    nothing), and a row written by the harness shows all seven.
   - `grep -n "record\|answer" <plugin>/tools/gate.mjs | grep case` → no
     CLI `case 'answer'`/`case 'record'`.
   - `node <plugin>/tools/gate.mjs status` in this repo → `no open gates`
     (no network call without a route configured — assert it exits 0 fast).
   - Catalog: none.
-- **Read budget**: ≈ 1,290 lines — inside. Order if time runs short:
-  `gate.mjs` open/poll with the fields and the channel interface + harness
-  (the self-approval surface) → gate-guard + codex rule + hook-test →
-  runner wiring → the §5 block last (a corrective may carry the prose,
-  never the guard or the fields — S4b freezes the row shape).
+- **Read budget**: ≈ 1,440 lines — near the limit, and the build grew
+  with G1 / G2 (see the master plan's Revision 2026-11-13 note on
+  session pressure). Order if time runs short:
+  `gate.mjs` open/poll with the fields, the snapshot binding and the
+  channel interface + harness (the self-approval surface) → gate-guard +
+  codex rule + hook-test → `resume` / `reconcile` → runner wiring → alert
+  delivery → the §5 block last (a corrective may carry the prose and
+  alert delivery, never the guard, the binding, the reconcile or the
+  fields — S4b freezes the row shape).
 
 **Checkpoint ckpt-s4** — one-shot `reviewer` on **Fable** inside S4 (the
 mission's sharpest boundary): enumerate every path by which a gate row can
@@ -1175,7 +1523,13 @@ or logged file; the guard must catch wrapper-shaped commands; `poll` must
 be unreachable from a model turn; an `ask.mjs answer` or `questions.jsonl`
 write must not move any gate; the codex rule must cover the same
 shapes; `record()` cannot be reached without a channel proof; every row
-carries the delegation fields and the nonce; no code path writes
+carries the delegation fields and the nonce; **G1** — class, nonce and
+message id are never read from a row after first sight, and never from
+a row alone at first sight; a yes on any message other than the
+snapshot's bot-authored one answers nothing; **G2** — after a
+`state-tampered` stop no forged answer or approver survives a `resume`
+without the owner's flag; **G3** — the guard is on with the variable
+unset (live lock) and with `AGENTIC_WORKFLOW_CHILD=1`; no code path writes
 `answerer` other than `owner`; a client's answer is never recorded as the
 owner's; **AC-42**: `poll` is unreachable from a round by any command form
 the reviewer can construct, the transport host cannot be changed from a
@@ -1198,7 +1552,7 @@ budgets. APPROVE → `[x]`, `Next up: S4b`.
   owner chose NOT to build the channel, AC-38 is struck in the hand-off
   with the answer cited and the contract (AC-39) freezes without the
   `http` shapes.
-- **Reads** (≈ 1,140 lines):
+- **Reads** (≈ 1,180 lines):
   1. Gate-delegation record 67–84 (Part 1 — and nothing of Part 2) ≈ 18;
      brief 163–183 (L1, L2) ≈ 21; master plan Task 9 (AC-37..AC-39) + AC-23
      + Value sourcing AC-36..AC-39 + Locked decisions (the 2026-11-12
@@ -1207,7 +1561,7 @@ budgets. APPROVE → `[x]`, `Next up: S4b`.
      channel registry, `record()` and the row writer (grep `channels`,
      `function record`, `function rowLine`; ≈ 150); `tools/gate-test.mjs`
      1–80 (the fixture server + the injected clock) ≈ 80.
-  3. `<plugin>/hooks/lib/gate-guard.sh` whole (≤ 50);
+  3. `<plugin>/hooks/lib/gate-guard.sh` whole (≤ 90);
      `<plugin>/hooks/hooks.json` the gate-guard group (grep `gate-guard`;
      ≈ 12); `<plugin>/templates/codex.rules` 1–60 (grammar) + S4's gate
      rules (grep `gate.mjs`; ≈ 30) ≈ 90; `tools/run-codex-test.mjs` the
@@ -1218,7 +1572,7 @@ budgets. APPROVE → `[x]`, `Next up: S4b`.
      `<plugin>/templates/runner-contract.schema.json` 1–40 (S1's idiom for
      `contract_version`) ≈ 40.
   5. `<plugin>/templates/runner-config.json` whole (≈ 40);
-     `<plugin>/tools/runner.mjs` the `poll` call sites (grep `gateTool`;
+     `<plugin>/tools/runner.mjs` the `poll` call sites (grep `pollGates`;
      ≈ 20).
   6. `<plugin>/templates/WORKFLOW.md` 1185–1252 (§12 — rules 1–5 + multi-
      project) + 1054 (Owner channel row) ≈ 70; `<plugin>/commands/connect.md`
@@ -1245,11 +1599,15 @@ budgets. APPROVE → `[x]`, `Next up: S4b`.
      types them `object` / `array` with no inner constraint, the tool
      stores and prints them and never reads inside; the schema's
      description says their shape is not part of contract version 1. Add
-     `.claude/gate-policy.json` to the runner's `PROTECTED` list (AC-42). `gate.mjs policy show [--json]` prints the resolved table.
+     `.claude/gate-policy.json` to the runner's `PROTECTED` list (AC-42)
+     and to S4's tampered-`resume` print-out — after any `state-tampered`
+     stop `resume` also prints the resolved policy table before it asks
+     for `--confirm-approvers`, and for an `http` channel the key ids and
+     public keys (G2). `gate.mjs policy show [--json]` prints the resolved table.
      Nothing in this brief answers a gate from a rule or an agent.
   2. **`predict` (AC-37)**: `gate.mjs predict <id> --answer <yes|no|hold>
      --by <name>` — writes `predicted` / `predictor` on an OPEN row only
-     (answered, expired or unknown id → exit 2, file byte-identical);
+     (answered, `closed-expired` or unknown id → exit 2, file byte-identical);
      never changes state; `poll` never reads the two fields; when the
      owner answers, both stay on the row and are copied to the
      decision-log row.
@@ -1258,7 +1616,14 @@ budgets. APPROVE → `[x]`, `Next up: S4b`.
      `url_env`, `token_env`, `owner_keys`, `client_keys`); wire shapes
      exactly as AC-38; `verify` = `crypto.verify(null, <signed bytes>,
      <public key>, <signature>)` where the signed bytes are the UTF-8 of
-     `JSON.stringify([id, nonce, answer, reason, answered_at])` (`reason`
+     `JSON.stringify([id, nonce, class, q, answer, reason, answered_at])`
+     (**G1, before AC-39 freezes the form:** `class` and `q` — the full
+     64-hex sha256 of the question as sent in `POST /gates` — are taken
+     from S4's `opened` snapshot (an `http` gate is posted only by `poll`,
+     so the snapshot is what was posted), never from the answer body or
+     the row,
+     so a signature made over a re-posted gate with another class or
+     another text does not verify; `reason`
      `""` when absent — a JSON array, so no character in `reason` can
      collide two answers), the public key is the raw 32-byte Ed25519 key
      in base64url without padding (JWK `x`; `createPublicKey({ key: {
@@ -1274,12 +1639,17 @@ budgets. APPROVE → `[x]`, `Next up: S4b`.
      (`contract_version: 1`, strict): `open --json`, `poll --json`,
      `status --json` (the read-only projection: id, class, type, question,
      choices, state, answer, by, source, proof, time, channel), `policy
-     show --json`, the `http` request and answer bodies, the exit codes,
-     and the two row grammars as `pattern` strings. `gate.mjs --help` ends
+     show --json`, the `http` request and answer bodies, S4's four exit
+     codes, and S4's three grammars — the `pending-gates.md` row and the
+     decision-log row as `pattern` strings, the `answers.jsonl` and
+     `outbox.jsonl` events as object shapes. **This brief documents what
+     S4 wrote; it designs no grammar** — where the schema and S4's writer
+     disagree, the schema is wrong. `gate.mjs --help` ends
      with the freeze sentence (a shape change needs a `contract_version`
      bump and a CHANGELOG line).
-  5. **Guard shapes (AC-39)**: `gate-guard.sh` also BLOCKS, when
-     `AGENTIC_WORKFLOW_UNATTENDED=1`, a Bash write (`>`, `>>`, `tee`, `sed
+  5. **Guard shapes (AC-39)**: `gate-guard.sh` (still one file, ≤ 90
+     lines) also BLOCKS, when unattended (`hl_unattended` — the variable
+     OR a live round lock, S2 / S4), `gate.mjs approver` and a Bash write (`>`, `>>`, `tee`, `sed
      -i`, `cp`, `mv`) to `.claude/gate-policy.json` or `.claude/runner.json`
      and — through a second `Write|Edit|MultiEdit` matcher group running
      the same body on `tool_input.file_path` — a Write/Edit of those two
@@ -1292,7 +1662,11 @@ budgets. APPROVE → `[x]`, `Next up: S4b`.
   6. **Tests**: `gate-test.mjs` — a key pair generated in the test
      (`crypto.generateKeyPairSync('ed25519')`; no key is committed): a
      signed answer is accepted with `proof: signature:<id>`; unsigned,
-     wrong key, altered answer, replayed nonce, a `reason` containing
+     wrong key, altered answer, replayed nonce, **an http re-post with different text (G1)** — the
+     server re-posts the gate with the same id and nonce and another
+     question, the owner key signs THAT text → not an answer (the `q` in
+     the signed bytes is the snapshot's); a signature over another
+     `class` → not an answer; a `reason` containing
      newlines (signs and verifies; moving a line between `answer` and
      `reason` does not verify) and a `client_keys` answer on an
      owner-only class are each ignored + logged + alerted once; a
@@ -1306,15 +1680,24 @@ budgets. APPROVE → `[x]`, `Next up: S4b`.
      receipt; policy: default owner, `rule` entry recorded and not
      executed, L2 class lift refused with no row written; `predict` on
      open / answered / unknown; every `--json` output and one row of each
-     file validate against the schema. hook-test: the five new guard
+     file validate against the schema. hook-test: the six new guard
      cases (unattended Bash write to each config file BLOCKED; unattended
      Edit of `pending-gates.md` BLOCKED; attended write to `runner.json`
-     silent; `gate.mjs predict` silent). `run-codex-test.mjs` green.
+     silent; `gate.mjs predict` silent; unattended `gate.mjs approver`
+     BLOCKED). `run-codex-test.mjs` green.
   7. **Surfaces (AC-23)**: `connect.md` new section after `:123`
-     (`approver owner|client`: ids and public keys are not secrets;
+     (`approver owner|client`: ids and public keys are not secrets; each
+     channel entry's `route`; the reaction / button → answer table and
+     what `hold` does, in one line each;
      round-trip = one test gate answered on each configured channel; writes
-     `runner.json.approver` + the §10 clause; one sentence on
-     `gate-policy.json` and its default; ≤ 2,200 B); `templates/WORKFLOW.md`
+     `runner.json.approver` + the §10 clause — **attended only; from an
+     unattended session (`/run`'s parent while a round is live, or any
+     round) it follows the `resume` pattern (advisory):** the command
+     prints one shell line for the owner, `node ${CLAUDE_PLUGIN_ROOT}/tools/gate.mjs
+     approver --set '<the approver JSON>'` (a thin verb over `ownerWrite`,
+     `runner.mjs:304`; it refuses while a round holds the lock), and
+     writes nothing itself; one sentence on
+     `gate-policy.json` and its default; ≤ 2,800 B); `templates/WORKFLOW.md`
      §12 rule 1 + rule 4 clauses and the Owner channel row clause (≤ 900 B
      total — the policy and the `http` channel are described in `connect.md`
      and `gate.mjs --help`, not in WORKFLOW.md); `gate-classes.md` action
@@ -1324,8 +1707,9 @@ budgets. APPROVE → `[x]`, `Next up: S4b`.
      frozen gate contract, guard shapes, connect approver (S4b)` +
      Attribution; push. Never edit `.plans/`.
 - **Verify**:
-  - `node tools/gate-test.mjs` exits 0 — report the case count (≥ 48) and
-    name the unsigned-answer case, the L2-lift case and the schema case.
+  - `node tools/gate-test.mjs` exits 0 — report the case count (≥ 58) and
+    name the unsigned-answer case, the re-post case, the L2-lift case and
+    the schema case.
   - `node tools/hook-test.mjs`, `tools/run-codex-test.mjs`,
     `tools/runner-test.mjs` green.
   - `grep -n "Missions app\|missions-server\|missions-engine\|xyzhub/missions\|OpenMausBot" <plugin>/tools/gate.mjs
@@ -1336,9 +1720,9 @@ budgets. APPROVE → `[x]`, `Next up: S4b`.
   - `node <plugin>/tools/gate.mjs policy show` in this repo → every type
     `owner`; `gate.mjs status --json` validates against the schema.
   - `node tools/lint.mjs` → `lint: clean`; `wc -c <plugin>/templates/WORKFLOW.md`
-    ≤ 119,600 (report); `connect.md` ≤ 18,500.
+    ≤ 119,600 (report); `connect.md` ≤ 19,100.
   - Catalog: none.
-- **Read budget**: ≈ 1,140 lines — inside. Order if time runs short: the
+- **Read budget**: ≈ 1,180 lines — inside. Order if time runs short: the
   `http` channel + its negative cases (the new answer path) → guard shapes
   + codex rules → policy + `predict` → the contract schema → surfaces last
   (a corrective may carry the prose, never the proof check or the guard).
@@ -1346,8 +1730,11 @@ budgets. APPROVE → `[x]`, `Next up: S4b`.
 **Checkpoint ckpt-s4b** — one-shot `reviewer` on **Fable** inside S4b:
 re-walk ckpt-s4's enumeration with three channels — every path from
 pending to answered needs a channel proof, and for `http` that proof is a
-signature by a listed key over the gate's own nonce in the JSON-array
-form; holding the bearer token alone answers nothing; a `reason` with
+signature by a listed key over the gate's own nonce, class and question
+hash (all three from the snapshot) in the JSON-array form; a gate
+re-posted with another text or class cannot be answered; holding the
+bearer token alone answers nothing; from an unattended session the
+approver is never written by the model (a printed shell line); a `reason` with
 newlines cannot forge a different answer; `limits` / `rules` are never
 read; **AC-42 with the full protected set**: try at least one write the
 guard has no shape for against `gate-policy.json`, `runner.json` and
@@ -1409,7 +1796,9 @@ shipped; byte budgets. APPROVE → `[x]`, `Next up: S5`.
      in with the client's subscription on the container; `/agentic-workflow:connect
      approver owner|client`; `/agentic-workflow:run`), what stops it (daily
      cap, overrun, crash loop, no-progress, kill) and the human-run shell line
-     `node …/runner.mjs resume` (the session never runs it), where
+     `node …/runner.mjs resume` (the session never runs it; after a
+     `state-tampered` stop it re-checks the answers and wants
+     `--confirm-approvers`), where
      the round log lives (`git rev-parse --git-common-dir` +
      `/agentic-workflow/runner/rounds.log`), the docs-are-the-truth sentence,
      deferred items (systemd, relay, API keys) in one line, the dispatch-only
@@ -1417,7 +1806,7 @@ shipped; byte budgets. APPROVE → `[x]`, `Next up: S5`.
      default; where it is set; omitted if S1b's probe struck it); one line
      for driving rounds from your own supervisor (`next` / `begin` /
      `classify` / `record`, `auth: external`, the two contract schemas) —
-     the section may grow to ≤ 2,800 B.
+     the section may grow to ≤ 3,000 B.
   3. **`templates/engineering-runbook.md`** `## Unattended run` block
      (≤ 1,200 B): the metrics §2 per-round fields as the record the 24 h run
      fills; "owner corrections about lost context — tagged by a human
@@ -1426,8 +1815,16 @@ shipped; byte budgets. APPROVE → `[x]`, `Next up: S5`.
      and the per-project token env file, both readable only by the
      runner's user. The brief names no location for either: write them as
      `<key file>` and `<env file>` (the operator's choice), show the
-     `git config user.signingkey <key file>` line, and never a value (the
-     block may grow to ≤ 2,000 B).
+     `git config user.signingkey <key file>` line, and never a value.
+     **What keeps `/run` alive (advisory):** v1 has no supervisor (brief
+     `:25–26`; systemd is deferred), so the block says it plainly — `/run`
+     lives in an interactive `claude` session inside `tmux` (or any
+     multiplexer) on the container; nothing restarts it; after a reboot, a
+     crash or a parent that ended on its handoff gate, the owner
+     re-attaches and types `/agentic-workflow:run` again (state is in the
+     runner state dir and the ledgers; a stale lock is reclaimed); the
+     sign that it is down is `runner.mjs status` showing no round since
+     the last due time (the block may grow to ≤ 2,600 B).
   4. **`commands/doctor.md`** §1 **Runner** bullet after the Compaction
      window bullet (≤ 450 B): `runner.json` present + valid; a login present
      (`claude -p` dry call refused → 🔴 "not logged in"; skipped under
@@ -1458,15 +1855,13 @@ shipped; byte budgets. APPROVE → `[x]`, `Next up: S5`.
      record committed first; no secret in any committed file.
   8. **AC-27 → OB rows** — report these three texts for the orchestrator
      to promote at close (the builder never edits `.plans/`):
-     (2026-11-12: OB-35 also records the auto-compaction point at the
-     run's window — does window − 33,000 hold? — and any plugin-file read
-     refusal in a child; add those two clauses to its `do:` when reporting
-     the text. 2026-11-13 owner: ckpt-s0 A1 folds in here — the run sets
-     the window ONLY in `.claude/settings.json` `env`, so the recorded
-     compaction point also proves a settings-only value moves it; A2
-     (fixed reserve vs percentage) stays a stated assumption at 200k.
-     A fourth row, OB-38, follows the three.)
-     `- [ ] OB-35 · added <date> (promoted from `.plans/continuous-operation.state.md` `## Closing` row "24h live run", planner, 2026-10-27) — do: on one client LXC container logged in with that client's subscription, with `runner.json` configured and an approver route round-trip-verified, run `/agentic-workflow:run` for ≥ 24 h wall clock on one real mission; record per metrics §2: rounds, ≥ 2 compactions/restarts (counted from the round log), handoff writes and latency, gate events with request→answer latency, budget stops with approver notified y/n, tokens per round (`tokens=`), daily total vs the 5M cap, owner corrections about lost context tagged by a human reader (must be 0), and the fidelity `score` at each compaction/restart against the live handoff; the mission reaches its planned checkpoint or a budget stop — when: v1.70.0 is installed from `main` on a client container and a mission ledger is active there — probe: manual`
+     (2026-11-13: the two 2026-11-12 clauses, ckpt-s0 A1 and the wake
+     latency are now INSIDE the OB-35 text below — report it as written,
+     add nothing. A2 (fixed reserve vs percentage) stays a stated
+     assumption at 200k. Owner 2026-11-13: OB-35 may run from the staging
+     install before the PR to `main`. A fourth row, OB-38, follows the
+     three.)
+     `- [ ] OB-35 · added <date> (promoted from `.plans/continuous-operation.state.md` `## Closing` row "24h live run", planner, 2026-10-27) — do: on one client LXC container logged in with that client's subscription, with `runner.json` configured and an approver route round-trip-verified, run `/agentic-workflow:run` for ≥ 24 h wall clock on one real mission; record per metrics §2: rounds, ≥ 2 compactions/restarts (counted from the round log), handoff writes and latency, gate events with request→answer latency, budget stops with approver notified y/n, tokens per round (`tokens=`), daily total vs the 5M cap, the wake latency of every round (seconds from the round's exit to the parent's next turn; a wake that never arrives is a finding), the auto-compaction point observed with `CLAUDE_CODE_AUTO_COMPACT_WINDOW` set ONLY in `.claude/settings.json` `env` (does window − 33,000 hold, and did the settings-only value move it?), any plugin-file read refusal in a child, owner corrections about lost context tagged by a human reader (must be 0), and the fidelity `score` at each compaction/restart against the live handoff; the mission reaches its planned checkpoint or a budget stop — when: v1.70.0 is installed on a client container — from `main`, or from the staging install before the PR to `main` — and a mission ledger is active there — probe: manual`
      `- [ ] OB-36 · added <date> (promoted from `.plans/continuous-operation.state.md` `## Closing` row "OB-1 fold-in", planner, 2026-10-27) — do: once the 24 h run's compaction records (≥ 2) join OB-32's (1) in the corpus, OB-1's condition (≥ 3 new true-compaction records) is met: re-measure the handoff-budget byte bands (bytes/token anchor, trigger threshold) against those records, record the numbers on OB-1 and fire it, and keep or retire the n=1 caveat in `hooks/lib/handoff-lib.sh` header accordingly — when: OB-35 is fired with ≥ 2 compaction records listed — probe: manual`
      `- [ ] OB-37 · added <date> (promoted from `.plans/continuous-operation.state.md` `## Closing` row "runner on a real client container", planner, 2026-10-27) — do: on a client container under that client's own claude.ai subscription (L3): confirm `runner.mjs next` starts with no account check, children carry no `ANTHROPIC_API_KEY`/`ANTHROPIC_AUTH_TOKEN` (`status --json` child env names), `tokens=` lines are attributable to that container, and a deliberate `claude /logout` makes the next round exit `75 auth-expired` with one approver alert and no work lost; record the AC-42 stated limit: a process with the round's OS user that outlives the process-group kill is outside the digest check, and a same-user round can also rewrite `runner.mjs`, `gate.mjs`, `gate-guard.sh`, `hooks.json`, or schedule cron/launchd (a separate OS user per round closes it; deferred by L1) — when: v1.70.0 is installed on a client container — probe: manual`
      `- [ ] OB-38 · added <date> (promoted from `.plans/continuous-operation.state.md` `## Closing` row "wrapper contract re-pin", planner, 2026-11-12) — do: in every repo that pins this plugin and validates its JSON shapes (xyzhub/missions, xyzhub/missions-server), move the pin to 1.70.0 through that repo's own updater, refresh its copies of `agents-registry.schema.json`, `runner-contract.schema.json` and `gate-contract.schema.json`, run its contract tests, and record the command and result here — when: v1.70.0 is on `main` — probe: manual`
@@ -1499,7 +1894,7 @@ shipped; byte budgets. APPROVE → `[x]`, `Next up: S5`.
   README/runbook/doctor prose.
 
 **Checkpoint ckpt-s5** — one-shot `reviewer` on **Fable** inside S5 over
-`main..HEAD` against AC-1..AC-41 (the mission's final gate; AC-16 and any
+`main..HEAD` against AC-1..AC-42 (the mission's final gate; AC-16 and any
 advisor AC the probe struck are checked as struck-with-evidence): re-runs
 `node tools/lint.mjs`; confirms every security finding's fix with its
 harness case; re-walks the ckpt-s4 / ckpt-s4b answer-path enumeration on
