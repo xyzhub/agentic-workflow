@@ -19,7 +19,7 @@ Status: active
 
 Estimate: 8 sessions
 Sessions used: 4
-Reviewer runs: 10
+Reviewer runs: 12
 
 _The budget lines above are read by the mission-budget hook every turn.
 `Estimate: 6` = the six briefs S0–S5 (mode `phases`, owner-locked in brief
@@ -144,6 +144,12 @@ S1; OQ-10 before S1b; the rest of OQ-8 and OQ-9 before S4._
 
 ## Handoff log (newest first)
 
+- 2026-11-13 2026-11-13 spawned in parallel: ckpt-s1 narrow re-check (same Fable reviewer, resumed) over 1ae6879..3110bb7; planner (Fable) on G1–G6 + advisories in the trio.
+
+- 2026-11-13 2026-11-13 S1-fix2 returned **done**: 3110bb7 — N1 digest checked before any early exit, `lock.lost` exit gone; N2 journal + rollbackForged deleted, split-path mismatch trusts nothing, forfeits the UTC day (total → cap), alert says counters untrustworthy; N3 retried record = "already recorded", exit 0 (sha256 over begin digest + classify + post-record digest); A-doc AC-29/AC-6 landed in 1ae6879. Harness 124 clean, lint clean.
+
+- 2026-11-13 2026-11-13 owner (AskUserQuestion, locked): Scope — "Keep S4b, hold 8" (Estimate stays 8; overrun stop at 12 will force the scope decision); Plan fixes — "Fix all, narrow judge" (planner applies G1–G6 + advisories in one pass, plan-judge re-checks only the diff).
+
 - 2026-11-13 2026-11-13 **goldfish pass (EGM) over pending briefs S1b–S5 at 9d48c46** — naive reader (Sonnet), security lens (Fable), feasibility+scope lens (Opus); orchestrator merged (no synthesizer). Must-fix for the planner: **G1** (security) S4/S4b a real owner yes can be bound to a gate the owner never saw — row class/message id/nonce are child-writable; `poll` must snapshot each gate into the protected store on first sight, fetch + verify the bot-authored message carries the gate id + nonce, single-use message ids, http signed bytes gain class + sha256(question); 3 harness cases. **G2** (security) split path: a forged `answers.jsonl` line / approver in `runner.json` survives `30` + `resume` — resume refuses until reconciled (re-verify unacted answers from the channel; config needs an explicit confirm flag); gate-test case. **G3** (security) S2/S4 guards hang on `AGENTIC_WORKFLOW_UNATTENDED` the supervisor must set and `AGENTIC_WORKFLOW_CHILD` short-circuits — unattended = env OR a live round lock, wins over CHILD; code 21 decided after the re-hash; runner case. **G4** (feasibility) S3 :913/:953 and S4 :1098 still target `roundPrompt` — rules now live in `roundNote`/`append_system_prompt`; S2 run.md passes `--append-system-prompt` from begin. **G5** new prompt shape never run live → S1b step 0 = one live `runner.mjs round` on a scratch mission. **G6** (naive reader) S1b↔S4 `ccp run` prompt conflict; S4 lacks the pending-gates/answers/outbox grammar (move it into S4); `expired` vs `closed-expired`; owner-copy chat route, reaction→answer mapping, `hold`/`expire --force` semantics; AC-42 missing from S4 Reads; gate-guard 50-line cap vs required shapes; S1b advisor data path (`maxAdvisorContext` source, `adv=` field, doctor fallback source). Advisory: OB-35 adds wake latency + settings-only compaction point + may run from the staging install before the PR; runbook says what keeps `/run` alive; advisor tokens into `tokens=`/daily cap; pin the CLI in fidelity-model.yml; approver writes via an owner shell line. **Scope (owner)**: 4 used + 6 pending = 10 > Estimate 8 (stop at 12); lens proposes deferring S4b (http channel, policy, frozen contract) — conflicts with OQ-8 lock.
 
 - 2026-11-13 2026-11-13 owner (chat): "use your own advice, EGM-style goldfish pass" → spawned 1 naive-reader + 3 lens reviewers (feasibility, security, cost/scope), Fable, one-shot, read-only, over the PENDING briefs S1b–S5 of the trio at 9d48c46; a synthesizer follows. Reviewer runs +4.
@@ -188,4 +194,4 @@ S1; OQ-10 before S1b; the rest of OQ-8 and OQ-9 before S4._
 
 - 2026-10-27 planned: trio authored from `docs/product/decisions/2026-10-27-continuous-operation-brief.md` (L1–L5 + the Source-of-truth and Docs-vs-code principles; L3 as refined: per-client subscription, NO account check, no API key) + memos D1-A/D2/D3-B/D4-C/D5-A/D6-A/D7-B as far as L1 allows + the EGM borrows + counsel; mode `phases`, Estimate 6 (owner lock; checkpoints inside sessions), build branch `feat/continuous-operation`, version 1.70.0; OQ-1..5 to the owner before S0; S1 gated on OB-32 fired (S0).
 
-Next up: S1-fix2 — N1 (no silent lock.lost exit), N2 (drop the child-writable journal rollback; forfeit the day on split-path tamper), N3, A-doc; then a narrow ckpt-s1 re-check; then S1b → S2 → S3 → S4 → S4b → S5.
+Next up: ckpt-s1 narrow re-check of 3110bb7 + planner pass on the goldfish findings G1–G6, then a narrow plan-judge on the plan diff; then S1b (step 0: one live round) → S2 → S3 → S4 → S4b → S5.
