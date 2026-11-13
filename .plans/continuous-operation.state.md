@@ -18,7 +18,7 @@ session rebuilds from._
 Status: active
 
 Estimate: 8 sessions
-Sessions used: 3
+Sessions used: 4
 Reviewer runs: 6
 
 _The budget lines above are read by the mission-budget hook every turn.
@@ -144,6 +144,8 @@ S1; OQ-10 before S1b; the rest of OQ-8 and OQ-9 before S4._
 
 ## Handoff log (newest first)
 
+- 2026-11-13 2026-11-13 owner (AskUserQuestion, locked): ckpt-s1 second failure → "Second fix pass". S1-fix2 started (write-ahead; Sessions used 3 → 4): builder resumed on N1 + N2 (+N3, A-doc).
+
 - 2026-11-13 2026-11-13 **ckpt-s1 re-review (Fable) REQUEST CHANGES** on 2a1fd1a..405f8f0 — Security 1, QA 2, Architecture 2, Efficiency 3, DX 3. B2/B3/B4/A1/A2 + AC-5 amendment verified fixed; B1 original repros fixed. New blocking (split path only; `round` path sound): **N1** the `lock.lost.<n>` early exit (:690) runs before the re-hash — rm lock + touch lock.lost + zero daily.json → plain exit 1, no STOP; **N2** `rollbackForged` (:660–676) trusts the child-writable `rounds/<n>.record.json` — a planted journal wipes the day total (4.9M → 0) and the alert hides it (also the security-scan finding). Advisory N3 (retried record erases a genuine one; gone with N2), A-doc (AC-29 / AC-6 text stale vs the new prompt shape). Prompt-shape contract change accepted. Second failure → surfaced to owner (one-corrective-retry rule). CI green on 405f8f0.
 
 - 2026-11-13 2026-11-13 ckpt-s1 narrow re-review spawned (same Fable reviewer, resumed) over `2a1fd1a..405f8f0`.
@@ -182,4 +184,4 @@ S1; OQ-10 before S1b; the rest of OQ-8 and OQ-9 before S4._
 
 - 2026-10-27 planned: trio authored from `docs/product/decisions/2026-10-27-continuous-operation-brief.md` (L1–L5 + the Source-of-truth and Docs-vs-code principles; L3 as refined: per-client subscription, NO account check, no API key) + memos D1-A/D2/D3-B/D4-C/D5-A/D6-A/D7-B as far as L1 allows + the EGM borrows + counsel; mode `phases`, Estimate 6 (owner lock; checkpoints inside sessions), build branch `feat/continuous-operation`, version 1.70.0; OQ-1..5 to the owner before S0; S1 gated on OB-32 fired (S0).
 
-Next up: OWNER — ckpt-s1 failed twice (N1, N2 split-path holes); decide: second small fix pass / fold into S1b / ship as is. Then S1b → S2 → S3 → S4 → S4b → S5.
+Next up: S1-fix2 — N1 (no silent lock.lost exit), N2 (drop the child-writable journal rollback; forfeit the day on split-path tamper), N3, A-doc; then a narrow ckpt-s1 re-check; then S1b → S2 → S3 → S4 → S4b → S5.
