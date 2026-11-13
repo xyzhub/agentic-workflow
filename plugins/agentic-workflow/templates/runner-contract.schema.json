@@ -1,0 +1,140 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "agentic-workflow runner contract",
+  "description": "The --json shapes printed by tools/runner.mjs (next, begin, classify, record, status) — a public interface for a supervisor that runs the turn itself. contract_version 1. Versioning rule: every shape is strict, so any added, removed or retyped field ships as a contract_version bump plus a minor plugin version bump with a CHANGELOG line naming the change. A `begin` that cannot start a round prints the `next` shape (its preflight) instead.",
+  "definitions": {
+    "lock": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["pid", "start", "round", "holder", "lease_until"],
+      "properties": {
+        "pid": { "type": "integer" },
+        "start": { "description": "UTC time the lock was taken.", "type": "string" },
+        "round": { "type": "integer" },
+        "holder": { "description": "The --holder id, or null for a pid lock.", "type": ["string", "null"] },
+        "lease_until": { "description": "Epoch ms the holder lease ends, or null for a pid lock.", "type": ["integer", "null"] }
+      }
+    },
+    "stop_file": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["reason", "at"],
+      "properties": { "reason": { "type": "string" }, "at": { "type": "string" } }
+    },
+    "next": {
+      "description": "runner.mjs next --json: the whole preflight.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contract_version", "line", "code", "unit", "reason", "ledger", "auth", "today_tokens", "daily_cap", "budget", "stop", "lock", "pending_gates", "due_in_s"],
+      "properties": {
+        "contract_version": { "type": "integer", "enum": [1] },
+        "line": { "description": "The one line the text mode prints: `unit: <prompt>` or `stop: <code> <reason>`.", "type": "string" },
+        "code": { "description": "0 = a unit is due; otherwise the stop code (10, 20, 30, 40, 75).", "type": "integer", "enum": [0, 10, 20, 30, 40, 75] },
+        "unit": { "type": ["string", "null"] },
+        "reason": { "description": "The stop reason, its first word an outcome or stop word; null when a unit is due.", "type": ["string", "null"] },
+        "ledger": { "description": "The active mission ledger path, or null.", "type": ["string", "null"] },
+        "auth": { "type": "string", "enum": ["login", "external"] },
+        "today_tokens": { "type": "integer" },
+        "daily_cap": { "type": "integer" },
+        "budget": {
+          "description": "The active ledger's five budget fields (mission-budget.sh semantics), or null with no active ledger.",
+          "type": ["object", "null"],
+          "additionalProperties": false,
+          "required": ["estimate", "sessions_used", "tick_budget", "tick_tokens", "mission_budget"],
+          "properties": {
+            "estimate": { "type": ["integer", "null"] },
+            "sessions_used": { "type": "integer" },
+            "tick_budget": { "type": ["integer", "null"] },
+            "tick_tokens": { "type": "integer" },
+            "mission_budget": { "type": ["integer", "null"] }
+          }
+        },
+        "stop": { "$ref": "#/definitions/stop_file" },
+        "lock": { "$ref": "#/definitions/lock" },
+        "pending_gates": { "type": "integer" },
+        "due_in_s": { "description": "Seconds until the backoff allows the next round (0 = now).", "type": "integer" }
+      }
+    },
+    "begin": {
+      "description": "runner.mjs begin --json: the round is started and the lock is held.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contract_version", "round", "unit", "prompt", "env", "events_path", "state_digest"],
+      "properties": {
+        "contract_version": { "type": "integer", "enum": [1] },
+        "round": { "type": "integer" },
+        "unit": { "type": "string" },
+        "prompt": { "description": "The exact prompt for the child turn.", "type": "string" },
+        "env": {
+          "description": "Variables the caller adds to the child env (it also deletes CLAUDECODE, CLAUDE_CODE_ENTRYPOINT, AGENTIC_WORKFLOW_CHILD and the two Anthropic key variables).",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["AGENTIC_WORKFLOW_UNATTENDED", "CLAUDE_CODE_AUTO_COMPACT_WINDOW"],
+          "properties": {
+            "AGENTIC_WORKFLOW_UNATTENDED": { "type": "string", "enum": ["1"] },
+            "CLAUDE_CODE_AUTO_COMPACT_WINDOW": { "type": "string" }
+          }
+        },
+        "events_path": { "description": "Where the caller writes the turn's stream-json (0600; never surfaced).", "type": "string" },
+        "state_digest": { "description": "sha256 of the protected set at begin. Keep it in memory and pass it to record --digest; it is never written to disk.", "type": "string" }
+      }
+    },
+    "classify": {
+      "description": "runner.mjs classify --json: a finished turn mapped to the exit contract (pure: no lock, no spawn).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contract_version", "round", "code", "outcome", "reason", "tokens", "session_id"],
+      "properties": {
+        "contract_version": { "type": "integer", "enum": [1] },
+        "round": { "type": "integer" },
+        "code": { "type": "integer", "enum": [0, 1, 20, 21, 22, 30, 75] },
+        "outcome": { "type": "string", "enum": ["done", "crashed", "gate-pending", "handoff-failed", "no-progress", "budget-stop", "auth-expired"] },
+        "reason": { "type": "string" },
+        "tokens": { "description": "input + output + cache_creation + cache_read from the last result event; the tick budget when the turn reported no usage.", "type": "integer" },
+        "session_id": { "type": ["string", "null"] }
+      }
+    },
+    "record": {
+      "description": "runner.mjs record --json: the round's one update under the lock (the lock is released).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contract_version", "round", "code", "outcome", "line", "today_tokens", "stop"],
+      "properties": {
+        "contract_version": { "type": "integer", "enum": [1] },
+        "round": { "type": "integer" },
+        "code": { "type": "integer", "enum": [0, 1, 20, 21, 22, 30, 75] },
+        "outcome": { "type": "string", "enum": ["done", "crashed", "gate-pending", "handoff-failed", "no-progress", "budget-stop", "auth-expired", "state-tampered"] },
+        "line": { "description": "The round: line written to rounds.log (or the state-tampered stop line).", "type": "string" },
+        "today_tokens": { "type": "integer" },
+        "stop": { "description": "The STOP reason this record wrote (crash-loop, no-progress, state-tampered <file>), or null.", "type": ["string", "null"] }
+      }
+    },
+    "status": {
+      "description": "runner.mjs status --json.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contract_version", "lock", "rounds", "today_tokens", "daily_cap", "stop", "pending_gates"],
+      "properties": {
+        "contract_version": { "type": "integer", "enum": [1] },
+        "lock": {
+          "type": ["object", "null"],
+          "additionalProperties": false,
+          "required": ["pid", "start", "round", "holder", "lease_until", "stale"],
+          "properties": {
+            "pid": { "type": "integer" },
+            "start": { "type": "string" },
+            "round": { "type": "integer" },
+            "holder": { "type": ["string", "null"] },
+            "lease_until": { "type": ["integer", "null"] },
+            "stale": { "type": "boolean" }
+          }
+        },
+        "rounds": { "description": "The last 5 round: lines, redacted.", "type": "array", "items": { "type": "string" } },
+        "today_tokens": { "type": "integer" },
+        "daily_cap": { "type": "integer" },
+        "stop": { "$ref": "#/definitions/stop_file" },
+        "pending_gates": { "type": "integer" }
+      }
+    }
+  }
+}

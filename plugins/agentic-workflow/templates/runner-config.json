@@ -1,0 +1,10 @@
+{
+  "$comment": "Template for <project>/.claude/runner.json (committed, non-secret) — read by tools/runner.mjs. NOT here, ever: tokens, keys, ids that carry a secret, or any account field (the runner uses whatever login the container has; no account check, brief L3). Optional keys with no default: budgets.round_usd (adds --max-budget-usd to the child), permission_mode (default acceptEdits), max_turns (default 150, the OB-32 probe invocation).",
+  "schema_version": 1,
+  "project": "<slug>",
+  "auth": "login",
+  "approver": { "route": "owner" },
+  "budgets": { "daily_tokens": 5000000, "tick_tokens": 750000 },
+  "compact_window": 200000,
+  "idle": { "backoff_min": [5, 15, 60], "operate_per_day": 4 }
+}

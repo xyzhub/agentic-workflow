@@ -530,6 +530,24 @@ function checkHeadlessHarness() {
   }
 }
 
+// ── 10.7c2 runner harness (tier-1.5) ─────────────────────────────────────
+// `plugins/agentic-workflow/tools/runner.mjs` runs unattended rounds; the
+// harness proves the exit contract, the counters, the AC-42 digest, the
+// budget parity with mission-budget.sh and that no secret reaches any output.
+function checkRunnerHarness() {
+  const runner = path.join(ROOT, 'tools/runner-test.mjs');
+  if (!existsSync(runner)) {
+    fail(runner, null, 'runner harness missing — tools/runner-test.mjs must exist so the gate proves the round exit contract, the counters and redaction (do not silently drop the check)');
+    return;
+  }
+  const res = spawnSync('node', [runner], { encoding: 'utf8' });
+  if (res.status !== 0) {
+    const detail = `${res.stdout ?? ''}${res.stderr ?? ''}`
+      .split('\n').filter((l) => /FAIL|failure|Error/.test(l)).join(' | ');
+    fail(runner, null, `runner harness failed — run \`node tools/runner-test.mjs\`: ${detail || '(no detail)'}`);
+  }
+}
+
 // ── 10.7d browse harness (tier-1.5) ──────────────────────────────────────
 // `tools/browse.mjs` drives a browser on Jev's per-step decisions and types
 // secrets; the harness proves the gates, the exit codes and that no resolved
@@ -1399,7 +1417,7 @@ const isEntryPoint = () => {
 };
 
 if (isEntryPoint()) {
-  for (const check of [checkManifests, checkAgents, checkCommands, checkCrossRefs, checkTemplateRefs, checkPluginRootBraced, checkSections, checkFrontmatterYaml, checkTemplateFrontmatter, checkHooks, checkObfuscation, checkHookBehavior, checkClockGuard, checkMarkerMutation, checkContextAttrib, checkCatalogSelftest, checkCiWaitSelftest, checkPublishGateSelftest, checkRunCodexHarness, checkRunClaudeHarness, checkHeadlessHarness, checkBrowseHarness, checkLedgerHarness, checkCeremonyHarness, checkAgentsRegistryHarness, checkOperateTriageSelftest, checkStandingSteers, checkNextUpAgreement, checkClosing, checkObligationsRegister, checkBudgets, checkRuleDedup, checkClassListDedup, checkCeremonyCopies, checkTunePresets]) {
+  for (const check of [checkManifests, checkAgents, checkCommands, checkCrossRefs, checkTemplateRefs, checkPluginRootBraced, checkSections, checkFrontmatterYaml, checkTemplateFrontmatter, checkHooks, checkObfuscation, checkHookBehavior, checkClockGuard, checkMarkerMutation, checkContextAttrib, checkCatalogSelftest, checkCiWaitSelftest, checkPublishGateSelftest, checkRunCodexHarness, checkRunClaudeHarness, checkHeadlessHarness, checkRunnerHarness, checkBrowseHarness, checkLedgerHarness, checkCeremonyHarness, checkAgentsRegistryHarness, checkOperateTriageSelftest, checkStandingSteers, checkNextUpAgreement, checkClosing, checkObligationsRegister, checkBudgets, checkRuleDedup, checkClassListDedup, checkCeremonyCopies, checkTunePresets]) {
     check();
   }
 
