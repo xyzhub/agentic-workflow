@@ -33,9 +33,11 @@
 //       Prints {contract_version, round, code, outcome, reason, tokens, session_id}.
 //   node runner.mjs record --round <n> --from <classify.json> --digest <state_digest> [--json]
 //       The one update under the lock: re-hashes the protected set FIRST (a
-//       mismatch → no progress written, STOP, exit 30 state-tampered), then the
-//       `round:` line, daily.json, backoff.json; releases the lock; exits the
-//       round's code.
+//       mismatch → no progress written, STOP, exit 30 state-tampered; on this
+//       split path the UTC day is also forfeited), then the `round:` line,
+//       daily.json, backoff.json; releases the lock; exits the round's code.
+//       A retry of the identical record prints `already recorded: <line>`,
+//       writes nothing and exits 0 (the JSON keeps the original code).
 //   node runner.mjs wait [--max <s>]      block, zero model turns, until the next
 //                                         round is due (0) or STOP appears (40)
 //   node runner.mjs stop [--reason <r>]   write STOP (reason + UTC)
@@ -643,38 +645,26 @@ export const CLASSIFY_TABLE = { 0: 'done', 1: 'crashed', 20: 'gate-pending', 21:
 
 // Which guard carries the weight (AC-42), on both paths: `record` re-hashes
 // the protected set — incl. this round's begin.json and lock — BEFORE any
-// check that could exit early or any write, against a digest held only in the
-// supervising process's memory (`round`: the runner itself, after the child's
-// process group is dead; split path: the supervisor that called begin). A
-// mismatch — a changed counter, a removed or replaced lock, or a forged
-// in-round `record` that already wrote its line (it, too, rewrote rounds.log
-// and the lock) — ends the round 30 state-tampered with STOP and one alert;
-// `round` restores the held bytes, the split path rolls back what a forged
-// record committed (its rounds/<n>.record.json journal) and names the rest.
-// The only plain refusal is a lock reclaimed after its lease (lock.lost.<n>).
+// check that could exit early and before any write, against a digest held
+// only in the supervising process's memory (`round`: the runner itself, after
+// the child's process group is dead; split path: the supervisor that called
+// begin). EVERY mismatch is loud — 30 state-tampered, STOP, one alert — incl.
+// a removed or replaced lock, a lock reclaimed after its lease
+// (lock.lost.<n>), and a forged in-round `record`. `round` restores the held
+// bytes. The split path trusts nothing on disk: it names what changed, and
+// forfeits the UTC day (today's total raised to the cap) because the counters
+// can no longer be trusted. The only quiet answer is a retry of the SAME
+// record: rounds/<n>.recorded carries sha256(digest | classify result |
+// post-record state | result); it matches only for the identical classify
+// result over the untouched post-record state → "already recorded", exit 0,
+// nothing written (a forger cannot know the supervisor's classify result).
 // The lock refuses a second begin and every owner-side writer (roundHeld).
 // The AGENTIC_WORKFLOW_UNATTENDED refusal is defence in depth only: a child
 // can unset it. The sha256 is unkeyed: a same-user round that rewrites this
 // file, gate.mjs, gate-guard.sh or hooks.json, or schedules cron/launchd, is
 // outside the check (the OQ-8 stated limit).
-function rollbackForged(sd, n) {
-  const jp = path.join(sd, 'rounds', `${n}.record.json`);
-  const j = readJson(jp, null);
-  if (!j) return false;
-  const lp = path.join(sd, 'rounds.log');
-  const lines = (read(lp) || '').split('\n');
-  const k = lines.lastIndexOf(j.line);
-  if (k >= 0) { lines.splice(k, 1); write0600(lp, lines.join('\n')); }
-  const dp = path.join(sd, 'daily.json');
-  const daily = readJson(dp, {});
-  if (daily[j.date] != null) { daily[j.date] = Math.max(0, Number(daily[j.date]) - Number(j.tokens || 0)); write0600(dp, `${JSON.stringify(daily)}\n`); }
-  const bp = path.join(sd, 'backoff.json');
-  const bo = readJson(bp, { codes: [], at: null });
-  if (Array.isArray(bo.codes) && bo.codes[bo.codes.length - 1] === j.code) { bo.codes.pop(); write0600(bp, `${JSON.stringify({ codes: bo.codes, at: j.prev_at ?? null })}\n`); }
-  rmSync(jp, { force: true });
-  return true;
-}
-const read = (p) => { try { return readFileSync(p, 'utf8'); } catch { return null; } };
+const canon = (o) => JSON.stringify(Object.keys(o).sort().reduce((a, k) => { a[k] = o[k]; return a; }, {}));
+const recordMac = (digest, classified, post, result) => createHash('sha256').update(`${digest}|${canon(classified)}|${post}|${canon(result)}`).digest('hex');
 
 export function record(cwd, { round, classified, digest, held = null, inProcess = false, now = Date.now() }) {
   refuseUnattended('record');
@@ -687,29 +677,42 @@ export function record(cwd, { round, classified, digest, held = null, inProcess 
   if (CLASSIFY_TABLE[classified.code] !== classified.outcome) throw new UsageError(`the classify result's code ${classified.code} does not match outcome ${classified.outcome}`);
   const sd = stateDir(cwd);
   const cfg = readConfig(cwd);
-  // A lease that expired and was reclaimed: the round was already logged crashed.
-  if (!inProcess && existsSync(path.join(sd, `lock.lost.${n}`))) throw new UsageError(`round ${n} lost its lock (lease expired; logged crashed) — nothing recorded`);
-  // Re-hash FIRST — before the lock check and before any write.
+  const markP = path.join(sd, 'rounds', `${n}.recorded`);
+  // Re-hash FIRST — before every early exit and before any write.
   const snap = snapshotProtected(cwd, sd, n);
   if (snap.digest !== digest) {
+    // A retry of the identical record over the untouched post-record state.
+    const mark = readJson(markP, null);
+    if (!inProcess && mark && mark.result && mark.mac === recordMac(digest, classified, snapshotProtected(cwd, sd).digest, mark.result)) {
+      return { ...mark.result, line: `already recorded: ${mark.result.line}` };
+    }
     let changed;
+    let forfeit = false;
     if (held) {
       changed = held.filter((h, i) => !(h.buf ? snap.held[i].buf && h.buf.equals(snap.held[i].buf) : !snap.held[i].buf)).map((h) => h.name);
       for (const h of held) { if (h.buf) writeFileSync(h.file, h.buf); else rmSync(h.file, { force: true }); }
-      rmSync(path.join(sd, 'rounds', `${n}.record.json`), { force: true });
+      rmSync(markP, { force: true });
     } else {
       const b0 = readJson(path.join(sd, 'rounds', `${n}.begin.json`), {}) || {};
       const now2 = hintsOf(snap.held);
       changed = (b0.hints || []).filter((h, i) => now2[i] && (h.size !== now2[i].size || h.mtime_ms !== now2[i].mtime_ms)).map((h) => h.name);
       if (!existsSync(path.join(sd, 'lock'))) changed.push('lock');
-      if (rollbackForged(sd, n)) changed.push('forged-record');
-      // The forged record released the lock; nothing may hold this round's lock now.
+      if (existsSync(path.join(sd, `lock.lost.${n}`))) changed.push(`lock.lost.${n}`);
       const l = readLock(sd);
       if (l && l.round === n) rmSync(path.join(sd, 'lock'), { force: true });
+      // Trust nothing on disk: forfeit the UTC day.
+      const dp = path.join(sd, 'daily.json');
+      let daily = {};
+      try { daily = JSON.parse(readFileSync(dp, 'utf8')); } catch { daily = {}; }
+      if (typeof daily !== 'object' || daily === null || Array.isArray(daily)) daily = {};
+      const today = utcDate(now);
+      daily[today] = Math.max(Number(daily[today]) || 0, cfg.budgets.daily_tokens);
+      write0600(dp, `${JSON.stringify(daily)}\n`);
+      forfeit = true;
     }
     const what = changed.length ? [...new Set(changed)].join(',') : 'a-protected-file';
     writeStop(sd, `state-tampered ${what}`, now);
-    alert(sd, `🛑 ${cfg.project} stopped: round #${n} changed ${what} (state-tampered). Nothing was recorded as progress; the runner stays stopped until \`runner.mjs resume\`.`, now);
+    alert(sd, `🛑 ${cfg.project} stopped: round #${n} changed ${what} (state-tampered). Nothing was recorded as progress; the runner stays stopped until \`runner.mjs resume\`.${forfeit ? ' The counters on disk are not trustworthy: today is forfeited (daily total set to the cap) until 00:00 UTC.' : ''}`, now);
     releaseLock(sd, n);
     return { contract_version: CONTRACT_VERSION, round: n, code: 30, outcome: 'state-tampered', line: `stop: 30 state-tampered ${what}`, today_tokens: dailyTotal({ daily: readJson(path.join(sd, 'daily.json'), {}) }, now), stop: `state-tampered ${what}` };
   }
@@ -724,8 +727,6 @@ export function record(cwd, { round, classified, digest, held = null, inProcess 
     tokens: classified.tokens, tick_budget: tick, next: after ? after.next_up : classified.reason,
     ledger: b.ledger ? b.ledger.path : null, version: `${pluginVersion()}/${b.cli_version}`,
   }));
-  const prevAt = (readJson(path.join(sd, 'backoff.json'), { at: null }) || {}).at ?? null;
-  write0600(path.join(sd, 'rounds', `${n}.record.json`), `${JSON.stringify({ line, tokens: classified.tokens, code: classified.code, date: utcDate(now), prev_at: prevAt })}\n`);
   const c = commitCounters(cwd, sd, cfg, { line, tokens: classified.tokens, code: classified.code, now });
   let stop;
   if (classified.code === 75) alertAuth(sd, cfg, now);
@@ -739,7 +740,9 @@ export function record(cwd, { round, classified, digest, held = null, inProcess 
     alert(sd, `🛑 ${cfg.project} stopped for today: ${c.today} of ${cfg.budgets.daily_tokens} tokens used (daily-cap). Nothing is lost; rounds start again after 00:00 UTC.`, now);
   }
   releaseLock(sd, n);
-  return { contract_version: CONTRACT_VERSION, round: n, code: stop ? 30 : classified.code, outcome: classified.outcome, line, today_tokens: c.today, stop };
+  const result = { contract_version: CONTRACT_VERSION, round: n, code: stop ? 30 : classified.code, outcome: classified.outcome, line, today_tokens: c.today, stop };
+  write0600(markP, `${JSON.stringify({ result, mac: recordMac(digest, classified, snapshotProtected(cwd, sd).digest, result) })}\n`);
+  return result;
 }
 
 // ── round = begin → spawn → classify → record ──────────────────────────────
@@ -870,7 +873,7 @@ export async function main(argv = process.argv.slice(2)) {
       const classified = readJson(path.resolve(cwd, o.from), null);
       const r = record(cwd, { round: o.round, classified, digest: o.digest || null });
       emit(o, r, r.line);
-      return r.code;
+      return r.line.startsWith('already recorded: ') ? 0 : r.code;
     }
     case 'round': { const r = await roundOnce(cwd, cfg, { unit: o.unit || null, auth: o.auth || null }); say(r.line); return r.code; }
     case 'wait': { const w = await wait(cwd, cfg, { maxS: o.max ? Number(o.max) : Infinity }); say(w.line); return w.code; }

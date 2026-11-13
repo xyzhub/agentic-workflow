@@ -503,7 +503,9 @@ try {
     const miss = run(d, ['record', '--round', String(b.round), '--from', path.join(TMP, 'c2.json')]);
     check('record without --digest → refused (1), nothing written', miss.code === 1 && snap() === s0 && existsSync(path.join(SD(d), 'lock')), miss.err);
     const wrong = run(d, ['record', '--round', String(b.round), '--from', path.join(TMP, 'c2.json'), '--digest', 'f'.repeat(64)]);
-    check('record with a wrong --digest → refused (30 state-tampered), no progress written', wrong.code === 30 && snap() === s0 && /state-tampered/.test(wrong.out), wrong.out);
+    check('record with a wrong --digest → refused (30 state-tampered), no progress written, the day forfeited', wrong.code === 30 && /state-tampered/.test(wrong.out)
+      && (read(path.join(SD(d), 'rounds.log')) ?? '') === s0.split('|')[0] && (read(path.join(SD(d), 'backoff.json')) ?? '') === s0.split('|')[2]
+      && R.dailyTotal({ daily: JSON.parse(read(path.join(SD(d), 'daily.json'))) }) >= 5000000, wrong.out);
   }
   {
     // B1: split path — the re-hash runs before the lock check.
@@ -518,14 +520,13 @@ try {
     const r = run(d, ['record', '--round', String(b.round), '--from', path.join(TMP, 'b1.json'), '--digest', b.state_digest]);
     check('split path: daily.json overwritten + lock removed → record 30 state-tampered (not a plain refusal), STOP + alert',
       r.code === 30 && /daily\.json/.test(r.out) && /lock/.test(r.out) && /state-tampered/.test(read(path.join(SD(d), 'STOP')) || '') && /state-tampered/.test(read(path.join(SD(d), 'alerts.log')) || ''), `${r.code} ${r.out} ${r.err}`);
-    check('split path: the tampered cap is named, never counted as progress', daily0 !== null && roundsLog(d).trim().split('\n').length === 1);
+    check('split path: the tampered cap is never counted as progress and the day is forfeited (total ≥ cap)', daily0 !== null && roundsLog(d).trim().split('\n').length === 1
+      && R.dailyTotal({ daily: JSON.parse(read(path.join(SD(d), 'daily.json'))) }) >= 5000000);
   }
   {
-    // B1: a forged in-round record (UNATTENDED unset, self-computed digest) on the split path.
+    // A forged in-round record (UNATTENDED unset, self-computed digest) on the split path.
     const d = mkRepo();
     run(d, ['round'], { FAKE_SCENARIO: 'done' }); age(d);
-    const daily0 = read(path.join(SD(d), 'daily.json'));
-    const bo0 = JSON.parse(read(path.join(SD(d), 'backoff.json'))).codes.join();
     const b = JSON.parse(run(d, ['begin', '--json', '--pid', String(process.pid)]).out);
     writeFileSync(path.join(TMP, 'forged.json'), JSON.stringify({ contract_version: 1, round: b.round, code: 0, outcome: 'done', reason: 'forged', tokens: 0, session_id: null }));
     const self = R.snapshotProtected(d, SD(d), b.round).digest;
@@ -533,13 +534,13 @@ try {
     writeFileSync(b.events_path, `${JSON.stringify({ type: 'result', subtype: 'success', usage: { input_tokens: 5000 } })}\n`);
     writeFileSync(path.join(TMP, 'real.json'), run(d, ['classify', '--round', String(b.round), '--events', b.events_path, '--json']).out);
     const r = run(d, ['record', '--round', String(b.round), '--from', path.join(TMP, 'real.json'), '--digest', b.state_digest]);
-    check('split path: a forged in-round record ends the round 30 and its line + counters are rolled back',
-      f.code === 0 && r.code === 30 && /forged-record/.test(r.out) && roundsLog(d).trim().split('\n').length === 1
-      && read(path.join(SD(d), 'daily.json')).trim() === daily0.trim() && JSON.parse(read(path.join(SD(d), 'backoff.json'))).codes.join() === bo0 && !existsSync(path.join(SD(d), 'lock')),
-      `${f.code} ${r.code} ${r.out} | ${roundsLog(d)} | ${read(path.join(SD(d), 'backoff.json'))}`);
+    const al = read(path.join(SD(d), 'alerts.log')) || '';
+    check('split path: a forged in-round record ends the round 30 (not "already recorded"), STOP, the day forfeited, the alert says the counters are not trustworthy',
+      f.code === 0 && r.code === 30 && /state-tampered/.test(read(path.join(SD(d), 'STOP')) || '') && /not trustworthy/.test(al)
+      && R.dailyTotal({ daily: JSON.parse(read(path.join(SD(d), 'daily.json'))) }) >= 5000000 && !existsSync(path.join(SD(d), 'lock')), `${f.code} ${r.code} ${r.out}`);
   }
   {
-    // B1: the one plain refusal — a lease that expired and was reclaimed.
+    // N1: a lease that expired and was reclaimed is still loud (the digest changed).
     const d = mkRepo();
     const b = JSON.parse(run(d, ['begin', '--json', '--holder', 'sup-1', '--lease', '1']).out);
     Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 1300);
@@ -547,7 +548,54 @@ try {
     writeFileSync(b.events_path, `${JSON.stringify({ type: 'result', subtype: 'success', usage: { input_tokens: 5 } })}\n`);
     writeFileSync(path.join(TMP, 'b3.json'), run(d, ['classify', '--round', String(b.round), '--events', b.events_path, '--json']).out);
     const r = run(d, ['record', '--round', String(b.round), '--from', path.join(TMP, 'b3.json'), '--digest', b.state_digest]);
-    check('split path: a record after its lease was reclaimed is a plain refusal (1, no STOP)', r.code === 1 && /lost its lock/.test(r.err) && !existsSync(path.join(SD(d), 'STOP')), `${r.code} ${r.err}`);
+    check('split path: a record after its lease was reclaimed → 30 + STOP + alert naming lock.lost.<n> (never silent)',
+      r.code === 30 && /lock\.lost\.1/.test(r.out) && existsSync(path.join(SD(d), 'STOP')) && /lock\.lost\.1/.test(read(path.join(SD(d), 'alerts.log')) || ''), `${r.code} ${r.out} ${r.err}`);
+  }
+  {
+    // N1: a forged lock.lost.<n> + a changed counter cannot buy a quiet exit.
+    const d = mkRepo();
+    run(d, ['round'], { FAKE_SCENARIO: 'big', FAKE_NEXT: 'S2 one' }); age(d);
+    const b = JSON.parse(run(d, ['begin', '--json', '--holder', 'sup-1', '--lease', '300']).out);
+    writeFileSync(path.join(SD(d), 'daily.json'), '{}');
+    rmSync(path.join(SD(d), 'lock'));
+    writeFileSync(path.join(SD(d), `lock.lost.${b.round}`), '');
+    writeFileSync(b.events_path, `${JSON.stringify({ type: 'result', subtype: 'success', usage: { input_tokens: 5 } })}\n`);
+    writeFileSync(path.join(TMP, 'n1.json'), run(d, ['classify', '--round', String(b.round), '--events', b.events_path, '--json']).out);
+    const r = run(d, ['record', '--round', String(b.round), '--from', path.join(TMP, 'n1.json'), '--digest', b.state_digest]);
+    check('split path: forged lock.lost.<n> + a zeroed daily.json → 30 + STOP + alert, the cap not wiped (day forfeited)',
+      r.code === 30 && /daily\.json/.test(r.out) && existsSync(path.join(SD(d), 'STOP')) && /state-tampered/.test(read(path.join(SD(d), 'alerts.log')) || '')
+      && R.dailyTotal({ daily: JSON.parse(read(path.join(SD(d), 'daily.json'))) }) >= 5000000, `${r.code} ${r.out} ${r.err}`);
+  }
+  {
+    // N2: a planted journal is ignored; the split-path tamper forfeits the day.
+    const d = mkRepo();
+    run(d, ['round'], { FAKE_SCENARIO: 'big', FAKE_NEXT: 'S2 one' }); age(d);
+    const b = JSON.parse(run(d, ['begin', '--json', '--holder', 'sup-1', '--lease', '300']).out);
+    const today = new Date().toISOString().slice(0, 10);
+    writeFileSync(path.join(SD(d), `rounds/${b.round}.record.json`), JSON.stringify({ line: 'x', tokens: 4900000, code: 0, date: today }));
+    rmSync(path.join(SD(d), 'lock'));
+    writeFileSync(b.events_path, `${JSON.stringify({ type: 'result', subtype: 'success', usage: { input_tokens: 5 } })}\n`);
+    writeFileSync(path.join(TMP, 'n2.json'), run(d, ['classify', '--round', String(b.round), '--events', b.events_path, '--json']).out);
+    const r = run(d, ['record', '--round', String(b.round), '--from', path.join(TMP, 'n2.json'), '--digest', b.state_digest]);
+    const total = R.dailyTotal({ daily: JSON.parse(read(path.join(SD(d), 'daily.json'))) });
+    check('split path: a planted rounds/<n>.record.json is ignored; the tamper leaves today ≥ the cap', r.code === 30 && total >= 5000000 && /not trustworthy/.test(read(path.join(SD(d), 'alerts.log')) || ''), `${r.code} ${r.out} total=${total}`);
+  }
+  {
+    // N3: a supervisor retrying the identical record gets "already recorded".
+    const d = mkRepo();
+    const b = JSON.parse(run(d, ['begin', '--json', '--pid', String(process.pid)]).out);
+    writeFileSync(b.events_path, `${JSON.stringify({ type: 'result', subtype: 'success', usage: { input_tokens: 5 } })}\n`);
+    writeFileSync(path.join(TMP, 'n3.json'), run(d, ['classify', '--round', String(b.round), '--events', b.events_path, '--json']).out);
+    const r1 = run(d, ['record', '--round', String(b.round), '--from', path.join(TMP, 'n3.json'), '--digest', b.state_digest, '--json']);
+    const s1 = [roundsLog(d), read(path.join(SD(d), 'daily.json')), read(path.join(SD(d), 'backoff.json'))].join('|');
+    const r2 = run(d, ['record', '--round', String(b.round), '--from', path.join(TMP, 'n3.json'), '--digest', b.state_digest, '--json']);
+    const s2 = [roundsLog(d), read(path.join(SD(d), 'daily.json')), read(path.join(SD(d), 'backoff.json'))].join('|');
+    const j2 = shapeOk('schema: a retried record --json still validates', r2.out, 'record');
+    check('retried record: plain "already recorded", exit 0, nothing written, the genuine record kept, no STOP',
+      r1.code === 22 && r2.code === 0 && j2 && /^already recorded: round: /.test(j2.line) && j2.code === 22 && s1 === s2 && !existsSync(path.join(SD(d), 'STOP')), `${r1.code} ${r2.code} ${r2.out}`);
+    writeFileSync(path.join(TMP, 'n3b.json'), JSON.stringify({ ...JSON.parse(read(path.join(TMP, 'n3.json'))), tokens: 1 }));
+    const r3 = run(d, ['record', '--round', String(b.round), '--from', path.join(TMP, 'n3b.json'), '--digest', b.state_digest]);
+    check('retried record with a different classify result is not a retry → 30 state-tampered', r3.code === 30, `${r3.code} ${r3.out}`);
   }
   {
     // B2: classify's budget-stop is sticky.
