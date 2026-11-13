@@ -144,6 +144,8 @@ S1; OQ-10 before S1b; the rest of OQ-8 and OQ-9 before S4._
 
 ## Handoff log (newest first)
 
+- 2026-11-13 2026-11-13 **ckpt-s1 final re-check (Fable) REQUEST CHANGES** on 1ae6879..3110bb7 — Security 1, QA 2, Arch 3, Eff 3, DX 3. N1, N2, AC-29/AC-6 verified closed. New blocker **S3**: N3 "already recorded" shortcut (runner.mjs:685–688) sits in the mismatch branch and trusts an unkeyed hash from the child-writable dir; every input is computable/predictable (no-result-event classify) → tamper + planted mark → silent exit 0, cap wiped (reproduced; scan finding confirmed). Minimal fix: delete the mark (recordMac, canon, shortcut, write :744, main special case) so a repeated record ends 30 + day forfeited; + one harness case. Third failure → owner.
+
 - 2026-11-13 2026-11-13 spawned in parallel: ckpt-s1 narrow re-check (same Fable reviewer, resumed) over 1ae6879..3110bb7; planner (Fable) on G1–G6 + advisories in the trio.
 
 - 2026-11-13 2026-11-13 S1-fix2 returned **done**: 3110bb7 — N1 digest checked before any early exit, `lock.lost` exit gone; N2 journal + rollbackForged deleted, split-path mismatch trusts nothing, forfeits the UTC day (total → cap), alert says counters untrustworthy; N3 retried record = "already recorded", exit 0 (sha256 over begin digest + classify + post-record digest); A-doc AC-29/AC-6 landed in 1ae6879. Harness 124 clean, lint clean.
