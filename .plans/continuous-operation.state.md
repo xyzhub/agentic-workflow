@@ -144,6 +144,8 @@ S1; OQ-10 before S1b; the rest of OQ-8 and OQ-9 before S4._
 
 ## Handoff log (newest first)
 
+- 2026-11-13 2026-11-13 owner (AskUserQuestion, locked): ckpt-s1 S3 → "Delete it, first step of S1b" — the S1b builder deletes the N3 retry mark (recordMac, canon, shortcut :685–688, write :744, main special case) + adds the planted-mark harness case as its first step; ckpt-s1b confirms S3 closed; S1 row flips [x] when ckpt-s1b APPROVEs. No extra session.
+
 - 2026-11-13 2026-11-13 **ckpt-s1 final re-check (Fable) REQUEST CHANGES** on 1ae6879..3110bb7 — Security 1, QA 2, Arch 3, Eff 3, DX 3. N1, N2, AC-29/AC-6 verified closed. New blocker **S3**: N3 "already recorded" shortcut (runner.mjs:685–688) sits in the mismatch branch and trusts an unkeyed hash from the child-writable dir; every input is computable/predictable (no-result-event classify) → tamper + planted mark → silent exit 0, cap wiped (reproduced; scan finding confirmed). Minimal fix: delete the mark (recordMac, canon, shortcut, write :744, main special case) so a repeated record ends 30 + day forfeited; + one harness case. Third failure → owner.
 
 - 2026-11-13 2026-11-13 spawned in parallel: ckpt-s1 narrow re-check (same Fable reviewer, resumed) over 1ae6879..3110bb7; planner (Fable) on G1–G6 + advisories in the trio.
@@ -196,4 +198,4 @@ S1; OQ-10 before S1b; the rest of OQ-8 and OQ-9 before S4._
 
 - 2026-10-27 planned: trio authored from `docs/product/decisions/2026-10-27-continuous-operation-brief.md` (L1–L5 + the Source-of-truth and Docs-vs-code principles; L3 as refined: per-client subscription, NO account check, no API key) + memos D1-A/D2/D3-B/D4-C/D5-A/D6-A/D7-B as far as L1 allows + the EGM borrows + counsel; mode `phases`, Estimate 6 (owner lock; checkpoints inside sessions), build branch `feat/continuous-operation`, version 1.70.0; OQ-1..5 to the owner before S0; S1 gated on OB-32 fired (S0).
 
-Next up: ckpt-s1 narrow re-check of 3110bb7 + planner pass on the goldfish findings G1–G6, then a narrow plan-judge on the plan diff; then S1b (step 0: one live round) → S2 → S3 → S4 → S4b → S5.
+Next up: planner goldfish revision (running) → narrow plan-judge on its diff → S1b (step −1: delete the N3 retry mark per ckpt-s1 S3; step 0: one live round) → S2 → S3 → S4 → S4b → S5. S1 row stays [~] until ckpt-s1b APPROVE.
