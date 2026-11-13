@@ -184,7 +184,8 @@ release (S5).
      (gap 10). The stream-json event log goes ONLY to `rounds/<n>.events.jsonl`
      — never into the parent's context, stdout or the channel.
      **Docs are the source of truth (brief, owner 2026-10-27):** the round
-     prompt `round` builds tells the child to rebuild context ONLY from
+     rules `round` passes via `--append-system-prompt` (the prompt itself is
+     the unit slash command alone) tell the child to rebuild context ONLY from
      `docs/product/`, the `.plans/` ledgers + `.plans/OBLIGATIONS.md` and
      the handoff — never a transcript, a compaction summary, `.remember/` or
      any memory folder — and to write whatever the next round needs into
@@ -606,8 +607,10 @@ release (S5).
      a model); `begin --json [--holder <id> --lease <s>]` (takes the lock,
      allots the round number, snapshots the ledger's `Next up:` /
      `Sessions used:` and the open-gate count into `rounds/<n>.begin.json`,
-     prints `{contract_version, round, unit, prompt, env, events_path}` —
-     `env` is the exact child environment additions the caller must apply);
+     prints `{contract_version, round, unit, prompt, append_system_prompt,
+     env, events_path, state_digest}` — `prompt` is the unit slash command
+     alone, `append_system_prompt` the round rules, `env` the exact child
+     environment additions the caller must apply);
      `classify --round <n> --events <file> [--exit <code>] --json` (pure, no
      lock, no spawn: maps a finished turn to the exit contract of AC-4 —
      `{contract_version, round, code, outcome, reason, tokens, session_id}`
