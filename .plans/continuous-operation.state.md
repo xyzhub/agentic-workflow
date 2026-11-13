@@ -19,7 +19,7 @@ Status: active
 
 Estimate: 8 sessions
 Sessions used: 2
-Reviewer runs: 4
+Reviewer runs: 5
 
 _The budget lines above are read by the mission-budget hook every turn.
 `Estimate: 6` = the six briefs S0–S5 (mode `phases`, owner-locked in brief
@@ -144,6 +144,12 @@ S1; OQ-10 before S1b; the rest of OQ-8 and OQ-9 before S4._
 
 ## Handoff log (newest first)
 
+- 2026-11-13 2026-11-13 ckpt-s1 spawned (Fable, fresh, one-shot) over `3dc5d5a..af0dab4` on feat/continuous-op; lint clean at af0dab4 (orchestrator re-run).
+
+- 2026-11-13 2026-11-13 S1 builder returned **done**: 22af415 (plan-judge amendments 1 + 4), 277838d (runner.mjs, redact.mjs, runner-config, runner contract schema, runner-test, lint wiring), af0dab4 (3 MEDIUM security-scan findings fixed: begin.json + lock in the digest, digest held in supervisor memory, record input checks). Harness 108 cases clean, lint clean (builder). 10 builder choices for the reviewer to rule on, incl. STOP not written on daily-cap/ledger-budget stops (AC-5 says every stop) and slash command no longer first in the round prompt.
+
+- 2026-11-13 2026-11-13 owner (chat, "yes"): ckpt-s0 **A1 and A2 skipped as runs** — A1 (settings-only window moves the compaction point) folds into OB-35: the 24h run records the observed compaction point under the settings-only `CLAUDE_CODE_AUTO_COMPACT_WINDOW`; A2 (fixed reserve vs percentage) kept as a stated assumption — both fit at the 200k operating window; re-measure only if a larger window is ever used. A3 stands as a precision note (33,297–34,361, Sonnet only). S2 is no longer blocked on them.
+
 - 2026-11-13 2026-11-13 S1 started (write-ahead; Sessions used 1 → 2): backend builder (claude, opus) spawned on § S1 with plan-judge amendments (1) and (4) applied first.
 
 - 2026-11-12 **ckpt-s0 (Fable) APPROVE** — scorecard DX 2, Security 3, QA 2, Architecture 3; AC-1 pass in part (constants fix carried as AC-28), AC-2 pass, AC-3 pass; lint clean; CI NOT VERIFIED (ci-wait exit 5, gh unavailable to the reviewer). A4 fixed now (brief :225, OBLIGATIONS :72, deviation: threshold fix is S2, not S1). Owed before S2: **A1** settings-only `CLAUDE_CODE_AUTO_COMPACT_WINDOW` moving the real compaction point is unobserved — repeat the OB-32 command with the value only in `.claude/settings.json` (~1 min) or add to OB-35; **A2** fixed reserve vs percentage undecided (one point fits both) and no 1M re-measure exists — one run at 400k, or keep plan :941 as a stated assumption; **A3** 33,000 is approximate (33,297–34,361), Sonnet only. Advisory: **A5** dead evidence paths (probeA/B/E dirs gone), OB-32 prompt and (b) plugin root paraphrased, no version column, row (e) `-p` subagent case unstated, S0 row lead text says orderly-agents; **A6** OB-35 should record wake latency (longest observed 20 min).
@@ -166,4 +172,4 @@ S1; OQ-10 before S1b; the rest of OQ-8 and OQ-9 before S4._
 
 - 2026-10-27 planned: trio authored from `docs/product/decisions/2026-10-27-continuous-operation-brief.md` (L1–L5 + the Source-of-truth and Docs-vs-code principles; L3 as refined: per-client subscription, NO account check, no API key) + memos D1-A/D2/D3-B/D4-C/D5-A/D6-A/D7-B as far as L1 allows + the EGM borrows + counsel; mode `phases`, Estimate 6 (owner lock; checkpoints inside sessions), build branch `feat/continuous-operation`, version 1.70.0; OQ-1..5 to the owner before S0; S1 gated on OB-32 fired (S0).
 
-Next up: S1 — `tools/runner.mjs` core, spawn-free `next`/`begin`/`classify`/`record`, login check, credentials preflight, AC-42 fingerprint (`.plans/continuous-operation.sessions.md` § S1); apply the owed amendments cited in the Handoff log first. Order after that: S1b → S2 (ckpt-s0 A1–A3 owed before S2) → S3 → S4 → S4b → S5.
+Next up: ckpt-s1 — fresh Fable reviewer over `3dc5d5a..af0dab4` (S1 runner core); then S1b → S2 → S3 → S4 → S4b → S5. ckpt-s0 A1/A2 resolved 2026-11-13 (A1 → OB-35, A2 stated assumption).
