@@ -14,6 +14,24 @@ command, or "run `/agentic-workflow:doctor fix`").
 
 - **git** — repo present; a remote configured (none is 🟡 at V0–V2, 🔴 later).
 - **gh** — installed and authenticated (PR flow depends on it).
+  - **This project's token** — only when the repo's local
+    `credential.helper` names `git-identity` (one GitHub token per project).
+    `git` then pushes with the project's token, but plain `gh` uses the global
+    login, which may not be allowed to open PRs here. Probe without printing a
+    token: read the `github-authentication-token-expiration` header of
+    `gh api -i user` as `gh` runs in this folder, and again with
+    `GH_TOKEN="$(git identity token)"`. The project token read back empty, or
+    no project-token expiry header → 🟡 "can't tell which token gh uses here"
+    (never 🟢). Same → 🟢 "gh uses this project's token". Different → 🟡 "gh
+    uses your global login in this folder, not this project's token", fix:
+    `cp ${CLAUDE_PLUGIN_ROOT}/templates/gh-project-token.sh ~/.local/bin/gh && chmod +x ~/.local/bin/gh`
+    — only when `~/.local/bin/gh` is absent or already contains `gh wrapper
+    (agentic-workflow template`; any other file there is reported, never
+    overwritten. `~/.local/bin` must come before the real `gh` on PATH. Then
+    the project token's own expiry: within 14 days → 🟡, already past → 🔴,
+    both with the fix `git identity set --token --replace`. Two tokens sharing
+    one expiry read as the same — rare, and the PR flow still surfaces it.
+    `fix` mode only reports this row (tokens are credentialed, §4).
 - **jq** — the guardrail hooks parse tool input with it (they degrade to
   raw-JSON matching without it).
 - **ripgrep (`rg`)** — Bash-side searches (index fallbacks, scripts) should
