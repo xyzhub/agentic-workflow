@@ -1,3 +1,5 @@
+> **SUPERSEDED 2026-11-19** by `.plans/concurrent-missions.*` (owner re-plan: the goal is two different missions at once). Kept as record only.
+
 ---
 status: semi-static
 owner-agent: planner

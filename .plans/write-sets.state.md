@@ -12,7 +12,7 @@ fresh agent resumes the mission from this file alone. Write-ahead — update it
 orchestrator has no session boundary to force a write; a compaction erases
 everything since the last one — §12 LA-6)._
 
-Status: parked
+Status: superseded — by concurrent-missions, 2026-11-19
 
 Estimate: 1 session
 Sessions used: 0
