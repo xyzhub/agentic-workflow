@@ -127,6 +127,12 @@ an earlier one creates, so no two could share a wave. Before each checkpoint
 the orchestrator merges `main` into the branch (R-1 gives the rule for the one
 line that can conflict).
 
+**Orchestrator, after S3 (no session, PD-13 — stands in for the folded
+mid-phase review):** merge `main` into the branch; run `lint`, `lint-test`,
+`hook-test`, `worktree-test` and `ledger-test` itself; re-run S1's equivalence
+proofs at S1's SHA (below); record each command and its output in the ledger
+handoff. Any red → stop before S4.
+
 **Orchestrator, before S1 (probes 1–5, no session — builders never push, and
 probe 3 needs an isolated session):** record each command and its output in
 the ledger handoff.
@@ -154,7 +160,9 @@ the ledger handoff.
 ### S1 — central lists become folders
 
 - **ACs**: AC-6, AC-17
-- **Suits**: `backend`. One commit, nothing else in it (PD-2).
+- **Suits**: `backend`. One commit, nothing else in it (PD-2). The return
+  names that commit's SHA — ckpt-p1 and the after-S3 check re-run S1's proofs
+  there (PD-13).
 - **Precondition**: the PRE-S1 row is done. Test by content, not by branch
   name: count the names on the array line of `tools/lint.mjs` (`grep 'for
   (const check of \[' tools/lint.mjs | tr ',' '\n' | wc -l`). 35 → continuous-
@@ -425,13 +433,6 @@ the ledger handoff.
   - `git diff --stat` shows no change to either pin file and no `.plans/` path.
   - Catalog: not applicable.
 - **Read budget**: ≈ 950 lines. Suits: `backend`.
-
-**Checkpoint ckpt-p1a** — review only, no merge. A one-shot `reviewer` on
-**Fable** (boundary-class: `tools/`, `hooks/` and `templates/` are
-`security-boundary` discipline files at reviewer tier `top`,
-`templates/gate-classes.md:32`), fresh context, over `main..HEAD` after S1–S3.
-S1 is reviewed by its equivalence proofs and `git diff -M --stat`, not by
-reading the moved lines; S2 and S3 by diff. It re-runs every gate.
 
 ### S4 — declared write sets, the overlap check, clash classes
 
@@ -761,9 +762,18 @@ reading the moved lines; S2 and S3 by diff. It re-runs every gate.
 - **Read budget**: ≈ 900 lines. Suits: `backend`.
 
 **Checkpoint ckpt-p1** ends phase 1 — a one-shot `reviewer` on **Fable**
-(boundary-class, as ckpt-p1a), fresh context, over `<ckpt-p1a head>..HEAD`
-plus the phase's gates, per the ledger's gate policy. It re-runs
-`concurrent-test` itself and fires the pre-merge Closing rows before the
+(boundary-class: `tools/`, `hooks/` and `templates/` are `security-boundary`
+discipline files at reviewer tier `top`, `templates/gate-classes.md:32`), fresh
+context (PD-13: the only phase-1 review). S1 is not read line by line: the
+reviewer checks out S1's SHA (named in S1's return) in a scratch worktree,
+regenerates the baselines from `main`, re-runs S1's Verify there, and compares
+the sorted lines of `main:tools/lint.mjs` with the concatenated `tools/lint.d/*`
+at that SHA. S2–S6 are read by diff over `<S1 sha>..HEAD`; the reviewer states
+`git diff --stat <S1 sha>..HEAD` totals first — if that diff outgrows one pass,
+it says so and PD-13's split-review fallback applies. It also confirms legacy ledgers with no `Status:`/`Closed:`
+still resolve silent once a blocked ledger is stepped over (plan-judge
+advisory). It re-runs every gate and the phase's gates, per the ledger's gate
+policy, re-runs `concurrent-test` itself and fires the pre-merge Closing rows before the
 verdict. The chronicler then writes `changelog.d/concurrent-missions.md`; the
 PR to `main` opens; the owner merges.
 
