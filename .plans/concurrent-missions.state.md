@@ -10,14 +10,14 @@ _The durable state that outlives any transcript (WORKFLOW.md §2, principle 1): 
 fresh agent resumes the mission from this file alone. Write-ahead — update it
 at every merge and every gate result._
 
-Estimate: 8 sessions
+Estimate: 7 sessions
 Sessions used: 0
-Reviewer runs: 2
+Reviewer runs: 3
 Status: parked
 
-_`Estimate:` covers phase 1 only: S1–S6 (6) + ckpt-p1a + ckpt-p1 (2). Phase 2
+_`Estimate:` covers phase 1 only: S1–S6 (6) + ckpt-p1 (1) — owner cut 8 → 7 on 2026-11-19 (PD-13). Phase 2
 is planned at 2 more (S7 + ckpt-p2) and is added here only by the owner's
-dated decision on the GATE-P2 row below — the same edit raises this line to 10
+dated decision on the GATE-P2 row below — the same edit raises this line to 9
 (master plan PD-9; confirmed by the plan-judge 2026-11-19). No corrective is pre-booked. The orchestrator
 increments `Sessions used:` write-ahead and flips `Status:` to `active` at the
 first brief; `Reviewer runs:` is bumped at every one-shot reviewer spawn,
@@ -49,12 +49,12 @@ done (verified, not merely written)._
 - [ ] S1 — central lists become folders (branch `mission/concurrent-missions-p1`)
 - [ ] S2 — a worktree per mission, the cap, ledger by branch
 - [ ] S3 — bookkeeping that cannot conflict
-- [ ] Checkpoint ckpt-p1a — review of S1–S3, no merge (one-shot reviewer on Fable: `tools/`, `hooks/`, `templates/` are security-boundary, `templates/gate-classes.md:32`)
+- [ ] After-S3 check — orchestrator merges `main`, runs lint, lint-test, hook-test, worktree-test, ledger-test and S1's proofs at S1's SHA; red → stop before S4 (no session, PD-13)
 - [ ] S4 — declared write sets, the overlap check, clash classes
 - [ ] S5 — the queue: agent prepares, owner clicks
 - [ ] S6 — burn meter, spend ceiling, the two-mission scenario
-- [ ] Checkpoint ckpt-p1 — phase 1 review (one-shot reviewer on Fable) + PR to `main` per gate
-- [ ] GATE-P2 — **BLOCKED. Phase 2 does not start.** S7 may begin only when BOTH conditions hold and the owner writes a dated decision on this row: **(a)** the host that will run the agents has no owner GitHub login stored — shown by listing the stored logins (`gh auth status` output pasted here), not by probing the ambient token — and the agents act as an identity that is not the owner's account (a GitHub App or a separate machine account installed on the repos; a token issued on the owner's own account does not count); **(b)** the first real two-mission run measured combined tokens/hour ≤ 2.2 × the single-mission baseline (`burn.mjs gate` output pasted here). Either one missing → this row stays `[ ]` and S7 is not spawned, whatever else is green. On reaching this row the orchestrator sets the header to `Status: blocked` and leaves it so until the owner's dated decision is written here; the Closing rows `baseline and ceiling` and `first real pair` fire while it is blocked — they produce condition (b). A blocked ledger must not silence another mission's hooks — S2 builds that rule; until S2 has landed, do not set `Status: blocked` on a ledger that is the newest in a checkout where another mission runs on a branch not named `mission/…`. If phase 2 never opens: the owner writes "phase 2 not opened" with a date here; this row, S7 and ckpt-p2 become `[~]`; one Closing row carrying both conditions is promoted to the register; the mission closes on phase 1 with `Estimate:` unchanged. Opening it raises `Estimate:` to 10 in the same edit and triggers a `replan` of S7.
+- [ ] Checkpoint ckpt-p1 — the only phase 1 review, over S1–S6 (one-shot reviewer on Fable; S1 by its proofs) + PR to `main` per gate
+- [ ] GATE-P2 — **BLOCKED. Phase 2 does not start.** S7 may begin only when BOTH conditions hold and the owner writes a dated decision on this row: **(a)** the host that will run the agents has no owner GitHub login stored — shown by listing the stored logins (`gh auth status` output pasted here), not by probing the ambient token — and the agents act as an identity that is not the owner's account (a GitHub App or a separate machine account installed on the repos; a token issued on the owner's own account does not count); **(b)** the first real two-mission run measured combined tokens/hour ≤ 2.2 × the single-mission baseline (`burn.mjs gate` output pasted here). Either one missing → this row stays `[ ]` and S7 is not spawned, whatever else is green. On reaching this row the orchestrator sets the header to `Status: blocked` and leaves it so until the owner's dated decision is written here; the Closing rows `baseline and ceiling` and `first real pair` fire while it is blocked — they produce condition (b). A blocked ledger must not silence another mission's hooks — S2 builds that rule; until S2 has landed, do not set `Status: blocked` on a ledger that is the newest in a checkout where another mission runs on a branch not named `mission/…`. If phase 2 never opens: the owner writes "phase 2 not opened" with a date here; this row, S7 and ckpt-p2 become `[~]`; one Closing row carrying both conditions is promoted to the register; the mission closes on phase 1 with `Estimate:` unchanged. Opening it raises `Estimate:` to 9 in the same edit and triggers a `replan` of S7.
 - [ ] S7 — the approval signal, the guard, agent-merge (branch `mission/concurrent-missions-p2`; replan at the gate)
 - [ ] Checkpoint ckpt-p2 — phase 2 review (one-shot reviewer on Fable: the merge guard is security-boundary) + PR to `main` per gate
 
@@ -75,7 +75,7 @@ and 11 before the gate opens. OQ-12 is closed._
 - OQ-9 — is "no additional overhead" owner minutes + setup time + tokens per mission? Recommendation: confirm.
 - OQ-10 — if token usage cannot be read at all? Recommendation: two missions stay off.
 - OQ-11 — GitHub App or machine account? Recommendation: either.
-- OQ-12 — closed 2026-11-19: `Estimate:` 8 now, +2 at the gate (plan-judge confirmed).
+- OQ-12 — closed 2026-11-19: `Estimate:` 8 now, +2 at the gate (plan-judge confirmed); 7 since PD-13 (owner, 2026-11-19).
 - OQ-13 — an approved PR can be pulled from the queue; a finished mission holds its slot until it lands. Recommendation: yes to both.
 
 Probe results owed, all by the orchestrator before S1, written into the
@@ -162,6 +162,7 @@ landing on top of the two-PR close; in phase 1 the owner merges it (OQ-2)._
 
 ## Handoff log (newest first)
 
+- 2026-11-19 · owner: Estimate 8 → 7 — ckpt-p1a folded into ckpt-p1 (PD-13; its advisory moved there); preset stays balanced; burn meter (S6) kept. Narrow plan-judge: REVISE (2 text fixes: S1 proofs re-run at S1's SHA, orchestrator gate run after S3) → applied.
 - 2026-11-18 2026-11-19 · plan-judge: REVISE (8 fixes: burn producer, S6 events, follow-up conflict, two ready PRs untested together, value sourcing, no PRE-S1 stop, probe timing, blocked ledger silencing other missions' hooks). Planner revised once; narrow re-judge: APPROVE. Estimate 8 (phase 1). Advisory for the un-park replan: S5 must name where 'land.mjs reviewed' stores its verdict. Advisory for ckpt-p1a: confirm legacy ledgers with no Status/Closed still resolve silent once a blocked ledger is stepped over. Parked; supersedes write-sets.
 
 - 2026-11-19 plan: trio authored from the 2026-11-19 brief, memos, journeys,

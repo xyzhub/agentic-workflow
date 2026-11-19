@@ -24,14 +24,15 @@ bookkeeping and no git or setup command typed by the owner.
 measured at `main` `5ba640e` (plugin 1.69.1) and is a hint beside a symbol
 anchor; un-parking starts with a `replan` that re-measures them.
 
-Estimate: **8 sessions** — phase 1 only (6 briefs + 2 checkpoints). Phase 2 is
+Estimate: **7 sessions** — phase 1 only (6 briefs + 1 checkpoint; owner cut 8 → 7 on
+2026-11-19, PD-13). Phase 2 is
 planned at **2 more** (1 brief + 1 checkpoint) and is added to `Estimate:` only
 by the owner's dated decision when the phase 2 gate opens (PD-9, confirmed by
-the plan-judge 2026-11-19) — 10 in all if it opens. No corrective is pre-booked.
+the plan-judge 2026-11-19) — 9 in all if it opens. No corrective is pre-booked.
 
 | Phase | Sessions | Why this many |
 |---|---|---|
-| 1 — everything except agent-merge | S1–S6 + ckpt-p1a + ckpt-p1 = 8 | Six deliverable groups, each 850–1,250 lines of reads against a 1,500 budget; no two fit one brief. Two checkpoints because one top-tier reviewer cannot hold six briefs' diff: ckpt-p1a covers S1–S3 (a 4,300-line mechanical move plus three new tools), ckpt-p1 covers S4–S6 and ends the phase |
+| 1 — everything except agent-merge | S1–S6 + ckpt-p1 = 7 | Six deliverable groups, each 850–1,250 lines of reads against a 1,500 budget; no two fit one brief. One checkpoint (PD-13): S1's 4,300-line move is checked by re-running its proofs at S1's SHA, never read line by line; an orchestrator gate run after S3 catches S1–S3 defects early. Owner-accepted risk: one corrective pass covers six briefs |
 | 2 — agent merges what the owner approves (gated) | S7 + ckpt-p2 = 2 | One security brief (guard value, identity check, approve-shape block, land mode) and its checkpoint |
 
 ## Tasks
@@ -191,8 +192,7 @@ after approval" instead. M2's acting-identity probe — by LD-1 (listing).
 Planner decisions (decomposition, 2026-11-19):
 
 - **PD-1** One branch and one feature PR per phase: `mission/concurrent-missions-p1`,
-  `mission/concurrent-missions-p2`. ckpt-p1a is a review on the phase 1 branch
-  with no merge.
+  `mission/concurrent-missions-p2`.
 - **PD-2** `tools/lint.mjs`'s check-array line is edited in exactly one brief
   (S1), which deletes it; every later check in this mission is a new file in
   `tools/lint.d/`. S1 is its own commit, containing nothing else (R-1).
@@ -218,8 +218,14 @@ Planner decisions (decomposition, 2026-11-19):
   `plugins/agentic-workflow/tools/words.mjs` (S2); every other tool imports them.
 - **PD-8** No `tracking-plan.md` exists in this repo (R-8). The event table has
   one home, `templates/concurrency.md`; no tracking-plan file is created.
+- **PD-13** (owner, 2026-11-19) One phase-1 checkpoint, not two: the former
+  mid-phase review (ckpt-p1a, after S1–S3) is folded into ckpt-p1. Keeps the
+  burn meter (S6). Preset stays balanced. If ckpt-p1's diff outgrows one
+  reviewer, the reviewer says so and the corrective is a split review, not a
+  skipped lens. An orchestrator gate run after S3 (no session) stands in for
+  the folded review's early catch.
 - **PD-9** `Estimate:` covers phase 1. Opening the phase 2 gate is a dated
-  owner decision that raises it by 2 in the same edit. Confirmed by the
+  owner decision that raises it by 2 (to 9) in the same edit. Confirmed by the
   plan-judge 2026-11-19; OQ-12 is closed.
 - **PD-10** Owner actions are never brief steps: creating the agent identity,
   the `Approvers` row, changing the §10 Merge policy, confirming the ceiling.
@@ -372,7 +378,7 @@ Assumed (no spike ran any of these; #130 — none is a lock):
 - **OQ-11 App or machine account.** LD-1 says a GitHub App; the orchestrator's
   note allows a separate machine account. **Recommendation:** either — the check
   is "acting login is not an approver and no owner login is stored".
-- **OQ-12 — closed 2026-11-19.** Estimate treatment: 8 now, +2 at the gate
+- **OQ-12 — closed 2026-11-19.** Estimate treatment: 8 now (7 since PD-13), +2 at the gate
   (PD-9), confirmed by the plan-judge.
 - **OQ-13 Two journey assumptions** (`journeys.md:57`, `:60–61`): an approved PR can be
   pulled out of the queue; a finished or approved mission holds its slot until
