@@ -6,7 +6,14 @@ has no tags — each version-stamped commit on `main` IS the release.
 
 ## [Unreleased]
 
-_(empty)_
+### Added — doctor reports which GitHub token `gh` uses in a project
+- `/agentic-workflow:doctor` now checks, in a repo set up with `git-identity`,
+  whether `gh` uses that project's own token or the global login (the global
+  login may not be allowed to open PRs), and warns when the project token
+  expires within 14 days. The check prints no token.
+- New `templates/gh-project-token.sh`: a `gh` wrapper that, inside a
+  `git-identity` repo, runs `gh` with that repo's token and is plain `gh`
+  everywhere else. The doctor's fix line installs it.
 
 ## [1.69.1] — 2026-10-25
 ### Fixed — handoff gate blocked at 39 % context
